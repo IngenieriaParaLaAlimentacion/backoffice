@@ -1,6 +1,7 @@
 "use client";
 
-import { Alert, Button, Stack } from "@mui/material";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,46 +53,49 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   if (isSuccess) {
     return (
-      <Alert severity="success">
-        Your password has been reset successfully! Redirecting to sign in...
+      <Alert>
+        <AlertDescription>
+          Your password has been reset successfully! Redirecting to sign in...
+        </AlertDescription>
       </Alert>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(handleResetPassword)}>
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-3">
         <AppTextField
           name="password"
           control={control}
-          label={"Password"}
+          label="Password"
           required
-          placeholder={"Enter your new password"}
+          placeholder="Enter your new password"
           type="password"
           onChange={() => clearErrors("form")}
         />
         <AppTextField
           name="confirmPassword"
           control={control}
-          label={"Confirm Password"}
+          label="Confirm Password"
           required
-          placeholder={"Enter your new password again"}
+          placeholder="Enter your new password again"
           type="password"
           onChange={() => clearErrors("form")}
         />
-        {errors.form && <Alert severity="error">{errors.form?.message}</Alert>}
+        {errors.form && (
+          <Alert variant="destructive">
+            <AlertDescription>{errors.form.message}</AlertDescription>
+          </Alert>
+        )}
         <Button
           type="submit"
-          variant="contained"
-          color="primary"
           disabled={isSubmitting || !isValid}
-          loading={isSubmitting}
-          disableElevation
-          size="large"
+          className="w-full"
+          size="lg"
         >
-          Confirm Password
+          {isSubmitting ? "Saving..." : "Confirm Password"}
         </Button>
-      </Stack>
+      </div>
     </form>
   );
 }

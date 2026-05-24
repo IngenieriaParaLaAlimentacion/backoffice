@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { cn } from "@/lib/utils";
 import React from "react";
 
 type SideBarItemProps = {
@@ -23,27 +22,25 @@ export default function SideBarItem({
   const isSelected = pathname === href;
 
   return (
-    <ListItemButton
-      sx={{ borderRadius: 1, boxSizing: "border-box", p: 1, flex: 0 }}
-      component={Link}
+    <Link
       href={href}
-      selected={isSelected}
+      className={cn(
+        "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors",
+        isSelected
+          ? "bg-primary/10 text-primary"
+          : "text-foreground hover:bg-accent hover:text-accent-foreground"
+      )}
     >
-      <ListItemIcon>{icon}</ListItemIcon>
-      <ListItemText
-        primary={label}
-        sx={{
+      <span className="shrink-0">{icon}</span>
+      <span
+        className="overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-200 ease-in-out"
+        style={{
           opacity: isSidebarOpen ? 1 : 0,
           maxWidth: isSidebarOpen ? 160 : 0,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          transition: (theme) =>
-            theme.transitions.create(["opacity", "max-width"], {
-              easing: theme.transitions.easing.easeInOut,
-              duration: theme.transitions.duration.shorter,
-            }),
         }}
-      />
-    </ListItemButton>
+      >
+        {label}
+      </span>
+    </Link>
   );
 }

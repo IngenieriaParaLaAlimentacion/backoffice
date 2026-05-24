@@ -1,4 +1,3 @@
-import { Stack, Typography } from "@mui/material";
 import ResetPasswordForm from "@/app/(auth)/reset-password/ResetPasswordForm";
 import { use } from "react";
 
@@ -10,12 +9,10 @@ export default function ResetPassword({ searchParams }: ResetPasswordProps) {
   const { token } = use(searchParams);
   return (
     <>
-      <Stack spacing={1}>
-        <Typography variant="h3" component="h1" align="left">
-          Reset Password
-        </Typography>
-        <Typography>Create a new password.</Typography>
-      </Stack>
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight">Reset Password</h1>
+        <p className="text-sm text-muted-foreground">Create a new password.</p>
+      </div>
       <ResetPasswordForm token={token} />
     </>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { Alert, Button, Stack } from "@mui/material";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,37 +38,40 @@ export default function ForgotPasswordForm() {
 
   if (isSuccess) {
     return (
-      <Alert severity="success">
-        We have sent a reset link to {getValues("email")}. Please check your
-        inbox to proceed with the change.
+      <Alert>
+        <AlertDescription>
+          We have sent a reset link to {getValues("email")}. Please check your
+          inbox to proceed with the change.
+        </AlertDescription>
       </Alert>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(handleForgotPassword)}>
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-3">
         <AppTextField
-          name={"email"}
+          name="email"
           control={control}
           placeholder="Enter your email"
           onChange={() => clearErrors("form")}
           label="Email"
           required
         />
-        {errors.form && <Alert severity="error">{errors.form?.message}</Alert>}
+        {errors.form && (
+          <Alert variant="destructive">
+            <AlertDescription>{errors.form.message}</AlertDescription>
+          </Alert>
+        )}
         <Button
           type="submit"
-          variant="contained"
-          color="primary"
           disabled={isSubmitting || !isValid}
-          loading={isSubmitting}
-          disableElevation
-          size="large"
+          className="w-full"
+          size="lg"
         >
-          Send Link
+          {isSubmitting ? "Sending..." : "Send Link"}
         </Button>
-      </Stack>
+      </div>
     </form>
   );
 }

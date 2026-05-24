@@ -1,19 +1,17 @@
-import { Link, Stack, Typography } from "@mui/material";
+import Link from "next/link";
 import ForgotPasswordForm from "@/app/(auth)/forgot-password/ForgotPasswordForm";
 
 export default function ForgotPasswordPage() {
   return (
     <>
-      <Stack spacing={1}>
-        <Typography variant="h3" component="h1">
-          Forgot Password
-        </Typography>
-        <Typography>
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight">Forgot Password</h1>
+        <p className="text-sm text-muted-foreground">
           Enter your email and we will send you a link to reset your password.
-        </Typography>
-      </Stack>
+        </p>
+      </div>
       <ForgotPasswordForm />
-      <Link underline="hover" align="center" href="/signin">
+      <Link href="/signin" className="text-sm text-center text-primary hover:underline">
         Back to Sign In
       </Link>
     </>

@@ -1,6 +1,7 @@
 "use client";
 
-import { Alert, Button, Stack } from "@mui/material";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -44,9 +45,9 @@ export default function SignInForm() {
 
   return (
     <form onSubmit={handleSubmit(handleLogin)}>
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-3">
         <AppTextField
-          name={"email"}
+          name="email"
           control={control}
           placeholder="Enter your email"
           label="Email"
@@ -62,19 +63,20 @@ export default function SignInForm() {
           type="password"
           onChange={() => clearErrors("form")}
         />
-        {errors.form && <Alert severity="error">{errors.form?.message}</Alert>}
+        {errors.form && (
+          <Alert variant="destructive">
+            <AlertDescription>{errors.form.message}</AlertDescription>
+          </Alert>
+        )}
         <Button
           type="submit"
-          variant="contained"
-          color="primary"
           disabled={isSubmitting || !isValid}
-          loading={isSubmitting}
-          disableElevation
-          size="large"
+          className="w-full"
+          size="lg"
         >
-          Sign In
+          {isSubmitting ? "Signing in..." : "Sign In"}
         </Button>
-      </Stack>
+      </div>
     </form>
   );
 }

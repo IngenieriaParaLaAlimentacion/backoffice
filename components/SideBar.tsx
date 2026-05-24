@@ -1,14 +1,12 @@
 "use client";
 
-import MenuIcon from "@mui/icons-material/Menu";
-import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlined";
-
-import { Box, Button, Divider, Drawer, IconButton, List } from "@mui/material";
+import { Menu, LogOut, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import SideBarItem from "./SideBarItem";
-import { Logout } from "@mui/icons-material";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 const DRAWER_OPEN_WIDTH = 220;
 const DRAWER_CLOSED_WIDTH = 60;
@@ -17,7 +15,7 @@ const navItems = [
   {
     label: "Dashboard",
     href: "/dashboard",
-    icon: <SpaceDashboardOutlinedIcon />,
+    icon: <LayoutDashboard size={20} />,
   },
 ];
 
@@ -38,52 +36,22 @@ export default function SideBar() {
   };
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        transition: (theme) =>
-          theme.transitions.create("width", {
-            easing: theme.transitions.easing.easeInOut,
-            duration: theme.transitions.duration.shorter,
-          }),
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-          overflow: "hidden",
-          transition: (theme) =>
-            theme.transitions.create("width", {
-              easing: theme.transitions.easing.easeInOut,
-              duration: theme.transitions.duration.shorter,
-            }),
-        },
-      }}
+    <aside
+      className="flex flex-col h-screen bg-card border-r border-border overflow-hidden shrink-0 transition-[width] duration-200 ease-in-out"
+      style={{ width: drawerWidth }}
     >
-      <Box
-        sx={{
-          height: 64,
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          px: 1,
-        }}
-      >
-        <IconButton
-          color="primary"
+      <div className="h-16 flex items-center gap-2 px-2">
+        <button
           onClick={() => setIsSidebarOpen((prev) => !prev)}
+          className="p-2 rounded-md text-primary hover:bg-accent transition-colors"
         >
-          <MenuIcon />
-        </IconButton>
-      </Box>
-      <Divider />
-      <List
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          gap: 1,
-          px: 1,
-        }}
-      >
+          <Menu size={20} />
+        </button>
+      </div>
+
+      <Separator />
+
+      <nav className="flex flex-col flex-1 gap-1 px-2 py-2">
         {navItems.map((item) => (
           <SideBarItem
             {...item}
@@ -91,22 +59,18 @@ export default function SideBar() {
             isSidebarOpen={isSidebarOpen}
           />
         ))}
-      </List>
-      <Button
-        variant={"outlined"}
-        color={"error"}
-        disableElevation
-        sx={{
-          textTransform: "capitalize",
-          mx: 1,
-          mb: 1.5,
-          display: isSidebarOpen ? "flex" : "none",
-        }}
-        startIcon={<Logout />}
-        onClick={handleLogout}
-      >
-        Logout
-      </Button>
-    </Drawer>
+      </nav>
+
+      {isSidebarOpen && (
+        <Button
+          variant="outline"
+          className="mx-2 mb-3 text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={handleLogout}
+        >
+          <LogOut size={16} />
+          Logout
+        </Button>
+      )}
+    </aside>
   );
 }

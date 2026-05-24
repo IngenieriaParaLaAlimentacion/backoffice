@@ -1,16 +1,14 @@
 import SignInForm from "@/app/(auth)/signin/SignInForm";
-import { Link, Stack, Typography } from "@mui/material";
+import Link from "next/link";
 
 export default function SignInPage() {
   return (
     <>
-      <Stack>
-        <Typography variant="h3" component="h1" align="center">
-          Sign In
-        </Typography>
-      </Stack>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-center">Sign In</h1>
+      </div>
       <SignInForm />
-      <Link underline="hover" href="/forgot-password">
+      <Link href="/forgot-password" className="text-sm text-primary hover:underline">
         Forgot Password?
       </Link>
     </>

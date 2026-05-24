@@ -1,10 +1,11 @@
-import { CssBaseline } from "@mui/material";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import { ThemeProvider } from "@mui/material/styles";
 import type { Metadata } from "next";
 import MswProvider from "@/mocks/MswProvider";
-import { theme } from "./theme";
 import { AuthProvider } from "@/context/AuthContext";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+import "./globals.css";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "Backoffice",
@@ -17,15 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body>
         <MswProvider>
-          <AppRouterCacheProvider>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <AuthProvider>{children}</AuthProvider>
-            </ThemeProvider>
-          </AppRouterCacheProvider>
+          <AuthProvider>{children}</AuthProvider>
         </MswProvider>
       </body>
     </html>

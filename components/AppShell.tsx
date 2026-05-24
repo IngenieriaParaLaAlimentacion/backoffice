@@ -1,7 +1,6 @@
 "use client";
 
 import SideBar from "@/components/SideBar";
-import { Box } from "@mui/material";
 import React from "react";
 
 type AppShellProps = {
@@ -10,12 +9,9 @@ type AppShellProps = {
 
 export default function AppShell({ children }: AppShellProps) {
   return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
+    <div className="flex h-screen">
       <SideBar />
-
-      <Box component="main" sx={{ flex: 1, display: "flex" }}>
-        {children}
-      </Box>
-    </Box>
+      <main className="flex flex-1">{children}</main>
+    </div>
   );
 }
