@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import AppShell from "@/components/AppShell";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardLayout({
@@ -10,24 +10,21 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isAuthenticated, isInitializing } = useAuth();
-  const router = useRouter();
+  //const { isAuthenticated, isInitializing } = useAuth();                                                                                                                 
+  // const router = useRouter();     
+  // TODO: restore auth guard
+  // useEffect(() => {
+  //   if (isInitializing) return;
+  //   if (!isAuthenticated) router.replace("/signin");
+  // }, [isAuthenticated, isInitializing, router]);
 
-  useEffect(() => {
-    if (isInitializing) return;
+  // if (isInitializing) {
+  //   return null;
+  // }
 
-    if (!isAuthenticated) {
-      router.replace("/signin");
-    }
-  }, [isAuthenticated, isInitializing, router]);
-
-  if (isInitializing) {
-    return null;
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+  // if (!isAuthenticated) {
+  //   return null;
+  // }
 
   return <AppShell>{children}</AppShell>;
 }
