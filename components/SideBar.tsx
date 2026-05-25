@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import SideBarItem from "./SideBarItem";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +16,11 @@ const navItems = [
     label: "Dashboard",
     href: "/dashboard",
     icon: <LayoutDashboard size={20} />,
+  },
+  {
+    label: "Solicitudes",
+    href: "/dashboard/solicitudes",
+    icon: <ClipboardList size={20} />,
   },
 ];
 

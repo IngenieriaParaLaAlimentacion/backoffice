@@ -5,6 +5,11 @@ import {
   makeRefreshHandler,
   makeResetPasswordHandler,
 } from "@/mocks/handlers/auth";
+import {
+  makeApproveEstablishmentsHandler,
+  makeListUsersHandler,
+  makeRejectEstablishmentsHandler,
+} from "@/mocks/handlers/admin";
 
 export const handlers = [
   makeLoginHandler(),
@@ -12,4 +17,7 @@ export const handlers = [
   makeResetPasswordHandler(),
   makeForgotPasswordHandler(),
   makeLogoutHandler(),
+  makeListUsersHandler(),
+  makeApproveEstablishmentsHandler(),
+  makeRejectEstablishmentsHandler(),
 ];
