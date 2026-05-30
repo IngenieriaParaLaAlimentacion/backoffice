@@ -9,7 +9,7 @@ export default function SignInPage() {
       </div>
       <SignInForm />
       <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-        Forgot Password?
+        ¿Olvidaste tu contraseña?
       </Link>
     </>
   );
