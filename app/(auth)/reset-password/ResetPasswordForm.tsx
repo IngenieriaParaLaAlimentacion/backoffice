@@ -38,7 +38,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   async function handleResetPassword({ password }: ResetPasswordInput) {
     if (!token) {
-      setError("form", { message: "Invalid or missing token." });
+      setError("form", { message: "Token inválido o inexistente." });
       return;
     }
 
@@ -55,7 +55,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     return (
       <Alert>
         <AlertDescription>
-          Your password has been reset successfully! Redirecting to sign in...
+          ¡Tu contraseña fue restablecida correctamente! Redirigiendo...
         </AlertDescription>
       </Alert>
     );
@@ -67,18 +67,18 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         <AppTextField
           name="password"
           control={control}
-          label="Password"
+          label="Contraseña"
           required
-          placeholder="Enter your new password"
+          placeholder="Ingresá tu nueva contraseña"
           type="password"
           onChange={() => clearErrors("form")}
         />
         <AppTextField
           name="confirmPassword"
           control={control}
-          label="Confirm Password"
+          label="Confirmar contraseña"
           required
-          placeholder="Enter your new password again"
+          placeholder="Volvé a ingresar tu contraseña"
           type="password"
           onChange={() => clearErrors("form")}
         />
@@ -93,7 +93,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           className="w-full"
           size="lg"
         >
-          {isSubmitting ? "Saving..." : "Confirm Password"}
+          {isSubmitting ? "Guardando..." : "Confirmar contraseña"}
         </Button>
       </div>
     </form>

@@ -49,7 +49,7 @@ export default function SignInForm() {
         <AppTextField
           name="email"
           control={control}
-          placeholder="Enter your email"
+          placeholder="Ingresá tu email"
           label="Email"
           required
           onChange={() => clearErrors("form")}
@@ -58,8 +58,8 @@ export default function SignInForm() {
           control={control}
           name="password"
           required
-          placeholder="Enter your password"
-          label="Password"
+          placeholder="Ingresá tu contraseña"
+          label="Contraseña"
           type="password"
           onChange={() => clearErrors("form")}
         />
@@ -74,7 +74,7 @@ export default function SignInForm() {
           className="w-full"
           size="lg"
         >
-          {isSubmitting ? "Signing in..." : "Sign In"}
+          {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
         </Button>
       </div>
     </form>

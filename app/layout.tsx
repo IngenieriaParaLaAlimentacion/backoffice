@@ -8,8 +8,8 @@ import "./globals.css";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "Backoffice",
-  description: "Backoffice administration panel.",
+  title: "Ingeniería Para La Alimentación",
+  description: "Panel de administración.",
 };
 
 export default function RootLayout({
