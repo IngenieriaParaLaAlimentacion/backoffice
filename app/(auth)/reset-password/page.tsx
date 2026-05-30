@@ -10,8 +10,8 @@ export default function ResetPassword({ searchParams }: ResetPasswordProps) {
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">Reset Password</h1>
-        <p className="text-sm text-muted-foreground">Create a new password.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Restablecer contraseña</h1>
+        <p className="text-sm text-muted-foreground">Creá una nueva contraseña.</p>
       </div>
       <ResetPasswordForm token={token} />
     </>

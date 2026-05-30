@@ -40,8 +40,8 @@ export default function ForgotPasswordForm() {
     return (
       <Alert>
         <AlertDescription>
-          We have sent a reset link to {getValues("email")}. Please check your
-          inbox to proceed with the change.
+          Enviamos un link de restablecimiento a {getValues("email")}. Revisá tu
+          bandeja de entrada para continuar.
         </AlertDescription>
       </Alert>
     );
@@ -53,7 +53,7 @@ export default function ForgotPasswordForm() {
         <AppTextField
           name="email"
           control={control}
-          placeholder="Enter your email"
+          placeholder="Ingresá tu email"
           onChange={() => clearErrors("form")}
           label="Email"
           required
@@ -69,7 +69,7 @@ export default function ForgotPasswordForm() {
           className="w-full"
           size="lg"
         >
-          {isSubmitting ? "Sending..." : "Send Link"}
+          {isSubmitting ? "Enviando..." : "Enviar link"}
         </Button>
       </div>
     </form>

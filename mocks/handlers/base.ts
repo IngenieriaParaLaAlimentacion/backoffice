@@ -15,7 +15,7 @@ export function baseHandler<T, TPath extends PathParams<keyof TPath>>(
   path: string,
   { method = "get", status = 200, ...options }: BaseHandlerOptions<T>,
 ) {
-  const url = `/api${path}`;
+  const url = path;
   return http[method]<TPath>(
     url,
     async ({ request }) => {
