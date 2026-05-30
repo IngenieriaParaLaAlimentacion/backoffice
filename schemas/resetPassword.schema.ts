@@ -4,18 +4,18 @@ export const resetPasswordSchema = z
   .strictObject({
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .regex(/[0-9]/, "Password must contain at least one number")
+      .min(8, "La contraseña debe tener al menos 8 caracteres")
+      .regex(/[a-z]/, "La contraseña debe contener al menos una minúscula")
+      .regex(/[A-Z]/, "La contraseña debe contener al menos una mayúscula")
+      .regex(/[0-9]/, "La contraseña debe contener al menos un número")
       .regex(
         /[^a-zA-Z0-9]/,
-        "Password must contain at least one special character",
+        "La contraseña debe contener al menos un carácter especial",
       ),
-    confirmPassword: z.string().nonempty("Confirm password is required"),
+    confirmPassword: z.string().nonempty("La confirmación de contraseña es requerida"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords must match",
+    message: "Las contraseñas no coinciden",
     path: ["confirmPassword"],
   });
 

@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const forgotPasswordSchema = z.strictObject({
   email: z
-    .email("Invalid email address")
-    .nonempty("Email is required")
+    .email("Email inválido")
+    .nonempty("El email es requerido")
     .trim()
     .toLowerCase(),
 });
