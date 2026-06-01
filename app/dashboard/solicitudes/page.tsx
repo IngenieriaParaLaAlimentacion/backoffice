@@ -34,7 +34,7 @@ export default function SolicitudesPage() {
           status: "pending_validation",
           page: currentPage,
           page_size: PAGE_SIZE,
-          role: "admin"
+          role: "establishment_manager",
         });
         setUsers(data.items);
         setTotalPages(data.total_pages);
