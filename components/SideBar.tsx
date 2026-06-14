@@ -27,6 +27,11 @@ const navItems = [
     href: "/dashboard/usuarios",
     icon: <Users size={20} />,
   },
+  {
+    label: "Sujetos",
+    href: "/dashboard/sujetos",
+    icon: <Users size={20} />,
+  },
 ];
 
 export default function SideBar() {
@@ -78,7 +83,7 @@ export default function SideBar() {
           onClick={handleLogout}
         >
           <LogOut size={16} />
-          Logout
+          Cerrar Sesión
         </Button>
       )}
     </aside>
