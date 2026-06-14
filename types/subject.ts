@@ -15,3 +15,18 @@ export type PaginatedSubjectsResponse = {
   page_size: number;
   total_pages: number;
 };
+
+export type SubjectDetail = {
+  id: string;
+  dni: number;
+  name: string;
+  last_name: string;
+  sex: Sex;
+  birth_date: string;
+  is_rural: boolean;
+  is_indigenous: boolean;
+};
+
+export type SubjectSortField = "name" | "created_at" | "last_survey_date";
+
+export type SortOrder = "asc" | "desc";

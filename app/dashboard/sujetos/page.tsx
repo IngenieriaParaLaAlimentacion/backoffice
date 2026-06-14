@@ -2,16 +2,74 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { listSubjectsAction } from "@/services/subject.service";
-import { SubjectSummary } from "@/types/subject";
+import {
+  getSubjectAction,
+  listSubjectsAction,
+} from "@/services/subject.service";
+import { listEstablishmentsAction } from "@/services/establishment.service";
+import {
+  SortOrder,
+  SubjectDetail,
+  SubjectSortField,
+  SubjectSummary,
+} from "@/types/subject";
+import { EstablishmentResponse } from "@/types/admin";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+  Search,
+  X,
+} from "lucide-react";
 
 const PAGE_SIZE = 20;
-const SEARCH_DEBOUNCE_MS = 300;
+const FILTER_DEBOUNCE_MS = 300;
+
+const SELECT_CLASS =
+  "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+
+const SORT_OPTIONS: { value: SubjectSortField; label: string }[] = [
+  { value: "name", label: "Nombre y apellido" },
+  { value: "created_at", label: "Fecha de creación" },
+  { value: "last_survey_date", label: "Fecha de último relevamiento" },
+];
+
+type Filters = {
+  search: string;
+  birthDate: string;
+  establishmentId: string;
+  lastSurveyDate: string;
+};
+
+const EMPTY_FILTERS: Filters = {
+  search: "",
+  birthDate: "",
+  establishmentId: "",
+  lastSurveyDate: "",
+};
+
+// "YYYY-MM-DD" -> "DD/MM/YYYY" without timezone shifts.
+function formatDate(value: string) {
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
+  return `${day}/${month}/${year}`;
+}
+
+function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-sm">{value}</span>
+    </div>
+  );
+}
 
 export default function SujetosPage() {
   const { makeAuthorizedRequest } = useAuth();
@@ -22,28 +80,50 @@ export default function SujetosPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [debouncedFilters, setDebouncedFilters] = useState<Filters>(EMPTY_FILTERS);
 
-  // Debounce the search term and reset to the first page when it changes.
+  const [sortBy, setSortBy] = useState<SubjectSortField>("name");
+  const [order, setOrder] = useState<SortOrder>("asc");
+
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const [establishments, setEstablishments] = useState<EstablishmentResponse[]>([]);
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<SubjectDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  // Debounce filter changes and reset to the first page when they change.
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setDebouncedSearch(search);
+      setDebouncedFilters(filters);
       setPage(1);
-    }, SEARCH_DEBOUNCE_MS);
+    }, FILTER_DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
-  }, [search]);
+  }, [filters]);
 
   const fetchSubjects = useCallback(
-    async (currentPage: number, currentSearch: string) => {
+    async (
+      currentPage: number,
+      currentFilters: Filters,
+      currentSortBy: SubjectSortField,
+      currentOrder: SortOrder,
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
         const data = await listSubjectsAction(makeAuthorizedRequest, {
           page: currentPage,
           page_size: PAGE_SIZE,
-          search: currentSearch || undefined,
+          search: currentFilters.search || undefined,
+          birth_date: currentFilters.birthDate || undefined,
+          establishment_id: currentFilters.establishmentId || undefined,
+          last_survey_date: currentFilters.lastSurveyDate || undefined,
+          sort_by: currentSortBy,
+          order: currentOrder,
         });
         setSubjects(data.items);
         setTotalPages(data.total_pages);
@@ -57,30 +137,166 @@ export default function SujetosPage() {
   );
 
   useEffect(() => {
-    fetchSubjects(page, debouncedSearch);
-  }, [fetchSubjects, page, debouncedSearch]);
+    fetchSubjects(page, debouncedFilters, sortBy, order);
+  }, [fetchSubjects, page, debouncedFilters, sortBy, order, reloadKey]);
+
+  // Reflect changes made elsewhere when the user returns to the tab.
+  useEffect(() => {
+    const onFocus = () => setReloadKey((k) => k + 1);
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
+
+  // Populate the comedor filter dropdown.
+  useEffect(() => {
+    listEstablishmentsAction(makeAuthorizedRequest, { page_size: 100 })
+      .then((data) => setEstablishments(data.items))
+      .catch(() => setEstablishments([]));
+  }, [makeAuthorizedRequest]);
+
+  const updateFilter = (key: keyof Filters, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const openDetail = useCallback(
+    async (id: string) => {
+      setSelectedId(id);
+      setDetail(null);
+      setDetailError(null);
+      setDetailLoading(true);
+      try {
+        const data = await getSubjectAction(makeAuthorizedRequest, id);
+        setDetail(data);
+      } catch (err) {
+        setDetailError(
+          err instanceof Error ? err.message : "Error al cargar el sujeto",
+        );
+      } finally {
+        setDetailLoading(false);
+      }
+    },
+    [makeAuthorizedRequest],
+  );
+
+  const closeDetail = () => {
+    setSelectedId(null);
+    setDetail(null);
+    setDetailError(null);
+    setReloadKey((k) => k + 1);
+  };
 
   return (
-    <div className="flex flex-1 p-4">
+    <div className="flex flex-1 gap-4 p-4">
       <Card className="flex-1 p-8 flex flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">Sujetos</h1>
-          <p className="text-muted-foreground text-sm">Sujetos registrados</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold tracking-tight">Sujetos</h1>
+            <p className="text-muted-foreground text-sm">Sujetos registrados</p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setReloadKey((k) => k + 1)}
+          >
+            <RefreshCw size={14} />
+            Actualizar
+          </Button>
         </div>
 
         <Separator />
 
-        <div className="relative max-w-sm">
-          <Search
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-            size={16}
-          />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre, apellido o documento"
-            className="pl-8"
-          />
+        {/* Filters (CA2) + sorting (CA3) */}
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Buscar</label>
+            <div className="relative w-64">
+              <Search
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                size={16}
+              />
+              <Input
+                value={filters.search}
+                onChange={(e) => updateFilter("search", e.target.value)}
+                placeholder="Nombre, apellido o documento"
+                className="pl-8"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">
+              Fecha de nacimiento
+            </label>
+            <Input
+              type="date"
+              value={filters.birthDate}
+              onChange={(e) => updateFilter("birthDate", e.target.value)}
+              className="w-40"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Comedor</label>
+            <select
+              value={filters.establishmentId}
+              onChange={(e) => updateFilter("establishmentId", e.target.value)}
+              className={`${SELECT_CLASS} w-52`}
+            >
+              <option value="">Todos</option>
+              {establishments.map((est) => (
+                <option key={est.id} value={est.id}>
+                  {est.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">
+              Último relevamiento
+            </label>
+            <Input
+              type="date"
+              value={filters.lastSurveyDate}
+              onChange={(e) => updateFilter("lastSurveyDate", e.target.value)}
+              className="w-40"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Ordenar por</label>
+            <div className="flex items-center gap-2">
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value as SubjectSortField);
+                  setPage(1);
+                }}
+                className={`${SELECT_CLASS} w-56`}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setOrder((o) => (o === "asc" ? "desc" : "asc"));
+                  setPage(1);
+                }}
+                title={order === "asc" ? "Ascendente" : "Descendente"}
+              >
+                {order === "asc" ? (
+                  <ArrowUp size={14} />
+                ) : (
+                  <ArrowDown size={14} />
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -114,7 +330,10 @@ export default function SujetosPage() {
                   {subjects.map((subject) => (
                     <tr
                       key={subject.id}
-                      className="bg-card hover:bg-muted/30 transition-colors"
+                      onClick={() => openDetail(subject.id)}
+                      className={`cursor-pointer bg-card transition-colors hover:bg-muted/30 ${
+                        selectedId === subject.id ? "bg-muted/40" : ""
+                      }`}
                     >
                       <td className="px-4 py-3 font-medium">
                         {subject.name} {subject.last_name}
@@ -163,6 +382,60 @@ export default function SujetosPage() {
           </>
         )}
       </Card>
+
+      {/* Detail panel (CA4) */}
+      {selectedId && (
+        <Card className="w-[28rem] shrink-0 p-6 flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="text-xl font-bold tracking-tight">
+              {detail ? `${detail.name} ${detail.last_name}` : "Sujeto"}
+            </h2>
+            <Button size="sm" variant="ghost" onClick={closeDetail}>
+              <X size={16} />
+            </Button>
+          </div>
+
+          <Separator />
+
+          {detailLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="animate-spin text-muted-foreground" size={28} />
+            </div>
+          ) : detailError ? (
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+              {detailError}
+            </div>
+          ) : detail ? (
+            <div className="flex flex-col gap-4">
+              <DetailField label="Documento de identidad" value={detail.dni} />
+              <DetailField
+                label="Sexo"
+                value={detail.sex === "male" ? "Masculino" : "Femenino"}
+              />
+              <DetailField
+                label="Fecha de nacimiento"
+                value={formatDate(detail.birth_date)}
+              />
+              <DetailField
+                label="Población rural"
+                value={detail.is_rural ? "Sí" : "No"}
+              />
+              <DetailField
+                label="Población indígena"
+                value={detail.is_indigenous ? "Sí" : "No"}
+              />
+              <DetailField
+                label="Comedor asociado"
+                value={<span className="text-muted-foreground">—</span>}
+              />
+              <DetailField
+                label="Fecha de último relevamiento"
+                value={<span className="text-muted-foreground">—</span>}
+              />
+            </div>
+          ) : null}
+        </Card>
+      )}
     </div>
   );
 }
