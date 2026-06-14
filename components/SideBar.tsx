@@ -1,6 +1,13 @@
 "use client";
 
-import { Menu, LogOut, LayoutDashboard, ClipboardList, Users } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import SideBarItem from "./SideBarItem";
 import { useAuth } from "@/context/AuthContext";
@@ -75,6 +82,15 @@ export default function SideBar() {
           />
         ))}
       </nav>
+
+      <div className="px-2 pb-2">
+        <SideBarItem
+          href="/dashboard/perfil"
+          label="Perfil"
+          icon={<User size={20} />}
+          isSidebarOpen={isSidebarOpen}
+        />
+      </div>
 
       {isSidebarOpen && (
         <Button
