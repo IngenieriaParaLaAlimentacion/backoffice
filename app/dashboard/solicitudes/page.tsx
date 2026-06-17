@@ -259,7 +259,7 @@ export default function SolicitudesPage() {
                   <div className="flex flex-col">
                     <span className="font-medium text-sm">{est.name}</span>
                     <span className="text-muted-foreground text-xs">
-                      {est.address}
+                      {est.formatted_address}
                     </span>
                   </div>
                   <div className="flex gap-2">
