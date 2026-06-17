@@ -48,7 +48,6 @@ npm run test
 | ESLint      | ^9      |
 | Prettier    | 3.8.1   |
 | lint-staged | 16.4.0  |
-| Material UI | 9.0.0   |
 
 ## Contributing
 
