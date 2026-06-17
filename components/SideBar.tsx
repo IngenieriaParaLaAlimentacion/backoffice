@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Users,
   User,
+  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import SideBarItem from "./SideBarItem";
@@ -33,6 +34,11 @@ const navItems = [
     label: "Usuarios",
     href: "/dashboard/usuarios",
     icon: <Users size={20} />,
+  },
+  {
+    label: "Establecimientos",
+    href: "/dashboard/establecimientos",
+    icon: <Building2 size={20} />,
   },
   {
     label: "Sujetos",

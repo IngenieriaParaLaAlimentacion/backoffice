@@ -10,6 +10,10 @@ import {
   makeListUsersHandler,
   makeRejectEstablishmentsHandler,
 } from "@/mocks/handlers/admin";
+import {
+  makeCreateEstablishmentHandler,
+  makeListEstablishmentsHandler,
+} from "@/mocks/handlers/establishment";
 
 export const handlers = [
   makeLoginHandler(),
@@ -20,4 +24,6 @@ export const handlers = [
   makeListUsersHandler(),
   makeApproveEstablishmentsHandler(),
   makeRejectEstablishmentsHandler(),
+  makeListEstablishmentsHandler(),
+  makeCreateEstablishmentHandler(),
 ];

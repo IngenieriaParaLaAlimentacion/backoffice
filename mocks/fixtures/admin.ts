@@ -1,4 +1,5 @@
 import { PaginatedUsersResponse } from "@/types/admin";
+import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 
 export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
   items: [
@@ -9,18 +10,7 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
       last_name: "López",
       role: "establishment_manager",
       status: "pending_validation",
-      establishments: [
-        {
-          id: "e1000000-0000-0000-0000-000000000001",
-          name: "Comedor Central Norte",
-          address: "Av. Corrientes 1234, CABA",
-        },
-        {
-          id: "e1000000-0000-0000-0000-000000000002",
-          name: "Comedor Central Sur",
-          address: "Av. Rivadavia 5678, CABA",
-        },
-      ],
+      establishments: [MOCK_ESTABLISHMENTS[0], MOCK_ESTABLISHMENTS[1]],
     },
     {
       id: "a1b2c3d4-0000-0000-0000-000000000002",
@@ -29,13 +19,7 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
       last_name: "García",
       role: "establishment_manager",
       status: "pending_validation",
-      establishments: [
-        {
-          id: "e1000000-0000-0000-0000-000000000003",
-          name: "Merendero La Esperanza",
-          address: "Calle Falsa 123, Rosario",
-        },
-      ],
+      establishments: [MOCK_ESTABLISHMENTS[2]],
     },
     {
       id: "a1b2c3d4-0000-0000-0000-000000000003",
@@ -44,13 +28,7 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
       last_name: "Martínez",
       role: "establishment_manager",
       status: "pending_validation",
-      establishments: [
-        {
-          id: "e1000000-0000-0000-0000-000000000004",
-          name: "Comedor Barrio Nuevo",
-          address: "San Martín 456, Córdoba",
-        },
-      ],
+      establishments: [MOCK_ESTABLISHMENTS[3]],
     },
   ],
   total: 3,
