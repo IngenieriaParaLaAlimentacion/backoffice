@@ -96,7 +96,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                           {user.establishments.map((est) => (
                             <span key={est.id} className="text-xs">
                               <span className="font-medium">{est.name}</span>
-                              <span className="text-muted-foreground"> — {est.address}</span>
+                              <span className="text-muted-foreground"> — {est.formatted_address}</span>
                             </span>
                           ))}
                         </div>
