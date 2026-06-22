@@ -6,14 +6,12 @@ import {
   getSubjectAction,
   listSubjectsAction,
 } from "@/services/subject.service";
-import { listEstablishmentsAction } from "@/services/establishment.service";
 import {
   SortOrder,
   SubjectDetail,
   SubjectSortField,
   SubjectSummary,
 } from "@/types/subject";
-import { EstablishmentResponse } from "@/types/admin";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,14 +42,12 @@ const SORT_OPTIONS: { value: SubjectSortField; label: string }[] = [
 type Filters = {
   search: string;
   birthDate: string;
-  establishmentId: string;
   lastSurveyDate: string;
 };
 
 const EMPTY_FILTERS: Filters = {
   search: "",
   birthDate: "",
-  establishmentId: "",
   lastSurveyDate: "",
 };
 
@@ -62,7 +58,13 @@ function formatDate(value: string) {
   return `${day}/${month}/${year}`;
 }
 
-function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
+function DetailField({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-muted-foreground">{label}</span>
@@ -81,14 +83,13 @@ export default function SujetosPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
-  const [debouncedFilters, setDebouncedFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [debouncedFilters, setDebouncedFilters] =
+    useState<Filters>(EMPTY_FILTERS);
 
   const [sortBy, setSortBy] = useState<SubjectSortField>("name");
   const [order, setOrder] = useState<SortOrder>("asc");
 
   const [reloadKey, setReloadKey] = useState(0);
-
-  const [establishments, setEstablishments] = useState<EstablishmentResponse[]>([]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<SubjectDetail | null>(null);
@@ -120,7 +121,6 @@ export default function SujetosPage() {
           page_size: PAGE_SIZE,
           search: currentFilters.search || undefined,
           birth_date: currentFilters.birthDate || undefined,
-          establishment_id: currentFilters.establishmentId || undefined,
           last_survey_date: currentFilters.lastSurveyDate || undefined,
           sort_by: currentSortBy,
           order: currentOrder,
@@ -128,7 +128,9 @@ export default function SujetosPage() {
         setSubjects(data.items);
         setTotalPages(data.total_pages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error al cargar sujetos");
+        setError(
+          err instanceof Error ? err.message : "Error al cargar sujetos",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -146,13 +148,6 @@ export default function SujetosPage() {
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, []);
-
-  // Populate the comedor filter dropdown.
-  useEffect(() => {
-    listEstablishmentsAction(makeAuthorizedRequest, { page_size: 100 })
-      .then((data) => setEstablishments(data.items))
-      .catch(() => setEstablishments([]));
-  }, [makeAuthorizedRequest]);
 
   const updateFilter = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -236,22 +231,6 @@ export default function SujetosPage() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Comedor</label>
-            <select
-              value={filters.establishmentId}
-              onChange={(e) => updateFilter("establishmentId", e.target.value)}
-              className={`${SELECT_CLASS} w-52`}
-            >
-              <option value="">Todos</option>
-              {establishments.map((est) => (
-                <option key={est.id} value={est.id}>
-                  {est.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">
               Último relevamiento
             </label>
@@ -321,9 +300,12 @@ export default function SujetosPage() {
                   <tr className="bg-muted/50 text-muted-foreground text-left">
                     <th className="px-4 py-3 font-medium">Nombre</th>
                     <th className="px-4 py-3 font-medium">Documento</th>
-                    <th className="px-4 py-3 font-medium">Fecha de nacimiento</th>
-                    <th className="px-4 py-3 font-medium">Comedor asociado</th>
-                    <th className="px-4 py-3 font-medium">Último relevamiento</th>
+                    <th className="px-4 py-3 font-medium">
+                      Fecha de nacimiento
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      Último relevamiento
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -340,9 +322,6 @@ export default function SujetosPage() {
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {subject.dni}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-muted-foreground">—</span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-muted-foreground">—</span>
@@ -399,7 +378,10 @@ export default function SujetosPage() {
 
           {detailLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="animate-spin text-muted-foreground" size={28} />
+              <Loader2
+                className="animate-spin text-muted-foreground"
+                size={28}
+              />
             </div>
           ) : detailError ? (
             <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
@@ -423,10 +405,6 @@ export default function SujetosPage() {
               <DetailField
                 label="Población indígena"
                 value={detail.is_indigenous ? "Sí" : "No"}
-              />
-              <DetailField
-                label="Comedor asociado"
-                value={<span className="text-muted-foreground">—</span>}
               />
               <DetailField
                 label="Fecha de último relevamiento"
