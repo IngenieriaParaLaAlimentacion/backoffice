@@ -3,6 +3,8 @@ export const API_BASE_URL = "";
 // --- Auth Endpoints ---
 
 export const ADMIN_LOGIN_ENDPOINT = "/api/v1/auth/login";
+export const INVITE_ADMIN_ENDPOINT = "/api/v1/auth/invite-admin";
+export const ACCEPT_INVITE_ENDPOINT = "/api/v1/auth/invite-admin/confirm";
 export const REFRESH_ENDPOINT = "/api/v1/auth/refresh";
 export const RESET_PASSWORD_ENDPOINT = "/api/v1/auth/password-recovery/confirm";
 export const FORGOT_PASSWORD_ENDPOINT = "/api/v1/auth/password-recovery/request";

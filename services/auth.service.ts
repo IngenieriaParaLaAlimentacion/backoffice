@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/http";
 import { ErrorResponse } from "@/lib/types";
 import { clearTokens, saveTokens } from "@/lib/tokenStorage";
 import {
+  ACCEPT_INVITE_ENDPOINT,
   ADMIN_LOGIN_ENDPOINT,
   FORGOT_PASSWORD_ENDPOINT,
   LOGOUT_ENDPOINT,
@@ -75,6 +76,23 @@ export const resetPasswordAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   clearTokens();
+};
+
+export const acceptInviteAction = async (
+  newPassword: string,
+  token: string,
+) => {
+  const payload: ResetPasswordRequest = {
+    new_password: newPassword,
+    token,
+  };
+
+  const res = await apiRequest(ACCEPT_INVITE_ENDPOINT, {
+    method: "POST",
+    body: payload,
+  });
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 };
 
 export const logoutAction = async (

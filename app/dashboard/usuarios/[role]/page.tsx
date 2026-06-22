@@ -4,10 +4,11 @@ import { use } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
+import InviteAdminDialog from "./InviteAdminDialog";
 
 const PAGE_SIZE = 20;
 
@@ -43,12 +44,7 @@ export default function RoleUsersPage({
               {USERS_PAGE.subtitle}
             </p>
           </div>
-          {role === "admin" && (
-            <Button size="sm" variant="outline">
-              <Plus size={14} />
-              Invitar administrador
-            </Button>
-          )}
+          {role === "admin" && <InviteAdminDialog />}
         </div>
 
         <Separator />

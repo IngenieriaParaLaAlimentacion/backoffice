@@ -1,6 +1,7 @@
 import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENTS_ENDPOINT,
+  INVITE_ADMIN_ENDPOINT,
   LIST_USERS_ENDPOINT,
   REJECT_ESTABLISHMENTS_ENDPOINT,
 } from "@/constants/api";
@@ -8,6 +9,7 @@ import {
   EstablishmentAccessRequest,
   PaginatedUsersResponse,
 } from "@/types/admin";
+import { ForgotPasswordRequest } from "@/types/auth";
 import { ErrorResponse } from "@/lib/types";
 
 type ListUsersParams = {
@@ -52,6 +54,20 @@ export const approveEstablishmentsAction = async (
   const res = await dispatcher<EstablishmentAccessRequest, undefined>(
     APPROVE_ESTABLISHMENTS_ENDPOINT(userId),
     { method: "PATCH", body },
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+};
+
+export const inviteAdminAction = async (
+  dispatcher: AuthDispatcher,
+  email: string,
+) => {
+  const body: ForgotPasswordRequest = { email };
+
+  const res = await dispatcher<ForgotPasswordRequest, undefined>(
+    INVITE_ADMIN_ENDPOINT,
+    { method: "POST", body },
   );
 
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
