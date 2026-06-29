@@ -2,6 +2,7 @@ import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENTS_ENDPOINT,
   INVITE_ADMIN_ENDPOINT,
+  INVITE_ANALYST_ENDPOINT,
   LIST_USERS_ENDPOINT,
   REJECT_ESTABLISHMENTS_ENDPOINT,
   RESEND_INVITE_ENDPOINT,
@@ -69,6 +70,22 @@ export const inviteAdminAction = async (
 
   const res = await dispatcher<ForgotPasswordRequest, InviteAdminResponse>(
     INVITE_ADMIN_ENDPOINT,
+    { method: "POST", body },
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+
+  return (res.data as InviteAdminResponse).user_id;
+};
+
+export const inviteAnalystAction = async (
+  dispatcher: AuthDispatcher,
+  email: string,
+): Promise<string> => {
+  const body: ForgotPasswordRequest = { email };
+
+  const res = await dispatcher<ForgotPasswordRequest, InviteAdminResponse>(
+    INVITE_ANALYST_ENDPOINT,
     { method: "POST", body },
   );
 

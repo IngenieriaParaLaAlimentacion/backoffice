@@ -12,13 +12,21 @@ import {
   inviteAdminSchema,
   InviteAdminInput,
 } from "@/schemas/inviteAdmin.schema";
-import { useAuth } from "@/context/AuthContext";
-import {
-  inviteAdminAction,
-  resendInviteAction,
-} from "@/services/admin.service";
+import { useAuth, AuthDispatcher } from "@/context/AuthContext";
+import { resendInviteAction } from "@/services/admin.service";
 
-export default function InviteAdminDialog() {
+type InviteUserDialogProps = {
+  label: string;
+  inviteAction: (
+    dispatcher: AuthDispatcher,
+    email: string,
+  ) => Promise<string>;
+};
+
+export default function InviteUserDialog({
+  label,
+  inviteAction,
+}: InviteUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [sentEmail, setSentEmail] = useState<string | null>(null);
   const [invitedUserId, setInvitedUserId] = useState<string | null>(null);
@@ -50,7 +58,7 @@ export default function InviteAdminDialog() {
   async function handleInvite({ email }: InviteAdminInput) {
     setSendError(null);
     try {
-      const userId = await inviteAdminAction(makeAuthorizedRequest, email);
+      const userId = await inviteAction(makeAuthorizedRequest, email);
       setSentEmail(email);
       setInvitedUserId(userId);
     } catch (err) {
@@ -66,7 +74,7 @@ export default function InviteAdminDialog() {
       if (invitedUserId) {
         await resendInviteAction(makeAuthorizedRequest, invitedUserId);
       } else if (sentEmail) {
-        const userId = await inviteAdminAction(makeAuthorizedRequest, sentEmail);
+        const userId = await inviteAction(makeAuthorizedRequest, sentEmail);
         setInvitedUserId(userId);
       }
       setSendError(null);
@@ -81,7 +89,7 @@ export default function InviteAdminDialog() {
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger render={<Button size="sm" variant="outline" />}>
         <Plus size={14} />
-        Invitar administrador
+        {label}
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
@@ -89,7 +97,7 @@ export default function InviteAdminDialog() {
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="text-lg font-semibold">
-                Invitar administrador
+                {label}
               </Dialog.Title>
               <Dialog.Description className="text-sm text-muted-foreground">
                 Se enviará un correo con el enlace de invitación.

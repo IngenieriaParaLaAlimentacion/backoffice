@@ -19,5 +19,5 @@ export default function InviteAdminPage({ searchParams }: InviteAdminPageProps) 
     );
   }
 
-  return <AcceptInviteForm token={token} />;
+  return <AcceptInviteForm token={token} roleLabel="administrador" />;
 }

@@ -15,9 +15,13 @@ import { acceptInviteAction } from "@/services/auth.service";
 
 type AcceptInviteFormProps = {
   token: string;
+  roleLabel: string;
 };
 
-export default function AcceptInviteForm({ token }: AcceptInviteFormProps) {
+export default function AcceptInviteForm({
+  token,
+  roleLabel,
+}: AcceptInviteFormProps) {
   const [accepted, setAccepted] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -72,11 +76,10 @@ export default function AcceptInviteForm({ token }: AcceptInviteFormProps) {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">
-            Te invitaron a ser administrador
+            Te invitaron a ser {roleLabel}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Aceptá la invitación para crear tu contraseña y acceder al panel de
-            administración.
+            Aceptá la invitación para crear tu contraseña y acceder al panel.
           </p>
         </div>
         <Button size="lg" className="w-full" onClick={() => setAccepted(true)}>
@@ -93,7 +96,7 @@ export default function AcceptInviteForm({ token }: AcceptInviteFormProps) {
           Creá tu contraseña
         </h1>
         <p className="text-sm text-muted-foreground">
-          Elegí una contraseña segura para tu cuenta de administrador.
+          Elegí una contraseña segura para tu cuenta de {roleLabel}.
         </p>
       </div>
       <form onSubmit={handleSubmit(handleAcceptInvite)}>

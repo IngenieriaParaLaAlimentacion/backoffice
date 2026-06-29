@@ -8,7 +8,11 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
-import InviteAdminDialog from "./InviteAdminDialog";
+import InviteUserDialog from "./InviteUserDialog";
+import {
+  inviteAdminAction,
+  inviteAnalystAction,
+} from "@/services/admin.service";
 
 const PAGE_SIZE = 20;
 
@@ -44,7 +48,18 @@ export default function RoleUsersPage({
               {USERS_PAGE.subtitle}
             </p>
           </div>
-          {role === "admin" && <InviteAdminDialog />}
+          {role === "admin" && (
+            <InviteUserDialog
+              label="Invitar administrador"
+              inviteAction={inviteAdminAction}
+            />
+          )}
+          {role === "analyst" && (
+            <InviteUserDialog
+              label="Invitar analista"
+              inviteAction={inviteAnalystAction}
+            />
+          )}
         </div>
 
         <Separator />
