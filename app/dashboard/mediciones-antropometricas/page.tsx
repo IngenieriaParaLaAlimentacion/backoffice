@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Dialog } from "@base-ui/react/dialog";
 import { useAuth } from "@/context/AuthContext";
 import {
   getSubjectEvolutionAction,
@@ -8,6 +9,7 @@ import {
 } from "@/services/measurement.service";
 import {
   AlertSeverity,
+  AlertType,
   MeasurementAlert,
   MeasurementListItem,
   MeasurementSortOrder,
@@ -18,13 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import MeasurementEvolutionChart from "@/components/MeasurementEvolutionChart";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  RefreshCw,
-  X,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, RefreshCw, X } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -48,6 +44,15 @@ const SEVERITY_RANK: Record<AlertSeverity, number> = {
   medium: 1,
 };
 
+const ALERT_TYPE_LABELS: Record<AlertType, string> = {
+  severely_wasted: "Emaciación severa",
+  wasted: "Emaciación",
+  overweight: "Sobrepeso",
+  obese: "Obesidad",
+  severe_underweight: "Bajo peso severo",
+  underweight: "Bajo peso",
+};
+
 const SEVERITY_BADGE_CLASS: Record<AlertSeverity, string> = {
   critical: "bg-destructive/15 text-destructive border-destructive/30",
   high: "bg-orange-500/15 text-orange-600 border-orange-500/30",
@@ -63,7 +68,8 @@ const SEVERITY_ROW_CLASS: Record<AlertSeverity, string> = {
 function topSeverity(alerts: MeasurementAlert[]): AlertSeverity | null {
   if (alerts.length === 0) return null;
   return alerts.reduce<AlertSeverity>(
-    (max, a) => (SEVERITY_RANK[a.severity] > SEVERITY_RANK[max] ? a.severity : max),
+    (max, a) =>
+      SEVERITY_RANK[a.severity] > SEVERITY_RANK[max] ? a.severity : max,
     alerts[0].severity,
   );
 }
@@ -93,9 +99,7 @@ function formatDateTime(value: string) {
   const day = String(d.getUTCDate()).padStart(2, "0");
   const month = String(d.getUTCMonth() + 1).padStart(2, "0");
   const year = d.getUTCFullYear();
-  const hours = String(d.getUTCHours()).padStart(2, "0");
-  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+  return `${day}/${month}/${year}`;
 }
 
 // "2023-01-15" -> "15/01/2023" without timezone shifts.
@@ -164,9 +168,13 @@ export default function MedicionesAntropometricasPage() {
     ) => {
       // Guard inconsistent ranges client-side (backend returns 400 otherwise).
       const minAge =
-        currentFilters.minAge !== "" ? Number(currentFilters.minAge) : undefined;
+        currentFilters.minAge !== ""
+          ? Number(currentFilters.minAge)
+          : undefined;
       const maxAge =
-        currentFilters.maxAge !== "" ? Number(currentFilters.maxAge) : undefined;
+        currentFilters.maxAge !== ""
+          ? Number(currentFilters.maxAge)
+          : undefined;
       if (minAge !== undefined && maxAge !== undefined && minAge > maxAge) {
         setMeasurements([]);
         setError("La edad mínima no puede ser mayor que la máxima.");
@@ -260,7 +268,7 @@ export default function MedicionesAntropometricasPage() {
 
   return (
     <div className="flex flex-1 gap-4 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
+      <Card className="flex-1 min-w-0 p-8 flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -385,10 +393,10 @@ export default function MedicionesAntropometricasPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="overflow-auto max-h-[70vh] rounded-lg border border-border">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50 text-muted-foreground text-left">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-muted text-muted-foreground text-left [&>th]:sticky [&>th]:top-0">
                     <th className="px-4 py-3 font-medium">Peso (kg)</th>
                     <th className="px-4 py-3 font-medium">Talla (cm)</th>
                     <th className="px-4 py-3 font-medium">IMC</th>
@@ -415,9 +423,7 @@ export default function MedicionesAntropometricasPage() {
                               : "bg-card"
                         }`}
                       >
-                        <td className="px-4 py-3 font-medium">
-                          {m.weight_kg}
-                        </td>
+                        <td className="px-4 py-3 font-medium">{m.weight_kg}</td>
                         <td className="px-4 py-3">{m.height_cm}</td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {m.bmi}
@@ -432,27 +438,27 @@ export default function MedicionesAntropometricasPage() {
                             ({m.subject.dni})
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          {m.establishment.name}
-                          <span className="block text-xs text-muted-foreground">
-                            {m.establishment.city}, {m.establishment.province}
-                          </span>
-                        </td>
+                        <td className="px-4 py-3">{m.establishment.name}</td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {m.responsible.name} {m.responsible.last_name}
                         </td>
                         <td className="px-4 py-3">
                           {m.alerts.length === 0 ? (
-                            <span className="text-muted-foreground">—</span>
+                            <div className="flex justify-center">
+                              <span className="inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-600">
+                                Normal
+                              </span>
+                            </div>
                           ) : (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap justify-center gap-1">
                               {m.alerts.map((a, i) => (
                                 <span
                                   key={`${a.alert_type}-${i}`}
                                   title={a.detail}
                                   className={`inline-block rounded-full border px-2 py-0.5 text-xs ${SEVERITY_BADGE_CLASS[a.severity]}`}
                                 >
-                                  {a.alert_type}
+                                  {ALERT_TYPE_LABELS[a.alert_type] ??
+                                    a.alert_type}
                                 </span>
                               ))}
                             </div>
@@ -493,67 +499,80 @@ export default function MedicionesAntropometricasPage() {
       </Card>
 
       {/* Evolution panel (CA4) */}
-      {selectedSubjectId && (
-        <Card className="w-[34rem] shrink-0 p-6 flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="text-xl font-bold tracking-tight">
-              {evolution
-                ? `${evolution.subject.name} ${evolution.subject.last_name}`
-                : "Evolución"}
-            </h2>
-            <Button size="sm" variant="ghost" onClick={closeDetail}>
-              <X size={16} />
-            </Button>
-          </div>
-
-          <Separator />
-
-          {detailLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2
-                className="animate-spin text-muted-foreground"
-                size={28}
-              />
+      <Dialog.Root
+        open={!!selectedSubjectId}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) closeDetail();
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+          <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-2">
+              <Dialog.Title className="text-xl font-bold tracking-tight">
+                {evolution
+                  ? `${evolution.subject.name} ${evolution.subject.last_name}`
+                  : "Evolución"}
+              </Dialog.Title>
+              <Dialog.Close
+                render={<button type="button" />}
+                className="text-muted-foreground hover:text-foreground mt-0.5"
+              >
+                <X size={18} />
+              </Dialog.Close>
             </div>
-          ) : detailError ? (
-            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-              {detailError}
-            </div>
-          ) : evolution ? (
-            <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <DetailField
-                  label="Documento de identidad"
-                  value={evolution.subject.dni}
-                />
-                <DetailField
-                  label="Sexo"
-                  value={
-                    evolution.subject.sex === "male" ? "Masculino" : "Femenino"
-                  }
-                />
-                <DetailField
-                  label="Fecha de nacimiento"
-                  value={formatDate(evolution.subject.birth_date)}
-                />
-                <DetailField
-                  label="Mediciones"
-                  value={evolution.points.length}
+
+            <Separator />
+
+            {detailLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2
+                  className="animate-spin text-muted-foreground"
+                  size={28}
                 />
               </div>
-
-              <Separator />
-
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium">
-                  Evolución de peso y talla
-                </span>
-                <MeasurementEvolutionChart points={evolution.points} />
+            ) : detailError ? (
+              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+                {detailError}
               </div>
-            </div>
-          ) : null}
-        </Card>
-      )}
+            ) : evolution ? (
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <DetailField
+                    label="Documento de identidad"
+                    value={evolution.subject.dni}
+                  />
+                  <DetailField
+                    label="Sexo"
+                    value={
+                      evolution.subject.sex === "male"
+                        ? "Masculino"
+                        : "Femenino"
+                    }
+                  />
+                  <DetailField
+                    label="Fecha de nacimiento"
+                    value={formatDate(evolution.subject.birth_date)}
+                  />
+                  <DetailField
+                    label="Mediciones"
+                    value={evolution.points.length}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium">
+                    Evolución de peso y talla
+                  </span>
+                  <MeasurementEvolutionChart points={evolution.points} />
+                </div>
+              </div>
+            ) : null}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

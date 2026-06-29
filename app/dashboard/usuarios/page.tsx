@@ -22,10 +22,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
           variant="ghost"
           className="text-muted-foreground hover:text-foreground gap-1"
         >
-          <Link href={`/dashboard/usuarios/${role}`}>
-            {USERS_PAGE.viewAll}
-            <ChevronRight size={16} />
-          </Link>
+          <Link href={`/dashboard/usuarios/${role}`}>{USERS_PAGE.viewAll}</Link>
         </Button>
       </div>
       {error && (
