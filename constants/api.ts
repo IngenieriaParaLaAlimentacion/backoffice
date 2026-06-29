@@ -27,6 +27,8 @@ export const INVITE_ADMIN_ENDPOINT = "/api/v1/admin/invite-admin";
 export const INVITE_ANALYST_ENDPOINT = "/api/v1/admin/invite-analyst";
 export const RESEND_INVITE_ENDPOINT = (userId: string) =>
   `/api/v1/admin/users/${userId}/resend-invite`;
+export const GET_USER_ENDPOINT = (userId: string) =>
+  `/api/v1/admin/users/${userId}`;
 
 // --- Establishments Endpoints ---
 

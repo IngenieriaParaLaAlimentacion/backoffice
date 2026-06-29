@@ -1,6 +1,7 @@
 import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENTS_ENDPOINT,
+  GET_USER_ENDPOINT,
   INVITE_ADMIN_ENDPOINT,
   INVITE_ANALYST_ENDPOINT,
   LIST_USERS_ENDPOINT,
@@ -8,6 +9,7 @@ import {
   RESEND_INVITE_ENDPOINT,
 } from "@/constants/api";
 import {
+  AdminUserDetail,
   EstablishmentAccessRequest,
   InviteAdminResponse,
   PaginatedUsersResponse,
@@ -43,6 +45,19 @@ export const listUsersAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   return res.data as PaginatedUsersResponse;
+};
+
+export const getUserAction = async (
+  dispatcher: AuthDispatcher,
+  userId: string,
+): Promise<AdminUserDetail> => {
+  const res = await dispatcher<undefined, AdminUserDetail>(
+    GET_USER_ENDPOINT(userId),
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+
+  return res.data as AdminUserDetail;
 };
 
 export const approveEstablishmentsAction = async (

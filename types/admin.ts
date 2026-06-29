@@ -29,6 +29,16 @@ export type UserAdminView = {
   establishments: EstablishmentResponse[];
 };
 
+export type AdminUserDetail = {
+  id: string;
+  name: string;
+  email: string;
+  last_name?: string;
+  role?: string;
+  status?: string;
+  establishments?: EstablishmentResponse[];
+};
+
 export type PaginatedUsersResponse = {
   items: UserAdminView[];
   total: number;

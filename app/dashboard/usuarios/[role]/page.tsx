@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -9,6 +9,7 @@ import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
 import InviteUserDialog from "./InviteUserDialog";
+import UserDetailPanel from "./UserDetailPanel";
 import {
   inviteAdminAction,
   inviteAnalystAction,
@@ -29,6 +30,8 @@ export default function RoleUsersPage({
     role,
     PAGE_SIZE,
   );
+
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   return (
     <div className="flex flex-1 p-4">
@@ -99,7 +102,8 @@ export default function RoleUsersPage({
                   {users.map((user) => (
                     <tr
                       key={user.id}
-                      className="bg-card hover:bg-muted/30 transition-colors"
+                      onClick={() => setSelectedUserId(user.id)}
+                      className="bg-card hover:bg-muted/30 transition-colors cursor-pointer"
                     >
                       <td className="px-4 py-3 font-medium">
                         {user.name} {user.last_name}
@@ -154,6 +158,11 @@ export default function RoleUsersPage({
           </>
         )}
       </Card>
+
+      <UserDetailPanel
+        userId={selectedUserId}
+        onClose={() => setSelectedUserId(null)}
+      />
     </div>
   );
 }
