@@ -1,7 +1,7 @@
 export const ROLE_SECTIONS = [
   { role: "admin", label: "Administradores" },
-  { role: "establishment_manager", label: "Relevadores" },
-  { role: "professional", label: "Profesionales" },
+  { role: "field_worker", label: "Relevadores" },
+  { role: "analyst", label: "Analistas" },
 ] as const;
 
 export const USERS_PAGE = {

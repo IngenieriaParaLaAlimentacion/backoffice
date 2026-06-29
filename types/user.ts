@@ -17,6 +17,6 @@ export type ProfileResponse = {
 export const ROLE_LABELS: Record<string, string> = {
   superadmin: "Superadministrador",
   admin: "Administrador",
-  professional: "Profesional",
-  establishment_manager: "Encargado de establecimiento",
+  analyst: "Analista",
+  field_worker: "Relevador",
 };
