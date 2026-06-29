@@ -3,11 +3,11 @@ export const API_BASE_URL = "";
 // --- Auth Endpoints ---
 
 export const ADMIN_LOGIN_ENDPOINT = "/api/v1/auth/login";
-export const INVITE_ADMIN_ENDPOINT = "/api/v1/auth/invite-admin";
 export const ACCEPT_INVITE_ENDPOINT = "/api/v1/auth/invite-admin/confirm";
 export const REFRESH_ENDPOINT = "/api/v1/auth/refresh";
 export const RESET_PASSWORD_ENDPOINT = "/api/v1/auth/password-recovery/confirm";
-export const FORGOT_PASSWORD_ENDPOINT = "/api/v1/auth/password-recovery/request";
+export const FORGOT_PASSWORD_ENDPOINT =
+  "/api/v1/auth/password-recovery/request";
 export const LOGOUT_ENDPOINT = "/api/v1/auth/logout";
 export const REGISTER_MANAGER_ENDPOINT =
   "/api/v1/auth/register/establishment-manager";
@@ -23,6 +23,7 @@ export const REJECT_MANAGER_ENDPOINT = (userId: string) =>
   `/api/v1/admin/managers/${userId}/reject`;
 export const ADMIN_SUBJECT_DETAIL_ENDPOINT = (subjectId: string) =>
   `/api/v1/admin/subjects/${subjectId}`;
+export const INVITE_ADMIN_ENDPOINT = "/api/v1/admin/invite-admin";
 
 // --- Establishments Endpoints ---
 
