@@ -11,6 +11,7 @@ import {
   Ruler,
 } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 import SideBarItem from "./SideBarItem";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -20,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 const DRAWER_OPEN_WIDTH = 220;
 const DRAWER_CLOSED_WIDTH = 60;
 
-const navItems = [
+export const navItems = [
   {
     label: "Dashboard",
     href: "/dashboard",
@@ -81,6 +82,16 @@ export default function SideBar() {
         >
           <Menu size={20} />
         </button>
+        {isSidebarOpen && (
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={32}
+            height={32}
+            priority
+            className="ml-auto h-8 w-8 shrink-0 object-contain"
+          />
+        )}
       </div>
 
       <Separator />
