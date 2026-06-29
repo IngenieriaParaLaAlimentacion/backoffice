@@ -4,9 +4,11 @@ import {
   INVITE_ADMIN_ENDPOINT,
   LIST_USERS_ENDPOINT,
   REJECT_ESTABLISHMENTS_ENDPOINT,
+  RESEND_INVITE_ENDPOINT,
 } from "@/constants/api";
 import {
   EstablishmentAccessRequest,
+  InviteAdminResponse,
   PaginatedUsersResponse,
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
@@ -62,12 +64,26 @@ export const approveEstablishmentsAction = async (
 export const inviteAdminAction = async (
   dispatcher: AuthDispatcher,
   email: string,
-) => {
+): Promise<string> => {
   const body: ForgotPasswordRequest = { email };
 
-  const res = await dispatcher<ForgotPasswordRequest, undefined>(
+  const res = await dispatcher<ForgotPasswordRequest, InviteAdminResponse>(
     INVITE_ADMIN_ENDPOINT,
     { method: "POST", body },
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+
+  return (res.data as InviteAdminResponse).user_id;
+};
+
+export const resendInviteAction = async (
+  dispatcher: AuthDispatcher,
+  userId: string,
+) => {
+  const res = await dispatcher<undefined, undefined>(
+    RESEND_INVITE_ENDPOINT(userId),
+    { method: "PATCH" },
   );
 
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);

@@ -13,19 +13,23 @@ import {
   InviteAdminInput,
 } from "@/schemas/inviteAdmin.schema";
 import { useAuth } from "@/context/AuthContext";
-import { inviteAdminAction } from "@/services/admin.service";
+import {
+  inviteAdminAction,
+  resendInviteAction,
+} from "@/services/admin.service";
 
 export default function InviteAdminDialog() {
   const [open, setOpen] = useState(false);
   const [sentEmail, setSentEmail] = useState<string | null>(null);
+  const [invitedUserId, setInvitedUserId] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [isResending, setIsResending] = useState(false);
   const { makeAuthorizedRequest } = useAuth();
 
   const {
-    formState: { isSubmitting, isValid, errors },
+    formState: { isSubmitting, isValid },
     control,
     handleSubmit,
-    setError,
-    clearErrors,
     reset,
   } = useForm<InviteAdminInput>({
     resolver: zodResolver(inviteAdminSchema),
@@ -38,15 +42,38 @@ export default function InviteAdminDialog() {
     if (!nextOpen) {
       reset();
       setSentEmail(null);
+      setInvitedUserId(null);
+      setSendError(null);
     }
   }
 
   async function handleInvite({ email }: InviteAdminInput) {
+    setSendError(null);
     try {
-      await inviteAdminAction(makeAuthorizedRequest, email);
+      const userId = await inviteAdminAction(makeAuthorizedRequest, email);
       setSentEmail(email);
+      setInvitedUserId(userId);
     } catch (err) {
-      setError("form" as never, { message: (err as Error).message });
+      setSentEmail(email);
+      setInvitedUserId(null);
+      setSendError((err as Error).message);
+    }
+  }
+
+  async function handleResend() {
+    setIsResending(true);
+    try {
+      if (invitedUserId) {
+        await resendInviteAction(makeAuthorizedRequest, invitedUserId);
+      } else if (sentEmail) {
+        const userId = await inviteAdminAction(makeAuthorizedRequest, sentEmail);
+        setInvitedUserId(userId);
+      }
+      setSendError(null);
+    } catch (err) {
+      setSendError((err as Error).message);
+    } finally {
+      setIsResending(false);
     }
   }
 
@@ -77,12 +104,34 @@ export default function InviteAdminDialog() {
           </div>
 
           {sentEmail ? (
-            <Alert>
-              <AlertDescription>
-                Invitación enviada a{" "}
-                <span className="font-medium">{sentEmail}</span>.
-              </AlertDescription>
-            </Alert>
+            <div className="flex flex-col gap-3">
+              {sendError ? (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Hubo un problema al enviar la invitación a{" "}
+                    <span className="font-medium">{sentEmail}</span>. Podés
+                    reintentar.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert>
+                  <AlertDescription>
+                    Invitación enviada a{" "}
+                    <span className="font-medium">{sentEmail}</span>.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                size="lg"
+                disabled={isResending}
+                onClick={handleResend}
+              >
+                {isResending ? "Reenviando..." : "Reenviar invitación"}
+              </Button>
+            </div>
           ) : (
             <form onSubmit={handleSubmit(handleInvite)}>
               <div className="flex flex-col gap-3">
@@ -93,18 +142,7 @@ export default function InviteAdminDialog() {
                   required
                   placeholder="admin@ejemplo.com"
                   type="email"
-                  onChange={() => clearErrors("form" as never)}
                 />
-                {(errors as Record<string, { message?: string }>).form && (
-                  <Alert variant="destructive">
-                    <AlertDescription>
-                      {
-                        (errors as Record<string, { message?: string }>).form
-                          ?.message
-                      }
-                    </AlertDescription>
-                  </Alert>
-                )}
                 <Button
                   type="submit"
                   disabled={isSubmitting || !isValid}

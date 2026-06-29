@@ -40,3 +40,7 @@ export type PaginatedUsersResponse = {
 export type EstablishmentAccessRequest = {
   establishment_ids: string[];
 };
+
+export type InviteAdminResponse = {
+  user_id: string;
+};
