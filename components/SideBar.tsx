@@ -8,6 +8,7 @@ import {
   Users,
   User,
   Building2,
+  Ruler,
 } from "lucide-react";
 import { useState } from "react";
 import SideBarItem from "./SideBarItem";
@@ -44,6 +45,11 @@ const navItems = [
     label: "Sujetos",
     href: "/dashboard/sujetos",
     icon: <Users size={20} />,
+  },
+  {
+    label: "Mediciones",
+    href: "/dashboard/mediciones-antropometricas",
+    icon: <Ruler size={20} />,
   },
 ];
 

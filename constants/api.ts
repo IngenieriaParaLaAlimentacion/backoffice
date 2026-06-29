@@ -38,6 +38,12 @@ export const SUBJECTS_ENDPOINT = "/api/v1/subjects";
 export const SUBJECT_ENDPOINT = (subjectId: string) =>
   `/api/v1/subjects/${subjectId}`;
 
+// --- Measurements Endpoints ---
+
+export const MEASUREMENTS_ENDPOINT = "/api/v1/measurements";
+export const SUBJECT_EVOLUTION_ENDPOINT = (subjectId: string) =>
+  `/api/v1/subjects/${subjectId}/measurements/evolution`;
+
 // --- Users Endpoints ---
 
 export const ME_ENDPOINT = "/api/v1/users/me";
