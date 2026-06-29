@@ -10,21 +10,21 @@ export const FORGOT_PASSWORD_ENDPOINT =
   "/api/v1/auth/password-recovery/request";
 export const LOGOUT_ENDPOINT = "/api/v1/auth/logout";
 export const REGISTER_FIELD_WORKER_ENDPOINT =
-  "/api/v2/auth/register/field-worker";
+  "/api/v1/auth/register/field-worker";
 
 // --- Admin Endpoints ---
 
 export const LIST_USERS_ENDPOINT = "/api/v1/admin/users";
 export const APPROVE_ESTABLISHMENTS_ENDPOINT = (userId: string) =>
-  `/api/v2/admin/field-worker/${userId}/establishments/approve`;
+  `/api/v1/admin/field-worker/${userId}/establishments/approve`;
 export const REJECT_ESTABLISHMENTS_ENDPOINT = (userId: string) =>
-  `/api/v2/admin/field-worker/${userId}/establishments/reject`;
+  `/api/v1/admin/field-worker/${userId}/establishments/reject`;
 export const REJECT_FIELD_WORKER_ENDPOINT = (userId: string) =>
-  `/api/v2/admin/field-worker/${userId}/reject`;
+  `/api/v1/admin/field-worker/${userId}/reject`;
 export const ADMIN_SUBJECT_DETAIL_ENDPOINT = (subjectId: string) =>
   `/api/v1/admin/subjects/${subjectId}`;
 export const INVITE_ADMIN_ENDPOINT = "/api/v1/admin/invite-admin";
-export const INVITE_ANALYST_ENDPOINT = "/api/v2/admin/invite-analyst";
+export const INVITE_ANALYST_ENDPOINT = "/api/v1/admin/invite-analyst";
 export const RESEND_INVITE_ENDPOINT = (userId: string) =>
   `/api/v1/admin/users/${userId}/resend-invite`;
 
