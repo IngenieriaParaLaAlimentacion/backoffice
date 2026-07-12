@@ -3,7 +3,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, X } from "lucide-react";
 import { useUserDetail } from "@/hooks/useUserDetail";
-import { ROLE_LABELS } from "@/types/user";
+import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
 
 type UserDetailPanelProps = {
   userId: string | null;
@@ -84,6 +84,46 @@ export default function UserDetailPanel({
                   label="Rol"
                   value={ROLE_LABELS[user.role] ?? user.role}
                 />
+              )}
+              {user.status && (
+                <ProfileField
+                  label="Estado"
+                  value={STATUS_LABELS[user.status] ?? user.status}
+                />
+              )}
+              {user.contact_phone && (
+                <ProfileField
+                  label="Teléfono de contacto"
+                  value={user.contact_phone}
+                />
+              )}
+              {user.locality && (
+                <ProfileField label="Localidad" value={user.locality} />
+              )}
+              {user.description && (
+                <ProfileField label="Descripción" value={user.description} />
+              )}
+              {user.establishments && user.establishments.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted-foreground">
+                    Establecimientos
+                  </span>
+                  <div className="flex flex-col gap-2">
+                    {user.establishments.map((est) => (
+                      <div
+                        key={est.id}
+                        className="rounded-md border border-border px-3 py-2"
+                      >
+                        <span className="text-sm font-medium">{est.name}</span>
+                        {est.formatted_address && (
+                          <span className="block text-xs text-muted-foreground">
+                            {est.formatted_address}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           ) : null}

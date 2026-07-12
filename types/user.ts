@@ -20,3 +20,11 @@ export const ROLE_LABELS: Record<string, string> = {
   analyst: "Analista",
   field_worker: "Relevador",
 };
+
+export const STATUS_LABELS: Record<string, string> = {
+  active: "Activo",
+  inactive: "Inactivo",
+  pending: "Pendiente",
+  invited: "Invitado",
+  suspended: "Suspendido",
+};

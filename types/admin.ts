@@ -37,6 +37,9 @@ export type AdminUserDetail = {
   role?: string;
   status?: string;
   establishments?: EstablishmentResponse[];
+  locality?: string;
+  description?: string;
+  contact_phone?: string;
 };
 
 export type PaginatedUsersResponse = {
