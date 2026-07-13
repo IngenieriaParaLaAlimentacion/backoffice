@@ -14,6 +14,14 @@ import {
   makeCreateEstablishmentHandler,
   makeListEstablishmentsHandler,
 } from "@/mocks/handlers/establishment";
+import {
+  makeCreateSurveyHandler,
+  makeDuplicateSurveyHandler,
+  makeFiesTemplateHandler,
+  makeGetSurveyHandler,
+  makeListSurveysHandler,
+  makeUpdateSurveyHandler,
+} from "@/mocks/handlers/survey";
 
 export const handlers = [
   makeLoginHandler(),
@@ -26,4 +34,10 @@ export const handlers = [
   makeRejectEstablishmentsHandler(),
   makeListEstablishmentsHandler(),
   makeCreateEstablishmentHandler(),
+  makeFiesTemplateHandler(),
+  makeDuplicateSurveyHandler(),
+  makeUpdateSurveyHandler(),
+  makeCreateSurveyHandler(),
+  makeListSurveysHandler(),
+  makeGetSurveyHandler(),
 ];

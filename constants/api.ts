@@ -46,6 +46,17 @@ export const MEASUREMENTS_ENDPOINT = "/api/v1/measurements";
 export const SUBJECT_EVOLUTION_ENDPOINT = (subjectId: string) =>
   `/api/v1/subjects/${subjectId}/measurements/evolution`;
 
+// --- Surveys Endpoints ---
+
+export const SURVEYS_ENDPOINT = "/api/v1/surveys";
+export const SURVEY_ENDPOINT = (surveyId: string) =>
+  `/api/v1/surveys/${surveyId}`;
+export const FIES_TEMPLATE_ENDPOINT = "/api/v1/surveys/templates/fies";
+export const DUPLICATE_SURVEY_ENDPOINT = (surveyId: string) =>
+  `/api/v1/surveys/${surveyId}/duplicate`;
+export const SURVEY_STATUS_ENDPOINT = (surveyId: string) =>
+  `/api/v1/surveys/${surveyId}/status`;
+
 // --- Users Endpoints ---
 
 export const ME_ENDPOINT = "/api/v1/users/me";
