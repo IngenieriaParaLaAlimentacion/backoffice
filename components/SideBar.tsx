@@ -5,6 +5,7 @@ import {
   LogOut,
   LayoutDashboard,
   ClipboardList,
+  ListChecks,
   Users,
   User,
   Building2,
@@ -51,6 +52,11 @@ export const navItems = [
     label: "Mediciones",
     href: "/dashboard/mediciones-antropometricas",
     icon: <Ruler size={20} />,
+  },
+  {
+    label: "Encuestas",
+    href: "/dashboard/encuestas",
+    icon: <ListChecks size={20} />,
   },
 ];
 
