@@ -35,7 +35,7 @@ export default function RoleUsersPage({
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <Link
           href="/dashboard/usuarios"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
@@ -44,7 +44,7 @@ export default function RoleUsersPage({
           Usuarios
         </Link>
 
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">{label}</h1>
             <p className="text-muted-foreground text-sm">

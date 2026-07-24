@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-8">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex items-center gap-4">
             <Image

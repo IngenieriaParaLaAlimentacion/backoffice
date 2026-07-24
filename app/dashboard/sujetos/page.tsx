@@ -182,8 +182,8 @@ export default function SujetosPage() {
 
   return (
     <div className="flex flex-1 gap-4 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">Sujetos</h1>
             <p className="text-muted-foreground text-sm">Sujetos registrados</p>
@@ -202,9 +202,9 @@ export default function SujetosPage() {
 
         {/* Filters (CA2) + sorting (CA3) */}
         <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Buscar</label>
-            <div className="relative w-64">
+            <div className="relative w-full sm:w-64">
               <Search
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                 size={16}
@@ -218,7 +218,7 @@ export default function SujetosPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
               Fecha de nacimiento
             </label>
@@ -226,11 +226,11 @@ export default function SujetosPage() {
               type="date"
               value={filters.birthDate}
               onChange={(e) => updateFilter("birthDate", e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
               Último relevamiento
             </label>
@@ -238,11 +238,11 @@ export default function SujetosPage() {
               type="date"
               value={filters.lastSurveyDate}
               onChange={(e) => updateFilter("lastSurveyDate", e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Ordenar por</label>
             <div className="flex items-center gap-2">
               <select
@@ -251,7 +251,7 @@ export default function SujetosPage() {
                   setSortBy(e.target.value as SubjectSortField);
                   setPage(1);
                 }}
-                className={`${SELECT_CLASS} w-56`}
+                className={`${SELECT_CLASS} flex-1 sm:w-56 sm:flex-none`}
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>

@@ -268,8 +268,8 @@ export default function MedicionesAntropometricasPage() {
 
   return (
     <div className="flex flex-1 gap-4 p-4">
-      <Card className="flex-1 min-w-0 p-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+      <Card className="flex-1 min-w-0 p-4 md:p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">
               Mediciones antropométricas
@@ -292,47 +292,47 @@ export default function MedicionesAntropometricasPage() {
 
         {/* Filters (CA3 + Notes) */}
         <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Ciudad</label>
             <Input
               value={filters.city}
               onChange={(e) => updateFilter("city", e.target.value)}
               placeholder="Ciudad"
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Provincia</label>
             <Input
               value={filters.province}
               onChange={(e) => updateFilter("province", e.target.value)}
               placeholder="Provincia"
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Desde</label>
             <Input
               type="date"
               value={filters.measuredFrom}
               onChange={(e) => updateFilter("measuredFrom", e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Hasta</label>
             <Input
               type="date"
               value={filters.measuredTo}
               onChange={(e) => updateFilter("measuredTo", e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Edad mín.</label>
             <Input
               type="number"
@@ -341,11 +341,11 @@ export default function MedicionesAntropometricasPage() {
               value={filters.minAge}
               onChange={(e) => updateFilter("minAge", e.target.value)}
               placeholder="0"
-              className="w-24"
+              className="w-full sm:w-24"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Edad máx.</label>
             <Input
               type="number"
@@ -354,11 +354,11 @@ export default function MedicionesAntropometricasPage() {
               value={filters.maxAge}
               onChange={(e) => updateFilter("maxAge", e.target.value)}
               placeholder="150"
-              className="w-24"
+              className="w-full sm:w-24"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Ordenar por</label>
             <select
               value={sortOrder}
@@ -366,7 +366,7 @@ export default function MedicionesAntropometricasPage() {
                 setSortOrder(e.target.value as MeasurementSortOrder);
                 setPage(1);
               }}
-              className={`${SELECT_CLASS} w-52`}
+              className={`${SELECT_CLASS} w-full sm:w-52`}
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
