@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Dialog } from "@base-ui/react/dialog";
 import { useAuth } from "@/context/AuthContext";
 import {
   getSubjectAction,
@@ -181,7 +182,7 @@ export default function SujetosPage() {
   };
 
   return (
-    <div className="flex flex-1 gap-4 p-4">
+    <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
@@ -363,57 +364,68 @@ export default function SujetosPage() {
       </Card>
 
       {/* Detail panel (CA4) */}
-      {selectedId && (
-        <Card className="w-[28rem] shrink-0 p-6 flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="text-xl font-bold tracking-tight">
-              {detail ? `${detail.name} ${detail.last_name}` : "Sujeto"}
-            </h2>
-            <Button size="sm" variant="ghost" onClick={closeDetail}>
-              <X size={16} />
-            </Button>
-          </div>
+      <Dialog.Root
+        open={!!selectedId}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) closeDetail();
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+          <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-2">
+              <Dialog.Title className="text-xl font-bold tracking-tight">
+                {detail ? `${detail.name} ${detail.last_name}` : "Sujeto"}
+              </Dialog.Title>
+              <Dialog.Close
+                render={<button type="button" />}
+                className="text-muted-foreground hover:text-foreground mt-0.5"
+              >
+                <X size={18} />
+              </Dialog.Close>
+            </div>
 
-          <Separator />
+            <Separator />
 
-          {detailLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2
-                className="animate-spin text-muted-foreground"
-                size={28}
-              />
-            </div>
-          ) : detailError ? (
-            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-              {detailError}
-            </div>
-          ) : detail ? (
-            <div className="flex flex-col gap-4">
-              <DetailField label="Documento de identidad" value={detail.dni} />
-              <DetailField
-                label="Sexo"
-                value={detail.sex === "male" ? "Masculino" : "Femenino"}
-              />
-              <DetailField
-                label="Fecha de nacimiento"
-                value={formatDate(detail.birth_date)}
-              />
-              <DetailField
-                label="Población rural"
-                value={detail.is_rural ? "Sí" : "No"}
-              />
-              <DetailField
-                label="Población indígena"
-                value={detail.is_indigenous ? "Sí" : "No"}
-              />
-              <DetailField
-                label="Fecha de último relevamiento"
-                value={<span className="text-muted-foreground">—</span>}
-              />
-            </div>
-          ) : null}
-        </Card>
-      )}
+            {detailLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2
+                  className="animate-spin text-muted-foreground"
+                  size={28}
+                />
+              </div>
+            ) : detailError ? (
+              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+                {detailError}
+              </div>
+            ) : detail ? (
+              <div className="flex flex-col gap-4">
+                <DetailField label="Documento de identidad" value={detail.dni} />
+                <DetailField
+                  label="Sexo"
+                  value={detail.sex === "male" ? "Masculino" : "Femenino"}
+                />
+                <DetailField
+                  label="Fecha de nacimiento"
+                  value={formatDate(detail.birth_date)}
+                />
+                <DetailField
+                  label="Población rural"
+                  value={detail.is_rural ? "Sí" : "No"}
+                />
+                <DetailField
+                  label="Población indígena"
+                  value={detail.is_indigenous ? "Sí" : "No"}
+                />
+                <DetailField
+                  label="Fecha de último relevamiento"
+                  value={<span className="text-muted-foreground">—</span>}
+                />
+              </div>
+            ) : null}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

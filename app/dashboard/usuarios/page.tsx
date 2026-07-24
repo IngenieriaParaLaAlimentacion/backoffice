@@ -98,7 +98,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
 
 export default function UsuariosPage() {
   return (
-    <div className="flex flex-1 p-4 overflow-y-auto">
+    <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">

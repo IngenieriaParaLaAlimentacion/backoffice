@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Dialog } from "@base-ui/react/dialog";
 import { useAuth } from "@/context/AuthContext";
 import {
   approveEstablishmentsAction,
@@ -122,7 +123,7 @@ export default function SolicitudesPage() {
   };
 
   return (
-    <div className="flex flex-1 gap-4 p-4">
+    <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">Solicitudes</h1>
@@ -221,93 +222,109 @@ export default function SolicitudesPage() {
         )}
       </Card>
 
-      {selectedUser && (
-        <Card className="w-[28rem] shrink-0 p-6 flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-bold tracking-tight">
-                {selectedUser.name} {selectedUser.last_name}
-              </h2>
-              <p className="text-muted-foreground text-sm">{selectedUser.email}</p>
+      <Dialog.Root
+        open={!!selectedUser}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) closeReview();
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+          <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-col gap-1">
+                <Dialog.Title className="text-xl font-bold tracking-tight">
+                  {selectedUser
+                    ? `${selectedUser.name} ${selectedUser.last_name}`
+                    : "Solicitud"}
+                </Dialog.Title>
+                <Dialog.Description className="text-muted-foreground text-sm">
+                  {selectedUser?.email}
+                </Dialog.Description>
+              </div>
+              <Dialog.Close
+                render={<button type="button" />}
+                className="text-muted-foreground hover:text-foreground mt-0.5"
+              >
+                <X size={18} />
+              </Dialog.Close>
             </div>
-            <Button size="sm" variant="ghost" onClick={closeReview}>
-              <X size={16} />
-            </Button>
-          </div>
 
-          <Separator />
+            <Separator />
 
-          <p className="text-muted-foreground text-sm">
-            Establecimientos a los que solicita acceso. Acepta o rechaza cada uno y
-            presiona Aplicar.
-          </p>
+            <p className="text-muted-foreground text-sm">
+              Establecimientos a los que solicita acceso. Acepta o rechaza cada uno y
+              presiona Aplicar.
+            </p>
 
-          {applyError && (
-            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-              {applyError}
-            </div>
-          )}
-
-          <div className="flex flex-col gap-3 overflow-y-auto">
-            {selectedUser.establishments.map((est) => {
-              const decision = decisions[est.id];
-              return (
-                <div
-                  key={est.id}
-                  className="rounded-lg border border-border p-3 flex flex-col gap-2"
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium text-sm">{est.name}</span>
-                    <span className="text-muted-foreground text-xs">
-                      {est.formatted_address}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant={decision === "approve" ? "default" : "outline"}
-                      className="flex-1"
-                      disabled={isApplying}
-                      onClick={() => setDecision(est.id, "approve")}
-                    >
-                      <Check size={14} />
-                      Aceptar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className={`flex-1 ${
-                        decision === "reject"
-                          ? "bg-destructive/10 text-destructive border-destructive/50 hover:bg-destructive/20 hover:text-destructive"
-                          : "text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                      }`}
-                      disabled={isApplying}
-                      onClick={() => setDecision(est.id, "reject")}
-                    >
-                      <X size={14} />
-                      Rechazar
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <Separator />
-
-          <Button
-            disabled={!allDecided || isApplying}
-            onClick={handleApply}
-          >
-            {isApplying ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Check size={16} />
+            {applyError && (
+              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+                {applyError}
+              </div>
             )}
-            Aplicar
-          </Button>
-        </Card>
-      )}
+
+            {selectedUser && (
+              <>
+                <div className="flex flex-col gap-3">
+                  {selectedUser.establishments.map((est) => {
+                    const decision = decisions[est.id];
+                    return (
+                      <div
+                        key={est.id}
+                        className="rounded-lg border border-border p-3 flex flex-col gap-2"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">{est.name}</span>
+                          <span className="text-muted-foreground text-xs">
+                            {est.formatted_address}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant={decision === "approve" ? "default" : "outline"}
+                            className="flex-1"
+                            disabled={isApplying}
+                            onClick={() => setDecision(est.id, "approve")}
+                          >
+                            <Check size={14} />
+                            Aceptar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className={`flex-1 ${
+                              decision === "reject"
+                                ? "bg-destructive/10 text-destructive border-destructive/50 hover:bg-destructive/20 hover:text-destructive"
+                                : "text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                            }`}
+                            disabled={isApplying}
+                            onClick={() => setDecision(est.id, "reject")}
+                          >
+                            <X size={14} />
+                            Rechazar
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <Separator />
+
+                <Button disabled={!allDecided || isApplying} onClick={handleApply}>
+                  {isApplying ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Check size={16} />
+                  )}
+                  Aplicar
+                </Button>
+              </>
+            )}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
