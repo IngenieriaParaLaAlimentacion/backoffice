@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import Link from "next/link";
 import { useUsers } from "@/hooks/useUsers";
