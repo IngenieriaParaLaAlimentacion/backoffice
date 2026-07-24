@@ -393,7 +393,7 @@ export default function MedicionesAntropometricasPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-auto max-h-[70vh] rounded-lg border border-border">
+            <div className="hidden overflow-auto max-h-[70vh] rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-muted text-muted-foreground text-left [&>th]:sticky [&>th]:top-0">
@@ -469,6 +469,83 @@ export default function MedicionesAntropometricasPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col gap-2 md:hidden">
+              {measurements.map((m) => {
+                const severity = topSeverity(m.alerts);
+                const isSelected = selectedSubjectId === m.subject.id;
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => openEvolution(m.subject.id)}
+                    className={`flex cursor-pointer flex-col gap-2 rounded-lg border border-border p-3 transition-colors hover:bg-muted/30 ${
+                      isSelected
+                        ? "bg-muted/40"
+                        : severity
+                          ? SEVERITY_ROW_CLASS[severity]
+                          : "bg-card"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-sm font-medium">
+                        {m.subject.name} {m.subject.last_name}
+                        <span className="text-muted-foreground">
+                          {" "}
+                          ({m.subject.dni})
+                        </span>
+                      </span>
+                      <span className="whitespace-nowrap text-xs text-muted-foreground">
+                        {formatDateTime(m.measured_at)}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                      <span>
+                        <span className="font-medium text-foreground">
+                          {m.weight_kg}
+                        </span>{" "}
+                        kg
+                      </span>
+                      <span>
+                        <span className="font-medium text-foreground">
+                          {m.height_cm}
+                        </span>{" "}
+                        cm
+                      </span>
+                      <span>
+                        IMC{" "}
+                        <span className="font-medium text-foreground">
+                          {m.bmi}
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                      {m.establishment.name} · {m.responsible.name}{" "}
+                      {m.responsible.last_name}
+                    </div>
+
+                    {m.alerts.length === 0 ? (
+                      <span className="inline-block w-fit rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-600">
+                        Normal
+                      </span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {m.alerts.map((a, i) => (
+                          <span
+                            key={`${a.alert_type}-${i}`}
+                            title={a.detail}
+                            className={`inline-block rounded-full border px-2 py-0.5 text-xs ${SEVERITY_BADGE_CLASS[a.severity]}`}
+                          >
+                            {ALERT_TYPE_LABELS[a.alert_type] ?? a.alert_type}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {totalPages > 1 && (

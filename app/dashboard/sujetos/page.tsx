@@ -295,7 +295,7 @@ export default function SujetosPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -334,6 +334,26 @@ export default function SujetosPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col gap-2 md:hidden">
+              {subjects.map((subject) => (
+                <button
+                  key={subject.id}
+                  type="button"
+                  onClick={() => openDetail(subject.id)}
+                  className={`flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/30 ${
+                    selectedId === subject.id ? "bg-muted/40" : ""
+                  }`}
+                >
+                  <span className="text-sm font-medium">
+                    {subject.name} {subject.last_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {subject.dni}
+                  </span>
+                </button>
+              ))}
             </div>
 
             {totalPages > 1 && (

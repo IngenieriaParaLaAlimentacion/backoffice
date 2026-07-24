@@ -160,7 +160,7 @@ export default function EstablecimientosPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -186,6 +186,23 @@ export default function EstablecimientosPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col gap-2 md:hidden">
+              {establishments.map((est) => (
+                <div
+                  key={est.id}
+                  className="flex flex-col gap-1 rounded-lg border border-border bg-card p-3"
+                >
+                  <span className="text-sm font-medium">{est.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {est.formatted_address}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {est.city}, {est.province}
+                  </span>
+                </div>
+              ))}
             </div>
 
             {totalPages > 1 && (

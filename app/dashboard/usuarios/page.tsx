@@ -41,7 +41,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -89,6 +89,35 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="flex flex-col gap-2 md:hidden">
+            {users.map((user) => (
+              <div
+                key={user.id}
+                className="flex flex-col gap-1 rounded-lg border border-border bg-card p-3"
+              >
+                <span className="text-sm font-medium">
+                  {user.name} {user.last_name}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {user.email}
+                </span>
+                {user.establishments.length > 0 && (
+                  <div className="mt-1 flex flex-col gap-0.5">
+                    {user.establishments.map((est) => (
+                      <span key={est.id} className="text-xs">
+                        <span className="font-medium">{est.name}</span>
+                        <span className="text-muted-foreground">
+                          {" "}
+                          — {est.formatted_address}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </>
       )}

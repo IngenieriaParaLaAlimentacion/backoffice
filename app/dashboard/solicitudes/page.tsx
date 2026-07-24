@@ -150,7 +150,7 @@ export default function SolicitudesPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -193,6 +193,38 @@ export default function SolicitudesPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col gap-2 md:hidden">
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  className={`flex flex-col gap-2 rounded-lg border border-border bg-card p-3 ${
+                    selectedUser?.id === user.id ? "bg-muted/40" : ""
+                  }`}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium">
+                      {user.name} {user.last_name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {user.email}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {user.establishments.length} establecimiento
+                      {user.establishments.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={selectedUser?.id === user.id ? "default" : "outline"}
+                    onClick={() => openReview(user)}
+                  >
+                    <ClipboardCheck size={14} />
+                    Revisar
+                  </Button>
+                </div>
+              ))}
             </div>
 
             {totalPages > 1 && (
