@@ -103,7 +103,7 @@ export default function QuestionEditor({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 pl-8">
+      <div className="flex flex-wrap items-center gap-4 pl-0 sm:pl-8">
         <label className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">
             {ENCUESTAS_FORM.responseTypeLabel}
@@ -135,7 +135,7 @@ export default function QuestionEditor({
       </div>
 
       {showOptions && (
-        <div className="pl-8">
+        <div className="pl-0 sm:pl-8">
           <OptionsEditor
             control={control}
             register={register}
