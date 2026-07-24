@@ -14,7 +14,7 @@ const accessItems = navItems.filter((item) => item.href !== "/dashboard");
 
 export default function DashboardPage() {
   const { makeAuthorizedRequest } = useAuth();
-  const [profile, setProfile] = useState<ProfileResponse | null>(null);
+  const [, setProfile] = useState<ProfileResponse | null>(null);
 
   const fetchProfile = useCallback(async () => {
     try {
