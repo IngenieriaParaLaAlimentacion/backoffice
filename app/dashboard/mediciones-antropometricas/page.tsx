@@ -267,7 +267,7 @@ export default function MedicionesAntropometricasPage() {
   };
 
   return (
-    <div className="flex flex-1 gap-4 p-4">
+    <div className="flex flex-1 p-4">
       <Card className="flex-1 min-w-0 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
@@ -281,6 +281,7 @@ export default function MedicionesAntropometricasPage() {
           <Button
             size="sm"
             variant="outline"
+            className="self-start"
             onClick={() => setReloadKey((k) => k + 1)}
           >
             <RefreshCw size={14} />

@@ -61,7 +61,9 @@ export default function EncuestasPage() {
               {ENCUESTAS_PAGE.subtitle}
             </p>
           </div>
-          <CreateSurveyDialog />
+          <div className="self-start">
+            <CreateSurveyDialog />
+          </div>
         </div>
 
         <Input

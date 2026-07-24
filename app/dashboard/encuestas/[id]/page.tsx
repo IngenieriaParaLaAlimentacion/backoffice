@@ -123,7 +123,7 @@ export default function EditarEncuestaPage({
               <h1 className="text-3xl font-bold tracking-tight">
                 {ENCUESTAS_FORM.editTitle}
               </h1>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-start">
                 <Button
                   variant="outline"
                   size="sm"

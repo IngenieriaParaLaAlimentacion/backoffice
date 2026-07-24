@@ -25,6 +25,19 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
     onOpenChange(false);
   }, [pathname, onOpenChange]);
 
+  // The drawer is only meant for <md viewports (it's md:hidden). If the
+  // viewport crosses into md+ while it's open (e.g. rotating a tablet),
+  // close it so it doesn't sit open-but-invisible, blocking body scroll.
+  useEffect(() => {
+    if (!open) return;
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (e.matches) onOpenChange(false);
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [open, onOpenChange]);
+
   const handleLogout = async () => {
     try {
       await logout();

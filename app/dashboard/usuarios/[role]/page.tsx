@@ -51,18 +51,20 @@ export default function RoleUsersPage({
               {USERS_PAGE.subtitle}
             </p>
           </div>
-          {role === "admin" && (
-            <InviteUserDialog
-              label="Invitar administrador"
-              inviteAction={inviteAdminAction}
-            />
-          )}
-          {role === "analyst" && (
-            <InviteUserDialog
-              label="Invitar analista"
-              inviteAction={inviteAnalystAction}
-            />
-          )}
+          <div className="self-start">
+            {role === "admin" && (
+              <InviteUserDialog
+                label="Invitar administrador"
+                inviteAction={inviteAdminAction}
+              />
+            )}
+            {role === "analyst" && (
+              <InviteUserDialog
+                label="Invitar analista"
+                inviteAction={inviteAnalystAction}
+              />
+            )}
+          </div>
         </div>
 
         <Separator />

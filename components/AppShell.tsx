@@ -15,7 +15,7 @@ export default function AppShell({ children }: AppShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh overflow-hidden">
       <SideBar />
 
       <div className="flex flex-col flex-1 min-w-0">

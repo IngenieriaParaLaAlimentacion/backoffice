@@ -192,6 +192,7 @@ export default function SujetosPage() {
           <Button
             size="sm"
             variant="outline"
+            className="self-start"
             onClick={() => setReloadKey((k) => k + 1)}
           >
             <RefreshCw size={14} />

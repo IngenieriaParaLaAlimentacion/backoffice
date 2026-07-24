@@ -59,7 +59,11 @@ export default function PerfilPage() {
           </div>
           <Link
             href="/dashboard/perfil/editar"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "self-start",
+            })}
           >
             <SquarePen size={14} />
             Editar perfil

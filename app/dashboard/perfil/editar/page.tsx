@@ -78,7 +78,11 @@ export default function EditarPerfilPage() {
           </div>
           <Link
             href="/dashboard/perfil"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "self-start",
+            })}
           >
             <ArrowLeft size={14} />
             Volver

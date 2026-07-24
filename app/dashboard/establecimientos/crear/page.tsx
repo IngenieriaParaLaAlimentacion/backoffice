@@ -67,7 +67,11 @@ export default function CrearEstablecimientoPage() {
           </div>
           <Link
             href="/dashboard/establecimientos"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "self-start",
+            })}
           >
             <ArrowLeft size={14} />
             Volver

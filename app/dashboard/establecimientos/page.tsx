@@ -99,7 +99,7 @@ export default function EstablecimientosPage() {
           </div>
           <Link
             href="/dashboard/establecimientos/crear"
-            className={buttonVariants({ size: "sm" })}
+            className={buttonVariants({ size: "sm", className: "self-start" })}
           >
             <Plus size={14} />
             Nuevo establecimiento
