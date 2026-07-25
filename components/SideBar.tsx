@@ -24,7 +24,7 @@ const DRAWER_CLOSED_WIDTH = 60;
 
 export const navItems = [
   {
-    label: "Dashboard",
+    label: "Inicio",
     href: "/dashboard",
     icon: <LayoutDashboard size={20} />,
   },
