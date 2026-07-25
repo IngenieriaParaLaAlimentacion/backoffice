@@ -33,16 +33,16 @@ export default function DashboardPage() {
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
             <Image
               src="/logo.png"
               alt="Logo"
               width={120}
               height={120}
               priority
-              className="h-28 w-28 object-contain"
+              className="h-20 w-20 object-contain sm:h-28 sm:w-28"
             />
-            <span className="text-left text-2xl font-bold leading-tight tracking-tight text-primary">
+            <span className="text-center text-xl font-bold leading-tight tracking-tight text-primary sm:text-left sm:text-2xl">
               Ingeniería
               <br />
               Para La
