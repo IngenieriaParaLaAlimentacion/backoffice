@@ -24,7 +24,7 @@ const DRAWER_CLOSED_WIDTH = 60;
 
 export const navItems = [
   {
-    label: "Dashboard",
+    label: "Inicio",
     href: "/dashboard",
     icon: <LayoutDashboard size={20} />,
   },
@@ -78,7 +78,7 @@ export default function SideBar() {
 
   return (
     <aside
-      className="flex flex-col h-screen bg-card border-r border-border overflow-hidden shrink-0 transition-[width] duration-200 ease-in-out"
+      className="hidden md:flex md:flex-col h-dvh bg-card border-r border-border overflow-hidden shrink-0 transition-[width] duration-200 ease-in-out"
       style={{ width: drawerWidth }}
     >
       <div className="h-16 flex items-center gap-2 px-2">

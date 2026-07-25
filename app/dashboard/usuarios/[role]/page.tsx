@@ -35,7 +35,7 @@ export default function RoleUsersPage({
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <Link
           href="/dashboard/usuarios"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
@@ -44,25 +44,27 @@ export default function RoleUsersPage({
           Usuarios
         </Link>
 
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">{label}</h1>
             <p className="text-muted-foreground text-sm">
               {USERS_PAGE.subtitle}
             </p>
           </div>
-          {role === "admin" && (
-            <InviteUserDialog
-              label="Invitar administrador"
-              inviteAction={inviteAdminAction}
-            />
-          )}
-          {role === "analyst" && (
-            <InviteUserDialog
-              label="Invitar analista"
-              inviteAction={inviteAnalystAction}
-            />
-          )}
+          <div className="self-start">
+            {role === "admin" && (
+              <InviteUserDialog
+                label="Invitar administrador"
+                inviteAction={inviteAdminAction}
+              />
+            )}
+            {role === "analyst" && (
+              <InviteUserDialog
+                label="Invitar analista"
+                inviteAction={inviteAnalystAction}
+              />
+            )}
+          </div>
         </div>
 
         <Separator />
@@ -83,7 +85,7 @@ export default function RoleUsersPage({
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -132,6 +134,37 @@ export default function RoleUsersPage({
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col gap-2 md:hidden">
+              {users.map((user) => (
+                <button
+                  key={user.id}
+                  type="button"
+                  onClick={() => setSelectedUserId(user.id)}
+                  className="flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/30"
+                >
+                  <span className="text-sm font-medium">
+                    {user.name} {user.last_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
+                  {user.establishments.length > 0 && (
+                    <div className="mt-1 flex flex-col gap-0.5">
+                      {user.establishments.map((est) => (
+                        <span key={est.id} className="text-xs">
+                          <span className="font-medium">{est.name}</span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            — {est.formatted_address}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
 
             {totalPages > 1 && (

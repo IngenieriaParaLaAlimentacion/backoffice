@@ -51,8 +51,8 @@ export default function EncuestasPage() {
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">
               {ENCUESTAS_PAGE.title}
@@ -61,7 +61,9 @@ export default function EncuestasPage() {
               {ENCUESTAS_PAGE.subtitle}
             </p>
           </div>
-          <CreateSurveyDialog />
+          <div className="self-start">
+            <CreateSurveyDialog />
+          </div>
         </div>
 
         <Input
@@ -89,7 +91,7 @@ export default function EncuestasPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -167,6 +169,60 @@ export default function EncuestasPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col gap-2 md:hidden">
+              {surveys.map((survey) => (
+                <div
+                  key={survey.id}
+                  onClick={() =>
+                    router.push(`/dashboard/encuestas/${survey.id}`)
+                  }
+                  className="flex cursor-pointer flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/30"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-medium">{survey.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      title="Duplicar"
+                      disabled={duplicatingId === survey.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDuplicate(survey.id);
+                      }}
+                    >
+                      {duplicatingId === survey.id ? (
+                        <Loader2 className="animate-spin" size={14} />
+                      ) : (
+                        <Copy size={14} />
+                      )}
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                      {SCOPE_LABELS[survey.scope]}
+                    </span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        survey.is_active
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {survey.is_active
+                        ? ENCUESTAS_PAGE.statusActive
+                        : ENCUESTAS_PAGE.statusInactive}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      {ENCUESTAS_PAGE.columns.questions}: {survey.question_count}
+                    </span>
+                    <span>{formatDate(survey.created_at)}</span>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {totalPages > 1 && (

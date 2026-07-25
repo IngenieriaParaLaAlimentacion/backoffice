@@ -55,8 +55,8 @@ export default function CrearEstablecimientoPage() {
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">
               Nuevo establecimiento
@@ -67,7 +67,11 @@ export default function CrearEstablecimientoPage() {
           </div>
           <Link
             href="/dashboard/establecimientos"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "self-start",
+            })}
           >
             <ArrowLeft size={14} />
             Volver

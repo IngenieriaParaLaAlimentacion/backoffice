@@ -89,8 +89,8 @@ export default function EstablecimientosPage() {
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">Establecimientos</h1>
             <p className="text-muted-foreground text-sm">
@@ -99,7 +99,7 @@ export default function EstablecimientosPage() {
           </div>
           <Link
             href="/dashboard/establecimientos/crear"
-            className={buttonVariants({ size: "sm" })}
+            className={buttonVariants({ size: "sm", className: "self-start" })}
           >
             <Plus size={14} />
             Nuevo establecimiento
@@ -109,9 +109,9 @@ export default function EstablecimientosPage() {
         <Separator />
 
         <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Buscar</label>
-            <div className="relative w-72">
+            <div className="relative w-full sm:w-72">
               <Search
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                 size={16}
@@ -125,7 +125,7 @@ export default function EstablecimientosPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Ordenar por</label>
             <select
               value={sortOrder}
@@ -133,7 +133,7 @@ export default function EstablecimientosPage() {
                 setSortOrder(e.target.value as EstablishmentSortOrder);
                 setPage(1);
               }}
-              className={`${SELECT_CLASS} w-56`}
+              className={`${SELECT_CLASS} w-full sm:w-56`}
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -160,7 +160,7 @@ export default function EstablecimientosPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -186,6 +186,23 @@ export default function EstablecimientosPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col gap-2 md:hidden">
+              {establishments.map((est) => (
+                <div
+                  key={est.id}
+                  className="flex flex-col gap-1 rounded-lg border border-border bg-card p-3"
+                >
+                  <span className="text-sm font-medium">{est.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {est.formatted_address}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {est.city}, {est.province}
+                  </span>
+                </div>
+              ))}
             </div>
 
             {totalPages > 1 && (

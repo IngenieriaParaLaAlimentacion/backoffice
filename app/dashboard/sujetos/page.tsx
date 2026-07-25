@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Dialog } from "@base-ui/react/dialog";
 import { useAuth } from "@/context/AuthContext";
 import {
   getSubjectAction,
@@ -181,9 +182,9 @@ export default function SujetosPage() {
   };
 
   return (
-    <div className="flex flex-1 gap-4 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+    <div className="flex flex-1 p-4">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">Sujetos</h1>
             <p className="text-muted-foreground text-sm">Sujetos registrados</p>
@@ -191,6 +192,7 @@ export default function SujetosPage() {
           <Button
             size="sm"
             variant="outline"
+            className="self-start"
             onClick={() => setReloadKey((k) => k + 1)}
           >
             <RefreshCw size={14} />
@@ -202,9 +204,9 @@ export default function SujetosPage() {
 
         {/* Filters (CA2) + sorting (CA3) */}
         <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Buscar</label>
-            <div className="relative w-64">
+            <div className="relative w-full sm:w-64">
               <Search
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                 size={16}
@@ -218,7 +220,7 @@ export default function SujetosPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
               Fecha de nacimiento
             </label>
@@ -226,11 +228,11 @@ export default function SujetosPage() {
               type="date"
               value={filters.birthDate}
               onChange={(e) => updateFilter("birthDate", e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
               Último relevamiento
             </label>
@@ -238,11 +240,11 @@ export default function SujetosPage() {
               type="date"
               value={filters.lastSurveyDate}
               onChange={(e) => updateFilter("lastSurveyDate", e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Ordenar por</label>
             <div className="flex items-center gap-2">
               <select
@@ -251,7 +253,7 @@ export default function SujetosPage() {
                   setSortBy(e.target.value as SubjectSortField);
                   setPage(1);
                 }}
-                className={`${SELECT_CLASS} w-56`}
+                className={`${SELECT_CLASS} flex-1 sm:w-56 sm:flex-none`}
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -294,7 +296,7 @@ export default function SujetosPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
@@ -335,6 +337,26 @@ export default function SujetosPage() {
               </table>
             </div>
 
+            <div className="flex flex-col gap-2 md:hidden">
+              {subjects.map((subject) => (
+                <button
+                  key={subject.id}
+                  type="button"
+                  onClick={() => openDetail(subject.id)}
+                  className={`flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/30 ${
+                    selectedId === subject.id ? "bg-muted/40" : ""
+                  }`}
+                >
+                  <span className="text-sm font-medium">
+                    {subject.name} {subject.last_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {subject.dni}
+                  </span>
+                </button>
+              ))}
+            </div>
+
             {totalPages > 1 && (
               <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
                 <Button
@@ -363,57 +385,68 @@ export default function SujetosPage() {
       </Card>
 
       {/* Detail panel (CA4) */}
-      {selectedId && (
-        <Card className="w-[28rem] shrink-0 p-6 flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="text-xl font-bold tracking-tight">
-              {detail ? `${detail.name} ${detail.last_name}` : "Sujeto"}
-            </h2>
-            <Button size="sm" variant="ghost" onClick={closeDetail}>
-              <X size={16} />
-            </Button>
-          </div>
+      <Dialog.Root
+        open={!!selectedId}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) closeDetail();
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+          <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-2">
+              <Dialog.Title className="text-xl font-bold tracking-tight">
+                {detail ? `${detail.name} ${detail.last_name}` : "Sujeto"}
+              </Dialog.Title>
+              <Dialog.Close
+                render={<button type="button" />}
+                className="text-muted-foreground hover:text-foreground mt-0.5"
+              >
+                <X size={18} />
+              </Dialog.Close>
+            </div>
 
-          <Separator />
+            <Separator />
 
-          {detailLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2
-                className="animate-spin text-muted-foreground"
-                size={28}
-              />
-            </div>
-          ) : detailError ? (
-            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-              {detailError}
-            </div>
-          ) : detail ? (
-            <div className="flex flex-col gap-4">
-              <DetailField label="Documento de identidad" value={detail.dni} />
-              <DetailField
-                label="Sexo"
-                value={detail.sex === "male" ? "Masculino" : "Femenino"}
-              />
-              <DetailField
-                label="Fecha de nacimiento"
-                value={formatDate(detail.birth_date)}
-              />
-              <DetailField
-                label="Población rural"
-                value={detail.is_rural ? "Sí" : "No"}
-              />
-              <DetailField
-                label="Población indígena"
-                value={detail.is_indigenous ? "Sí" : "No"}
-              />
-              <DetailField
-                label="Fecha de último relevamiento"
-                value={<span className="text-muted-foreground">—</span>}
-              />
-            </div>
-          ) : null}
-        </Card>
-      )}
+            {detailLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2
+                  className="animate-spin text-muted-foreground"
+                  size={28}
+                />
+              </div>
+            ) : detailError ? (
+              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+                {detailError}
+              </div>
+            ) : detail ? (
+              <div className="flex flex-col gap-4">
+                <DetailField label="Documento de identidad" value={detail.dni} />
+                <DetailField
+                  label="Sexo"
+                  value={detail.sex === "male" ? "Masculino" : "Femenino"}
+                />
+                <DetailField
+                  label="Fecha de nacimiento"
+                  value={formatDate(detail.birth_date)}
+                />
+                <DetailField
+                  label="Población rural"
+                  value={detail.is_rural ? "Sí" : "No"}
+                />
+                <DetailField
+                  label="Población indígena"
+                  value={detail.is_indigenous ? "Sí" : "No"}
+                />
+                <DetailField
+                  label="Fecha de último relevamiento"
+                  value={<span className="text-muted-foreground">—</span>}
+                />
+              </div>
+            ) : null}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

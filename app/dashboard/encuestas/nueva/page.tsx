@@ -60,7 +60,7 @@ function NuevaEncuestaContent() {
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-8 flex flex-col gap-6">
+      <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <Link
           href="/dashboard/encuestas"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
