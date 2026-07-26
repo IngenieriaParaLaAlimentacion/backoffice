@@ -6,8 +6,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, ChevronRight, Copy, Loader2 } from "lucide-react";
-import { ENCUESTAS_PAGE, SCOPE_LABELS } from "@/constants/surveys";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Loader2,
+  BarChart3,
+} from "lucide-react";
+import {
+  ENCUESTAS_PAGE,
+  RESPUESTAS_PAGE,
+  SCOPE_LABELS,
+} from "@/constants/surveys";
 import { useSurveys } from "@/hooks/useSurveys";
 import { useAuth } from "@/context/AuthContext";
 import { duplicateSurveyAction } from "@/services/survey.service";
@@ -148,22 +158,37 @@ export default function EncuestasPage() {
                         {formatDate(survey.created_at)}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="Duplicar"
-                          disabled={duplicatingId === survey.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDuplicate(survey.id);
-                          }}
-                        >
-                          {duplicatingId === survey.id ? (
-                            <Loader2 className="animate-spin" size={14} />
-                          ) : (
-                            <Copy size={14} />
-                          )}
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title={RESPUESTAS_PAGE.viewResponses}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(
+                                `/dashboard/encuestas/${survey.id}/respuestas`,
+                              );
+                            }}
+                          >
+                            <BarChart3 size={14} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Duplicar"
+                            disabled={duplicatingId === survey.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicate(survey.id);
+                            }}
+                          >
+                            {duplicatingId === survey.id ? (
+                              <Loader2 className="animate-spin" size={14} />
+                            ) : (
+                              <Copy size={14} />
+                            )}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -182,22 +207,37 @@ export default function EncuestasPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-sm font-medium">{survey.name}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Duplicar"
-                      disabled={duplicatingId === survey.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDuplicate(survey.id);
-                      }}
-                    >
-                      {duplicatingId === survey.id ? (
-                        <Loader2 className="animate-spin" size={14} />
-                      ) : (
-                        <Copy size={14} />
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        title={RESPUESTAS_PAGE.viewResponses}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(
+                            `/dashboard/encuestas/${survey.id}/respuestas`,
+                          );
+                        }}
+                      >
+                        <BarChart3 size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        title="Duplicar"
+                        disabled={duplicatingId === survey.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDuplicate(survey.id);
+                        }}
+                      >
+                        {duplicatingId === survey.id ? (
+                          <Loader2 className="animate-spin" size={14} />
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
@@ -217,7 +257,8 @@ export default function EncuestasPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>
-                      {ENCUESTAS_PAGE.columns.questions}: {survey.question_count}
+                      {ENCUESTAS_PAGE.columns.questions}:{" "}
+                      {survey.question_count}
                     </span>
                     <span>{formatDate(survey.created_at)}</span>
                   </div>
