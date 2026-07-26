@@ -36,7 +36,9 @@ function NuevaEncuestaContent() {
       setDefaults(templateToForm(template));
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error al cargar la plantilla FIES",
+        err instanceof Error
+          ? err.message
+          : "Error al cargar la plantilla FIES",
       );
       setDefaults(emptySurveyForm());
     }
@@ -88,7 +90,11 @@ function NuevaEncuestaContent() {
             <Loader2 className="animate-spin text-muted-foreground" size={28} />
           </div>
         ) : (
-          <SurveyForm defaultValues={defaults} onSubmit={handleSubmit} />
+          <SurveyForm
+            defaultValues={defaults}
+            onSubmit={handleSubmit}
+            onCancel={() => router.push("/dashboard/encuestas")}
+          />
         )}
       </Card>
     </div>

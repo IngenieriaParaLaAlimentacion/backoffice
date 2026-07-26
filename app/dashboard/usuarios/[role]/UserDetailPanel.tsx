@@ -66,16 +66,18 @@ export default function UserDetailPanel({
 
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="animate-spin text-muted-foreground" size={28} />
+              <Loader2
+                className="animate-spin text-muted-foreground"
+                size={28}
+              />
             </div>
           ) : user ? (
             <div className="flex flex-col gap-4">
+              {/* --- Profile Fields --- */}
               <ProfileField
                 label="Nombre"
                 value={
-                  user.last_name
-                    ? `${user.name} ${user.last_name}`
-                    : user.name
+                  user.last_name ? `${user.name} ${user.last_name}` : user.name
                 }
               />
               <ProfileField label="Email" value={user.email} />

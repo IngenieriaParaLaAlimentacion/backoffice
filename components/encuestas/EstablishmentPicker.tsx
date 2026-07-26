@@ -93,7 +93,7 @@ export default function EstablishmentPicker({
               />
               <span className="font-medium">{est.name}</span>
               <span className="text-muted-foreground text-xs">
-                {est.city}, {est.province}
+                {[est.province, est.city].filter(Boolean).join(", ")}
               </span>
             </label>
           ))

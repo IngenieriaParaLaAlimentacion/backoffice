@@ -164,6 +164,7 @@ export default function EditarEncuestaPage({
             <SurveyForm
               defaultValues={surveyToForm(survey)}
               onSubmit={handleSubmit}
+              onCancel={() => router.push("/dashboard/encuestas")}
               readOnly={locked}
             />
           </>
