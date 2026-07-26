@@ -57,6 +57,20 @@ export const DUPLICATE_SURVEY_ENDPOINT = (surveyId: string) =>
 export const SURVEY_STATUS_ENDPOINT = (surveyId: string) =>
   `/api/v1/surveys/${surveyId}/status`;
 
+// --- Survey Responses Endpoints ---
+
+export const SURVEY_RESPONSES_ENDPOINT = "/api/v1/survey-responses";
+export const SURVEY_RESPONSE_DETAIL_ENDPOINT = (responseId: string) =>
+  `/api/v1/survey-responses/${responseId}`;
+export const SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT = (responseId: string) =>
+  `/api/v1/survey-responses/${responseId}/dashboard-detail`;
+export const SURVEY_RESPONSES_EXPORT_ENDPOINT =
+  "/api/v1/survey-responses/export";
+
+// --- Dashboard Endpoints ---
+
+export const DASHBOARD_INDICATORS_ENDPOINT = "/api/v1/dashboard/indicators";
+
 // --- Users Endpoints ---
 
 export const ME_ENDPOINT = "/api/v1/users/me";
