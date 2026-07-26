@@ -9,7 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { surveySchema, SurveyFormInput } from "@/schemas/survey.schema";
-import { SCOPE_LABELS, ENCUESTAS_FORM, MAX_QUESTIONS } from "@/constants/surveys";
+import {
+  SCOPE_LABELS,
+  ENCUESTAS_FORM,
+  MAX_QUESTIONS,
+} from "@/constants/surveys";
 import { SurveyScope } from "@/types/survey";
 import { ApiError } from "@/services/survey.service";
 import QuestionEditor from "./QuestionEditor";
@@ -18,6 +22,7 @@ import EstablishmentPicker from "./EstablishmentPicker";
 type SurveyFormProps = {
   defaultValues: SurveyFormInput;
   onSubmit: (values: SurveyFormInput) => Promise<void>;
+  onCancel?: () => void;
   submitLabel?: string;
   readOnly?: boolean;
 };
@@ -27,6 +32,7 @@ const SCOPES: SurveyScope[] = ["generic", "targeted"];
 export default function SurveyForm({
   defaultValues,
   onSubmit,
+  onCancel,
   submitLabel = ENCUESTAS_FORM.save,
   readOnly,
 }: SurveyFormProps) {
@@ -212,14 +218,25 @@ export default function SurveyForm({
       {!readOnly && (
         <>
           <Separator />
-          <Button
-            type="submit"
-            size="lg"
-            className="w-fit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? ENCUESTAS_FORM.saving : submitLabel}
-          </Button>
+
+          {/* --- Submit / Cancel --- */}
+          <div className="flex gap-3">
+            <Button type="submit" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? ENCUESTAS_FORM.saving : submitLabel}
+            </Button>
+
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                disabled={isSubmitting}
+                onClick={onCancel}
+              >
+                {ENCUESTAS_FORM.cancel}
+              </Button>
+            )}
+          </div>
         </>
       )}
     </form>
