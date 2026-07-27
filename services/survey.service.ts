@@ -16,16 +16,9 @@ import {
   SurveyUpdateRequest,
 } from "@/types/survey";
 import { ErrorResponse } from "@/lib/types";
+import { ApiError } from "@/lib/apiError";
 
-/** Error that preserves the HTTP status so callers can branch (e.g. 409 name clash). */
-export class ApiError extends Error {
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
+export { ApiError };
 
 type ListSurveysParams = {
   page?: number;
@@ -109,9 +102,12 @@ export const deleteSurveyAction = async (
   dispatcher: AuthDispatcher,
   surveyId: string,
 ): Promise<void> => {
-  const res = await dispatcher<undefined, undefined>(SURVEY_ENDPOINT(surveyId), {
-    method: "DELETE",
-  });
+  const res = await dispatcher<undefined, undefined>(
+    SURVEY_ENDPOINT(surveyId),
+    {
+      method: "DELETE",
+    },
+  );
 
   if (!res.ok)
     throw new ApiError((res.data as ErrorResponse).detail, res.status);
