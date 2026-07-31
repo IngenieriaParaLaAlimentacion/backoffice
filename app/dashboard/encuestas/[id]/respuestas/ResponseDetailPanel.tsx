@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { RESPONSE_TYPE_LABELS, RESPUESTAS_PAGE } from "@/constants/surveys";
 
 type ResponseDetailPanelProps = {
+  surveyId: string;
   responseId: string | null;
   onClose: () => void;
 };
@@ -41,6 +42,7 @@ function DetailField({
 }
 
 export default function ResponseDetailPanel({
+  surveyId,
   responseId,
   onClose,
 }: ResponseDetailPanelProps) {
@@ -57,6 +59,7 @@ export default function ResponseDetailPanel({
       try {
         const data = await getSurveyResponseDashboardDetailAction(
           makeAuthorizedRequest,
+          surveyId,
           id,
         );
         setDetail(data);
@@ -70,7 +73,7 @@ export default function ResponseDetailPanel({
         setLoading(false);
       }
     },
-    [makeAuthorizedRequest],
+    [makeAuthorizedRequest, surveyId],
   );
 
   useEffect(() => {
@@ -118,7 +121,7 @@ export default function ResponseDetailPanel({
       );
     }
     if (value === null || value === undefined) {
-      <span className="text-muted-foreground">—</span>;
+      return <span className="text-muted-foreground">—</span>;
     }
     return <span className="text-sm">{String(value)}</span>;
   }

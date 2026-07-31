@@ -224,7 +224,7 @@ export default function RespuestasPage() {
 
         <Separator />
 
-        {/* Filters (CA5) */}
+        {/* Filters  */}
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
@@ -430,8 +430,8 @@ export default function RespuestasPage() {
         )}
       </Card>
 
-      {/* Detail panel (CA3) */}
       <ResponseDetailPanel
+        surveyId={surveyId}
         responseId={selectedResponseId}
         onClose={closeDetail}
       />
