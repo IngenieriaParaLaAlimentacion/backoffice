@@ -187,7 +187,6 @@ export const listSurveyResponsesAction = async (
   params: ListSurveyResponsesParams,
 ): Promise<PaginatedSurveyResponses> => {
   const query = new URLSearchParams();
-  query.set("survey_id", params.survey_id);
   if (params.page) query.set("page", String(params.page));
   if (params.page_size) query.set("page_size", String(params.page_size));
   if (params.establishment_id)
@@ -198,7 +197,7 @@ export const listSurveyResponsesAction = async (
   if (params.province) query.set("province", params.province);
 
   const res = await dispatcher<undefined, PaginatedSurveyResponses>(
-    `${SURVEY_RESPONSES_ENDPOINT}?${query.toString()}`,
+    `${SURVEY_RESPONSES_ENDPOINT(params.survey_id)}?${query.toString()}`,
   );
 
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
@@ -208,10 +207,11 @@ export const listSurveyResponsesAction = async (
 
 export const getSurveyResponseDashboardDetailAction = async (
   dispatcher: AuthDispatcher,
+  surveyId: string,
   responseId: string,
 ): Promise<SurveyResponseDetail> => {
   const res = await dispatcher<undefined, SurveyResponseDetail>(
-    SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT(responseId),
+    SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT(surveyId, responseId),
   );
 
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
@@ -224,7 +224,6 @@ export const exportSurveyResponsesAction = async (
   params: { survey_id: string; establishment_id?: string },
 ): Promise<Blob> => {
   const query = new URLSearchParams();
-  query.set("survey_id", params.survey_id);
   if (params.establishment_id)
     query.set("establishment_id", params.establishment_id);
   query.set("format", "xlsx");
@@ -233,7 +232,7 @@ export const exportSurveyResponsesAction = async (
   if (!tokens) throw new Error("Not authenticated");
 
   const res = await fetch(
-    `${API_BASE_URL}${SURVEY_RESPONSES_EXPORT_ENDPOINT}?${query.toString()}`,
+    `${API_BASE_URL}${SURVEY_RESPONSES_EXPORT_ENDPOINT(params.survey_id)}?${query.toString()}`,
     {
       headers: { Authorization: `Bearer ${tokens.accessToken}` },
     },
