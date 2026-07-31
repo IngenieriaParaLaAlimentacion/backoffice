@@ -59,17 +59,23 @@ export const SURVEY_STATUS_ENDPOINT = (surveyId: string) =>
 
 // --- Survey Responses Endpoints ---
 
-export const SURVEY_RESPONSES_ENDPOINT = "/api/v1/survey-responses";
-export const SURVEY_RESPONSE_DETAIL_ENDPOINT = (responseId: string) =>
-  `/api/v1/survey-responses/${responseId}`;
-export const SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT = (responseId: string) =>
-  `/api/v1/survey-responses/${responseId}/dashboard-detail`;
-export const SURVEY_RESPONSES_EXPORT_ENDPOINT =
-  "/api/v1/survey-responses/export";
+export const SURVEY_RESPONSES_ENDPOINT = (surveyId: string) =>
+  `/api/v1/surveys/${surveyId}/responses`;
+export const SURVEY_RESPONSE_DETAIL_ENDPOINT = (
+  surveyId: string,
+  responseId: string,
+) => `/api/v1/surveys/${surveyId}/responses/${responseId}`;
+export const SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT = (
+  surveyId: string,
+  responseId: string,
+) => `/api/v1/surveys/${surveyId}/responses/${responseId}/detail`;
+export const SURVEY_RESPONSES_EXPORT_ENDPOINT = (surveyId: string) =>
+  `/api/v1/surveys/${surveyId}/responses/export`;
 
 // --- Dashboard Endpoints ---
 
-export const DASHBOARD_INDICATORS_ENDPOINT = "/api/v1/dashboard/indicators";
+export const DASHBOARD_INDICATORS_ENDPOINT =
+  "/api/v1/analytics/survey-response-summary";
 
 // --- Users Endpoints ---
 
