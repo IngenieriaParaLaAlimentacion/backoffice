@@ -12,6 +12,9 @@ import {
 } from "@/mocks/handlers/admin";
 import {
   makeCreateEstablishmentHandler,
+  makeEstablishmentDashboardHandler,
+  makeEstablishmentFieldWorkersHandler,
+  makeEstablishmentSubjectsHandler,
   makeListEstablishmentsHandler,
 } from "@/mocks/handlers/establishment";
 import {
@@ -32,6 +35,9 @@ export const handlers = [
   makeListUsersHandler(),
   makeApproveEstablishmentsHandler(),
   makeRejectEstablishmentsHandler(),
+  makeEstablishmentDashboardHandler(),
+  makeEstablishmentSubjectsHandler(),
+  makeEstablishmentFieldWorkersHandler(),
   makeListEstablishmentsHandler(),
   makeCreateEstablishmentHandler(),
   makeFiesTemplateHandler(),
