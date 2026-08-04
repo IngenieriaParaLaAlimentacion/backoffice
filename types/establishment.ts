@@ -1,7 +1,7 @@
 import { EstablishmentResponse } from "@/types/admin";
 import {
   AlertSeverity,
-  LatestMeasurement,
+  MeasurementAlert,
   NutritionalStatus,
 } from "@/types/measurement";
 import { Sex } from "@/types/subject";
@@ -57,7 +57,16 @@ export type EstablishmentDashboardResponse = {
 
 // --- Subjects attending the establishment ---
 
-export type EstablishmentLatestMeasurement = LatestMeasurement;
+/** The subject's latest reading at this specific establishment — no `establishment`
+ * field, unlike the global `LatestMeasurement`, since it's already scoped by context. */
+export type EstablishmentLatestMeasurement = {
+  id: string;
+  measured_at: string;
+  weight_kg: number;
+  height_cm: number;
+  bmi: number;
+  alerts: MeasurementAlert[];
+};
 
 /**
  * `id` is the SUBJECT id (what you navigate with), not `latest_measurement.id`.

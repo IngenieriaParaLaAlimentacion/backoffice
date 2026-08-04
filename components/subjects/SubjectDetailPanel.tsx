@@ -168,22 +168,71 @@ export default function SubjectDetailPanel({
                 label="Población indígena"
                 value={detail.is_indigenous ? "Sí" : "No"}
               />
-              <DetailField
-                label="Fecha de último relevamiento"
-                value={
-                  detail.latest_measurement ? (
-                    formatDateTime(detail.latest_measurement.measured_at)
-                  ) : (
-                    <span className="text-muted-foreground">{EMPTY_VALUE}</span>
-                  )
-                }
-              />
-              {detail.latest_measurement && (
-                <DetailField
-                  label="Última medición"
-                  value={`${detail.latest_measurement.weight_kg} kg · ${detail.latest_measurement.height_cm} cm · IMC ${detail.latest_measurement.bmi}`}
-                />
-              )}
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted-foreground">
+                  Último relevamiento
+                </span>
+                {detail.latest_measurement ? (
+                  <div className="overflow-hidden rounded-lg border border-border">
+                    <table className="w-full text-sm">
+                      <tbody className="divide-y divide-border">
+                        <tr>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            Fecha
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium">
+                            {formatDateTime(
+                              detail.latest_measurement.measured_at,
+                            )}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            Establecimiento
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            <span className="font-medium">
+                              {detail.latest_measurement.establishment.name}
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              {detail.latest_measurement.establishment.city},{" "}
+                              {detail.latest_measurement.establishment.province}
+                            </span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            Peso
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium">
+                            {detail.latest_measurement.weight_kg} kg
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            Talla
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium">
+                            {detail.latest_measurement.height_cm} cm
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            IMC
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium">
+                            {detail.latest_measurement.bmi}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {EMPTY_VALUE}
+                  </span>
+                )}
+              </div>
             </div>
           ) : null}
         </Dialog.Popup>
