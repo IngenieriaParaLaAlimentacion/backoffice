@@ -97,21 +97,25 @@ export function AlertBadgeList({
 }: AlertBadgeListProps) {
   if (!hasMeasurement) {
     return (
-      <AlertBadge
-        label="Sin datos"
-        className={NO_DATA_BADGE_CLASS}
-        title="El sujeto no tiene mediciones registradas"
-      />
+      <div className="flex flex-wrap gap-1">
+        <AlertBadge
+          label="Sin datos"
+          className={NO_DATA_BADGE_CLASS}
+          title="El sujeto no tiene mediciones registradas"
+        />
+      </div>
     );
   }
 
   if (alerts.length === 0) {
     return (
-      <AlertBadge
-        label="Normal"
-        className={NORMAL_BADGE_CLASS}
-        title={scopeLabel}
-      />
+      <div className="flex flex-wrap gap-1">
+        <AlertBadge
+          label="Normal"
+          className={NORMAL_BADGE_CLASS}
+          title={scopeLabel}
+        />
+      </div>
     );
   }
 
