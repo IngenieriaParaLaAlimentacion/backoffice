@@ -49,10 +49,10 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                     {USERS_PAGE.columns.name}
                   </th>
                   <th className="px-4 py-3 font-medium">
-                    {USERS_PAGE.columns.establishments}
+                    {USERS_PAGE.columns.email}
                   </th>
                   <th className="px-4 py-3 font-medium">
-                    {USERS_PAGE.columns.email}
+                    {USERS_PAGE.columns.establishments}
                   </th>
                 </tr>
               </thead>
