@@ -24,9 +24,9 @@ export function rowStateClass(isSelected: boolean, severityClass?: string) {
 }
 
 /** Empty header cell pairing with `ChevronCell` in a desktop table. */
-export function ChevronHeaderCell() {
+export function ChevronHeaderCell({ className }: { className?: string }) {
   return (
-    <th className="px-4 py-3 font-medium">
+    <th className={cn("px-4 py-3 font-medium", className)}>
       <span className="sr-only">Ver detalle</span>
     </th>
   );
@@ -35,8 +35,8 @@ export function ChevronHeaderCell() {
 /** Trailing `<td>` with the chevron affordance for a desktop table row. */
 export function ChevronCell({ className }: { className?: string }) {
   return (
-    <td className="px-4 py-3">
-      <RowChevron className={className} />
+    <td className={cn("px-4 py-3", className)}>
+      <RowChevron />
     </td>
   );
 }
