@@ -120,9 +120,13 @@ export default function EncuestasPage() {
                       onClick={() =>
                         router.push(`/dashboard/encuestas/${survey.id}`)
                       }
-                      className="bg-card hover:bg-muted/30 transition-colors cursor-pointer"
+                      className="group bg-card hover:bg-muted/70 transition-colors cursor-pointer"
                     >
-                      <td className="px-4 py-3 font-medium">{survey.name}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <span className="group-hover:underline">
+                          {survey.name}
+                        </span>
+                      </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
                           {SCOPE_LABELS[survey.scope]}
@@ -147,23 +151,29 @@ export default function EncuestasPage() {
                       <td className="px-4 py-3 text-muted-foreground">
                         {formatDate(survey.created_at)}
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="Duplicar"
-                          disabled={duplicatingId === survey.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDuplicate(survey.id);
-                          }}
-                        >
-                          {duplicatingId === survey.id ? (
-                            <Loader2 className="animate-spin" size={14} />
-                          ) : (
-                            <Copy size={14} />
-                          )}
-                        </Button>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Duplicar"
+                            disabled={duplicatingId === survey.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicate(survey.id);
+                            }}
+                          >
+                            {duplicatingId === survey.id ? (
+                              <Loader2 className="animate-spin" size={14} />
+                            ) : (
+                              <Copy size={14} />
+                            )}
+                          </Button>
+                          <ChevronRight
+                            size={16}
+                            className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -178,10 +188,12 @@ export default function EncuestasPage() {
                   onClick={() =>
                     router.push(`/dashboard/encuestas/${survey.id}`)
                   }
-                  className="flex cursor-pointer flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/30"
+                  className="group flex cursor-pointer flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/70 active:bg-muted/70"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-medium">{survey.name}</span>
+                    <span className="text-sm font-medium group-hover:underline">
+                      {survey.name}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon-sm"
@@ -220,7 +232,13 @@ export default function EncuestasPage() {
                       {ENCUESTAS_PAGE.columns.questions}:{" "}
                       {survey.question_count}
                     </span>
-                    <span>{formatDate(survey.created_at)}</span>
+                    <span className="flex items-center gap-1.5">
+                      {formatDate(survey.created_at)}
+                      <ChevronRight
+                        size={16}
+                        className="transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                      />
+                    </span>
                   </div>
                 </div>
               ))}

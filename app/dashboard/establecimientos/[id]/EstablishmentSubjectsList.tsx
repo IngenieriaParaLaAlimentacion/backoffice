@@ -17,7 +17,7 @@ import {
   SUBJECT_SORT_OPTIONS,
 } from "@/constants/establishments";
 import { formatAgeMonths, formatDateTime } from "@/lib/format";
-import { Loader2, Search } from "lucide-react";
+import { ChevronRight, Loader2, Search } from "lucide-react";
 
 export default function EstablishmentSubjectsList({
   establishmentId,
@@ -123,6 +123,9 @@ export default function EstablishmentSubjectsList({
                   <th className="px-4 py-3 font-medium">{columns.height}</th>
                   <th className="px-4 py-3 font-medium">{columns.bmi}</th>
                   <th className="px-4 py-3 font-medium">{columns.status}</th>
+                  <th className="px-4 py-3 font-medium">
+                    <span className="sr-only">Ver detalle</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -135,7 +138,7 @@ export default function EstablishmentSubjectsList({
                     <tr
                       key={subject.id}
                       onClick={() => setSelectedSubjectId(subject.id)}
-                      className={`cursor-pointer transition-colors hover:bg-muted/30 ${
+                      className={`group cursor-pointer transition-colors hover:bg-muted/70 ${
                         isSelected
                           ? "bg-muted/40"
                           : severity
@@ -176,6 +179,12 @@ export default function EstablishmentSubjectsList({
                           scopeLabel={COPY.subjectScopeLabel}
                         />
                       </td>
+                      <td className="px-4 py-3">
+                        <ChevronRight
+                          size={16}
+                          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                        />
+                      </td>
                     </tr>
                   );
                 })}
@@ -192,7 +201,7 @@ export default function EstablishmentSubjectsList({
                   key={subject.id}
                   type="button"
                   onClick={() => setSelectedSubjectId(subject.id)}
-                  className={`flex flex-col gap-2 rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted/30 ${
+                  className={`group flex flex-col gap-2 rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted/70 active:bg-muted/70 ${
                     isSelected
                       ? "bg-muted/40"
                       : severity
@@ -208,8 +217,12 @@ export default function EstablishmentSubjectsList({
                         ({subject.dni})
                       </span>
                     </span>
-                    <span className="whitespace-nowrap text-xs text-muted-foreground">
+                    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
                       {formatDateTime(subject.latest_measurement.measured_at)}
+                      <ChevronRight
+                        size={16}
+                        className="transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                      />
                     </span>
                   </div>
 
