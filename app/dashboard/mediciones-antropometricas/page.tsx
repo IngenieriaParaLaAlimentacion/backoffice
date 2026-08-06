@@ -397,9 +397,7 @@ export default function MedicionesAntropometricasPage() {
                           {m.responsible.name} {m.responsible.last_name}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex justify-center">
-                            <AlertBadgeList alerts={m.alerts} />
-                          </div>
+                          <AlertBadgeList alerts={m.alerts} />
                         </td>
                         <ChevronCell />
                       </tr>
