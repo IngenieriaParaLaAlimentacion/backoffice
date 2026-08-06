@@ -10,7 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
-import { ArrowDown, ArrowUp, Loader2, RefreshCw, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -245,6 +252,9 @@ export default function SujetosPage() {
                     <th className="px-4 py-3 font-medium">
                       Último relevamiento
                     </th>
+                    <th className="px-4 py-3 font-medium">
+                      <span className="sr-only">Ver detalle</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -252,12 +262,14 @@ export default function SujetosPage() {
                     <tr
                       key={subject.id}
                       onClick={() => setSelectedId(subject.id)}
-                      className={`cursor-pointer bg-card transition-colors hover:bg-muted/30 ${
+                      className={`group cursor-pointer bg-card transition-colors hover:bg-muted/70 ${
                         selectedId === subject.id ? "bg-muted/40" : ""
                       }`}
                     >
                       <td className="px-4 py-3 font-medium">
-                        {subject.name} {subject.last_name}
+                        <span className="group-hover:underline">
+                          {subject.name} {subject.last_name}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {subject.dni}
@@ -267,6 +279,12 @@ export default function SujetosPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-muted-foreground">—</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <ChevronRight
+                          size={16}
+                          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                        />
                       </td>
                     </tr>
                   ))}
@@ -280,16 +298,22 @@ export default function SujetosPage() {
                   key={subject.id}
                   type="button"
                   onClick={() => setSelectedId(subject.id)}
-                  className={`flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/30 ${
+                  className={`group flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/70 active:bg-muted/70 ${
                     selectedId === subject.id ? "bg-muted/40" : ""
                   }`}
                 >
-                  <span className="text-sm font-medium">
-                    {subject.name} {subject.last_name}
+                  <span className="flex flex-col gap-1">
+                    <span className="text-sm font-medium group-hover:underline">
+                      {subject.name} {subject.last_name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {subject.dni}
+                    </span>
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {subject.dni}
-                  </span>
+                  <ChevronRight
+                    size={16}
+                    className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                  />
                 </button>
               ))}
             </div>
