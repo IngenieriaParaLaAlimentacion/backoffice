@@ -98,6 +98,9 @@ export default function RoleUsersPage({
                     <th className="px-4 py-3 font-medium">
                       {USERS_PAGE.columns.establishments}
                     </th>
+                    <th className="px-4 py-3 font-medium">
+                      <span className="sr-only">Ver detalle</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -105,10 +108,12 @@ export default function RoleUsersPage({
                     <tr
                       key={user.id}
                       onClick={() => setSelectedUserId(user.id)}
-                      className="bg-card hover:bg-muted/30 transition-colors cursor-pointer"
+                      className="group bg-card hover:bg-muted/70 transition-colors cursor-pointer"
                     >
                       <td className="px-4 py-3 font-medium">
-                        {user.name} {user.last_name}
+                        <span className="group-hover:underline">
+                          {user.name} {user.last_name}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {user.email}
@@ -130,6 +135,12 @@ export default function RoleUsersPage({
                           </div>
                         )}
                       </td>
+                      <td className="px-4 py-3">
+                        <ChevronRight
+                          size={16}
+                          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                        />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -142,27 +153,33 @@ export default function RoleUsersPage({
                   key={user.id}
                   type="button"
                   onClick={() => setSelectedUserId(user.id)}
-                  className="flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/30"
+                  className="group flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/70 active:bg-muted/70"
                 >
-                  <span className="text-sm font-medium">
-                    {user.name} {user.last_name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
-                  {user.establishments.length > 0 && (
-                    <div className="mt-1 flex flex-col gap-0.5">
-                      {user.establishments.map((est) => (
-                        <span key={est.id} className="text-xs">
-                          <span className="font-medium">{est.name}</span>
-                          <span className="text-muted-foreground">
-                            {" "}
-                            — {est.formatted_address}
+                  <span className="flex flex-col gap-1">
+                    <span className="text-sm font-medium group-hover:underline">
+                      {user.name} {user.last_name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {user.email}
+                    </span>
+                    {user.establishments.length > 0 && (
+                      <div className="mt-1 flex flex-col gap-0.5">
+                        {user.establishments.map((est) => (
+                          <span key={est.id} className="text-xs">
+                            <span className="font-medium">{est.name}</span>
+                            <span className="text-muted-foreground">
+                              {" "}
+                              — {est.formatted_address}
+                            </span>
                           </span>
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </span>
+                  <ChevronRight
+                    size={16}
+                    className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                  />
                 </button>
               ))}
             </div>

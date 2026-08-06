@@ -111,6 +111,9 @@ export default function EncuestasPage() {
                       {ENCUESTAS_PAGE.columns.created}
                     </th>
                     <th className="px-4 py-3 font-medium sr-only">Acciones</th>
+                    <th className="px-4 py-3 font-medium">
+                      <span className="sr-only">Ver detalle</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -151,29 +154,29 @@ export default function EncuestasPage() {
                       <td className="px-4 py-3 text-muted-foreground">
                         {formatDate(survey.created_at)}
                       </td>
+                      <td className="px-4 py-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Duplicar"
+                          disabled={duplicatingId === survey.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicate(survey.id);
+                          }}
+                        >
+                          {duplicatingId === survey.id ? (
+                            <Loader2 className="animate-spin" size={14} />
+                          ) : (
+                            <Copy size={14} />
+                          )}
+                        </Button>
+                      </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            title="Duplicar"
-                            disabled={duplicatingId === survey.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDuplicate(survey.id);
-                            }}
-                          >
-                            {duplicatingId === survey.id ? (
-                              <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                              <Copy size={14} />
-                            )}
-                          </Button>
-                          <ChevronRight
-                            size={16}
-                            className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                          />
-                        </div>
+                        <ChevronRight
+                          size={16}
+                          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                        />
                       </td>
                     </tr>
                   ))}
