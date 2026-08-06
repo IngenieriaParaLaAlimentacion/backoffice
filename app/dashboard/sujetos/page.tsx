@@ -11,13 +11,15 @@ import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
 import {
-  ArrowDown,
-  ArrowUp,
-  ChevronRight,
-  Loader2,
-  RefreshCw,
-  Search,
-} from "lucide-react";
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  RowLink,
+  ROW_HOVER_CLASS,
+  rowStateClass,
+} from "@/components/listings/RowAffordance";
+import { ArrowDown, ArrowUp, Loader2, RefreshCw, Search } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -252,9 +254,7 @@ export default function SujetosPage() {
                     <th className="px-4 py-3 font-medium">
                       Último relevamiento
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      <span className="sr-only">Ver detalle</span>
-                    </th>
+                    <ChevronHeaderCell />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -262,14 +262,12 @@ export default function SujetosPage() {
                     <tr
                       key={subject.id}
                       onClick={() => setSelectedId(subject.id)}
-                      className={`group cursor-pointer bg-card transition-colors hover:bg-muted/70 ${
-                        selectedId === subject.id ? "bg-muted/40" : ""
-                      }`}
+                      className={`${ROW_HOVER_CLASS} ${rowStateClass(selectedId === subject.id)}`}
                     >
                       <td className="px-4 py-3 font-medium">
-                        <span className="group-hover:underline">
+                        <RowLink>
                           {subject.name} {subject.last_name}
-                        </span>
+                        </RowLink>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {subject.dni}
@@ -280,12 +278,7 @@ export default function SujetosPage() {
                       <td className="px-4 py-3">
                         <span className="text-muted-foreground">—</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <ChevronRight
-                          size={16}
-                          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                        />
-                      </td>
+                      <ChevronCell />
                     </tr>
                   ))}
                 </tbody>
@@ -298,22 +291,19 @@ export default function SujetosPage() {
                   key={subject.id}
                   type="button"
                   onClick={() => setSelectedId(subject.id)}
-                  className={`group flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/70 active:bg-muted/70 ${
-                    selectedId === subject.id ? "bg-muted/40" : ""
-                  }`}
+                  className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 text-left ${CARD_HOVER_CLASS} ${rowStateClass(selectedId === subject.id)}`}
                 >
                   <span className="flex flex-col gap-1">
-                    <span className="text-sm font-medium group-hover:underline">
-                      {subject.name} {subject.last_name}
-                    </span>
+                    <RowLink>
+                      <span className="text-sm font-medium">
+                        {subject.name} {subject.last_name}
+                      </span>
+                    </RowLink>
                     <span className="text-xs text-muted-foreground">
                       {subject.dni}
                     </span>
                   </span>
-                  <ChevronRight
-                    size={16}
-                    className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                  />
+                  <RowChevron className="shrink-0" />
                 </button>
               ))}
             </div>

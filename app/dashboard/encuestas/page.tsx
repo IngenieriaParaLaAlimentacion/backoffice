@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, ChevronRight, Copy, Loader2 } from "lucide-react";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  RowLink,
+  ROW_HOVER_CLASS,
+} from "@/components/listings/RowAffordance";
 import { ENCUESTAS_PAGE, SCOPE_LABELS } from "@/constants/surveys";
 import { useSurveys } from "@/hooks/useSurveys";
 import { useAuth } from "@/context/AuthContext";
@@ -111,9 +119,7 @@ export default function EncuestasPage() {
                       {ENCUESTAS_PAGE.columns.created}
                     </th>
                     <th className="px-4 py-3 font-medium sr-only">Acciones</th>
-                    <th className="px-4 py-3 font-medium">
-                      <span className="sr-only">Ver detalle</span>
-                    </th>
+                    <ChevronHeaderCell />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -123,12 +129,10 @@ export default function EncuestasPage() {
                       onClick={() =>
                         router.push(`/dashboard/encuestas/${survey.id}`)
                       }
-                      className="group bg-card hover:bg-muted/70 transition-colors cursor-pointer"
+                      className={`${ROW_HOVER_CLASS} bg-card`}
                     >
                       <td className="px-4 py-3 font-medium">
-                        <span className="group-hover:underline">
-                          {survey.name}
-                        </span>
+                        <RowLink>{survey.name}</RowLink>
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
@@ -172,12 +176,7 @@ export default function EncuestasPage() {
                           )}
                         </Button>
                       </td>
-                      <td className="px-4 py-3">
-                        <ChevronRight
-                          size={16}
-                          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                        />
-                      </td>
+                      <ChevronCell />
                     </tr>
                   ))}
                 </tbody>
@@ -191,12 +190,12 @@ export default function EncuestasPage() {
                   onClick={() =>
                     router.push(`/dashboard/encuestas/${survey.id}`)
                   }
-                  className="group flex cursor-pointer flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/70 active:bg-muted/70"
+                  className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} bg-card`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-medium group-hover:underline">
-                      {survey.name}
-                    </span>
+                    <RowLink>
+                      <span className="text-sm font-medium">{survey.name}</span>
+                    </RowLink>
                     <Button
                       variant="ghost"
                       size="icon-sm"
@@ -237,10 +236,7 @@ export default function EncuestasPage() {
                     </span>
                     <span className="flex items-center gap-1.5">
                       {formatDate(survey.created_at)}
-                      <ChevronRight
-                        size={16}
-                        className="transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                      />
+                      <RowChevron />
                     </span>
                   </div>
                 </div>

@@ -11,7 +11,16 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
-import { ChevronRight, Loader2, Plus, Search } from "lucide-react";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  GROUP_HOVER_UNDERLINE,
+  RowChevron,
+  RowLink,
+  ROW_HOVER_CLASS,
+} from "@/components/listings/RowAffordance";
+import { Loader2, Plus, Search } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -219,9 +228,7 @@ function EstablecimientosContent() {
                     <th className="px-4 py-3 font-medium">Dirección</th>
                     <th className="px-4 py-3 font-medium">Ciudad</th>
                     <th className="px-4 py-3 font-medium">Provincia</th>
-                    <th className="px-4 py-3 font-medium">
-                      <span className="sr-only">Ver detalle</span>
-                    </th>
+                    <ChevronHeaderCell />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -229,13 +236,13 @@ function EstablecimientosContent() {
                     <tr
                       key={est.id}
                       onClick={() => router.push(detailHref(est.id))}
-                      className="group cursor-pointer bg-card transition-colors hover:bg-muted/70"
+                      className={`${ROW_HOVER_CLASS} bg-card`}
                     >
                       <td className="px-4 py-3 font-medium">
                         <Link
                           href={detailHref(est.id)}
                           onClick={(e) => e.stopPropagation()}
-                          className="group-hover:underline"
+                          className={GROUP_HOVER_UNDERLINE}
                         >
                           {est.name}
                         </Link>
@@ -245,12 +252,7 @@ function EstablecimientosContent() {
                       </td>
                       <td className="px-4 py-3">{est.city}</td>
                       <td className="px-4 py-3">{est.province}</td>
-                      <td className="px-4 py-3">
-                        <ChevronRight
-                          size={16}
-                          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                        />
-                      </td>
+                      <ChevronCell />
                     </tr>
                   ))}
                 </tbody>
@@ -262,12 +264,12 @@ function EstablecimientosContent() {
                 <Link
                   key={est.id}
                   href={detailHref(est.id)}
-                  className="group flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/70 active:bg-muted/70"
+                  className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} bg-card`}
                 >
                   <span className="flex flex-col gap-1">
-                    <span className="text-sm font-medium group-hover:underline">
-                      {est.name}
-                    </span>
+                    <RowLink>
+                      <span className="text-sm font-medium">{est.name}</span>
+                    </RowLink>
                     <span className="text-xs text-muted-foreground">
                       {est.formatted_address}
                     </span>
@@ -275,10 +277,7 @@ function EstablecimientosContent() {
                       {est.city}, {est.province}
                     </span>
                   </span>
-                  <ChevronRight
-                    size={16}
-                    className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                  />
+                  <RowChevron className="shrink-0" />
                 </Link>
               ))}
             </div>

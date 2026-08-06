@@ -4,7 +4,15 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  RowLink,
+  ROW_HOVER_CLASS,
+} from "@/components/listings/RowAffordance";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import Link from "next/link";
 import { useUsers } from "@/hooks/useUsers";
@@ -57,9 +65,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                   <th className="px-4 py-3 font-medium">
                     {USERS_PAGE.columns.establishments}
                   </th>
-                  <th className="px-4 py-3 font-medium">
-                    <span className="sr-only">Ver detalle</span>
-                  </th>
+                  <ChevronHeaderCell />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -67,12 +73,12 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                   <tr
                     key={user.id}
                     onClick={() => setSelectedUserId(user.id)}
-                    className="group cursor-pointer bg-card hover:bg-muted/70 transition-colors"
+                    className={`${ROW_HOVER_CLASS} bg-card`}
                   >
                     <td className="px-4 py-3 font-medium">
-                      <span className="group-hover:underline">
+                      <RowLink>
                         {user.name} {user.last_name}
-                      </span>
+                      </RowLink>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {user.email}
@@ -94,12 +100,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <ChevronRight
-                        size={16}
-                        className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                      />
-                    </td>
+                    <ChevronCell />
                   </tr>
                 ))}
               </tbody>
@@ -112,12 +113,14 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                 key={user.id}
                 type="button"
                 onClick={() => setSelectedUserId(user.id)}
-                className="group flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/70 active:bg-muted/70"
+                className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 text-left ${CARD_HOVER_CLASS} bg-card`}
               >
                 <span className="flex flex-col gap-1">
-                  <span className="text-sm font-medium group-hover:underline">
-                    {user.name} {user.last_name}
-                  </span>
+                  <RowLink>
+                    <span className="text-sm font-medium">
+                      {user.name} {user.last_name}
+                    </span>
+                  </RowLink>
                   <span className="text-xs text-muted-foreground">
                     {user.email}
                   </span>
@@ -135,10 +138,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                     </div>
                   )}
                 </span>
-                <ChevronRight
-                  size={16}
-                  className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                />
+                <RowChevron className="shrink-0" />
               </button>
             ))}
           </div>

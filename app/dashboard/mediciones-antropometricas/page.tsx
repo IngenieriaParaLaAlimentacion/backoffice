@@ -24,7 +24,15 @@ import {
   topSeverity,
 } from "@/components/AlertBadge";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { ChevronRight, Loader2, RefreshCw, X } from "lucide-react";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  ROW_HOVER_CLASS,
+  rowStateClass,
+} from "@/components/listings/RowAffordance";
+import { Loader2, RefreshCw, X } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -356,9 +364,7 @@ export default function MedicionesAntropometricasPage() {
                     <th className="px-4 py-3 font-medium">Comedor</th>
                     <th className="px-4 py-3 font-medium">Responsable</th>
                     <th className="px-4 py-3 font-medium">Alertas</th>
-                    <th className="px-4 py-3 font-medium">
-                      <span className="sr-only">Ver detalle</span>
-                    </th>
+                    <ChevronHeaderCell />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -369,13 +375,7 @@ export default function MedicionesAntropometricasPage() {
                       <tr
                         key={m.id}
                         onClick={() => openEvolution(m.subject.id)}
-                        className={`group cursor-pointer transition-colors hover:bg-muted/70 ${
-                          isSelected
-                            ? "bg-muted/40"
-                            : severity
-                              ? SEVERITY_ROW_CLASS[severity]
-                              : "bg-card"
-                        }`}
+                        className={`${ROW_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                       >
                         <td className="px-4 py-3 font-medium">{m.weight_kg}</td>
                         <td className="px-4 py-3">{m.height_cm}</td>
@@ -401,12 +401,7 @@ export default function MedicionesAntropometricasPage() {
                             <AlertBadgeList alerts={m.alerts} />
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <ChevronRight
-                            size={16}
-                            className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                          />
-                        </td>
+                        <ChevronCell />
                       </tr>
                     );
                   })}
@@ -422,13 +417,7 @@ export default function MedicionesAntropometricasPage() {
                   <div
                     key={m.id}
                     onClick={() => openEvolution(m.subject.id)}
-                    className={`group flex cursor-pointer flex-col gap-2 rounded-lg border border-border p-3 transition-colors hover:bg-muted/70 ${
-                      isSelected
-                        ? "bg-muted/40"
-                        : severity
-                          ? SEVERITY_ROW_CLASS[severity]
-                          : "bg-card"
-                    }`}
+                    className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-sm font-medium">
@@ -440,10 +429,7 @@ export default function MedicionesAntropometricasPage() {
                       </span>
                       <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
                         {formatDateTime(m.measured_at)}
-                        <ChevronRight
-                          size={16}
-                          className="transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                        />
+                        <RowChevron />
                       </span>
                     </div>
 
