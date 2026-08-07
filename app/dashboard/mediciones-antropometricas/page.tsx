@@ -24,6 +24,14 @@ import {
   topSeverity,
 } from "@/components/AlertBadge";
 import { formatDate, formatDateTime } from "@/lib/format";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  ROW_HOVER_CLASS,
+  rowStateClass,
+} from "@/components/listings/RowAffordance";
 import { Loader2, RefreshCw, X } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -356,6 +364,7 @@ export default function MedicionesAntropometricasPage() {
                     <th className="px-4 py-3 font-medium">Comedor</th>
                     <th className="px-4 py-3 font-medium">Responsable</th>
                     <th className="px-4 py-3 font-medium">Alertas</th>
+                    <ChevronHeaderCell />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -366,13 +375,7 @@ export default function MedicionesAntropometricasPage() {
                       <tr
                         key={m.id}
                         onClick={() => openEvolution(m.subject.id)}
-                        className={`cursor-pointer transition-colors hover:bg-muted/30 ${
-                          isSelected
-                            ? "bg-muted/40"
-                            : severity
-                              ? SEVERITY_ROW_CLASS[severity]
-                              : "bg-card"
-                        }`}
+                        className={`${ROW_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                       >
                         <td className="px-4 py-3 font-medium">{m.weight_kg}</td>
                         <td className="px-4 py-3">{m.height_cm}</td>
@@ -394,10 +397,9 @@ export default function MedicionesAntropometricasPage() {
                           {m.responsible.name} {m.responsible.last_name}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex justify-center">
-                            <AlertBadgeList alerts={m.alerts} />
-                          </div>
+                          <AlertBadgeList alerts={m.alerts} />
                         </td>
+                        <ChevronCell />
                       </tr>
                     );
                   })}
@@ -413,13 +415,7 @@ export default function MedicionesAntropometricasPage() {
                   <div
                     key={m.id}
                     onClick={() => openEvolution(m.subject.id)}
-                    className={`flex cursor-pointer flex-col gap-2 rounded-lg border border-border p-3 transition-colors hover:bg-muted/30 ${
-                      isSelected
-                        ? "bg-muted/40"
-                        : severity
-                          ? SEVERITY_ROW_CLASS[severity]
-                          : "bg-card"
-                    }`}
+                    className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-sm font-medium">
@@ -429,8 +425,9 @@ export default function MedicionesAntropometricasPage() {
                           ({m.subject.dni})
                         </span>
                       </span>
-                      <span className="whitespace-nowrap text-xs text-muted-foreground">
+                      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
                         {formatDateTime(m.measured_at)}
+                        <RowChevron />
                       </span>
                     </div>
 

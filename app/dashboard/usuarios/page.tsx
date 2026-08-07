@@ -1,17 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  RowLink,
+  ROW_HOVER_CLASS,
+} from "@/components/listings/RowAffordance";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import Link from "next/link";
 import { useUsers } from "@/hooks/useUsers";
+import UserDetailPanel from "./[role]/UserDetailPanel";
 
 const PAGE_SIZE = 3;
 
 function RoleSection({ role, label }: { role: string; label: string }) {
   const { users, isLoading, error } = useUsers(role, PAGE_SIZE);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-3">
@@ -54,16 +65,20 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                   <th className="px-4 py-3 font-medium">
                     {USERS_PAGE.columns.establishments}
                   </th>
+                  <ChevronHeaderCell className="w-12" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {users.map((user) => (
                   <tr
                     key={user.id}
-                    className="bg-card hover:bg-muted/30 transition-colors"
+                    onClick={() => setSelectedUserId(user.id)}
+                    className={`${ROW_HOVER_CLASS} bg-card`}
                   >
                     <td className="px-4 py-3 font-medium">
-                      {user.name} {user.last_name}
+                      <RowLink>
+                        {user.name} {user.last_name}
+                      </RowLink>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {user.email}
@@ -85,6 +100,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                         </div>
                       )}
                     </td>
+                    <ChevronCell className="w-12" />
                   </tr>
                 ))}
               </tbody>
@@ -93,34 +109,46 @@ function RoleSection({ role, label }: { role: string; label: string }) {
 
           <div className="flex flex-col gap-2 md:hidden">
             {users.map((user) => (
-              <div
+              <button
                 key={user.id}
-                className="flex flex-col gap-1 rounded-lg border border-border bg-card p-3"
+                type="button"
+                onClick={() => setSelectedUserId(user.id)}
+                className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 text-left ${CARD_HOVER_CLASS} bg-card`}
               >
-                <span className="text-sm font-medium">
-                  {user.name} {user.last_name}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {user.email}
-                </span>
-                {user.establishments.length > 0 && (
-                  <div className="mt-1 flex flex-col gap-0.5">
-                    {user.establishments.map((est) => (
-                      <span key={est.id} className="text-xs">
-                        <span className="font-medium">{est.name}</span>
-                        <span className="text-muted-foreground">
-                          {" "}
-                          — {est.formatted_address}
+                <span className="flex flex-col gap-1">
+                  <RowLink>
+                    <span className="text-sm font-medium">
+                      {user.name} {user.last_name}
+                    </span>
+                  </RowLink>
+                  <span className="text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
+                  {user.establishments.length > 0 && (
+                    <div className="mt-1 flex flex-col gap-0.5">
+                      {user.establishments.map((est) => (
+                        <span key={est.id} className="text-xs">
+                          <span className="font-medium">{est.name}</span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            — {est.formatted_address}
+                          </span>
                         </span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      ))}
+                    </div>
+                  )}
+                </span>
+                <RowChevron className="shrink-0" />
+              </button>
             ))}
           </div>
         </>
       )}
+
+      <UserDetailPanel
+        userId={selectedUserId}
+        onClose={() => setSelectedUserId(null)}
+      />
     </div>
   );
 }
