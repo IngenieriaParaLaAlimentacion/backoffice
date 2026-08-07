@@ -40,7 +40,12 @@ export const ENCUESTAS_FORM = {
   establishmentsLabel: "Establecimientos",
   establishmentsSearch: "Buscar establecimiento",
   activate: "Activar",
+  activateTitle: "Habilita la encuesta para que puedan responderla",
+  activateConfirm: "¿Activar esta encuesta? Quedará disponible para responder.",
   deactivate: "Desactivar",
+  deactivateTitle: "Deja de aceptar nuevas respuestas para esta encuesta",
+  deactivateConfirm:
+    "¿Desactivar esta encuesta? Dejará de estar disponible para responder.",
   delete: "Eliminar",
   deleteConfirm: "¿Eliminar esta encuesta? Esta acción no se puede deshacer.",
 } as const;

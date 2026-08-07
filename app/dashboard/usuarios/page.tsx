@@ -42,17 +42,17 @@ function RoleSection({ role, label }: { role: string; label: string }) {
       ) : (
         <>
           <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground text-left">
-                  <th className="px-4 py-3 font-medium">
+                  <th className="w-1/4 px-4 py-3 font-medium">
                     {USERS_PAGE.columns.name}
+                  </th>
+                  <th className="w-1/3 px-4 py-3 font-medium">
+                    {USERS_PAGE.columns.email}
                   </th>
                   <th className="px-4 py-3 font-medium">
                     {USERS_PAGE.columns.establishments}
-                  </th>
-                  <th className="px-4 py-3 font-medium">
-                    {USERS_PAGE.columns.email}
                   </th>
                 </tr>
               </thead>

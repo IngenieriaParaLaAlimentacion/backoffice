@@ -46,7 +46,8 @@ export const NORMAL_BADGE_CLASS =
 export const NO_DATA_BADGE_CLASS =
   "bg-muted text-muted-foreground border-border";
 
-const BADGE_CLASS = "inline-block rounded-full border px-2 py-0.5 text-xs";
+const BADGE_CLASS =
+  "inline-block whitespace-nowrap rounded-full border px-2 py-0.5 text-xs text-center";
 
 export function topSeverity(alerts: MeasurementAlert[]): AlertSeverity | null {
   if (alerts.length === 0) return null;
@@ -97,21 +98,25 @@ export function AlertBadgeList({
 }: AlertBadgeListProps) {
   if (!hasMeasurement) {
     return (
-      <AlertBadge
-        label="Sin datos"
-        className={NO_DATA_BADGE_CLASS}
-        title="El sujeto no tiene mediciones registradas"
-      />
+      <div className="flex flex-wrap gap-1">
+        <AlertBadge
+          label="Sin datos"
+          className={NO_DATA_BADGE_CLASS}
+          title="El sujeto no tiene mediciones registradas"
+        />
+      </div>
     );
   }
 
   if (alerts.length === 0) {
     return (
-      <AlertBadge
-        label="Normal"
-        className={NORMAL_BADGE_CLASS}
-        title={scopeLabel}
-      />
+      <div className="flex flex-wrap gap-1">
+        <AlertBadge
+          label="Normal"
+          className={NORMAL_BADGE_CLASS}
+          title={scopeLabel}
+        />
+      </div>
     );
   }
 

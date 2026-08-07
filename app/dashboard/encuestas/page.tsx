@@ -130,10 +130,10 @@ export default function EncuestasPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
                             survey.is_active
-                              ? "bg-primary/10 text-primary"
-                              : "bg-muted text-muted-foreground"
+                              ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+                              : "bg-muted text-muted-foreground border-transparent"
                           }`}
                         >
                           {survey.is_active
@@ -204,10 +204,10 @@ export default function EncuestasPage() {
                       {SCOPE_LABELS[survey.scope]}
                     </span>
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
                         survey.is_active
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted text-muted-foreground"
+                          ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+                          : "bg-muted text-muted-foreground border-transparent"
                       }`}
                     >
                       {survey.is_active
@@ -217,7 +217,8 @@ export default function EncuestasPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>
-                      {ENCUESTAS_PAGE.columns.questions}: {survey.question_count}
+                      {ENCUESTAS_PAGE.columns.questions}:{" "}
+                      {survey.question_count}
                     </span>
                     <span>{formatDate(survey.created_at)}</span>
                   </div>

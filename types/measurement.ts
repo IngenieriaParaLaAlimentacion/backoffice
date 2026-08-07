@@ -34,6 +34,7 @@ export type LatestMeasurement = {
   weight_kg: number;
   height_cm: number;
   bmi: number;
+  establishment: MeasurementEstablishment;
   alerts: MeasurementAlert[];
 };
 
