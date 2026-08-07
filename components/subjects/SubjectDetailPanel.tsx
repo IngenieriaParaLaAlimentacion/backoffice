@@ -9,6 +9,7 @@ import { MeasurementAlert } from "@/types/measurement";
 import { AlertBadgeList } from "@/components/AlertBadge";
 import { Separator } from "@/components/ui/separator";
 import { EMPTY_VALUE, formatDate, formatDateTime } from "@/lib/format";
+import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
 import { Loader2, X } from "lucide-react";
 
 export function DetailField({
@@ -42,8 +43,6 @@ type SubjectDetailPanelProps = {
   alertScopeLabel?: string;
 };
 
-const GLOBAL_SCOPE_LABEL = "Último relevamiento (todos los comedores)";
-
 export default function SubjectDetailPanel({
   subjectId,
   onClose,
@@ -67,7 +66,7 @@ export default function SubjectDetailPanel({
         setDetail(data);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error al cargar el sujeto",
+          err instanceof Error ? err.message : SUBJECT_DETAIL_PANEL.loadError,
         );
       } finally {
         setIsLoading(false);
@@ -96,7 +95,9 @@ export default function SubjectDetailPanel({
   const badgeHasMeasurement = isScoped
     ? hasMeasurement
     : !!detail?.latest_measurement;
-  const badgeLabel = isScoped ? alertScopeLabel : GLOBAL_SCOPE_LABEL;
+  const badgeLabel = isScoped
+    ? alertScopeLabel
+    : SUBJECT_DETAIL_PANEL.globalScopeLabel;
 
   return (
     <Dialog.Root
@@ -111,7 +112,9 @@ export default function SubjectDetailPanel({
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-2">
               <Dialog.Title className="text-xl font-bold tracking-tight">
-                {detail ? `${detail.name} ${detail.last_name}` : "Sujeto"}
+                {detail
+                  ? `${detail.name} ${detail.last_name}`
+                  : SUBJECT_DETAIL_PANEL.title}
               </Dialog.Title>
               {showBadge && (
                 <div className="flex flex-col gap-1">
@@ -151,26 +154,41 @@ export default function SubjectDetailPanel({
             </div>
           ) : detail ? (
             <div className="flex flex-col gap-4">
-              <DetailField label="Documento de identidad" value={detail.dni} />
               <DetailField
-                label="Sexo"
-                value={detail.sex === "male" ? "Masculino" : "Femenino"}
+                label={SUBJECT_DETAIL_PANEL.fields.dni}
+                value={detail.dni}
               />
               <DetailField
-                label="Fecha de nacimiento"
+                label={SUBJECT_DETAIL_PANEL.fields.sex}
+                value={
+                  detail.sex === "male"
+                    ? SUBJECT_DETAIL_PANEL.fields.male
+                    : SUBJECT_DETAIL_PANEL.fields.female
+                }
+              />
+              <DetailField
+                label={SUBJECT_DETAIL_PANEL.fields.birthDate}
                 value={formatDate(detail.birth_date)}
               />
               <DetailField
-                label="Población rural"
-                value={detail.is_rural ? "Sí" : "No"}
+                label={SUBJECT_DETAIL_PANEL.fields.isRural}
+                value={
+                  detail.is_rural
+                    ? SUBJECT_DETAIL_PANEL.fields.yes
+                    : SUBJECT_DETAIL_PANEL.fields.no
+                }
               />
               <DetailField
-                label="Población indígena"
-                value={detail.is_indigenous ? "Sí" : "No"}
+                label={SUBJECT_DETAIL_PANEL.fields.isIndigenous}
+                value={
+                  detail.is_indigenous
+                    ? SUBJECT_DETAIL_PANEL.fields.yes
+                    : SUBJECT_DETAIL_PANEL.fields.no
+                }
               />
               <div className="flex flex-col gap-1">
                 <span className="text-xs text-muted-foreground">
-                  Último relevamiento
+                  {SUBJECT_DETAIL_PANEL.latestMeasurement.label}
                 </span>
                 {detail.latest_measurement ? (
                   <div className="overflow-hidden rounded-lg border border-border">
@@ -178,7 +196,7 @@ export default function SubjectDetailPanel({
                       <tbody className="divide-y divide-border">
                         <tr>
                           <td className="px-3 py-2 text-muted-foreground">
-                            Fecha
+                            {SUBJECT_DETAIL_PANEL.latestMeasurement.date}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
                             {formatDateTime(
@@ -188,7 +206,10 @@ export default function SubjectDetailPanel({
                         </tr>
                         <tr>
                           <td className="px-3 py-2 text-muted-foreground">
-                            Establecimiento
+                            {
+                              SUBJECT_DETAIL_PANEL.latestMeasurement
+                                .establishment
+                            }
                           </td>
                           <td className="px-3 py-2 text-right">
                             <span className="font-medium">
@@ -202,7 +223,7 @@ export default function SubjectDetailPanel({
                         </tr>
                         <tr>
                           <td className="px-3 py-2 text-muted-foreground">
-                            Peso
+                            {SUBJECT_DETAIL_PANEL.latestMeasurement.weight}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
                             {detail.latest_measurement.weight_kg} kg
@@ -210,7 +231,7 @@ export default function SubjectDetailPanel({
                         </tr>
                         <tr>
                           <td className="px-3 py-2 text-muted-foreground">
-                            Talla
+                            {SUBJECT_DETAIL_PANEL.latestMeasurement.height}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
                             {detail.latest_measurement.height_cm} cm
@@ -218,7 +239,7 @@ export default function SubjectDetailPanel({
                         </tr>
                         <tr>
                           <td className="px-3 py-2 text-muted-foreground">
-                            IMC
+                            {SUBJECT_DETAIL_PANEL.latestMeasurement.bmi}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
                             {detail.latest_measurement.bmi}
