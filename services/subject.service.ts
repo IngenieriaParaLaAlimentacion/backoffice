@@ -2,9 +2,9 @@ import { AuthDispatcher } from "@/context/AuthContext";
 import { SUBJECTS_ENDPOINT, SUBJECT_ENDPOINT } from "@/constants/api";
 import {
   PaginatedSubjectsResponse,
-  SortOrder,
+  Sex,
   SubjectDetail,
-  SubjectSortField,
+  SubjectSortOrder,
 } from "@/types/subject";
 import { ErrorResponse } from "@/lib/types";
 
@@ -12,12 +12,13 @@ type ListSubjectsParams = {
   page?: number;
   page_size?: number;
   search?: string;
-  // Future-facing filters/sort: the backend ignores these until it adds support.
-  birth_date?: string;
+  birth_date_from?: string;
+  birth_date_to?: string;
   establishment_id?: string;
-  last_survey_date?: string;
-  sort_by?: SubjectSortField;
-  order?: SortOrder;
+  is_rural?: boolean;
+  is_indigenous?: boolean;
+  sex?: Sex;
+  sort_order?: SubjectSortOrder;
 };
 
 export const listSubjectsAction = async (
@@ -28,13 +29,17 @@ export const listSubjectsAction = async (
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
   if (params?.search) query.set("search", params.search);
-  if (params?.birth_date) query.set("birth_date", params.birth_date);
+  if (params?.birth_date_from)
+    query.set("birth_date_from", params.birth_date_from);
+  if (params?.birth_date_to) query.set("birth_date_to", params.birth_date_to);
   if (params?.establishment_id)
     query.set("establishment_id", params.establishment_id);
-  if (params?.last_survey_date)
-    query.set("last_survey_date", params.last_survey_date);
-  if (params?.sort_by) query.set("sort_by", params.sort_by);
-  if (params?.order) query.set("order", params.order);
+  if (params?.is_rural !== undefined)
+    query.set("is_rural", String(params.is_rural));
+  if (params?.is_indigenous !== undefined)
+    query.set("is_indigenous", String(params.is_indigenous));
+  if (params?.sex) query.set("sex", params.sex);
+  if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const path = query.size
     ? `${SUBJECTS_ENDPOINT}?${query.toString()}`
