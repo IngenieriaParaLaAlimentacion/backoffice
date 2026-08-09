@@ -108,3 +108,55 @@ export type SurveyTemplateResponse = {
   scope: SurveyScope;
   questions: TemplateQuestion[];
 };
+
+// --- Survey Response types (Dashboard) ---
+
+export type SurveyRef = { id: string; name: string };
+export type UserRef = { id: string; name: string };
+export type EstablishmentRef = {
+  id: string;
+  name: string;
+  city: string;
+  province: string;
+};
+
+export type SurveyResponseDashboardItem = {
+  id: string;
+  event_at: string;
+  survey: SurveyRef;
+  establishment: EstablishmentRef;
+  submitted_by: UserRef;
+  score_fies: number | null;
+};
+
+export type PaginatedSurveyResponses = {
+  items: SurveyResponseDashboardItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+};
+
+export type QuestionAnswer = {
+  question_id: string;
+  question_text: string;
+  response_type: ResponseType;
+  value: string | number | string[] | null;
+  value_label: string | string[] | null;
+};
+
+export type SurveyResponseDetail = {
+  id: string;
+  event_at: string;
+  survey: SurveyRef;
+  establishment: EstablishmentRef;
+  submitted_by: UserRef;
+  score_fies: number | null;
+  answers: QuestionAnswer[];
+};
+
+export type DashboardIndicators = {
+  response_count: number;
+  participating_establishments_count: number;
+  last_event_at: string | null;
+};

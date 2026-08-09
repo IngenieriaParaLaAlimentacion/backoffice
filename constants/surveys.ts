@@ -62,3 +62,45 @@ export const ENCUESTAS_PAGE = {
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
+
+export const RESPUESTAS_PAGE = {
+  title: "Respuestas",
+  subtitle: "Resultados de la encuesta",
+  back: "Encuestas",
+  viewResponses: "Ver respuestas",
+  noResponses: "No hay respuestas para esta encuesta",
+  respondent: "Responsable",
+  establishment: "Comedor",
+  date: "Fecha de relevamiento",
+  score: "Score FIES",
+  export: "Exportar",
+  exporting: "Exportando...",
+  filters: {
+    establishment: "Comedor",
+    dateFrom: "Fecha desde",
+    dateTo: "Fecha hasta",
+    city: "Ciudad",
+    province: "Provincia",
+    allEstablishments: "Todos los comedores",
+  },
+  columns: {
+    respondent: "Responsable",
+    establishment: "Comedor",
+    city: "Ciudad",
+    province: "Provincia",
+    date: "Fecha",
+    score: "Score FIES",
+  },
+  pagination: (page: number, total: number) => `Página ${page} de ${total}`,
+  detailTitle: "Detalle de respuesta",
+  questionAnswers: "Respuestas",
+} as const;
+
+export const DASHBOARD_INDICATORS = {
+  title: "Panel de indicadores",
+  responseCount: "Respuestas totales",
+  establishmentsCount: "Comedores participantes",
+  lastEvent: "Último relevamiento",
+  noData: "Sin datos disponibles",
+  noDate: "—",
+} as const;
