@@ -22,13 +22,6 @@ import {
   makeListSurveysHandler,
   makeUpdateSurveyHandler,
 } from "@/mocks/handlers/survey";
-import {
-  makeListSurveyResponsesHandler,
-  makeSurveyResponseDetailHandler,
-  makeExportSurveyResponsesHandler,
-  makeDashboardIndicatorsHandler,
-} from "@/mocks/handlers/surveyResponse";
-import { makeMeHandler } from "@/mocks/handlers/user";
 
 export const handlers = [
   makeLoginHandler(),
@@ -47,9 +40,4 @@ export const handlers = [
   makeCreateSurveyHandler(),
   makeListSurveysHandler(),
   makeGetSurveyHandler(),
-  makeListSurveyResponsesHandler(),
-  makeSurveyResponseDetailHandler(),
-  makeExportSurveyResponsesHandler(),
-  makeDashboardIndicatorsHandler(),
-  makeMeHandler(),
 ];
