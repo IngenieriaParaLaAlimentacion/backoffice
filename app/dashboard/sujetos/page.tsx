@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { listSubjectsAction } from "@/services/subject.service";
-import { SortOrder, SubjectSortField, SubjectSummary } from "@/types/subject";
+import { listEstablishmentsAction } from "@/services/establishment.service";
+import { SubjectSortOrder, SubjectSummary } from "@/types/subject";
+import { EstablishmentResponse } from "@/types/admin";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
+import { formatDate, formatDateTime, EMPTY_VALUE } from "@/lib/format";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -19,30 +22,66 @@ import {
   ROW_HOVER_CLASS,
   rowStateClass,
 } from "@/components/listings/RowAffordance";
-import { ArrowDown, ArrowUp, Loader2, RefreshCw, Search } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
+const ESTABLISHMENTS_PAGE_SIZE = 100;
 
 const SELECT_CLASS =
   "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-const SORT_OPTIONS: { value: SubjectSortField; label: string }[] = [
-  { value: "name", label: "Nombre y apellido" },
-  { value: "created_at", label: "Fecha de creación" },
-  { value: "last_survey_date", label: "Fecha de último relevamiento" },
+const SORT_OPTIONS: { value: SubjectSortOrder; label: string }[] = [
+  { value: "name_asc", label: "Nombre A → Z" },
+  { value: "name_desc", label: "Nombre Z → A" },
+  { value: "birth_date_asc", label: "Fecha de nacimiento (más antigua)" },
+  { value: "birth_date_desc", label: "Fecha de nacimiento (más reciente)" },
+];
+
+const RURAL_OPTIONS: { value: "" | "true" | "false"; label: string }[] = [
+  { value: "", label: "Todos" },
+  { value: "true", label: "Rural" },
+  { value: "false", label: "No rural" },
+];
+
+const INDIGENOUS_OPTIONS: { value: "" | "true" | "false"; label: string }[] = [
+  { value: "", label: "Todos" },
+  { value: "true", label: "Sí" },
+  { value: "false", label: "No" },
+];
+
+const SEX_OPTIONS: { value: "" | "female" | "male"; label: string }[] = [
+  { value: "", label: "Todos" },
+  { value: "female", label: "Femenino" },
+  { value: "male", label: "Masculino" },
 ];
 
 type Filters = {
   search: string;
-  birthDate: string;
-  lastSurveyDate: string;
+  birthDateFrom: string;
+  birthDateTo: string;
+  establishmentId: string;
+  isRural: "" | "true" | "false";
+  isIndigenous: "" | "true" | "false";
+  sex: "" | "female" | "male";
 };
 
 const EMPTY_FILTERS: Filters = {
   search: "",
-  birthDate: "",
-  lastSurveyDate: "",
+  birthDateFrom: "",
+  birthDateTo: "",
+  establishmentId: "",
+  isRural: "",
+  isIndigenous: "",
+  sex: "",
 };
 
 export default function SujetosPage() {
@@ -58,12 +97,27 @@ export default function SujetosPage() {
   const [debouncedFilters, setDebouncedFilters] =
     useState<Filters>(EMPTY_FILTERS);
 
-  const [sortBy, setSortBy] = useState<SubjectSortField>("name");
-  const [order, setOrder] = useState<SortOrder>("asc");
+  const [sortOrder, setSortOrder] = useState<SubjectSortOrder>("name_asc");
+
+  const [establishments, setEstablishments] = useState<EstablishmentResponse[]>(
+    [],
+  );
 
   const [reloadKey, setReloadKey] = useState(0);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount = [
+    filters.birthDateFrom,
+    filters.birthDateTo,
+    filters.establishmentId,
+    filters.isRural,
+    filters.isIndigenous,
+    filters.sex,
+  ].filter(Boolean).length;
+  const hasActiveFilters =
+    activeFilterCount > 0 || filters.search !== EMPTY_FILTERS.search;
 
   // Debounce filter changes and reset to the first page when they change.
   useEffect(() => {
@@ -75,13 +129,34 @@ export default function SujetosPage() {
     return () => clearTimeout(timeout);
   }, [filters]);
 
+  // Populate the "Establecimiento" filter once on mount.
+  useEffect(() => {
+    listEstablishmentsAction(makeAuthorizedRequest, {
+      page: 1,
+      page_size: ESTABLISHMENTS_PAGE_SIZE,
+    })
+      .then((data) => setEstablishments(data.items))
+      .catch(() => setEstablishments([]));
+  }, [makeAuthorizedRequest]);
+
   const fetchSubjects = useCallback(
     async (
       currentPage: number,
       currentFilters: Filters,
-      currentSortBy: SubjectSortField,
-      currentOrder: SortOrder,
+      currentSortOrder: SubjectSortOrder,
     ) => {
+      // Guard an inconsistent range client-side (backend returns 400 otherwise).
+      if (
+        currentFilters.birthDateFrom &&
+        currentFilters.birthDateTo &&
+        currentFilters.birthDateFrom > currentFilters.birthDateTo
+      ) {
+        setSubjects([]);
+        setError("La fecha desde no puede ser posterior a la fecha hasta.");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
       try {
@@ -89,10 +164,19 @@ export default function SujetosPage() {
           page: currentPage,
           page_size: PAGE_SIZE,
           search: currentFilters.search || undefined,
-          birth_date: currentFilters.birthDate || undefined,
-          last_survey_date: currentFilters.lastSurveyDate || undefined,
-          sort_by: currentSortBy,
-          order: currentOrder,
+          birth_date_from: currentFilters.birthDateFrom || undefined,
+          birth_date_to: currentFilters.birthDateTo || undefined,
+          establishment_id: currentFilters.establishmentId || undefined,
+          is_rural:
+            currentFilters.isRural === ""
+              ? undefined
+              : currentFilters.isRural === "true",
+          is_indigenous:
+            currentFilters.isIndigenous === ""
+              ? undefined
+              : currentFilters.isIndigenous === "true",
+          sex: currentFilters.sex || undefined,
+          sort_order: currentSortOrder,
         });
         setSubjects(data.items);
         setTotalPages(data.total_pages);
@@ -108,8 +192,8 @@ export default function SujetosPage() {
   );
 
   useEffect(() => {
-    fetchSubjects(page, debouncedFilters, sortBy, order);
-  }, [fetchSubjects, page, debouncedFilters, sortBy, order, reloadKey]);
+    fetchSubjects(page, debouncedFilters, sortOrder);
+  }, [fetchSubjects, page, debouncedFilters, sortOrder, reloadKey]);
 
   // Reflect changes made elsewhere when the user returns to the tab.
   useEffect(() => {
@@ -118,7 +202,7 @@ export default function SujetosPage() {
     return () => window.removeEventListener("focus", onFocus);
   }, []);
 
-  const updateFilter = (key: keyof Filters, value: string) => {
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -148,58 +232,36 @@ export default function SujetosPage() {
 
         <Separator />
 
-        {/* Filters (CA2) + sorting (CA3) */}
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Buscar</label>
-            <div className="relative w-full sm:w-64">
-              <Search
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                size={16}
-              />
-              <Input
-                value={filters.search}
-                onChange={(e) => updateFilter("search", e.target.value)}
-                placeholder="Nombre, apellido o documento"
-                className="pl-8"
-              />
+        {/* Search + sort (always visible) and collapsible filters (CA2) */}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">Buscar</label>
+              <div className="relative w-full sm:w-64">
+                <Search
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                  size={16}
+                />
+                <Input
+                  value={filters.search}
+                  onChange={(e) => updateFilter("search", e.target.value)}
+                  placeholder="Nombre, apellido o documento"
+                  className="pl-8"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              Fecha de nacimiento
-            </label>
-            <Input
-              type="date"
-              value={filters.birthDate}
-              onChange={(e) => updateFilter("birthDate", e.target.value)}
-              className="w-full sm:w-40"
-            />
-          </div>
-
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              Último relevamiento
-            </label>
-            <Input
-              type="date"
-              value={filters.lastSurveyDate}
-              onChange={(e) => updateFilter("lastSurveyDate", e.target.value)}
-              className="w-full sm:w-40"
-            />
-          </div>
-
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Ordenar por</label>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                Ordenar por
+              </label>
               <select
-                value={sortBy}
+                value={sortOrder}
                 onChange={(e) => {
-                  setSortBy(e.target.value as SubjectSortField);
+                  setSortOrder(e.target.value as SubjectSortOrder);
                   setPage(1);
                 }}
-                className={`${SELECT_CLASS} flex-1 sm:w-56 sm:flex-none`}
+                className={`${SELECT_CLASS} w-full sm:w-56`}
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -207,23 +269,160 @@ export default function SujetosPage() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => setFiltersOpen((o) => !o)}
+            >
+              <SlidersHorizontal size={14} />
+              Filtros
+              {activeFilterCount > 0 && (
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
+                  {activeFilterCount}
+                </span>
+              )}
+              {filtersOpen ? (
+                <ChevronUp size={14} />
+              ) : (
+                <ChevronDown size={14} />
+              )}
+            </Button>
+
+            {hasActiveFilters && (
               <Button
                 size="sm"
-                variant="outline"
-                onClick={() => {
-                  setOrder((o) => (o === "asc" ? "desc" : "asc"));
-                  setPage(1);
-                }}
-                title={order === "asc" ? "Ascendente" : "Descendente"}
+                variant="ghost"
+                className="gap-1.5 text-muted-foreground"
+                onClick={() => setFilters(EMPTY_FILTERS)}
               >
-                {order === "asc" ? (
-                  <ArrowUp size={14} />
-                ) : (
-                  <ArrowDown size={14} />
-                )}
+                <X size={14} />
+                Borrar filtros
               </Button>
-            </div>
+            )}
           </div>
+
+          {filtersOpen && (
+            <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-muted/30 p-3">
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  Fecha de nacimiento
+                </label>
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] text-muted-foreground">
+                      Desde
+                    </span>
+                    <Input
+                      type="date"
+                      value={filters.birthDateFrom}
+                      onChange={(e) =>
+                        updateFilter("birthDateFrom", e.target.value)
+                      }
+                      className="w-full sm:w-36"
+                    />
+                  </div>
+                  <span className="mt-3 text-muted-foreground">–</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] text-muted-foreground">
+                      Hasta
+                    </span>
+                    <Input
+                      type="date"
+                      value={filters.birthDateTo}
+                      onChange={(e) =>
+                        updateFilter("birthDateTo", e.target.value)
+                      }
+                      className="w-full sm:w-36"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  Establecimiento
+                </label>
+                <select
+                  value={filters.establishmentId}
+                  onChange={(e) =>
+                    updateFilter("establishmentId", e.target.value)
+                  }
+                  className={`${SELECT_CLASS} w-full sm:w-48`}
+                >
+                  <option value="">Todos</option>
+                  {establishments.map((est) => (
+                    <option key={est.id} value={est.id}>
+                      {est.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  Zona rural
+                </label>
+                <select
+                  value={filters.isRural}
+                  onChange={(e) =>
+                    updateFilter(
+                      "isRural",
+                      e.target.value as Filters["isRural"],
+                    )
+                  }
+                  className={`${SELECT_CLASS} w-full sm:w-32`}
+                >
+                  {RURAL_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  Población indígena
+                </label>
+                <select
+                  value={filters.isIndigenous}
+                  onChange={(e) =>
+                    updateFilter(
+                      "isIndigenous",
+                      e.target.value as Filters["isIndigenous"],
+                    )
+                  }
+                  className={`${SELECT_CLASS} w-full sm:w-32`}
+                >
+                  {INDIGENOUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">Sexo</label>
+                <select
+                  value={filters.sex}
+                  onChange={(e) =>
+                    updateFilter("sex", e.target.value as Filters["sex"])
+                  }
+                  className={`${SELECT_CLASS} w-full sm:w-32`}
+                >
+                  {SEX_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -273,10 +472,16 @@ export default function SujetosPage() {
                         {subject.dni}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-muted-foreground">—</span>
+                        {formatDate(subject.birth_date)}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-muted-foreground">—</span>
+                        {subject.latest_measurement?.measured_at ? (
+                          formatDateTime(subject.latest_measurement.measured_at)
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {EMPTY_VALUE}
+                          </span>
+                        )}
                       </td>
                       <ChevronCell />
                     </tr>

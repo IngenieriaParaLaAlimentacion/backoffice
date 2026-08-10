@@ -8,6 +8,8 @@ export type SubjectSummary = {
   name: string;
   last_name: string;
   sex: Sex;
+  birth_date: string;
+  latest_measurement?: LatestMeasurement | null;
 };
 
 export type PaginatedSubjectsResponse = {
@@ -40,6 +42,8 @@ export type SubjectDetail = {
   latest_measurement?: LatestMeasurement | null;
 };
 
-export type SubjectSortField = "name" | "created_at" | "last_survey_date";
-
-export type SortOrder = "asc" | "desc";
+export type SubjectSortOrder =
+  | "name_asc"
+  | "name_desc"
+  | "birth_date_asc"
+  | "birth_date_desc";
