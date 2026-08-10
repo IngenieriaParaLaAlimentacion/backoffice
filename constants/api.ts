@@ -33,6 +33,12 @@ export const GET_USER_ENDPOINT = (userId: string) =>
 // --- Establishments Endpoints ---
 
 export const ESTABLISHMENTS_ENDPOINT = "/api/v1/establishments";
+export const ESTABLISHMENT_DASHBOARD_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}/dashboard`;
+export const ESTABLISHMENT_SUBJECTS_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}/subjects`;
+export const ESTABLISHMENT_FIELD_WORKERS_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}/field-workers`;
 
 // --- Subjects Endpoints ---
 

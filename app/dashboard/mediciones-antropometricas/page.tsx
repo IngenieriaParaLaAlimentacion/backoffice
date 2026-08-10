@@ -8,9 +8,6 @@ import {
   listMeasurementsAction,
 } from "@/services/measurement.service";
 import {
-  AlertSeverity,
-  AlertType,
-  MeasurementAlert,
   MeasurementListItem,
   MeasurementSortOrder,
   SubjectEvolutionResponse,
@@ -20,7 +17,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import MeasurementEvolutionChart from "@/components/MeasurementEvolutionChart";
-import { ChevronLeft, ChevronRight, Loader2, RefreshCw, X } from "lucide-react";
+import Pagination from "@/components/Pagination";
+import {
+  AlertBadgeList,
+  SEVERITY_ROW_CLASS,
+  topSeverity,
+} from "@/components/AlertBadge";
+import { formatDate, formatDateTime } from "@/lib/format";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  ROW_HOVER_CLASS,
+  rowStateClass,
+} from "@/components/listings/RowAffordance";
+import { Loader2, RefreshCw, X } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -36,43 +48,6 @@ const SORT_OPTIONS: { value: MeasurementSortOrder; label: string }[] = [
   { value: "height_desc", label: "Talla (mayor)" },
   { value: "height_asc", label: "Talla (menor)" },
 ];
-
-// Risk styling keyed off the highest-priority alert severity in a row.
-const SEVERITY_RANK: Record<AlertSeverity, number> = {
-  critical: 3,
-  high: 2,
-  medium: 1,
-};
-
-const ALERT_TYPE_LABELS: Record<AlertType, string> = {
-  severely_wasted: "Emaciación severa",
-  wasted: "Emaciación",
-  overweight: "Sobrepeso",
-  obese: "Obesidad",
-  severe_underweight: "Bajo peso severo",
-  underweight: "Bajo peso",
-};
-
-const SEVERITY_BADGE_CLASS: Record<AlertSeverity, string> = {
-  critical: "bg-destructive/15 text-destructive border-destructive/30",
-  high: "bg-orange-500/15 text-orange-600 border-orange-500/30",
-  medium: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-};
-
-const SEVERITY_ROW_CLASS: Record<AlertSeverity, string> = {
-  critical: "bg-destructive/5",
-  high: "bg-orange-500/5",
-  medium: "bg-amber-500/5",
-};
-
-function topSeverity(alerts: MeasurementAlert[]): AlertSeverity | null {
-  if (alerts.length === 0) return null;
-  return alerts.reduce<AlertSeverity>(
-    (max, a) =>
-      SEVERITY_RANK[a.severity] > SEVERITY_RANK[max] ? a.severity : max,
-    alerts[0].severity,
-  );
-}
 
 type Filters = {
   city: string;
@@ -91,23 +66,6 @@ const EMPTY_FILTERS: Filters = {
   minAge: "",
   maxAge: "",
 };
-
-// "2026-03-01T10:00:00Z" -> "01/03/2026 10:00"
-function formatDateTime(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
-  return `${day}/${month}/${year}`;
-}
-
-// "2023-01-15" -> "15/01/2023" without timezone shifts.
-function formatDate(value: string) {
-  const [year, month, day] = value.split("-");
-  if (!year || !month || !day) return value;
-  return `${day}/${month}/${year}`;
-}
 
 function DetailField({
   label,
@@ -406,6 +364,7 @@ export default function MedicionesAntropometricasPage() {
                     <th className="px-4 py-3 font-medium">Comedor</th>
                     <th className="px-4 py-3 font-medium">Responsable</th>
                     <th className="px-4 py-3 font-medium">Alertas</th>
+                    <ChevronHeaderCell />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -416,13 +375,7 @@ export default function MedicionesAntropometricasPage() {
                       <tr
                         key={m.id}
                         onClick={() => openEvolution(m.subject.id)}
-                        className={`cursor-pointer transition-colors hover:bg-muted/30 ${
-                          isSelected
-                            ? "bg-muted/40"
-                            : severity
-                              ? SEVERITY_ROW_CLASS[severity]
-                              : "bg-card"
-                        }`}
+                        className={`${ROW_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                       >
                         <td className="px-4 py-3 font-medium">{m.weight_kg}</td>
                         <td className="px-4 py-3">{m.height_cm}</td>
@@ -444,27 +397,9 @@ export default function MedicionesAntropometricasPage() {
                           {m.responsible.name} {m.responsible.last_name}
                         </td>
                         <td className="px-4 py-3">
-                          {m.alerts.length === 0 ? (
-                            <div className="flex justify-center">
-                              <span className="inline-block rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-600">
-                                Normal
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-wrap justify-center gap-1">
-                              {m.alerts.map((a, i) => (
-                                <span
-                                  key={`${a.alert_type}-${i}`}
-                                  title={a.detail}
-                                  className={`inline-block rounded-full border px-2 py-0.5 text-xs ${SEVERITY_BADGE_CLASS[a.severity]}`}
-                                >
-                                  {ALERT_TYPE_LABELS[a.alert_type] ??
-                                    a.alert_type}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                          <AlertBadgeList alerts={m.alerts} />
                         </td>
+                        <ChevronCell />
                       </tr>
                     );
                   })}
@@ -480,13 +415,7 @@ export default function MedicionesAntropometricasPage() {
                   <div
                     key={m.id}
                     onClick={() => openEvolution(m.subject.id)}
-                    className={`flex cursor-pointer flex-col gap-2 rounded-lg border border-border p-3 transition-colors hover:bg-muted/30 ${
-                      isSelected
-                        ? "bg-muted/40"
-                        : severity
-                          ? SEVERITY_ROW_CLASS[severity]
-                          : "bg-card"
-                    }`}
+                    className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-sm font-medium">
@@ -496,8 +425,9 @@ export default function MedicionesAntropometricasPage() {
                           ({m.subject.dni})
                         </span>
                       </span>
-                      <span className="whitespace-nowrap text-xs text-muted-foreground">
+                      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
                         {formatDateTime(m.measured_at)}
+                        <RowChevron />
                       </span>
                     </div>
 
@@ -527,51 +457,19 @@ export default function MedicionesAntropometricasPage() {
                       {m.responsible.last_name}
                     </div>
 
-                    {m.alerts.length === 0 ? (
-                      <span className="inline-block w-fit rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-600">
-                        Normal
-                      </span>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {m.alerts.map((a, i) => (
-                          <span
-                            key={`${a.alert_type}-${i}`}
-                            title={a.detail}
-                            className={`inline-block rounded-full border px-2 py-0.5 text-xs ${SEVERITY_BADGE_CLASS[a.severity]}`}
-                          >
-                            {ALERT_TYPE_LABELS[a.alert_type] ?? a.alert_type}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <div className="w-fit">
+                      <AlertBadgeList alerts={m.alerts} />
+                    </div>
                   </div>
                 );
               })}
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  <ChevronLeft size={16} />
-                </Button>
-                <span>
-                  Página {page} de {totalPages}
-                </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={page === totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  <ChevronRight size={16} />
-                </Button>
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           </>
         )}
       </Card>

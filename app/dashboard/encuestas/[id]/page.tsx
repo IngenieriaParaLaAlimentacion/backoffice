@@ -69,6 +69,10 @@ export default function EditarEncuestaPage({
 
   const handleToggleStatus = async () => {
     if (!survey) return;
+    const confirmMessage = survey.is_active
+      ? ENCUESTAS_FORM.deactivateConfirm
+      : ENCUESTAS_FORM.activateConfirm;
+    if (!window.confirm(confirmMessage)) return;
     setActionError(null);
     setIsBusy(true);
     try {
@@ -129,6 +133,12 @@ export default function EditarEncuestaPage({
                   size="sm"
                   disabled={isBusy}
                   onClick={handleToggleStatus}
+                  title={
+                    survey.is_active
+                      ? ENCUESTAS_FORM.deactivateTitle
+                      : ENCUESTAS_FORM.activateTitle
+                  }
+                  className="hover:bg-foreground/10 hover:text-foreground"
                 >
                   {survey.is_active
                     ? ENCUESTAS_FORM.deactivate

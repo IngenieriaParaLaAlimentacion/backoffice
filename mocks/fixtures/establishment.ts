@@ -1,12 +1,10 @@
 import { EstablishmentResponse } from "@/types/admin";
-
-type PaginatedEstablishmentsResponse = {
-  items: EstablishmentResponse[];
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-};
+import {
+  EstablishmentDashboardResponse,
+  PaginatedEstablishmentFieldWorkersResponse,
+  PaginatedEstablishmentsResponse,
+  PaginatedEstablishmentSubjectsResponse,
+} from "@/types/establishment";
 
 export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
   {
@@ -51,10 +49,184 @@ export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
   },
 ];
 
-export const DEFAULT_ESTABLISHMENTS_RESPONSE: PaginatedEstablishmentsResponse = {
-  items: MOCK_ESTABLISHMENTS,
-  total: 4,
-  page: 1,
-  page_size: 20,
-  total_pages: 1,
+export const DEFAULT_ESTABLISHMENTS_RESPONSE: PaginatedEstablishmentsResponse =
+  {
+    items: MOCK_ESTABLISHMENTS,
+    total: 4,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+  };
+
+// --- Establishment dashboard ---
+
+/** Comedor with data: worst severity is `critical` while most subjects are normal. */
+export const DEFAULT_ESTABLISHMENT_DASHBOARD: EstablishmentDashboardResponse = {
+  establishment: MOCK_ESTABLISHMENTS[0],
+  has_data: true,
+  metrics: {
+    subject_count: 42,
+    measurement_count: 137,
+    last_measured_at: "2026-07-20T10:00:00Z",
+    avg_height_cm: 118.4,
+    avg_weight_kg: 23.1,
+    avg_bmi: 16.5,
+    avg_age_months: 87,
+  },
+  alert_status: {
+    severity: "critical",
+    dominant_status: "normal",
+    total_evaluated: 42,
+    at_risk_count: 11,
+    at_risk_percentage: 26.19,
+    distribution: [
+      { status: "normal", severity: null, count: 31, percentage: 73.81 },
+      { status: "wasted", severity: "high", count: 6, percentage: 14.29 },
+      { status: "overweight", severity: "medium", count: 3, percentage: 7.14 },
+      {
+        status: "severely_wasted",
+        severity: "critical",
+        count: 2,
+        percentage: 4.76,
+      },
+    ],
+  },
 };
+
+/** Empty state: every average is `null`, not 0 — see CA6. */
+export const EMPTY_ESTABLISHMENT_DASHBOARD: EstablishmentDashboardResponse = {
+  establishment: MOCK_ESTABLISHMENTS[1],
+  has_data: false,
+  metrics: {
+    subject_count: 0,
+    measurement_count: 0,
+    last_measured_at: null,
+    avg_height_cm: null,
+    avg_weight_kg: null,
+    avg_bmi: null,
+    avg_age_months: null,
+  },
+  alert_status: {
+    severity: null,
+    dominant_status: null,
+    total_evaluated: 0,
+    at_risk_count: 0,
+    at_risk_percentage: null,
+    distribution: [],
+  },
+};
+
+export const DEFAULT_ESTABLISHMENT_SUBJECTS_RESPONSE: PaginatedEstablishmentSubjectsResponse =
+  {
+    items: [
+      {
+        id: "51000000-0000-0000-0000-000000000001",
+        dni: 45123456,
+        name: "Ana",
+        last_name: "Gómez",
+        sex: "female",
+        birth_date: "2018-03-11",
+        age_months: 100,
+        measurement_count: 4,
+        nutritional_status: "wasted",
+        latest_measurement: {
+          id: "m1000000-0000-0000-0000-000000000001",
+          measured_at: "2026-07-20T10:00:00Z",
+          weight_kg: 21.0,
+          height_cm: 118.0,
+          bmi: 15.08,
+          alerts: [
+            {
+              alert_type: "wasted",
+              severity: "high",
+              detail:
+                "BMI-for-age z-score -2.31 < -2 SD: moderate acute malnutrition (emaciación).",
+            },
+          ],
+        },
+      },
+      {
+        id: "51000000-0000-0000-0000-000000000002",
+        dni: 46987654,
+        name: "Luis",
+        last_name: "Fernández",
+        sex: "male",
+        birth_date: "2017-09-02",
+        age_months: 106,
+        measurement_count: 1,
+        nutritional_status: "normal",
+        latest_measurement: {
+          id: "m1000000-0000-0000-0000-000000000002",
+          measured_at: "2026-07-18T09:30:00Z",
+          weight_kg: 27.4,
+          height_cm: 126.5,
+          bmi: 17.12,
+          alerts: [],
+        },
+      },
+      {
+        id: "51000000-0000-0000-0000-000000000003",
+        dni: 47222111,
+        name: "Camila",
+        last_name: "Ruiz",
+        sex: "female",
+        birth_date: "2019-01-25",
+        age_months: 89,
+        measurement_count: 3,
+        nutritional_status: "severely_wasted",
+        latest_measurement: {
+          id: "m1000000-0000-0000-0000-000000000003",
+          measured_at: "2026-07-15T14:05:00Z",
+          weight_kg: 16.2,
+          height_cm: 112.0,
+          bmi: 12.92,
+          alerts: [
+            {
+              alert_type: "severely_wasted",
+              severity: "critical",
+              detail:
+                "BMI-for-age z-score -3.41 < -3 SD: severe acute malnutrition (emaciación grave).",
+            },
+          ],
+        },
+      },
+    ],
+    total: 3,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+  };
+
+export const EMPTY_ESTABLISHMENT_SUBJECTS_RESPONSE: PaginatedEstablishmentSubjectsResponse =
+  { items: [], total: 0, page: 1, page_size: 20, total_pages: 0 };
+
+export const DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE: PaginatedEstablishmentFieldWorkersResponse =
+  {
+    items: [
+      {
+        id: "f1000000-0000-0000-0000-000000000001",
+        name: "Juan",
+        last_name: "Pérez",
+        email: "juan@ejemplo.com",
+        user_status: "active",
+        relation_status: "approved",
+        measurement_count: 58,
+        last_measured_at: "2026-07-20T10:00:00Z",
+      },
+      {
+        // Approved but has never measured here — a valid row, not an empty state.
+        id: "f1000000-0000-0000-0000-000000000002",
+        name: "Marta",
+        last_name: "Sosa",
+        email: "marta@ejemplo.com",
+        user_status: "pending_validation",
+        relation_status: "approved",
+        measurement_count: 0,
+        last_measured_at: null,
+      },
+    ],
+    total: 2,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+  };

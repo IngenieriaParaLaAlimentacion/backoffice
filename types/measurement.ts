@@ -10,10 +10,32 @@ export type AlertType =
   | "severe_underweight"
   | "underweight";
 
+// `underweight` / `severe_underweight` only occur for subjects over 19 (adult BMI
+// cutoffs); `wasted` / `severely_wasted` only for under-19s (WHO BMI-for-age z-score).
+export type NutritionalStatus =
+  | "normal"
+  | "overweight"
+  | "obese"
+  | "wasted"
+  | "severely_wasted"
+  | "underweight"
+  | "severe_underweight";
+
 export type MeasurementAlert = {
   alert_type: AlertType;
   severity: AlertSeverity;
   detail: string;
+};
+
+/** A subject's most recent measurement, in whatever scope the endpoint defines. */
+export type LatestMeasurement = {
+  id: string;
+  measured_at: string;
+  weight_kg: number;
+  height_cm: number;
+  bmi: number;
+  establishment: MeasurementEstablishment;
+  alerts: MeasurementAlert[];
 };
 
 export type MeasurementSubject = {
