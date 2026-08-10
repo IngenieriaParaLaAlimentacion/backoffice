@@ -9,6 +9,7 @@ export const RESET_PASSWORD_ENDPOINT = "/api/v1/auth/password-recovery/confirm";
 export const FORGOT_PASSWORD_ENDPOINT =
   "/api/v1/auth/password-recovery/request";
 export const LOGOUT_ENDPOINT = "/api/v1/auth/logout";
+export const VERIFY_EMAIL_ENDPOINT = "/api/v1/auth/verify-email/confirm";
 export const REGISTER_FIELD_WORKER_ENDPOINT =
   "/api/v1/auth/register/field-worker";
 
