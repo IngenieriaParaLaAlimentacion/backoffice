@@ -63,8 +63,8 @@ export type EstablishmentRequestStatus = "pending" | "approved" | "rejected";
 export type EstablishmentRequestAdminView = {
   id: string;
   user_id: string;
-  name: string | null;
-  formatted_address: string | null;
+  name: string;
+  formatted_address: string;
   city: string | null;
   province: string | null;
   status: EstablishmentRequestStatus;
