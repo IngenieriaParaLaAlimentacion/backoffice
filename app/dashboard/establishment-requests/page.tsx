@@ -75,6 +75,8 @@ function EstablishmentRequestsContent() {
   // Filters live in the query string so they survive a refresh or a back
   // navigation from the review panel, same pattern as Establecimientos.
   const search = searchParams.get("search") ?? "";
+  const cityFilter = searchParams.get("city") ?? "";
+  const provinceFilter = searchParams.get("province") ?? "";
   const sortOrder = parseSortOrder(searchParams.get("sort_order"));
   const page = parsePage(searchParams.get("page"));
 
@@ -84,8 +86,10 @@ function EstablishmentRequestsContent() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Local mirror so typing stays responsive; the debounce writes to the URL.
+  // Local mirrors so typing stays responsive; the debounce writes to the URL.
   const [searchInput, setSearchInput] = useState(search);
+  const [cityInput, setCityInput] = useState(cityFilter);
+  const [provinceInput, setProvinceInput] = useState(provinceFilter);
 
   const [selectedRequest, setSelectedRequest] =
     useState<EstablishmentRequestAdminView | null>(null);
@@ -112,12 +116,28 @@ function EstablishmentRequestsContent() {
   });
 
   const updateParams = useCallback(
-    (next: Partial<{ search: string; sort_order: string; page: number }>) => {
+    (
+      next: Partial<{
+        search: string;
+        city: string;
+        province: string;
+        sort_order: string;
+        page: number;
+      }>,
+    ) => {
       const params = new URLSearchParams(searchParams.toString());
 
       if (next.search !== undefined) {
         if (next.search) params.set("search", next.search);
         else params.delete("search");
+      }
+      if (next.city !== undefined) {
+        if (next.city) params.set("city", next.city);
+        else params.delete("city");
+      }
+      if (next.province !== undefined) {
+        if (next.province) params.set("province", next.province);
+        else params.delete("province");
       }
       if (next.sort_order !== undefined) {
         if (next.sort_order && next.sort_order !== DEFAULT_SORT_ORDER)
@@ -138,17 +158,37 @@ function EstablishmentRequestsContent() {
   );
 
   useEffect(() => {
-    if (searchInput === search) return;
+    if (
+      searchInput === search &&
+      cityInput === cityFilter &&
+      provinceInput === provinceFilter
+    )
+      return;
     const timeout = setTimeout(() => {
-      updateParams({ search: searchInput, page: 1 });
+      updateParams({
+        search: searchInput,
+        city: cityInput,
+        province: provinceInput,
+        page: 1,
+      });
     }, FILTER_DEBOUNCE_MS);
     return () => clearTimeout(timeout);
-  }, [searchInput, search, updateParams]);
+  }, [
+    searchInput,
+    search,
+    cityInput,
+    cityFilter,
+    provinceInput,
+    provinceFilter,
+    updateParams,
+  ]);
 
   const fetchRequests = useCallback(
     async (
       currentPage: number,
       currentSearch: string,
+      currentCity: string,
+      currentProvince: string,
       currentSortOrder: EstablishmentRequestSortOrder,
     ) => {
       setIsLoading(true);
@@ -160,6 +200,8 @@ function EstablishmentRequestsContent() {
             page: currentPage,
             page_size: PAGE_SIZE,
             search: currentSearch || undefined,
+            city: currentCity || undefined,
+            province: currentProvince || undefined,
             sort_order: currentSortOrder,
           },
         );
@@ -179,8 +221,8 @@ function EstablishmentRequestsContent() {
   );
 
   useEffect(() => {
-    fetchRequests(page, search, sortOrder);
-  }, [fetchRequests, page, search, sortOrder]);
+    fetchRequests(page, search, cityFilter, provinceFilter, sortOrder);
+  }, [fetchRequests, page, search, cityFilter, provinceFilter, sortOrder]);
 
   const openReview = (request: EstablishmentRequestAdminView) => {
     setSelectedRequest(request);
@@ -299,6 +341,26 @@ function EstablishmentRequestsContent() {
                 className="pl-8"
               />
             </div>
+          </div>
+
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">Ciudad</label>
+            <Input
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              placeholder="Ej: Buenos Aires"
+              className="w-full sm:w-40"
+            />
+          </div>
+
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">Provincia</label>
+            <Input
+              value={provinceInput}
+              onChange={(e) => setProvinceInput(e.target.value)}
+              placeholder="Ej: CABA"
+              className="w-full sm:w-40"
+            />
           </div>
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">

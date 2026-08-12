@@ -20,6 +20,8 @@ type ListEstablishmentRequestsParams = {
   page?: number;
   page_size?: number;
   search?: string;
+  city?: string;
+  province?: string;
   sort_order?: EstablishmentRequestSortOrder;
 };
 
@@ -32,6 +34,8 @@ export const listEstablishmentRequestsAction = async (
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
   if (params?.search) query.set("search", params.search);
+  if (params?.city) query.set("city", params.city);
+  if (params?.province) query.set("province", params.province);
   if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const res = await dispatcher<
