@@ -10,8 +10,9 @@ import {
   User,
   Building2,
   Ruler,
+  UtensilsCrossed,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import SideBarItem from "./SideBarItem";
 import { useAuth } from "@/context/AuthContext";
@@ -21,6 +22,8 @@ import { Separator } from "@/components/ui/separator";
 
 const DRAWER_OPEN_WIDTH = 220;
 const DRAWER_CLOSED_WIDTH = 60;
+const DRAWER_MIN_WIDTH = 180;
+const DRAWER_MAX_WIDTH = 300;
 
 export const navItems = [
   {
@@ -32,6 +35,11 @@ export const navItems = [
     label: "Solicitudes",
     href: "/dashboard/solicitudes",
     icon: <ClipboardList size={20} />,
+  },
+  {
+    label: "Establecimientos faltantes",
+    href: "/dashboard/establishment-requests",
+    icon: <UtensilsCrossed size={20} />,
   },
   {
     label: "Usuarios",
@@ -64,7 +72,37 @@ export default function SideBar() {
   const { logout } = useAuth();
   const { replace } = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const drawerWidth = isSidebarOpen ? DRAWER_OPEN_WIDTH : DRAWER_CLOSED_WIDTH;
+  const [openWidth, setOpenWidth] = useState(DRAWER_OPEN_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
+  const dragStart = useRef({ x: 0, width: DRAWER_OPEN_WIDTH });
+  const drawerWidth = isSidebarOpen ? openWidth : DRAWER_CLOSED_WIDTH;
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const nextWidth =
+        dragStart.current.width + (e.clientX - dragStart.current.x);
+      setOpenWidth(
+        Math.min(DRAWER_MAX_WIDTH, Math.max(DRAWER_MIN_WIDTH, nextWidth)),
+      );
+    };
+    const handleMouseUp = () => setIsResizing(false);
+
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    dragStart.current = { x: e.clientX, width: openWidth };
+    setIsResizing(true);
+  };
 
   const handleLogout = async () => {
     try {
@@ -78,7 +116,9 @@ export default function SideBar() {
 
   return (
     <aside
-      className="hidden md:flex md:flex-col h-dvh bg-card border-r border-border overflow-hidden shrink-0 transition-[width] duration-200 ease-in-out"
+      className={`relative hidden md:flex md:flex-col h-dvh bg-card border-r border-border overflow-hidden shrink-0 ${
+        isResizing ? "" : "transition-[width] duration-200 ease-in-out"
+      }`}
       style={{ width: drawerWidth }}
     >
       <div className="h-16 flex items-center gap-2 px-2">
@@ -130,6 +170,13 @@ export default function SideBar() {
           <LogOut size={16} />
           Cerrar Sesión
         </Button>
+      )}
+
+      {isSidebarOpen && (
+        <div
+          onMouseDown={handleResizeStart}
+          className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/50"
+        />
       )}
     </aside>
   );

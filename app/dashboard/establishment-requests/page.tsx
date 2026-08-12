@@ -70,7 +70,9 @@ export default function EstablishmentRequestsPage() {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error al cargar comedores",
+          err instanceof Error
+            ? err.message
+            : "Error al cargar establecimientos",
         );
       } finally {
         setIsLoading(false);
@@ -118,8 +120,8 @@ export default function EstablishmentRequestsPage() {
       removeFromList(selectedRequest.id);
       setSuccessMessage(
         result.reused
-          ? "Comedor dado de alta correctamente. Se reutilizó un comedor ya existente con esa ubicación."
-          : "Comedor dado de alta correctamente.",
+          ? "Establecimiento dado de alta correctamente. Se reutilizó un establecimiento ya existente con esa ubicación."
+          : "Establecimiento dado de alta correctamente.",
       );
       closeReview();
     } catch (err) {
@@ -155,10 +157,10 @@ export default function EstablishmentRequestsPage() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">
-            Comedores faltantes
+            Establecimientos faltantes
           </h1>
           <p className="text-muted-foreground text-sm">
-            Notificaciones de comedores pendientes de alta
+            Notificaciones de establecimientos pendientes de alta
           </p>
         </div>
 
@@ -183,7 +185,7 @@ export default function EstablishmentRequestsPage() {
           </div>
         ) : requests.length === 0 ? (
           <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm">
-            No hay comedores pendientes de alta
+            No hay establecimientos pendientes de alta
           </div>
         ) : (
           <>
@@ -341,7 +343,7 @@ export default function EstablishmentRequestsPage() {
                   control={control}
                   name="name"
                   label="Nombre"
-                  placeholder="Ej: Comedor Central Norte"
+                  placeholder="Ej: Establecimiento Central Norte"
                   required
                 />
                 <AppTextField
