@@ -61,13 +61,18 @@ export const approveEstablishmentRequestAction = async (
   return res.data as EstablishmentApprovalResponse;
 };
 
+type RejectEstablishmentRequestBody = { reason?: string };
+
 export const rejectEstablishmentRequestAction = async (
   dispatcher: AuthDispatcher,
   requestId: string,
+  reason?: string,
 ) => {
-  const res = await dispatcher<Record<string, never>, undefined>(
+  const body: RejectEstablishmentRequestBody = reason ? { reason } : {};
+
+  const res = await dispatcher<RejectEstablishmentRequestBody, undefined>(
     REJECT_ESTABLISHMENT_REQUEST_ENDPOINT(requestId),
-    { method: "PATCH", body: {} },
+    { method: "PATCH", body },
   );
 
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);

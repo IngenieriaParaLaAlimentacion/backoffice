@@ -86,6 +86,14 @@ function EstablishmentRequestsContent() {
     useState<EstablishmentRequestAdminView | null>(null);
   const [panelError, setPanelError] = useState<string | null>(null);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  // First click arms the action (shows its confirmation UI); a second click
+  // on the same button actually submits it. Clicking the other button while
+  // one is armed re-arms that one instead, so switching also needs its own
+  // confirmation.
+  const [pendingAction, setPendingAction] = useState<
+    "approve" | "reject" | null
+  >(null);
 
   const {
     control,
@@ -173,6 +181,8 @@ function EstablishmentRequestsContent() {
     setSelectedRequest(request);
     setPanelError(null);
     setSuccessMessage(null);
+    setRejectReason("");
+    setPendingAction(null);
     reset({
       name: request.name,
       formatted_address: request.formatted_address,
@@ -184,6 +194,8 @@ function EstablishmentRequestsContent() {
   const closeReview = () => {
     setSelectedRequest(null);
     setPanelError(null);
+    setRejectReason("");
+    setPendingAction(null);
     reset();
   };
 
@@ -223,6 +235,7 @@ function EstablishmentRequestsContent() {
       await rejectEstablishmentRequestAction(
         makeAuthorizedRequest,
         selectedRequest.id,
+        rejectReason.trim() || undefined,
       );
       removeFromList(selectedRequest.id);
       setSuccessMessage(null);
@@ -234,6 +247,22 @@ function EstablishmentRequestsContent() {
     } finally {
       setIsRejecting(false);
     }
+  };
+
+  const handleApproveClick = () => {
+    if (pendingAction !== "approve") {
+      setPendingAction("approve");
+      return;
+    }
+    handleSubmit(onApprove)();
+  };
+
+  const handleRejectClick = () => {
+    if (pendingAction !== "reject") {
+      setPendingAction("reject");
+      return;
+    }
+    onReject();
   };
 
   return (
@@ -454,10 +483,7 @@ function EstablishmentRequestsContent() {
             )}
 
             {selectedRequest && (
-              <form
-                onSubmit={handleSubmit(onApprove)}
-                className="flex flex-col gap-4"
-              >
+              <div className="flex flex-col gap-4">
                 <AppTextField
                   control={control}
                   name="name"
@@ -489,35 +515,81 @@ function EstablishmentRequestsContent() {
 
                 <Separator />
 
+                {pendingAction === "reject" && (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-foreground">
+                      Motivo del rechazo
+                      <span className="text-muted-foreground font-normal">
+                        {" "}
+                        (opcional)
+                      </span>
+                    </label>
+                    <textarea
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="Ej: Datos incompletos, comedor duplicado..."
+                      rows={2}
+                      maxLength={500}
+                      autoFocus
+                      disabled={isSubmitting || isRejecting}
+                      className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Confirmá el rechazo para aplicarlo.
+                    </p>
+                  </div>
+                )}
+
+                {pendingAction === "approve" && (
+                  <p className="text-sm text-muted-foreground">
+                    Confirmá el alta para crear el establecimiento con estos
+                    datos.
+                  </p>
+                )}
+
                 <div className="flex gap-2">
                   <Button
-                    type="submit"
+                    type="button"
                     className="flex-1"
                     disabled={!isValid || isSubmitting || isRejecting}
+                    onClick={handleApproveClick}
                   >
                     {isSubmitting ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : (
                       <Check size={16} />
                     )}
-                    Aprobar
+                    {pendingAction === "approve" ? "Confirmar alta" : "Aprobar"}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     className="flex-1 text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                     disabled={isSubmitting || isRejecting}
-                    onClick={onReject}
+                    onClick={handleRejectClick}
                   >
                     {isRejecting ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : (
                       <X size={16} />
                     )}
-                    Rechazar
+                    {pendingAction === "reject"
+                      ? "Confirmar rechazo"
+                      : "Rechazar"}
                   </Button>
                 </div>
-              </form>
+
+                {pendingAction && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isSubmitting || isRejecting}
+                    onClick={() => setPendingAction(null)}
+                  >
+                    Cancelar
+                  </Button>
+                )}
+              </div>
             )}
           </Dialog.Popup>
         </Dialog.Portal>
