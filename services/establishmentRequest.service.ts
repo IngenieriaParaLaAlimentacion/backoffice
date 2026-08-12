@@ -6,6 +6,7 @@ import {
 } from "@/constants/api";
 import {
   EstablishmentApprovalResponse,
+  EstablishmentRequestSortOrder,
   EstablishmentRequestStatus,
   PaginatedEstablishmentRequestsResponse,
 } from "@/types/admin";
@@ -18,6 +19,8 @@ const PENDING_STATUS: EstablishmentRequestStatus = "pending";
 type ListEstablishmentRequestsParams = {
   page?: number;
   page_size?: number;
+  search?: string;
+  sort_order?: EstablishmentRequestSortOrder;
 };
 
 export const listEstablishmentRequestsAction = async (
@@ -28,6 +31,8 @@ export const listEstablishmentRequestsAction = async (
   query.set("status", PENDING_STATUS);
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
+  if (params?.search) query.set("search", params.search);
+  if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const res = await dispatcher<
     undefined,

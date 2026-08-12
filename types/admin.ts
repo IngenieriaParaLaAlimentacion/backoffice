@@ -60,6 +60,8 @@ export type InviteAdminResponse = {
 
 export type EstablishmentRequestStatus = "pending" | "approved" | "rejected";
 
+export type EstablishmentRequestSortOrder = "newest" | "oldest";
+
 export type EstablishmentRequestAdminView = {
   id: string;
   user_id: string;

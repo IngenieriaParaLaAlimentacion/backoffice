@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +14,7 @@ import {
 import {
   EstablishmentApprovalResponse,
   EstablishmentRequestAdminView,
+  EstablishmentRequestSortOrder,
 } from "@/types/admin";
 import {
   createEstablishmentSchema,
@@ -21,22 +23,64 @@ import {
 import { formatDateTime, EMPTY_VALUE } from "@/lib/format";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import AppTextField from "@/components/AppTextField";
-import { Check, CircleCheck, ClipboardCheck, Loader2, X } from "lucide-react";
+import {
+  Check,
+  CircleCheck,
+  ClipboardCheck,
+  Loader2,
+  Search,
+  X,
+} from "lucide-react";
 
 const PAGE_SIZE = 20;
+const FILTER_DEBOUNCE_MS = 300;
 
-export default function EstablishmentRequestsPage() {
+const SELECT_CLASS =
+  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+
+// Matches the backend default (EstablishmentCreationRequestSortOrder.OLDEST):
+// oldest-first surfaces the requests waiting the longest for review.
+const DEFAULT_SORT_ORDER: EstablishmentRequestSortOrder = "oldest";
+
+const SORT_OPTIONS: { value: EstablishmentRequestSortOrder; label: string }[] =
+  [
+    { value: "oldest", label: "Más antiguos primero" },
+    { value: "newest", label: "Más recientes primero" },
+  ];
+
+function parseSortOrder(value: string | null): EstablishmentRequestSortOrder {
+  return value === "newest" || value === "oldest" ? value : DEFAULT_SORT_ORDER;
+}
+
+function parsePage(value: string | null) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 1 ? parsed : 1;
+}
+
+function EstablishmentRequestsContent() {
   const { makeAuthorizedRequest } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Filters live in the query string so they survive a refresh or a back
+  // navigation from the review panel, same pattern as Establecimientos.
+  const search = searchParams.get("search") ?? "";
+  const sortOrder = parseSortOrder(searchParams.get("sort_order"));
+  const page = parsePage(searchParams.get("page"));
 
   const [requests, setRequests] = useState<EstablishmentRequestAdminView[]>([]);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Local mirror so typing stays responsive; the debounce writes to the URL.
+  const [searchInput, setSearchInput] = useState(search);
 
   const [selectedRequest, setSelectedRequest] =
     useState<EstablishmentRequestAdminView | null>(null);
@@ -54,8 +98,46 @@ export default function EstablishmentRequestsPage() {
     defaultValues: { name: "", formatted_address: "", city: "", province: "" },
   });
 
+  const updateParams = useCallback(
+    (next: Partial<{ search: string; sort_order: string; page: number }>) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (next.search !== undefined) {
+        if (next.search) params.set("search", next.search);
+        else params.delete("search");
+      }
+      if (next.sort_order !== undefined) {
+        if (next.sort_order && next.sort_order !== DEFAULT_SORT_ORDER)
+          params.set("sort_order", next.sort_order);
+        else params.delete("sort_order");
+      }
+      if (next.page !== undefined) {
+        if (next.page > 1) params.set("page", String(next.page));
+        else params.delete("page");
+      }
+
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [router, pathname, searchParams],
+  );
+
+  useEffect(() => {
+    if (searchInput === search) return;
+    const timeout = setTimeout(() => {
+      updateParams({ search: searchInput, page: 1 });
+    }, FILTER_DEBOUNCE_MS);
+    return () => clearTimeout(timeout);
+  }, [searchInput, search, updateParams]);
+
   const fetchRequests = useCallback(
-    async (currentPage: number) => {
+    async (
+      currentPage: number,
+      currentSearch: string,
+      currentSortOrder: EstablishmentRequestSortOrder,
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
@@ -64,6 +146,8 @@ export default function EstablishmentRequestsPage() {
           {
             page: currentPage,
             page_size: PAGE_SIZE,
+            search: currentSearch || undefined,
+            sort_order: currentSortOrder,
           },
         );
         setRequests(data.items);
@@ -82,8 +166,8 @@ export default function EstablishmentRequestsPage() {
   );
 
   useEffect(() => {
-    fetchRequests(page);
-  }, [fetchRequests, page]);
+    fetchRequests(page, search, sortOrder);
+  }, [fetchRequests, page, search, sortOrder]);
 
   const openReview = (request: EstablishmentRequestAdminView) => {
     setSelectedRequest(request);
@@ -165,6 +249,41 @@ export default function EstablishmentRequestsPage() {
         </div>
 
         <Separator />
+
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">Buscar</label>
+            <div className="relative w-full sm:w-72">
+              <Search
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                size={16}
+              />
+              <Input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Nombre, dirección o relevador"
+                className="pl-8"
+              />
+            </div>
+          </div>
+
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">Ordenar por</label>
+            <select
+              value={sortOrder}
+              onChange={(e) =>
+                updateParams({ sort_order: e.target.value, page: 1 })
+              }
+              className={`${SELECT_CLASS} w-full sm:w-56`}
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
@@ -292,7 +411,7 @@ export default function EstablishmentRequestsPage() {
             <Pagination
               page={page}
               totalPages={totalPages}
-              onPageChange={setPage}
+              onPageChange={(next) => updateParams({ page: next })}
             />
           </>
         )}
@@ -404,5 +523,20 @@ export default function EstablishmentRequestsPage() {
         </Dialog.Portal>
       </Dialog.Root>
     </div>
+  );
+}
+
+export default function EstablishmentRequestsPage() {
+  // useSearchParams needs a Suspense boundary during prerender.
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-1 items-center justify-center p-4">
+          <Loader2 className="animate-spin text-muted-foreground" size={28} />
+        </div>
+      }
+    >
+      <EstablishmentRequestsContent />
+    </Suspense>
   );
 }
