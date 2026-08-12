@@ -28,6 +28,11 @@ import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import AppTextField from "@/components/AppTextField";
 import {
+  CARD_HOVER_CLASS,
+  ROW_HOVER_CLASS,
+  rowStateClass,
+} from "@/components/listings/RowAffordance";
+import {
   Check,
   CircleCheck,
   ClipboardCheck,
@@ -323,7 +328,15 @@ function EstablishmentRequestsContent() {
         {successMessage && (
           <div className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-600 text-sm">
             <CircleCheck size={18} className="mt-0.5 shrink-0" />
-            <span>{successMessage}</span>
+            <span className="flex-1">{successMessage}</span>
+            <button
+              type="button"
+              onClick={() => setSuccessMessage(null)}
+              className="shrink-0 text-emerald-600/70 hover:text-emerald-600"
+              aria-label="Cerrar"
+            >
+              <X size={16} />
+            </button>
           </div>
         )}
 
@@ -343,8 +356,12 @@ function EstablishmentRequestsContent() {
                   <tr className="bg-muted/50 text-muted-foreground text-left">
                     <th className="px-4 py-3 font-medium">Nombre</th>
                     <th className="px-4 py-3 font-medium">Relevador</th>
-                    <th className="px-4 py-3 font-medium">Ciudad/Provincia</th>
-                    <th className="px-4 py-3 font-medium">Fecha</th>
+                    <th className="px-4 py-3 font-medium">
+                      Ciudad / Provincia
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      Fecha de solicitud
+                    </th>
                     <th className="px-4 py-3 font-medium text-right">
                       Acciones
                     </th>
@@ -354,9 +371,10 @@ function EstablishmentRequestsContent() {
                   {requests.map((request) => (
                     <tr
                       key={request.id}
-                      className={`bg-card hover:bg-muted/30 transition-colors ${
-                        selectedRequest?.id === request.id ? "bg-muted/40" : ""
-                      }`}
+                      onClick={() => openReview(request)}
+                      className={`${ROW_HOVER_CLASS} ${rowStateClass(
+                        selectedRequest?.id === request.id,
+                      )}`}
                     >
                       <td className="px-4 py-3 font-medium">{request.name}</td>
                       <td className="px-4 py-3 text-muted-foreground">
@@ -404,9 +422,10 @@ function EstablishmentRequestsContent() {
               {requests.map((request) => (
                 <div
                   key={request.id}
-                  className={`flex flex-col gap-2 rounded-lg border border-border bg-card p-3 ${
-                    selectedRequest?.id === request.id ? "bg-muted/40" : ""
-                  }`}
+                  onClick={() => openReview(request)}
+                  className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} ${rowStateClass(
+                    selectedRequest?.id === request.id,
+                  )}`}
                 >
                   <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium">{request.name}</span>
@@ -534,9 +553,6 @@ function EstablishmentRequestsContent() {
                       disabled={isSubmitting || isRejecting}
                       className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Confirmá el rechazo para aplicarlo.
-                    </p>
                   </div>
                 )}
 
@@ -582,7 +598,8 @@ function EstablishmentRequestsContent() {
                 {pendingAction && (
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
+                    className="hover:bg-input"
                     disabled={isSubmitting || isRejecting}
                     onClick={() => setPendingAction(null)}
                   >
