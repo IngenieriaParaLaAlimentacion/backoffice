@@ -10,7 +10,6 @@ import {
   User,
   Building2,
   Ruler,
-  UtensilsCrossed,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -35,11 +34,6 @@ export const navItems = [
     label: "Solicitudes",
     href: "/dashboard/solicitudes",
     icon: <ClipboardList size={20} />,
-  },
-  {
-    label: "Establecimientos faltantes",
-    href: "/dashboard/establishment-requests",
-    icon: <UtensilsCrossed size={20} />,
   },
   {
     label: "Usuarios",

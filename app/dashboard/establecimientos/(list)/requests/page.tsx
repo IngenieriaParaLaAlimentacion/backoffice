@@ -213,7 +213,7 @@ function EstablishmentRequestsContent() {
   };
 
   return (
-    <div className="flex flex-1 p-4">
+    <>
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">
@@ -433,7 +433,7 @@ function EstablishmentRequestsContent() {
         onApproved={handleApproved}
         onRejected={handleRejected}
       />
-    </div>
+    </>
   );
 }
 
@@ -442,7 +442,7 @@ export default function EstablishmentRequestsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-1 items-center justify-center p-4">
+        <div className="flex flex-1 items-center justify-center">
           <Loader2 className="animate-spin text-muted-foreground" size={28} />
         </div>
       }

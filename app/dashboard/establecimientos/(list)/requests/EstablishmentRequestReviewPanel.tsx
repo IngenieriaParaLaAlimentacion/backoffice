@@ -24,6 +24,13 @@ import { Check, Loader2, X } from "lucide-react";
 
 type PendingAction = "approve" | "reject" | null;
 
+const APPROVE_LABEL = "Aprobar";
+const APPROVE_CONFIRM_LABEL = "Confirmar alta";
+const APPROVE_CONFIRMATION_MESSAGE =
+  "Confirmá el alta para crear el establecimiento con estos datos.";
+const REJECT_LABEL = "Rechazar";
+const REJECT_CONFIRM_LABEL = "Confirmar rechazo";
+
 type EstablishmentRequestReviewPanelProps = {
   request: EstablishmentRequestAdminView | null;
   onClose: () => void;
@@ -224,8 +231,7 @@ export default function EstablishmentRequestReviewPanel({
 
               {pendingAction === "approve" && (
                 <p className="text-sm text-muted-foreground">
-                  Confirmá el alta para crear el establecimiento con estos
-                  datos.
+                  {APPROVE_CONFIRMATION_MESSAGE}
                 </p>
               )}
 
@@ -241,7 +247,9 @@ export default function EstablishmentRequestReviewPanel({
                   ) : (
                     <Check size={16} />
                   )}
-                  {pendingAction === "approve" ? "Confirmar alta" : "Aprobar"}
+                  {pendingAction === "approve"
+                    ? APPROVE_CONFIRM_LABEL
+                    : APPROVE_LABEL}
                 </Button>
                 <Button
                   type="button"
@@ -256,8 +264,8 @@ export default function EstablishmentRequestReviewPanel({
                     <X size={16} />
                   )}
                   {pendingAction === "reject"
-                    ? "Confirmar rechazo"
-                    : "Rechazar"}
+                    ? REJECT_CONFIRM_LABEL
+                    : REJECT_LABEL}
                 </Button>
               </div>
 
