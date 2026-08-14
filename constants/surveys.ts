@@ -31,7 +31,7 @@ export const RESPONSE_TYPE_LABELS: Record<ResponseType, string> = {
 
 export const MAX_QUESTIONS = 30;
 
-export const ENCUESTAS_FORM = {
+export const SURVEY_FORM = {
   createTitle: "Nueva encuesta",
   editTitle: "Editar encuesta",
   back: "Encuestas",
@@ -68,7 +68,7 @@ export const ENCUESTAS_FORM = {
   deleteConfirm: "¿Eliminar esta encuesta? Esta acción no se puede deshacer.",
 } as const;
 
-export const ENCUESTAS_PAGE = {
+export const SURVEYS_PAGE = {
   title: "Encuestas",
   subtitle: "Relevamientos FIES y personalizados",
   createSurvey: "Crear encuesta",
@@ -95,7 +95,7 @@ export const RESPONSE_SORT_LABELS: Partial<
   event_at_asc: "Más antiguas primero",
 };
 
-export const RESPUESTAS_PAGE = {
+export const RESPONSES_PAGE = {
   title: "Respuestas",
   subtitle: "Resultados de la encuesta",
   back: "Encuestas",

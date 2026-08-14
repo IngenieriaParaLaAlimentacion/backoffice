@@ -16,15 +16,13 @@ import { DASHBOARD_INDICATORS } from "@/constants/surveys";
 // Quick-access cards mirror the sidebar, minus the dashboard self-link.
 const accessItems = navItems.filter((item) => item.href !== "/dashboard");
 
-function formatDateTime(value: string) {
+function formatDate(value: string) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   const day = String(d.getUTCDate()).padStart(2, "0");
   const month = String(d.getUTCMonth() + 1).padStart(2, "0");
   const year = d.getUTCFullYear();
-  const hours = String(d.getUTCHours()).padStart(2, "0");
-  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+  return `${day}/${month}/${year}`;
 }
 
 export default function DashboardPage() {
@@ -106,13 +104,13 @@ export default function DashboardPage() {
               {indicatorsError}
             </div>
           ) : indicators ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <FileText size={20} />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <FileText size={18} />
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold">
+                  <span className="text-xl font-bold">
                     {indicators.response_count}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -120,12 +118,12 @@ export default function DashboardPage() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Building2 size={20} />
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Building2 size={18} />
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold">
+                  <span className="text-xl font-bold">
                     {indicators.participating_establishments_count}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -133,14 +131,14 @@ export default function DashboardPage() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Calendar size={20} />
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Calendar size={18} />
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold">
+                  <span className="text-xl font-bold">
                     {indicators.last_event_at
-                      ? formatDateTime(indicators.last_event_at)
+                      ? formatDate(indicators.last_event_at)
                       : DASHBOARD_INDICATORS.noDate}
                   </span>
                   <span className="text-xs text-muted-foreground">
