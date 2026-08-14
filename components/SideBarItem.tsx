@@ -19,7 +19,12 @@ export default function SideBarItem({
   isSidebarOpen,
 }: SideBarItemProps) {
   const pathname = usePathname();
-  const isSelected = pathname === href;
+  // "/dashboard" (Inicio) is a prefix of every dashboard route, so it only
+  // highlights on an exact match; other items also highlight on sub-routes
+  // (e.g. "/dashboard/establecimientos/requests" under "Establecimientos").
+  const isSelected =
+    pathname === href ||
+    (href !== "/dashboard" && pathname.startsWith(`${href}/`));
 
   return (
     <Link
