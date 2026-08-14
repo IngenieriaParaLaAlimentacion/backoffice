@@ -34,6 +34,15 @@ import ResponseEntity, {
   entityLabel,
 } from "@/components/surveys/ResponseEntity";
 import { EMPTY_VALUE } from "@/lib/format";
+import {
+  CARD_HOVER_CLASS,
+  ChevronCell,
+  ChevronHeaderCell,
+  RowChevron,
+  RowLink,
+  ROW_HOVER_CLASS,
+  rowStateClass,
+} from "@/components/listings/RowAffordance";
 import ResponseDetailPanel from "./ResponseDetailPanel";
 
 const PAGE_SIZE = 20;
@@ -377,6 +386,7 @@ export default function ResponsesPage() {
                     <th className="px-4 py-3 font-medium">
                       {RESPONSES_PAGE.columns.score}
                     </th>
+                    <ChevronHeaderCell />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -384,15 +394,17 @@ export default function ResponsesPage() {
                     <tr
                       key={item.id}
                       onClick={() => setSelectedResponseId(item.id)}
-                      className={`cursor-pointer bg-card transition-colors hover:bg-muted/30 ${
-                        selectedResponseId === item.id ? "bg-muted/40" : ""
-                      }`}
+                      className={`${ROW_HOVER_CLASS} ${rowStateClass(
+                        selectedResponseId === item.id,
+                      )}`}
                     >
                       <td className="px-4 py-3 font-medium">
-                        <ResponseEntity
-                          subject={item.subject}
-                          establishment={item.establishment}
-                        />
+                        <RowLink>
+                          <ResponseEntity
+                            subject={item.subject}
+                            establishment={item.establishment}
+                          />
+                        </RowLink>
                       </td>
                       <td className="px-4 py-3">{item.submitted_by.name}</td>
                       {isEstablishmentTargeted && (
@@ -417,6 +429,7 @@ export default function ResponsesPage() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </td>
+                      <ChevronCell />
                     </tr>
                   ))}
                 </tbody>
@@ -430,17 +443,19 @@ export default function ResponsesPage() {
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedResponseId(item.id)}
-                  className={`flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/30 ${
-                    selectedResponseId === item.id ? "bg-muted/40" : ""
-                  }`}
+                  className={`flex flex-col gap-1 rounded-lg border border-border p-3 text-left ${CARD_HOVER_CLASS} ${rowStateClass(
+                    selectedResponseId === item.id,
+                  )}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-medium">
-                      {entityLabel({
-                        subject: item.subject,
-                        establishment: item.establishment,
-                      })}
-                    </span>
+                    <RowLink>
+                      <span className="text-sm font-medium">
+                        {entityLabel({
+                          subject: item.subject,
+                          establishment: item.establishment,
+                        })}
+                      </span>
+                    </RowLink>
                     {item.score_fies !== null && (
                       <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                         FIES {item.score_fies}
@@ -452,9 +467,12 @@ export default function ResponsesPage() {
                       ? `${item.establishment.name} · ${item.establishment.city}, ${item.establishment.province}`
                       : item.submitted_by.name}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDateTime(item.event_at)}
-                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {formatDateTime(item.event_at)}
+                    </span>
+                    <RowChevron />
+                  </div>
                 </button>
               ))}
             </div>
