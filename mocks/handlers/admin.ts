@@ -8,6 +8,9 @@ import {
 import {
   LIST_ESTABLISHMENT_REQUESTS_ENDPOINT,
   LIST_USERS_ENDPOINT,
+  APPROVE_FIELD_WORKER_ENDPOINT,
+  APPROVE_ESTABLISHMENTS_ENDPOINT,
+  REJECT_ESTABLISHMENTS_ENDPOINT,
 } from "@/constants/api";
 import {
   DEFAULT_ESTABLISHMENT_APPROVAL_RESPONSE,
@@ -25,16 +28,23 @@ export function makeListUsersHandler(
   });
 }
 
+export function makeApproveFieldWorkerHandler() {
+  return http.patch<PathParams>(
+    APPROVE_FIELD_WORKER_ENDPOINT(":user_id"),
+    () => new HttpResponse(null, { status: 204 }),
+  );
+}
+
 export function makeApproveEstablishmentsHandler() {
   return http.patch<PathParams>(
-    "/api/v1/admin/managers/:user_id/establishments/approve",
+    APPROVE_ESTABLISHMENTS_ENDPOINT(":user_id"),
     () => new HttpResponse(null, { status: 204 }),
   );
 }
 
 export function makeRejectEstablishmentsHandler() {
   return http.patch<PathParams>(
-    "/api/v1/admin/managers/:user_id/establishments/reject",
+    REJECT_ESTABLISHMENTS_ENDPOINT(":user_id"),
     () => new HttpResponse(null, { status: 204 }),
   );
 }
