@@ -12,6 +12,7 @@ import {
 } from "@/types/admin";
 import { CreateEstablishmentInput } from "@/schemas/establishment.schema";
 import { withPlaceholderGeoData } from "@/lib/establishmentGeoPlaceholder";
+import { ApiError } from "@/lib/apiError";
 import { ErrorResponse } from "@/lib/types";
 
 const PENDING_STATUS: EstablishmentRequestStatus = "pending";
@@ -43,7 +44,8 @@ export const listEstablishmentRequestsAction = async (
     PaginatedEstablishmentRequestsResponse
   >(`${LIST_ESTABLISHMENT_REQUESTS_ENDPOINT}?${query.toString()}`);
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok)
+    throw new ApiError((res.data as ErrorResponse).detail, res.status);
 
   return res.data as PaginatedEstablishmentRequestsResponse;
 };
@@ -60,7 +62,8 @@ export const approveEstablishmentRequestAction = async (
     { method: "PATCH", body },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok)
+    throw new ApiError((res.data as ErrorResponse).detail, res.status);
 
   return res.data as EstablishmentApprovalResponse;
 };
@@ -79,5 +82,6 @@ export const rejectEstablishmentRequestAction = async (
     { method: "PATCH", body },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok)
+    throw new ApiError((res.data as ErrorResponse).detail, res.status);
 };

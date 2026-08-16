@@ -9,6 +9,7 @@ import {
   approveEstablishmentRequestAction,
   rejectEstablishmentRequestAction,
 } from "@/services/establishmentRequest.service";
+import { ApiError } from "@/lib/apiError";
 import {
   EstablishmentApprovalResponse,
   EstablishmentRequestAdminView,
@@ -36,6 +37,7 @@ type EstablishmentRequestReviewPanelProps = {
   onClose: () => void;
   onApproved: (result: EstablishmentApprovalResponse) => void;
   onRejected: () => void;
+  onStale: () => void;
 };
 
 /**
@@ -49,6 +51,7 @@ export default function EstablishmentRequestReviewPanel({
   onClose,
   onApproved,
   onRejected,
+  onStale,
 }: EstablishmentRequestReviewPanelProps) {
   const { makeAuthorizedRequest } = useAuth();
 
@@ -96,6 +99,10 @@ export default function EstablishmentRequestReviewPanel({
       );
       onApproved(result);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        onStale();
+        return;
+      }
       setPanelError(
         err instanceof Error ? err.message : "Error al aprobar la solicitud",
       );
@@ -114,6 +121,10 @@ export default function EstablishmentRequestReviewPanel({
       );
       onRejected();
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        onStale();
+        return;
+      }
       setPanelError(
         err instanceof Error ? err.message : "Error al rechazar la solicitud",
       );

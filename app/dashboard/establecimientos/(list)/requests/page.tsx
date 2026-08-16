@@ -21,6 +21,7 @@ import {
   rowStateClass,
 } from "@/components/listings/RowAffordance";
 import EstablishmentRequestReviewPanel from "./EstablishmentRequestReviewPanel";
+import { useRefreshPendingRequestsCount } from "../layout";
 import { CircleCheck, ClipboardCheck, Loader2, Search, X } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -50,6 +51,7 @@ function parsePage(value: string | null) {
 
 function EstablishmentRequestsContent() {
   const { makeAuthorizedRequest } = useAuth();
+  const refreshPendingCount = useRefreshPendingRequestsCount();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -192,6 +194,7 @@ function EstablishmentRequestsContent() {
   const handleApproved = (result: EstablishmentApprovalResponse) => {
     if (!selectedRequest) return;
     removeFromList(selectedRequest.id);
+    refreshPendingCount();
     setSuccessMessage(
       result.reused
         ? "Establecimiento dado de alta correctamente. Se reutilizó un establecimiento ya existente con esa ubicación."
@@ -203,7 +206,18 @@ function EstablishmentRequestsContent() {
   const handleRejected = () => {
     if (!selectedRequest) return;
     removeFromList(selectedRequest.id);
+    refreshPendingCount();
     setSuccessMessage(null);
+    setSelectedRequest(null);
+  };
+
+  const handleStale = () => {
+    if (!selectedRequest) return;
+    removeFromList(selectedRequest.id);
+    refreshPendingCount();
+    setSuccessMessage(
+      "Esta solicitud ya fue revisada por otro administrador. Se actualizó la lista.",
+    );
     setSelectedRequest(null);
   };
 
@@ -432,6 +446,7 @@ function EstablishmentRequestsContent() {
         onClose={() => setSelectedRequest(null)}
         onApproved={handleApproved}
         onRejected={handleRejected}
+        onStale={handleStale}
       />
     </>
   );
