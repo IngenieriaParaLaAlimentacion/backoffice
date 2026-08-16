@@ -286,19 +286,19 @@ export default function SolicitudesPage() {
           <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col gap-1">
-                <Dialog.Title className="text-xl font-bold tracking-tight">
+              <div className="flex min-w-0 flex-col gap-1">
+                <Dialog.Title className="text-xl font-bold tracking-tight break-words">
                   {selectedUser
                     ? `${selectedUser.name} ${selectedUser.last_name}`
                     : "Solicitud"}
                 </Dialog.Title>
-                <Dialog.Description className="text-muted-foreground text-sm">
+                <Dialog.Description className="text-muted-foreground text-sm break-all">
                   {selectedUser?.email}
                 </Dialog.Description>
               </div>
               <Dialog.Close
                 render={<button type="button" />}
-                className="text-muted-foreground hover:text-foreground mt-0.5"
+                className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0"
               >
                 <X size={18} />
               </Dialog.Close>
@@ -330,11 +330,11 @@ export default function SolicitudesPage() {
                             key={est.id}
                             className="rounded-lg border border-border p-3 flex flex-col gap-2"
                           >
-                            <div className="flex flex-col">
-                              <span className="font-medium text-sm">
+                            <div className="flex min-w-0 flex-col">
+                              <span className="font-medium text-sm break-words">
                                 {est.name}
                               </span>
-                              <span className="text-muted-foreground text-xs">
+                              <span className="text-muted-foreground text-xs break-words">
                                 {est.formatted_address}
                               </span>
                             </div>
