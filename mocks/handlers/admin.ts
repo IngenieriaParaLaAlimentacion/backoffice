@@ -1,8 +1,19 @@
 import { http, HttpResponse, PathParams } from "msw";
 import { baseHandler, HandlerOptions } from "@/mocks/handlers/base";
-import { PaginatedUsersResponse } from "@/types/admin";
-import { LIST_USERS_ENDPOINT } from "@/constants/api";
-import { DEFAULT_PENDING_USERS_RESPONSE } from "@/mocks/fixtures/admin";
+import {
+  EstablishmentApprovalResponse,
+  PaginatedEstablishmentRequestsResponse,
+  PaginatedUsersResponse,
+} from "@/types/admin";
+import {
+  LIST_ESTABLISHMENT_REQUESTS_ENDPOINT,
+  LIST_USERS_ENDPOINT,
+} from "@/constants/api";
+import {
+  DEFAULT_ESTABLISHMENT_APPROVAL_RESPONSE,
+  DEFAULT_ESTABLISHMENT_REQUESTS_RESPONSE,
+  DEFAULT_PENDING_USERS_RESPONSE,
+} from "@/mocks/fixtures/admin";
 
 export function makeListUsersHandler(
   options?: HandlerOptions<PaginatedUsersResponse>,
@@ -24,6 +35,36 @@ export function makeApproveEstablishmentsHandler() {
 export function makeRejectEstablishmentsHandler() {
   return http.patch<PathParams>(
     "/api/v1/admin/managers/:user_id/establishments/reject",
+    () => new HttpResponse(null, { status: 204 }),
+  );
+}
+
+export function makeListEstablishmentRequestsHandler(
+  options?: HandlerOptions<PaginatedEstablishmentRequestsResponse>,
+) {
+  return baseHandler(LIST_ESTABLISHMENT_REQUESTS_ENDPOINT, {
+    ...options,
+    method: "get",
+    data: { ...DEFAULT_ESTABLISHMENT_REQUESTS_RESPONSE, ...options?.data },
+  });
+}
+
+export function makeApproveEstablishmentRequestHandler(
+  options?: HandlerOptions<EstablishmentApprovalResponse>,
+) {
+  return baseHandler<EstablishmentApprovalResponse, { request_id: string }>(
+    "/api/v1/admin/establishment-requests/:request_id/approve",
+    {
+      ...options,
+      method: "patch",
+      data: { ...DEFAULT_ESTABLISHMENT_APPROVAL_RESPONSE, ...options?.data },
+    },
+  );
+}
+
+export function makeRejectEstablishmentRequestHandler() {
+  return http.patch<PathParams>(
+    "/api/v1/admin/establishment-requests/:request_id/reject",
     () => new HttpResponse(null, { status: 204 }),
   );
 }

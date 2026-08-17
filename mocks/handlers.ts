@@ -6,8 +6,11 @@ import {
   makeResetPasswordHandler,
 } from "@/mocks/handlers/auth";
 import {
+  makeApproveEstablishmentRequestHandler,
   makeApproveEstablishmentsHandler,
+  makeListEstablishmentRequestsHandler,
   makeListUsersHandler,
+  makeRejectEstablishmentRequestHandler,
   makeRejectEstablishmentsHandler,
 } from "@/mocks/handlers/admin";
 import {
@@ -42,6 +45,9 @@ export const handlers = [
   makeListUsersHandler(),
   makeApproveEstablishmentsHandler(),
   makeRejectEstablishmentsHandler(),
+  makeListEstablishmentRequestsHandler(),
+  makeApproveEstablishmentRequestHandler(),
+  makeRejectEstablishmentRequestHandler(),
   makeEstablishmentDashboardHandler(),
   makeEstablishmentSubjectsHandler(),
   makeEstablishmentFieldWorkersHandler(),

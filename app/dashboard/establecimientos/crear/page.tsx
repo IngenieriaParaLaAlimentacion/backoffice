@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { createEstablishmentAction } from "@/services/establishment.service";
+import { withPlaceholderGeoData } from "@/lib/establishmentGeoPlaceholder";
 import {
   createEstablishmentSchema,
   CreateEstablishmentInput,
@@ -39,16 +40,16 @@ export default function CrearEstablecimientoPage() {
   const onSubmit = async (data: CreateEstablishmentInput) => {
     setApiError(null);
     try {
-      await createEstablishmentAction(makeAuthorizedRequest, {
-        ...data,
-        place_id: crypto.randomUUID(),
-        latitude: 0,
-        longitude: 0,
-      });
+      await createEstablishmentAction(
+        makeAuthorizedRequest,
+        withPlaceholderGeoData(data),
+      );
       router.push("/dashboard/establecimientos");
     } catch (err) {
       setApiError(
-        err instanceof Error ? err.message : "Error al crear el establecimiento",
+        err instanceof Error
+          ? err.message
+          : "Error al crear el establecimiento",
       );
     }
   };

@@ -54,7 +54,7 @@ function parsePage(value: string | null) {
   return Number.isInteger(parsed) && parsed >= 1 ? parsed : 1;
 }
 
-function EstablecimientosContent() {
+function EstablishmentsContent() {
   const { makeAuthorizedRequest } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -147,7 +147,7 @@ function EstablecimientosContent() {
   const detailHref = (id: string) => `/dashboard/establecimientos/${id}`;
 
   return (
-    <div className="flex flex-1 p-4">
+    <>
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
@@ -290,21 +290,21 @@ function EstablecimientosContent() {
           </>
         )}
       </Card>
-    </div>
+    </>
   );
 }
 
-export default function EstablecimientosPage() {
+export default function EstablishmentsPage() {
   // useSearchParams needs a Suspense boundary during prerender.
   return (
     <Suspense
       fallback={
-        <div className="flex flex-1 items-center justify-center p-4">
+        <div className="flex flex-1 items-center justify-center">
           <Loader2 className="animate-spin text-muted-foreground" size={28} />
         </div>
       }
     >
-      <EstablecimientosContent />
+      <EstablishmentsContent />
     </Suspense>
   );
 }

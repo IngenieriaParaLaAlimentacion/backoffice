@@ -19,7 +19,12 @@ export default function SideBarItem({
   isSidebarOpen,
 }: SideBarItemProps) {
   const pathname = usePathname();
-  const isSelected = pathname === href;
+  // "/dashboard" (Inicio) is a prefix of every dashboard route, so it only
+  // highlights on an exact match; other items also highlight on sub-routes
+  // (e.g. "/dashboard/establecimientos/requests" under "Establecimientos").
+  const isSelected =
+    pathname === href ||
+    (href !== "/dashboard" && pathname.startsWith(`${href}/`));
 
   return (
     <Link
@@ -28,16 +33,14 @@ export default function SideBarItem({
         "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors",
         isSelected
           ? "bg-primary/10 text-primary"
-          : "text-foreground hover:bg-accent hover:text-accent-foreground"
+          : "text-foreground hover:bg-accent hover:text-accent-foreground",
       )}
     >
       <span className="shrink-0">{icon}</span>
       <span
-        className="overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-200 ease-in-out"
-        style={{
-          opacity: isSidebarOpen ? 1 : 0,
-          maxWidth: isSidebarOpen ? 160 : 0,
-        }}
+        className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap transition-opacity duration-200 ease-in-out"
+        style={{ opacity: isSidebarOpen ? 1 : 0 }}
+        title={label}
       >
         {label}
       </span>
