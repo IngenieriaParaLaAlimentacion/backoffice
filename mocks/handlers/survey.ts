@@ -20,10 +20,23 @@ import {
 export function makeListSurveysHandler(
   options?: HandlerOptions<PaginatedSurveysResponse>,
 ) {
-  return baseHandler(SURVEYS_ENDPOINT, {
-    ...options,
-    method: "get",
-    data: { ...DEFAULT_SURVEYS_RESPONSE, ...options?.data },
+  return http.get<PathParams>(SURVEYS_ENDPOINT, ({ request }) => {
+    const target = new URL(request.url).searchParams.get("response_target");
+    // Honour the filter so the listing's select can actually be exercised
+    // offline; without it every option would return the same three rows.
+    const items = target
+      ? DEFAULT_SURVEYS_RESPONSE.items.filter(
+          (s) => s.response_target === target,
+        )
+      : DEFAULT_SURVEYS_RESPONSE.items;
+
+    return HttpResponse.json({
+      ...DEFAULT_SURVEYS_RESPONSE,
+      items,
+      total: items.length,
+      total_pages: 1,
+      ...options?.data,
+    });
   });
 }
 
