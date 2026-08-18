@@ -101,7 +101,9 @@ export const RESPUESTAS_PAGE = {
   back: "Encuestas",
   viewResponses: "Ver respuestas",
   noResponses: "No hay respuestas para esta encuesta",
-  respondent: "Responsable",
+  // "Completado por" everywhere: it is who uploaded the response, never who the
+  // response is about — that distinction is the point of the entity column.
+  respondent: "Completado por",
   establishment: "Establecimiento",
   subject: "Sujeto",
   targetPrefix: "Destino:",
