@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   ENCUESTAS_PAGE,
   RESPUESTAS_PAGE,
-  SCOPE_LABELS,
+  RESPONSE_TARGET_LABELS,
 } from "@/constants/surveys";
 import {
   BarChart3,
@@ -116,7 +116,7 @@ export default function EncuestasPage() {
                       {ENCUESTAS_PAGE.columns.name}
                     </th>
                     <th className="px-4 py-3 font-medium">
-                      {ENCUESTAS_PAGE.columns.scope}
+                      {ENCUESTAS_PAGE.columns.target}
                     </th>
                     <th className="px-4 py-3 font-medium">
                       {ENCUESTAS_PAGE.columns.status}
@@ -145,7 +145,7 @@ export default function EncuestasPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                          {SCOPE_LABELS[survey.scope]}
+                          {RESPONSE_TARGET_LABELS[survey.response_target]}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -252,7 +252,7 @@ export default function EncuestasPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                      {SCOPE_LABELS[survey.scope]}
+                      {RESPONSE_TARGET_LABELS[survey.response_target]}
                     </span>
                     <span
                       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${

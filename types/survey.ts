@@ -1,11 +1,18 @@
-export type SurveyScope = "generic" | "targeted";
+import { Sex } from "@/types/subject";
+
+/**
+ * What each response to a survey is about. Replaces the old `scope`
+ * (generic/targeted), which described an audience rather than a subject matter.
+ * Locked by the API once the survey has at least one response.
+ */
+export type SurveyResponseTarget = "subject" | "establishment" | "anonymous";
 
 export type SurveySortOrder = "name_asc" | "name_desc" | "newest" | "oldest";
 
 export type SurveyListItem = {
   id: string;
   name: string;
-  scope: SurveyScope;
+  response_target: SurveyResponseTarget;
   is_active: boolean;
   created_by_id: string;
   question_count: number;
@@ -63,12 +70,11 @@ export type SurveyResponse = {
   id: string;
   name: string;
   description: string | null;
-  scope: SurveyScope;
+  response_target: SurveyResponseTarget;
   is_active: boolean;
   created_by_id: string;
   response_count: number;
   questions: QuestionResponse[];
-  establishment_ids: string[];
   created_at: string;
   updated_at: string;
 };
@@ -76,9 +82,8 @@ export type SurveyResponse = {
 export type SurveyCreateRequest = {
   name: string;
   description?: string | null;
-  scope: SurveyScope;
+  response_target: SurveyResponseTarget;
   questions: QuestionInput[];
-  establishment_ids: string[];
 };
 
 export type SurveyUpdateRequest = SurveyCreateRequest;
@@ -105,7 +110,7 @@ export type TemplateQuestion = {
 export type SurveyTemplateResponse = {
   name: string;
   description: string | null;
-  scope: SurveyScope;
+  response_target: SurveyResponseTarget;
   questions: TemplateQuestion[];
 };
 
@@ -120,11 +125,32 @@ export type EstablishmentRef = {
   province: string;
 };
 
+/** The person a response is about, on subject-targeted surveys. */
+export type SubjectRef = {
+  id: string;
+  dni: number;
+  sex: Sex;
+  name: string;
+  last_name: string;
+  birth_date: string; // date
+};
+
+export type SurveyResponseSortOrder =
+  | "event_at_desc"
+  | "event_at_asc"
+  | "created_at_desc"
+  | "created_at_asc";
+
+/**
+ * Exactly one of `subject` / `establishment` is set, decided by the survey's
+ * `response_target`; both are null on anonymous surveys.
+ */
 export type SurveyResponseDashboardItem = {
   id: string;
   event_at: string;
   survey: SurveyRef;
-  establishment: EstablishmentRef;
+  establishment: EstablishmentRef | null;
+  subject: SubjectRef | null;
   submitted_by: UserRef;
   score_fies: number | null;
 };
@@ -149,7 +175,8 @@ export type SurveyResponseDetail = {
   id: string;
   event_at: string;
   survey: SurveyRef;
-  establishment: EstablishmentRef;
+  establishment: EstablishmentRef | null;
+  subject: SubjectRef | null;
   submitted_by: UserRef;
   score_fies: number | null;
   answers: QuestionAnswer[];

@@ -8,9 +8,7 @@ import {
   listSurveyResponsesAction,
   exportSurveyResponsesAction,
 } from "@/services/survey.service";
-import { listEstablishmentsAction } from "@/services/establishment.service";
 import { SurveyResponseDashboardItem, SurveyResponse } from "@/types/survey";
-import { EstablishmentResponse } from "@/types/admin";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,17 +20,21 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
-import { RESPUESTAS_PAGE } from "@/constants/surveys";
+import {
+  RESPONSE_TARGET_DESCRIPTIONS,
+  RESPONSE_TARGET_LABELS,
+  RESPUESTAS_PAGE,
+} from "@/constants/surveys";
+import ResponseEntity, {
+  entityLabel,
+} from "@/components/encuestas/ResponseEntity";
+import { EMPTY_VALUE } from "@/lib/format";
 import ResponseDetailPanel from "./ResponseDetailPanel";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
 
-const SELECT_CLASS =
-  "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
-
 type Filters = {
-  establishmentId: string;
   dateFrom: string;
   dateTo: string;
   city: string;
@@ -40,7 +42,6 @@ type Filters = {
 };
 
 const EMPTY_FILTERS: Filters = {
-  establishmentId: "",
   dateFrom: "",
   dateTo: "",
   city: "",
@@ -73,10 +74,6 @@ export default function RespuestasPage() {
   const [debouncedFilters, setDebouncedFilters] =
     useState<Filters>(EMPTY_FILTERS);
 
-  const [establishments, setEstablishments] = useState<EstablishmentResponse[]>(
-    [],
-  );
-
   const [selectedResponseId, setSelectedResponseId] = useState<string | null>(
     null,
   );
@@ -90,16 +87,6 @@ export default function RespuestasPage() {
       .then(setSurvey)
       .catch(() => {});
   }, [makeAuthorizedRequest, surveyId]);
-
-  // Fetch establishments for filter dropdown
-  useEffect(() => {
-    listEstablishmentsAction(makeAuthorizedRequest, {
-      page: 1,
-      page_size: 100,
-    })
-      .then((data) => setEstablishments(data.items))
-      .catch(() => {});
-  }, [makeAuthorizedRequest]);
 
   // Debounce filter changes
   useEffect(() => {
@@ -119,7 +106,6 @@ export default function RespuestasPage() {
           survey_id: surveyId,
           page: currentPage,
           page_size: PAGE_SIZE,
-          establishment_id: currentFilters.establishmentId || undefined,
           event_at_from: currentFilters.dateFrom
             ? `${currentFilters.dateFrom}T00:00:00Z`
             : undefined,
@@ -161,10 +147,7 @@ export default function RespuestasPage() {
   async function handleExport() {
     setExporting(true);
     try {
-      const blob = await exportSurveyResponsesAction(makeAuthorizedRequest, {
-        survey_id: surveyId,
-        establishment_id: filters.establishmentId || undefined,
-      });
+      const blob = await exportSurveyResponsesAction({ survey_id: surveyId });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -205,6 +188,19 @@ export default function RespuestasPage() {
             <p className="text-muted-foreground text-sm ml-8">
               {survey ? survey.name : RESPUESTAS_PAGE.subtitle}
             </p>
+            {/* The target explains both what the entity column holds and why
+                the location filters are or aren't offered (CA5, CA6). */}
+            {survey && (
+              <div className="ml-8 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                  {RESPUESTAS_PAGE.targetPrefix}{" "}
+                  {RESPONSE_TARGET_LABELS[survey.response_target]}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {RESPONSE_TARGET_DESCRIPTIONS[survey.response_target]}
+                </span>
+              </div>
+            )}
           </div>
           <Button
             size="sm"
@@ -226,26 +222,6 @@ export default function RespuestasPage() {
 
         {/* Filters  */}
         <div className="flex flex-wrap items-end gap-3">
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {RESPUESTAS_PAGE.filters.establishment}
-            </label>
-            <select
-              value={filters.establishmentId}
-              onChange={(e) => updateFilter("establishmentId", e.target.value)}
-              className={`${SELECT_CLASS} w-full sm:w-56`}
-            >
-              <option value="">
-                {RESPUESTAS_PAGE.filters.allEstablishments}
-              </option>
-              {establishments.map((est) => (
-                <option key={est.id} value={est.id}>
-                  {est.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
               {RESPUESTAS_PAGE.filters.dateFrom}
@@ -317,10 +293,10 @@ export default function RespuestasPage() {
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
                     <th className="px-4 py-3 font-medium">
-                      {RESPUESTAS_PAGE.columns.respondent}
+                      {RESPUESTAS_PAGE.columns.entity}
                     </th>
                     <th className="px-4 py-3 font-medium">
-                      {RESPUESTAS_PAGE.columns.establishment}
+                      {RESPUESTAS_PAGE.columns.respondent}
                     </th>
                     <th className="px-4 py-3 font-medium">
                       {RESPUESTAS_PAGE.columns.city}
@@ -346,14 +322,17 @@ export default function RespuestasPage() {
                       }`}
                     >
                       <td className="px-4 py-3 font-medium">
-                        {item.submitted_by.name}
+                        <ResponseEntity
+                          subject={item.subject}
+                          establishment={item.establishment}
+                        />
                       </td>
-                      <td className="px-4 py-3">{item.establishment.name}</td>
+                      <td className="px-4 py-3">{item.submitted_by.name}</td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {item.establishment.city || "—"}
+                        {item.establishment?.city || EMPTY_VALUE}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {item.establishment.province || "—"}
+                        {item.establishment?.province || EMPTY_VALUE}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {formatDateTime(item.event_at)}
@@ -386,7 +365,10 @@ export default function RespuestasPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-sm font-medium">
-                      {item.submitted_by.name}
+                      {entityLabel({
+                        subject: item.subject,
+                        establishment: item.establishment,
+                      })}
                     </span>
                     {item.score_fies !== null && (
                       <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -395,8 +377,9 @@ export default function RespuestasPage() {
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {item.establishment.name} · {item.establishment.city},{" "}
-                    {item.establishment.province}
+                    {item.establishment
+                      ? `${item.establishment.name} · ${item.establishment.city}, ${item.establishment.province}`
+                      : item.submitted_by.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {formatDateTime(item.event_at)}
