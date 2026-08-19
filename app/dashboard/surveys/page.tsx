@@ -6,18 +6,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   SURVEYS_PAGE,
-  RESPONSES_PAGE,
+  SURVEY_FORM,
   RESPONSE_TARGET_LABELS,
 } from "@/constants/surveys";
-import {
-  BarChart3,
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  Loader2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -28,8 +23,14 @@ import {
 import { RESPONSE_TARGETS } from "@/schemas/survey.schema";
 import { ResponseTargetFilter, useSurveys } from "@/hooks/useSurveys";
 import { useAuth } from "@/context/AuthContext";
-import { duplicateSurveyAction } from "@/services/survey.service";
+import {
+  deleteSurveyAction,
+  duplicateSurveyAction,
+  setSurveyStatusAction,
+} from "@/services/survey.service";
+import { SurveyListItem } from "@/types/survey";
 import CreateSurveyDialog from "@/components/surveys/CreateSurveyDialog";
+import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
 
 const PAGE_SIZE = 20;
 
@@ -56,19 +57,66 @@ export default function SurveysPage() {
     isLoading,
     error,
     setPage,
+    refetch,
   } = useSurveys(PAGE_SIZE);
 
   const router = useRouter();
   const { makeAuthorizedRequest } = useAuth();
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   async function handleDuplicate(surveyId: string) {
+    setActionError(null);
     setDuplicatingId(surveyId);
     try {
       const copy = await duplicateSurveyAction(makeAuthorizedRequest, surveyId);
       router.push(`/dashboard/surveys/${copy.id}`);
-    } catch {
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : SURVEYS_PAGE.duplicateError,
+      );
       setDuplicatingId(null);
+    }
+  }
+
+  async function handleToggleStatus(survey: SurveyListItem) {
+    const confirmMessage = survey.is_active
+      ? SURVEY_FORM.deactivateConfirm
+      : SURVEY_FORM.activateConfirm;
+    if (!window.confirm(confirmMessage)) return;
+    setActionError(null);
+    setTogglingId(survey.id);
+    try {
+      await setSurveyStatusAction(
+        makeAuthorizedRequest,
+        survey.id,
+        !survey.is_active,
+      );
+      await refetch();
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : SURVEYS_PAGE.statusError,
+      );
+    } finally {
+      setTogglingId(null);
+    }
+  }
+
+  async function handleDelete(surveyId: string) {
+    if (!window.confirm(SURVEY_FORM.deleteConfirm)) return;
+    setActionError(null);
+    setDeletingId(surveyId);
+    try {
+      await deleteSurveyAction(makeAuthorizedRequest, surveyId);
+      await refetch();
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : SURVEYS_PAGE.deleteError,
+      );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -131,6 +179,12 @@ export default function SurveysPage() {
           </div>
         )}
 
+        {actionError && (
+          <Alert variant="destructive">
+            <AlertDescription>{actionError}</AlertDescription>
+          </Alert>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="animate-spin text-muted-foreground" size={28} />
@@ -169,7 +223,7 @@ export default function SurveysPage() {
                     <tr
                       key={survey.id}
                       onClick={() =>
-                        router.push(`/dashboard/surveys/${survey.id}`)
+                        router.push(`/dashboard/surveys/${survey.id}/responses`)
                       }
                       className={`${ROW_HOVER_CLASS} bg-card`}
                     >
@@ -201,36 +255,18 @@ export default function SurveysPage() {
                         {formatDate(survey.created_at)}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            title={RESPONSES_PAGE.viewResponses}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(
-                                `/dashboard/surveys/${survey.id}/responses`,
-                              );
-                            }}
-                          >
-                            <BarChart3 size={14} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            title="Duplicar"
-                            disabled={duplicatingId === survey.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDuplicate(survey.id);
-                            }}
-                          >
-                            {duplicatingId === survey.id ? (
-                              <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                              <Copy size={14} />
-                            )}
-                          </Button>
+                        <div className="flex items-center justify-end">
+                          <SurveyActionsMenu
+                            survey={survey}
+                            busy={
+                              duplicatingId === survey.id ||
+                              togglingId === survey.id ||
+                              deletingId === survey.id
+                            }
+                            onDuplicate={() => handleDuplicate(survey.id)}
+                            onToggleStatus={() => handleToggleStatus(survey)}
+                            onDelete={() => handleDelete(survey.id)}
+                          />
                         </div>
                       </td>
                       <ChevronCell />
@@ -244,42 +280,24 @@ export default function SurveysPage() {
               {surveys.map((survey) => (
                 <div
                   key={survey.id}
-                  onClick={() => router.push(`/dashboard/surveys/${survey.id}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/surveys/${survey.id}/responses`)
+                  }
                   className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} bg-card`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-sm font-medium">{survey.name}</span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        title={RESPONSES_PAGE.viewResponses}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(
-                            `/dashboard/surveys/${survey.id}/responses`,
-                          );
-                        }}
-                      >
-                        <BarChart3 size={14} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Duplicar"
-                        disabled={duplicatingId === survey.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDuplicate(survey.id);
-                        }}
-                      >
-                        {duplicatingId === survey.id ? (
-                          <Loader2 className="animate-spin" size={14} />
-                        ) : (
-                          <Copy size={14} />
-                        )}
-                      </Button>
-                    </div>
+                    <SurveyActionsMenu
+                      survey={survey}
+                      busy={
+                        duplicatingId === survey.id ||
+                        togglingId === survey.id ||
+                        deletingId === survey.id
+                      }
+                      onDuplicate={() => handleDuplicate(survey.id)}
+                      onToggleStatus={() => handleToggleStatus(survey)}
+                      onDelete={() => handleDelete(survey.id)}
+                    />
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">

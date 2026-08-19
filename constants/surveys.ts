@@ -86,6 +86,12 @@ export const SURVEYS_PAGE = {
     created: "Creada",
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
+  actionsMenuLabel: "Más acciones",
+  edit: "Editar",
+  duplicate: "Duplicar",
+  duplicateError: "No se pudo duplicar la encuesta",
+  statusError: "No se pudo cambiar el estado de la encuesta",
+  deleteError: "No se pudo eliminar la encuesta",
 } as const;
 
 export const RESPONSE_SORT_LABELS: Partial<
