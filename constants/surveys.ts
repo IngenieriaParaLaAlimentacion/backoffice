@@ -146,4 +146,9 @@ export const DASHBOARD_INDICATORS = {
   lastEvent: "Último relevamiento",
   noData: "Sin datos disponibles",
   noDate: "—",
+  pendingUserRegistrations: "Registros pendientes",
+  pendingEstablishmentAccess: "Accesos pendientes",
+  pendingEstablishmentCreations: "Establecimientos faltantes",
+  notAvailable: "X",
+  notAvailableHint: "Aún no disponible: falta el endpoint en el backend",
 } as const;
