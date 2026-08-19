@@ -1,8 +1,24 @@
-import { ResponseType, SurveyScope } from "@/types/survey";
+import {
+  ResponseType,
+  SurveyResponseSortOrder,
+  SurveyResponseTarget,
+} from "@/types/survey";
 
-export const SCOPE_LABELS: Record<SurveyScope, string> = {
-  generic: "Genérica",
-  targeted: "Dirigida",
+export const RESPONSE_TARGET_LABELS: Record<SurveyResponseTarget, string> = {
+  subject: "Sujeto",
+  establishment: "Establecimiento",
+  anonymous: "Anónima",
+};
+
+/** Shown under each option so the choice is made informed, not by name alone (CA1). */
+export const RESPONSE_TARGET_DESCRIPTIONS: Record<
+  SurveyResponseTarget,
+  string
+> = {
+  subject: "Cada respuesta corresponde a una persona registrada en el sistema",
+  establishment: "Cada respuesta corresponde a un establecimiento",
+  anonymous:
+    "Las respuestas no se asocian a ninguna persona ni establecimiento",
 };
 
 export const RESPONSE_TYPE_LABELS: Record<ResponseType, string> = {
@@ -23,7 +39,7 @@ export const ENCUESTAS_FORM = {
   namePlaceholder: "Nombre de la encuesta",
   descriptionLabel: "Descripción",
   descriptionPlaceholder: "Descripción (opcional)",
-  scopeLabel: "Alcance",
+  targetLabel: "Destino de las respuestas",
   questionsLabel: "Preguntas",
   addQuestion: "Agregar pregunta",
   addOption: "Agregar opción",
@@ -35,10 +51,12 @@ export const ENCUESTAS_FORM = {
   saving: "Guardando...",
   cancel: "Cancelar",
   lockedNotice:
-    "Esta encuesta ya tiene respuestas registradas; la edición está restringida.",
+    "Esta encuesta ya tiene respuestas registradas: no se pueden modificar las preguntas ni el destino.",
   nameConflict: "Ya existe una encuesta con ese nombre",
-  establishmentsLabel: "Establecimientos",
-  establishmentsSearch: "Buscar establecimiento",
+  // Race condition: someone answered the survey while the form was open, so the
+  // API rejects a change the disabled-field rule assumed could not be sent.
+  lockedConflict:
+    "La encuesta recibió respuestas mientras la editabas; ya no se puede cambiar su destino. Recargá la página para ver el estado actual.",
   activate: "Activar",
   activateTitle: "Habilita la encuesta para que puedan responderla",
   activateConfirm: "¿Activar esta encuesta? Quedará disponible para responder.",
@@ -58,9 +76,11 @@ export const ENCUESTAS_PAGE = {
   noSurveys: "No hay encuestas",
   statusActive: "Activa",
   statusInactive: "Inactiva",
+  targetFilterLabel: "Destino",
+  allTargets: "Todos",
   columns: {
     name: "Nombre",
-    scope: "Alcance",
+    target: "Destino",
     status: "Estado",
     questions: "Preguntas",
     created: "Creada",
@@ -68,33 +88,51 @@ export const ENCUESTAS_PAGE = {
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
 
+export const RESPONSE_SORT_LABELS: Partial<
+  Record<SurveyResponseSortOrder, string>
+> = {
+  event_at_desc: "Más recientes primero",
+  event_at_asc: "Más antiguas primero",
+};
+
 export const RESPUESTAS_PAGE = {
   title: "Respuestas",
   subtitle: "Resultados de la encuesta",
   back: "Encuestas",
   viewResponses: "Ver respuestas",
   noResponses: "No hay respuestas para esta encuesta",
-  respondent: "Responsable",
-  establishment: "Comedor",
+  // "Completado por" everywhere: it is who uploaded the response, never who the
+  // response is about — that distinction is the point of the entity column.
+  respondent: "Completado por",
+  establishment: "Establecimiento",
+  subject: "Sujeto",
+  targetPrefix: "Destino:",
   date: "Fecha de relevamiento",
   score: "Score FIES",
   export: "Exportar",
   exporting: "Exportando...",
+  exportError: "No se pudo exportar",
   filters: {
-    establishment: "Comedor",
     dateFrom: "Fecha desde",
     dateTo: "Fecha hasta",
     city: "Ciudad",
     province: "Provincia",
-    allEstablishments: "Todos los comedores",
+    sort: "Ordenar por",
   },
   columns: {
-    respondent: "Responsable",
-    establishment: "Comedor",
+    entity: "Entidad",
+    respondent: "Completado por",
     city: "Ciudad",
     province: "Provincia",
     date: "Fecha",
     score: "Score FIES",
+  },
+  detailFields: {
+    dni: "DNI",
+    sex: "Sexo",
+    birthDate: "Fecha de nacimiento",
+    city: "Ciudad",
+    province: "Provincia",
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
   detailTitle: "Detalle de respuesta",

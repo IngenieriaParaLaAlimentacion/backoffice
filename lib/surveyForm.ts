@@ -5,28 +5,30 @@ import {
   SurveyTemplateResponse,
 } from "@/types/survey";
 
-/** A create-from-scratch draft: one blank text question. */
+/** A create-from-scratch draft: no target chosen yet, one blank text question. */
 export function emptySurveyForm(): SurveyFormInput {
   return {
     name: "",
     description: "",
-    scope: "generic",
-    establishment_ids: [],
+    response_target: "",
     questions: [
       { text: "", response_type: "text", is_required: false, options: [] },
     ],
   };
 }
 
-/** Prefill the editor from the FIES template (no ids yet). */
+/**
+ * Prefill the editor from the FIES template (no ids yet). The template carries
+ * its own `response_target` (`anonymous` for FIES) — it is a suggestion the
+ * author can still change, since a survey without responses is not locked.
+ */
 export function templateToForm(
   template: SurveyTemplateResponse,
 ): SurveyFormInput {
   return {
     name: template.name,
     description: template.description ?? "",
-    scope: template.scope,
-    establishment_ids: [],
+    response_target: template.response_target,
     questions: template.questions
       .slice()
       .sort((a, b) => a.position - b.position)
@@ -47,8 +49,7 @@ export function surveyToForm(survey: SurveyResponse): SurveyFormInput {
   return {
     name: survey.name,
     description: survey.description ?? "",
-    scope: survey.scope,
-    establishment_ids: survey.establishment_ids,
+    response_target: survey.response_target,
     questions: survey.questions
       .slice()
       .sort((a, b) => a.position - b.position)
@@ -70,12 +71,16 @@ export function formToRequest(values: SurveyFormInput): SurveyCreateRequest {
   const isChoice = (t: string) =>
     t === "single_choice" || t === "multiple_choice";
 
+  if (values.response_target === "") {
+    // Unreachable through the form: the zod resolver rejects an unselected
+    // target before onSubmit runs. Kept so the payload type stays honest.
+    throw new Error("Elegí un destino para la encuesta");
+  }
+
   return {
     name: values.name,
     description: values.description || null,
-    scope: values.scope,
-    establishment_ids:
-      values.scope === "targeted" ? values.establishment_ids : [],
+    response_target: values.response_target,
     questions: values.questions.map((q) => ({
       ...(q.id ? { id: q.id } : {}),
       text: q.text,

@@ -20,10 +20,23 @@ import {
 export function makeListSurveysHandler(
   options?: HandlerOptions<PaginatedSurveysResponse>,
 ) {
-  return baseHandler(SURVEYS_ENDPOINT, {
-    ...options,
-    method: "get",
-    data: { ...DEFAULT_SURVEYS_RESPONSE, ...options?.data },
+  return http.get<PathParams>(SURVEYS_ENDPOINT, ({ request }) => {
+    const target = new URL(request.url).searchParams.get("response_target");
+    // Honour the filter so the listing's select can actually be exercised
+    // offline; without it every option would return the same three rows.
+    const items = target
+      ? DEFAULT_SURVEYS_RESPONSE.items.filter(
+          (s) => s.response_target === target,
+        )
+      : DEFAULT_SURVEYS_RESPONSE.items;
+
+    return HttpResponse.json({
+      ...DEFAULT_SURVEYS_RESPONSE,
+      items,
+      total: items.length,
+      total_pages: 1,
+      ...options?.data,
+    });
   });
 }
 
@@ -43,12 +56,10 @@ function payloadToResponse(
     id: base.id ?? crypto.randomUUID(),
     name: body.name,
     description: body.description ?? null,
-    scope: body.scope,
+    response_target: body.response_target,
     is_active: base.is_active ?? true,
-    created_by_id:
-      base.created_by_id ?? "b1c2d3e4-0000-0000-0000-000000000001",
+    created_by_id: base.created_by_id ?? "b1c2d3e4-0000-0000-0000-000000000001",
     response_count: base.response_count ?? 0,
-    establishment_ids: body.establishment_ids ?? [],
     created_at: base.created_at ?? new Date().toISOString(),
     updated_at: new Date().toISOString(),
     questions: body.questions.map((q, i) => ({
@@ -67,13 +78,22 @@ function payloadToResponse(
 }
 
 export function makeGetSurveyHandler(override?: Partial<SurveyResponse>) {
-  return http.get<PathParams>(SURVEY_ENDPOINT(":surveyId"), ({ params }) =>
-    HttpResponse.json({
+  return http.get<PathParams>(SURVEY_ENDPOINT(":surveyId"), ({ params }) => {
+    const surveyId = (params.surveyId as string) ?? DEFAULT_SURVEY_DETAIL.id;
+    // Keep the detail's target consistent with the list fixture, otherwise the
+    // responses screen would pick columns that contradict its own rows.
+    const listed = DEFAULT_SURVEYS_RESPONSE.items.find(
+      (s) => s.id === surveyId,
+    );
+    return HttpResponse.json({
       ...DEFAULT_SURVEY_DETAIL,
-      id: (params.surveyId as string) ?? DEFAULT_SURVEY_DETAIL.id,
+      id: surveyId,
+      ...(listed
+        ? { name: listed.name, response_target: listed.response_target }
+        : {}),
       ...override,
-    }),
-  );
+    });
+  });
 }
 
 export function makeCreateSurveyHandler() {

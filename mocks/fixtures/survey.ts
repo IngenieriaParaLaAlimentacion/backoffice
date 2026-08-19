@@ -1,31 +1,38 @@
 import { PaginatedSurveysResponse } from "@/types/survey";
+import {
+  ANONYMOUS_SURVEY_ID,
+  ESTABLISHMENT_SURVEY_ID,
+  SUBJECT_SURVEY_ID,
+} from "@/mocks/fixtures/surveyResponse";
 
 const CREATED_BY = "b1c2d3e4-0000-0000-0000-000000000001";
 
+// One survey per response target: navigating between them exercises every
+// entity-column and filter combination on the responses screen.
 export const DEFAULT_SURVEYS_RESPONSE: PaginatedSurveysResponse = {
   items: [
     {
-      id: "5f000000-0000-0000-0000-000000000001",
+      id: ANONYMOUS_SURVEY_ID,
       name: "FIES 2026 - Línea de base",
-      scope: "generic",
+      response_target: "anonymous",
       is_active: true,
       created_by_id: CREATED_BY,
       question_count: 8,
       created_at: "2026-03-10T14:00:00Z",
     },
     {
-      id: "5f000000-0000-0000-0000-000000000002",
-      name: "Encuesta de satisfacción comedor norte",
-      scope: "targeted",
+      id: ESTABLISHMENT_SURVEY_ID,
+      name: "Infraestructura de comedores",
+      response_target: "establishment",
       is_active: true,
       created_by_id: CREATED_BY,
       question_count: 12,
       created_at: "2026-04-22T09:30:00Z",
     },
     {
-      id: "5f000000-0000-0000-0000-000000000003",
-      name: "Relevamiento nutricional (borrador)",
-      scope: "generic",
+      id: SUBJECT_SURVEY_ID,
+      name: "Relevamiento nutricional por sujeto",
+      response_target: "subject",
       is_active: false,
       created_by_id: CREATED_BY,
       question_count: 5,

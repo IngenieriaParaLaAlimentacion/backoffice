@@ -8,9 +8,11 @@ import {
   listSurveyResponsesAction,
   exportSurveyResponsesAction,
 } from "@/services/survey.service";
-import { listEstablishmentsAction } from "@/services/establishment.service";
-import { SurveyResponseDashboardItem, SurveyResponse } from "@/types/survey";
-import { EstablishmentResponse } from "@/types/admin";
+import {
+  SurveyResponseDashboardItem,
+  SurveyResponse,
+  SurveyResponseSortOrder,
+} from "@/types/survey";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,17 +24,32 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
-import { RESPUESTAS_PAGE } from "@/constants/surveys";
+import {
+  RESPONSE_SORT_LABELS,
+  RESPONSE_TARGET_DESCRIPTIONS,
+  RESPONSE_TARGET_LABELS,
+  RESPUESTAS_PAGE,
+} from "@/constants/surveys";
+import ResponseEntity, {
+  entityLabel,
+} from "@/components/encuestas/ResponseEntity";
+import { EMPTY_VALUE } from "@/lib/format";
 import ResponseDetailPanel from "./ResponseDetailPanel";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
 
 const SELECT_CLASS =
-  "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+
+/** Only event_at is shown in the table, so only event_at can be ordered by:
+ *  sorting on a column the reader cannot see reads as an arbitrary shuffle. */
+const SORT_OPTIONS = Object.entries(RESPONSE_SORT_LABELS) as [
+  SurveyResponseSortOrder,
+  string,
+][];
 
 type Filters = {
-  establishmentId: string;
   dateFrom: string;
   dateTo: string;
   city: string;
@@ -40,7 +57,6 @@ type Filters = {
 };
 
 const EMPTY_FILTERS: Filters = {
-  establishmentId: "",
   dateFrom: "",
   dateTo: "",
   city: "",
@@ -73,15 +89,15 @@ export default function RespuestasPage() {
   const [debouncedFilters, setDebouncedFilters] =
     useState<Filters>(EMPTY_FILTERS);
 
-  const [establishments, setEstablishments] = useState<EstablishmentResponse[]>(
-    [],
-  );
+  const [sortOrder, setSortOrder] =
+    useState<SurveyResponseSortOrder>("event_at_desc");
 
   const [selectedResponseId, setSelectedResponseId] = useState<string | null>(
     null,
   );
 
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   // Fetch survey metadata
@@ -90,16 +106,6 @@ export default function RespuestasPage() {
       .then(setSurvey)
       .catch(() => {});
   }, [makeAuthorizedRequest, surveyId]);
-
-  // Fetch establishments for filter dropdown
-  useEffect(() => {
-    listEstablishmentsAction(makeAuthorizedRequest, {
-      page: 1,
-      page_size: 100,
-    })
-      .then((data) => setEstablishments(data.items))
-      .catch(() => {});
-  }, [makeAuthorizedRequest]);
 
   // Debounce filter changes
   useEffect(() => {
@@ -111,7 +117,11 @@ export default function RespuestasPage() {
   }, [filters]);
 
   const fetchResponses = useCallback(
-    async (currentPage: number, currentFilters: Filters) => {
+    async (
+      currentPage: number,
+      currentFilters: Filters,
+      currentSort: SurveyResponseSortOrder,
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
@@ -119,7 +129,6 @@ export default function RespuestasPage() {
           survey_id: surveyId,
           page: currentPage,
           page_size: PAGE_SIZE,
-          establishment_id: currentFilters.establishmentId || undefined,
           event_at_from: currentFilters.dateFrom
             ? `${currentFilters.dateFrom}T00:00:00Z`
             : undefined,
@@ -128,6 +137,7 @@ export default function RespuestasPage() {
             : undefined,
           city: currentFilters.city || undefined,
           province: currentFilters.province || undefined,
+          sort_order: currentSort,
         });
         setResponses(data.items);
         setTotalPages(data.total_pages);
@@ -144,8 +154,8 @@ export default function RespuestasPage() {
   );
 
   useEffect(() => {
-    fetchResponses(page, debouncedFilters);
-  }, [fetchResponses, page, debouncedFilters, reloadKey]);
+    fetchResponses(page, debouncedFilters, sortOrder);
+  }, [fetchResponses, page, debouncedFilters, sortOrder, reloadKey]);
 
   // Refresh on tab focus
   useEffect(() => {
@@ -154,17 +164,17 @@ export default function RespuestasPage() {
     return () => window.removeEventListener("focus", onFocus);
   }, []);
 
+  const isEstablishmentTargeted = survey?.response_target === "establishment";
+
   const updateFilter = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   async function handleExport() {
     setExporting(true);
+    setExportError(null);
     try {
-      const blob = await exportSurveyResponsesAction(makeAuthorizedRequest, {
-        survey_id: surveyId,
-        establishment_id: filters.establishmentId || undefined,
-      });
+      const blob = await exportSurveyResponsesAction({ survey_id: surveyId });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -174,7 +184,9 @@ export default function RespuestasPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Error al exportar:", err);
+      setExportError(
+        err instanceof Error ? err.message : RESPUESTAS_PAGE.exportError,
+      );
     } finally {
       setExporting(false);
     }
@@ -205,6 +217,19 @@ export default function RespuestasPage() {
             <p className="text-muted-foreground text-sm ml-8">
               {survey ? survey.name : RESPUESTAS_PAGE.subtitle}
             </p>
+            {/* The target explains both what the entity column holds and why
+                the location filters are or aren't offered (CA5, CA6). */}
+            {survey && (
+              <div className="ml-8 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                  {RESPUESTAS_PAGE.targetPrefix}{" "}
+                  {RESPONSE_TARGET_LABELS[survey.response_target]}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {RESPONSE_TARGET_DESCRIPTIONS[survey.response_target]}
+                </span>
+              </div>
+            )}
           </div>
           <Button
             size="sm"
@@ -226,26 +251,6 @@ export default function RespuestasPage() {
 
         {/* Filters  */}
         <div className="flex flex-wrap items-end gap-3">
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {RESPUESTAS_PAGE.filters.establishment}
-            </label>
-            <select
-              value={filters.establishmentId}
-              onChange={(e) => updateFilter("establishmentId", e.target.value)}
-              className={`${SELECT_CLASS} w-full sm:w-56`}
-            >
-              <option value="">
-                {RESPUESTAS_PAGE.filters.allEstablishments}
-              </option>
-              {establishments.map((est) => (
-                <option key={est.id} value={est.id}>
-                  {est.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
               {RESPUESTAS_PAGE.filters.dateFrom}
@@ -270,34 +275,68 @@ export default function RespuestasPage() {
             />
           </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {RESPUESTAS_PAGE.filters.city}
-            </label>
-            <Input
-              value={filters.city}
-              onChange={(e) => updateFilter("city", e.target.value)}
-              placeholder="Ciudad"
-              className="w-full sm:w-40"
-            />
-          </div>
+          {/* Location lives on the establishment, so these filters only exist
+              for establishment-targeted surveys — the API answers 400 for the
+              other targets rather than returning an empty page (CA6). */}
+          {isEstablishmentTargeted && (
+            <>
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  {RESPUESTAS_PAGE.filters.city}
+                </label>
+                <Input
+                  value={filters.city}
+                  onChange={(e) => updateFilter("city", e.target.value)}
+                  placeholder={RESPUESTAS_PAGE.filters.city}
+                  className="w-full sm:w-40"
+                />
+              </div>
+
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  {RESPUESTAS_PAGE.filters.province}
+                </label>
+                <Input
+                  value={filters.province}
+                  onChange={(e) => updateFilter("province", e.target.value)}
+                  placeholder={RESPUESTAS_PAGE.filters.province}
+                  className="w-full sm:w-40"
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
-              {RESPUESTAS_PAGE.filters.province}
+              {RESPUESTAS_PAGE.filters.sort}
             </label>
-            <Input
-              value={filters.province}
-              onChange={(e) => updateFilter("province", e.target.value)}
-              placeholder="Provincia"
-              className="w-full sm:w-40"
-            />
+            <select
+              value={sortOrder}
+              onChange={(e) =>
+                setSortOrder(e.target.value as SurveyResponseSortOrder)
+              }
+              className={`${SELECT_CLASS} w-full sm:w-52`}
+            >
+              {SORT_OPTIONS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
             {error}
+          </div>
+        )}
+
+        {/* Kept separate from the listing error so a failed export neither
+            replaces the table's own message nor is replaced by it (CA9). */}
+        {exportError && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+            {RESPUESTAS_PAGE.exportError}: {exportError}
           </div>
         )}
 
@@ -317,17 +356,21 @@ export default function RespuestasPage() {
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
                     <th className="px-4 py-3 font-medium">
+                      {RESPUESTAS_PAGE.columns.entity}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
                       {RESPUESTAS_PAGE.columns.respondent}
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      {RESPUESTAS_PAGE.columns.establishment}
-                    </th>
-                    <th className="px-4 py-3 font-medium">
-                      {RESPUESTAS_PAGE.columns.city}
-                    </th>
-                    <th className="px-4 py-3 font-medium">
-                      {RESPUESTAS_PAGE.columns.province}
-                    </th>
+                    {isEstablishmentTargeted && (
+                      <>
+                        <th className="px-4 py-3 font-medium">
+                          {RESPUESTAS_PAGE.columns.city}
+                        </th>
+                        <th className="px-4 py-3 font-medium">
+                          {RESPUESTAS_PAGE.columns.province}
+                        </th>
+                      </>
+                    )}
                     <th className="px-4 py-3 font-medium">
                       {RESPUESTAS_PAGE.columns.date}
                     </th>
@@ -346,15 +389,22 @@ export default function RespuestasPage() {
                       }`}
                     >
                       <td className="px-4 py-3 font-medium">
-                        {item.submitted_by.name}
+                        <ResponseEntity
+                          subject={item.subject}
+                          establishment={item.establishment}
+                        />
                       </td>
-                      <td className="px-4 py-3">{item.establishment.name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {item.establishment.city || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {item.establishment.province || "—"}
-                      </td>
+                      <td className="px-4 py-3">{item.submitted_by.name}</td>
+                      {isEstablishmentTargeted && (
+                        <>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {item.establishment?.city || EMPTY_VALUE}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {item.establishment?.province || EMPTY_VALUE}
+                          </td>
+                        </>
+                      )}
                       <td className="px-4 py-3 text-muted-foreground">
                         {formatDateTime(item.event_at)}
                       </td>
@@ -386,7 +436,10 @@ export default function RespuestasPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-sm font-medium">
-                      {item.submitted_by.name}
+                      {entityLabel({
+                        subject: item.subject,
+                        establishment: item.establishment,
+                      })}
                     </span>
                     {item.score_fies !== null && (
                       <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -395,8 +448,9 @@ export default function RespuestasPage() {
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {item.establishment.name} · {item.establishment.city},{" "}
-                    {item.establishment.province}
+                    {item.establishment
+                      ? `${item.establishment.name} · ${item.establishment.city}, ${item.establishment.province}`
+                      : item.submitted_by.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {formatDateTime(item.event_at)}

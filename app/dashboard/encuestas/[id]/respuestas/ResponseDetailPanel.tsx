@@ -6,8 +6,17 @@ import { Loader2, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getSurveyResponseDashboardDetailAction } from "@/services/survey.service";
 import { SurveyResponseDetail } from "@/types/survey";
+import { Sex } from "@/types/subject";
 import { Separator } from "@/components/ui/separator";
 import { RESPONSE_TYPE_LABELS, RESPUESTAS_PAGE } from "@/constants/surveys";
+import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
+import { EMPTY_VALUE, formatDate } from "@/lib/format";
+import { entityLabel } from "@/components/encuestas/ResponseEntity";
+
+const SEX_LABELS: Record<Sex, string> = {
+  male: SUBJECT_DETAIL_PANEL.fields.male,
+  female: SUBJECT_DETAIL_PANEL.fields.female,
+};
 
 type ResponseDetailPanelProps = {
   surveyId: string;
@@ -138,8 +147,11 @@ export default function ResponseDetailPanel({
         <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
           <div className="flex items-start justify-between gap-2">
             <Dialog.Title className="text-xl font-bold tracking-tight">
-              {detail
-                ? `${detail.submitted_by.name} — ${detail.establishment.name}`
+              {detail && (detail.subject || detail.establishment)
+                ? entityLabel({
+                    subject: detail.subject,
+                    establishment: detail.establishment,
+                  })
                 : RESPUESTAS_PAGE.detailTitle}
             </Dialog.Title>
             <Dialog.Close
@@ -166,29 +178,48 @@ export default function ResponseDetailPanel({
           ) : detail ? (
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* The entity block follows the survey's target: a subject, an
+                    establishment, or nothing at all on anonymous surveys —
+                    omitted rather than rendered as empty fields (CA7). */}
+                {detail.subject && (
+                  <>
+                    <DetailField
+                      label={RESPUESTAS_PAGE.subject}
+                      value={`${detail.subject.name} ${detail.subject.last_name}`}
+                    />
+                    <DetailField
+                      label={RESPUESTAS_PAGE.detailFields.dni}
+                      value={detail.subject.dni}
+                    />
+                    <DetailField
+                      label={RESPUESTAS_PAGE.detailFields.sex}
+                      value={SEX_LABELS[detail.subject.sex]}
+                    />
+                    <DetailField
+                      label={RESPUESTAS_PAGE.detailFields.birthDate}
+                      value={formatDate(detail.subject.birth_date)}
+                    />
+                  </>
+                )}
+                {detail.establishment && (
+                  <>
+                    <DetailField
+                      label={RESPUESTAS_PAGE.establishment}
+                      value={detail.establishment.name}
+                    />
+                    <DetailField
+                      label={RESPUESTAS_PAGE.detailFields.city}
+                      value={detail.establishment.city || EMPTY_VALUE}
+                    />
+                    <DetailField
+                      label={RESPUESTAS_PAGE.detailFields.province}
+                      value={detail.establishment.province || EMPTY_VALUE}
+                    />
+                  </>
+                )}
                 <DetailField
                   label={RESPUESTAS_PAGE.respondent}
                   value={detail.submitted_by.name}
-                />
-                <DetailField
-                  label={RESPUESTAS_PAGE.establishment}
-                  value={detail.establishment.name}
-                />
-                <DetailField
-                  label="Ciudad"
-                  value={
-                    detail.establishment.city || (
-                      <span className="text-muted-foreground">—</span>
-                    )
-                  }
-                />
-                <DetailField
-                  label="Provincia"
-                  value={
-                    detail.establishment.province || (
-                      <span className="text-muted-foreground">—</span>
-                    )
-                  }
                 />
                 <DetailField
                   label={RESPUESTAS_PAGE.date}

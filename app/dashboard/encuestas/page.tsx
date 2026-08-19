@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   ENCUESTAS_PAGE,
   RESPUESTAS_PAGE,
-  SCOPE_LABELS,
+  RESPONSE_TARGET_LABELS,
 } from "@/constants/surveys";
 import {
   BarChart3,
@@ -25,12 +25,16 @@ import {
   RowLink,
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
-import { useSurveys } from "@/hooks/useSurveys";
+import { RESPONSE_TARGETS } from "@/schemas/survey.schema";
+import { ResponseTargetFilter, useSurveys } from "@/hooks/useSurveys";
 import { useAuth } from "@/context/AuthContext";
 import { duplicateSurveyAction } from "@/services/survey.service";
 import CreateSurveyDialog from "@/components/encuestas/CreateSurveyDialog";
 
 const PAGE_SIZE = 20;
+
+const SELECT_CLASS =
+  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("es-AR", {
@@ -47,6 +51,8 @@ export default function EncuestasPage() {
     totalPages,
     search,
     setSearch,
+    responseTarget,
+    setResponseTarget,
     isLoading,
     error,
     setPage,
@@ -83,12 +89,39 @@ export default function EncuestasPage() {
           </div>
         </div>
 
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={ENCUESTAS_PAGE.searchPlaceholder}
-          className="max-w-xs"
-        />
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">
+              {ENCUESTAS_PAGE.searchPlaceholder}
+            </label>
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={ENCUESTAS_PAGE.searchPlaceholder}
+              className="w-full sm:w-64"
+            />
+          </div>
+
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">
+              {ENCUESTAS_PAGE.targetFilterLabel}
+            </label>
+            <select
+              value={responseTarget}
+              onChange={(e) =>
+                setResponseTarget(e.target.value as ResponseTargetFilter)
+              }
+              className={`${SELECT_CLASS} w-full sm:w-48`}
+            >
+              <option value="">{ENCUESTAS_PAGE.allTargets}</option>
+              {RESPONSE_TARGETS.map((target) => (
+                <option key={target} value={target}>
+                  {RESPONSE_TARGET_LABELS[target]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         <Separator />
 
@@ -116,7 +149,7 @@ export default function EncuestasPage() {
                       {ENCUESTAS_PAGE.columns.name}
                     </th>
                     <th className="px-4 py-3 font-medium">
-                      {ENCUESTAS_PAGE.columns.scope}
+                      {ENCUESTAS_PAGE.columns.target}
                     </th>
                     <th className="px-4 py-3 font-medium">
                       {ENCUESTAS_PAGE.columns.status}
@@ -145,7 +178,7 @@ export default function EncuestasPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                          {SCOPE_LABELS[survey.scope]}
+                          {RESPONSE_TARGET_LABELS[survey.response_target]}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -252,7 +285,7 @@ export default function EncuestasPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                      {SCOPE_LABELS[survey.scope]}
+                      {RESPONSE_TARGET_LABELS[survey.response_target]}
                     </span>
                     <span
                       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${

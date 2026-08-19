@@ -1,23 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { surveySchema, SurveyFormInput } from "@/schemas/survey.schema";
 import {
-  SCOPE_LABELS,
+  surveySchema,
+  SurveyFormInput,
+  RESPONSE_TARGETS,
+} from "@/schemas/survey.schema";
+import {
+  RESPONSE_TARGET_DESCRIPTIONS,
+  RESPONSE_TARGET_LABELS,
   ENCUESTAS_FORM,
   MAX_QUESTIONS,
 } from "@/constants/surveys";
-import { SurveyScope } from "@/types/survey";
-import { ApiError } from "@/services/survey.service";
+import { ApiError, SURVEY_LOCKED_ERROR_TYPE } from "@/lib/apiError";
 import QuestionEditor from "./QuestionEditor";
-import EstablishmentPicker from "./EstablishmentPicker";
 
 type SurveyFormProps = {
   defaultValues: SurveyFormInput;
@@ -26,8 +29,6 @@ type SurveyFormProps = {
   submitLabel?: string;
   readOnly?: boolean;
 };
-
-const SCOPES: SurveyScope[] = ["generic", "targeted"];
 
 export default function SurveyForm({
   defaultValues,
@@ -56,7 +57,6 @@ export default function SurveyForm({
     name: "questions",
   });
 
-  const scope = watch("scope");
   const questionsError =
     errors.questions?.root?.message ??
     (typeof errors.questions?.message === "string"
@@ -68,8 +68,13 @@ export default function SurveyForm({
     try {
       await onSubmit(values);
     } catch (err) {
-      // Surface a duplicate-name 409 on the name field (CA2).
       if (err instanceof ApiError && err.status === 409) {
+        // Two different 409s share the status: the survey got locked while the
+        // form was open, or the name is taken. Only `type` tells them apart.
+        if (err.type === SURVEY_LOCKED_ERROR_TYPE) {
+          setFormError(ENCUESTAS_FORM.lockedConflict);
+          return;
+        }
         setError("name", { message: ENCUESTAS_FORM.nameConflict });
         return;
       }
@@ -120,44 +125,42 @@ export default function SurveyForm({
         )}
       </div>
 
-      {/* --- Scope --- */}
+      {/* --- Response target (CA1) --- */}
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium">{ENCUESTAS_FORM.scopeLabel}</span>
-        <div className="flex gap-4">
-          {SCOPES.map((s) => (
-            <label key={s} className="flex items-center gap-2 text-sm">
+        <span className="text-sm font-medium">
+          {ENCUESTAS_FORM.targetLabel}
+          <span className="text-destructive ml-0.5">*</span>
+        </span>
+        {/* Vertical so every option's explanation is readable at once: the
+            choice locks on the first response, so it is made once and for all. */}
+        <div className="flex flex-col gap-2">
+          {RESPONSE_TARGETS.map((target) => (
+            <label
+              key={target}
+              className="flex items-start gap-2 text-sm has-disabled:opacity-50"
+            >
               <input
                 type="radio"
-                value={s}
-                {...register("scope")}
+                value={target}
+                {...register("response_target")}
                 disabled={readOnly}
-                className="h-4 w-4 accent-primary"
+                className="mt-0.5 h-4 w-4 accent-primary"
               />
-              {SCOPE_LABELS[s]}
+              <span className="flex flex-col">
+                <span>{RESPONSE_TARGET_LABELS[target]}</span>
+                <span className="text-xs text-muted-foreground">
+                  {RESPONSE_TARGET_DESCRIPTIONS[target]}
+                </span>
+              </span>
             </label>
           ))}
         </div>
+        {errors.response_target?.message && (
+          <p className="text-xs text-destructive">
+            {errors.response_target.message}
+          </p>
+        )}
       </div>
-
-      {scope === "targeted" && (
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium">
-            {ENCUESTAS_FORM.establishmentsLabel}
-          </span>
-          <Controller
-            control={control}
-            name="establishment_ids"
-            render={({ field }) => (
-              <EstablishmentPicker
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.establishment_ids?.message}
-                readOnly={readOnly}
-              />
-            )}
-          />
-        </div>
-      )}
 
       <Separator />
 
