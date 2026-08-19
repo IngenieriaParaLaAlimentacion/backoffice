@@ -32,6 +32,10 @@ import {
   ROW_HOVER_CLASS,
   rowStateClass,
 } from "@/components/listings/RowAffordance";
+import {
+  FilterPanel,
+  FiltersToggle,
+} from "@/components/listings/FiltersToggle";
 import { Loader2, RefreshCw, X } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -107,6 +111,17 @@ export default function AnthropometricMeasurementsPage() {
   );
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount = [
+    filters.city,
+    filters.province,
+    filters.measuredFrom,
+    filters.measuredTo,
+    filters.minAge,
+    filters.maxAge,
+  ].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0;
 
   // Debounce filter changes and reset to the first page when they change.
   useEffect(() => {
@@ -249,91 +264,127 @@ export default function AnthropometricMeasurementsPage() {
 
         <Separator />
 
-        {/* Filters (CA3 + Notes) */}
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Ciudad</label>
-            <Input
-              value={filters.city}
-              onChange={(e) => updateFilter("city", e.target.value)}
-              placeholder="Ciudad"
-              className="w-full sm:w-40"
+        {/* Sort (always visible) and collapsible filters */}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                Ordenar por
+              </label>
+              <select
+                value={sortOrder}
+                onChange={(e) => {
+                  setSortOrder(e.target.value as MeasurementSortOrder);
+                  setPage(1);
+                }}
+                className={`${SELECT_CLASS} w-full sm:w-52`}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <FiltersToggle
+              open={filtersOpen}
+              onToggle={() => setFiltersOpen((o) => !o)}
+              activeCount={activeFilterCount}
+              hasActiveFilters={hasActiveFilters}
+              onClear={() => setFilters(EMPTY_FILTERS)}
             />
           </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Provincia</label>
-            <Input
-              value={filters.province}
-              onChange={(e) => updateFilter("province", e.target.value)}
-              placeholder="Provincia"
-              className="w-full sm:w-40"
-            />
-          </div>
+          <FilterPanel open={filtersOpen}>
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">Ciudad</label>
+              <Input
+                value={filters.city}
+                onChange={(e) => updateFilter("city", e.target.value)}
+                placeholder="Ciudad"
+                className="w-full sm:w-40"
+              />
+            </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Desde</label>
-            <Input
-              type="date"
-              value={filters.measuredFrom}
-              onChange={(e) => updateFilter("measuredFrom", e.target.value)}
-              className="w-full sm:w-40"
-            />
-          </div>
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">Provincia</label>
+              <Input
+                value={filters.province}
+                onChange={(e) => updateFilter("province", e.target.value)}
+                placeholder="Provincia"
+                className="w-full sm:w-40"
+              />
+            </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Hasta</label>
-            <Input
-              type="date"
-              value={filters.measuredTo}
-              onChange={(e) => updateFilter("measuredTo", e.target.value)}
-              className="w-full sm:w-40"
-            />
-          </div>
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                Fecha de relevamiento
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    Desde
+                  </span>
+                  <Input
+                    type="date"
+                    value={filters.measuredFrom}
+                    onChange={(e) =>
+                      updateFilter("measuredFrom", e.target.value)
+                    }
+                    className="w-full sm:w-36"
+                  />
+                </div>
+                <span className="mt-3 text-muted-foreground">–</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    Hasta
+                  </span>
+                  <Input
+                    type="date"
+                    value={filters.measuredTo}
+                    onChange={(e) => updateFilter("measuredTo", e.target.value)}
+                    className="w-full sm:w-36"
+                  />
+                </div>
+              </div>
+            </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Edad mín.</label>
-            <Input
-              type="number"
-              min={0}
-              max={150}
-              value={filters.minAge}
-              onChange={(e) => updateFilter("minAge", e.target.value)}
-              placeholder="0"
-              className="w-full sm:w-24"
-            />
-          </div>
-
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Edad máx.</label>
-            <Input
-              type="number"
-              min={0}
-              max={150}
-              value={filters.maxAge}
-              onChange={(e) => updateFilter("maxAge", e.target.value)}
-              placeholder="150"
-              className="w-full sm:w-24"
-            />
-          </div>
-
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Ordenar por</label>
-            <select
-              value={sortOrder}
-              onChange={(e) => {
-                setSortOrder(e.target.value as MeasurementSortOrder);
-                setPage(1);
-              }}
-              className={`${SELECT_CLASS} w-full sm:w-52`}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">Edad</label>
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    Mín.
+                  </span>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={150}
+                    value={filters.minAge}
+                    onChange={(e) => updateFilter("minAge", e.target.value)}
+                    placeholder="0"
+                    className="w-full sm:w-20"
+                  />
+                </div>
+                <span className="mt-3 text-muted-foreground">–</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    Máx.
+                  </span>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={150}
+                    value={filters.maxAge}
+                    onChange={(e) => updateFilter("maxAge", e.target.value)}
+                    placeholder="150"
+                    className="w-full sm:w-20"
+                  />
+                </div>
+              </div>
+            </div>
+          </FilterPanel>
         </div>
 
         {error && (

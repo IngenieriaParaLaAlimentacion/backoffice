@@ -23,14 +23,10 @@ import {
   rowStateClass,
 } from "@/components/listings/RowAffordance";
 import {
-  ChevronDown,
-  ChevronUp,
-  Loader2,
-  RefreshCw,
-  Search,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+  FilterPanel,
+  FiltersToggle,
+} from "@/components/listings/FiltersToggle";
+import { Loader2, RefreshCw, Search } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -271,158 +267,129 @@ export default function SubjectsPage() {
               </select>
             </div>
 
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              onClick={() => setFiltersOpen((o) => !o)}
-            >
-              <SlidersHorizontal size={14} />
-              Filtros
-              {activeFilterCount > 0 && (
-                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
-                  {activeFilterCount}
-                </span>
-              )}
-              {filtersOpen ? (
-                <ChevronUp size={14} />
-              ) : (
-                <ChevronDown size={14} />
-              )}
-            </Button>
-
-            {hasActiveFilters && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="gap-1.5 text-muted-foreground"
-                onClick={() => setFilters(EMPTY_FILTERS)}
-              >
-                <X size={14} />
-                Borrar filtros
-              </Button>
-            )}
+            <FiltersToggle
+              open={filtersOpen}
+              onToggle={() => setFiltersOpen((o) => !o)}
+              activeCount={activeFilterCount}
+              hasActiveFilters={hasActiveFilters}
+              onClear={() => setFilters(EMPTY_FILTERS)}
+            />
           </div>
 
-          {filtersOpen && (
-            <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-muted/30 p-3">
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">
-                  Fecha de nacimiento
-                </label>
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-muted-foreground">
-                      Desde
-                    </span>
-                    <Input
-                      type="date"
-                      value={filters.birthDateFrom}
-                      onChange={(e) =>
-                        updateFilter("birthDateFrom", e.target.value)
-                      }
-                      className="w-full sm:w-36"
-                    />
-                  </div>
-                  <span className="mt-3 text-muted-foreground">–</span>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-muted-foreground">
-                      Hasta
-                    </span>
-                    <Input
-                      type="date"
-                      value={filters.birthDateTo}
-                      onChange={(e) =>
-                        updateFilter("birthDateTo", e.target.value)
-                      }
-                      className="w-full sm:w-36"
-                    />
-                  </div>
+          <FilterPanel open={filtersOpen}>
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                Fecha de nacimiento
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    Desde
+                  </span>
+                  <Input
+                    type="date"
+                    value={filters.birthDateFrom}
+                    onChange={(e) =>
+                      updateFilter("birthDateFrom", e.target.value)
+                    }
+                    className="w-full sm:w-36"
+                  />
+                </div>
+                <span className="mt-3 text-muted-foreground">–</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    Hasta
+                  </span>
+                  <Input
+                    type="date"
+                    value={filters.birthDateTo}
+                    onChange={(e) =>
+                      updateFilter("birthDateTo", e.target.value)
+                    }
+                    className="w-full sm:w-36"
+                  />
                 </div>
               </div>
-
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">
-                  Establecimiento
-                </label>
-                <select
-                  value={filters.establishmentId}
-                  onChange={(e) =>
-                    updateFilter("establishmentId", e.target.value)
-                  }
-                  className={`${SELECT_CLASS} w-full sm:w-48`}
-                >
-                  <option value="">Todos</option>
-                  {establishments.map((est) => (
-                    <option key={est.id} value={est.id}>
-                      {est.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">
-                  Zona rural
-                </label>
-                <select
-                  value={filters.isRural}
-                  onChange={(e) =>
-                    updateFilter(
-                      "isRural",
-                      e.target.value as Filters["isRural"],
-                    )
-                  }
-                  className={`${SELECT_CLASS} w-full sm:w-32`}
-                >
-                  {RURAL_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">
-                  Población indígena
-                </label>
-                <select
-                  value={filters.isIndigenous}
-                  onChange={(e) =>
-                    updateFilter(
-                      "isIndigenous",
-                      e.target.value as Filters["isIndigenous"],
-                    )
-                  }
-                  className={`${SELECT_CLASS} w-full sm:w-32`}
-                >
-                  {INDIGENOUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">Sexo</label>
-                <select
-                  value={filters.sex}
-                  onChange={(e) =>
-                    updateFilter("sex", e.target.value as Filters["sex"])
-                  }
-                  className={`${SELECT_CLASS} w-full sm:w-32`}
-                >
-                  {SEX_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
-          )}
+
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                Establecimiento
+              </label>
+              <select
+                value={filters.establishmentId}
+                onChange={(e) =>
+                  updateFilter("establishmentId", e.target.value)
+                }
+                className={`${SELECT_CLASS} w-full sm:w-48`}
+              >
+                <option value="">Todos</option>
+                {establishments.map((est) => (
+                  <option key={est.id} value={est.id}>
+                    {est.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                Zona rural
+              </label>
+              <select
+                value={filters.isRural}
+                onChange={(e) =>
+                  updateFilter("isRural", e.target.value as Filters["isRural"])
+                }
+                className={`${SELECT_CLASS} w-full sm:w-32`}
+              >
+                {RURAL_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                Población indígena
+              </label>
+              <select
+                value={filters.isIndigenous}
+                onChange={(e) =>
+                  updateFilter(
+                    "isIndigenous",
+                    e.target.value as Filters["isIndigenous"],
+                  )
+                }
+                className={`${SELECT_CLASS} w-full sm:w-32`}
+              >
+                {INDIGENOUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">Sexo</label>
+              <select
+                value={filters.sex}
+                onChange={(e) =>
+                  updateFilter("sex", e.target.value as Filters["sex"])
+                }
+                className={`${SELECT_CLASS} w-full sm:w-32`}
+              >
+                {SEX_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </FilterPanel>
         </div>
 
         {error && (
