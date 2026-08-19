@@ -15,7 +15,7 @@ import { SurveyListItem } from "@/types/survey";
 import { SURVEY_FORM, SURVEYS_PAGE } from "@/constants/surveys";
 
 const MENU_ITEM_CLASS =
-  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none cursor-pointer data-[highlighted]:bg-accent";
+  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none cursor-pointer data-[highlighted]:bg-foreground/10";
 
 export default function SurveyActionsMenu({
   survey,
@@ -68,7 +68,7 @@ export default function SurveyActionsMenu({
                   : SURVEY_FORM.activate}
               </Menu.Item>
               <Menu.Item
-                className={`${MENU_ITEM_CLASS} text-destructive data-[highlighted]:bg-destructive/10`}
+                className={`${MENU_ITEM_CLASS} text-destructive data-[highlighted]:bg-destructive/20`}
                 onClick={onDelete}
               >
                 <Trash2 size={14} />

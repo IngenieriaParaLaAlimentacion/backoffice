@@ -5,17 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SurveyForm from "@/components/surveys/SurveyForm";
 import { useAuth } from "@/context/AuthContext";
-import {
-  deleteSurveyAction,
-  getSurveyAction,
-  setSurveyStatusAction,
-  updateSurveyAction,
-} from "@/services/survey.service";
+import { getSurveyAction, updateSurveyAction } from "@/services/survey.service";
 import { formToRequest, surveyToForm } from "@/lib/surveyForm";
 import { SurveyFormInput } from "@/schemas/survey.schema";
 import { SurveyResponse } from "@/types/survey";
@@ -33,8 +27,6 @@ export default function EditSurveyPage({
   const [survey, setSurvey] = useState<SurveyResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [isBusy, setIsBusy] = useState(false);
 
   const fetchSurvey = useCallback(async () => {
     setIsLoading(true);
@@ -67,41 +59,6 @@ export default function EditSurveyPage({
     router.push("/dashboard/surveys");
   };
 
-  const handleToggleStatus = async () => {
-    if (!survey) return;
-    const confirmMessage = survey.is_active
-      ? SURVEY_FORM.deactivateConfirm
-      : SURVEY_FORM.activateConfirm;
-    if (!window.confirm(confirmMessage)) return;
-    setActionError(null);
-    setIsBusy(true);
-    try {
-      const updated = await setSurveyStatusAction(
-        makeAuthorizedRequest,
-        id,
-        !survey.is_active,
-      );
-      setSurvey(updated);
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Error");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm(SURVEY_FORM.deleteConfirm)) return;
-    setActionError(null);
-    setIsBusy(true);
-    try {
-      await deleteSurveyAction(makeAuthorizedRequest, id);
-      router.push("/dashboard/surveys");
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Error al eliminar");
-      setIsBusy(false);
-    }
-  };
-
   return (
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
@@ -123,49 +80,15 @@ export default function EditSurveyPage({
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <h1 className="text-3xl font-bold tracking-tight">
-                {SURVEY_FORM.editTitle}
-              </h1>
-              <div className="flex items-center gap-2 self-start">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isBusy}
-                  onClick={handleToggleStatus}
-                  title={
-                    survey.is_active
-                      ? SURVEY_FORM.deactivateTitle
-                      : SURVEY_FORM.activateTitle
-                  }
-                  className="hover:bg-foreground/10 hover:text-foreground"
-                >
-                  {survey.is_active
-                    ? SURVEY_FORM.deactivate
-                    : SURVEY_FORM.activate}
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  disabled={isBusy}
-                  onClick={handleDelete}
-                >
-                  {SURVEY_FORM.delete}
-                </Button>
-              </div>
-            </div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {SURVEY_FORM.editTitle}
+            </h1>
 
             <Separator />
 
             {locked && (
               <Alert>
                 <AlertDescription>{SURVEY_FORM.lockedNotice}</AlertDescription>
-              </Alert>
-            )}
-
-            {actionError && (
-              <Alert variant="destructive">
-                <AlertDescription>{actionError}</AlertDescription>
               </Alert>
             )}
 
