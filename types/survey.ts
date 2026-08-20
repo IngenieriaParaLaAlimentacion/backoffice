@@ -117,7 +117,7 @@ export type SurveyTemplateResponse = {
 // --- Survey Response types (Dashboard) ---
 
 export type SurveyRef = { id: string; name: string };
-export type UserRef = { id: string; name: string };
+export type UserRef = { id: string; name: string; last_name: string };
 export type EstablishmentRef = {
   id: string;
   name: string;

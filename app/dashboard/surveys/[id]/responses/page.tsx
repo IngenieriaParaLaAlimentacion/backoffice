@@ -406,7 +406,9 @@ export default function ResponsesPage() {
                           />
                         </RowLink>
                       </td>
-                      <td className="px-4 py-3">{item.submitted_by.name}</td>
+                      <td className="px-4 py-3">
+                        {item.submitted_by.name} {item.submitted_by.last_name}
+                      </td>
                       {isEstablishmentTargeted && (
                         <>
                           <td className="px-4 py-3 text-muted-foreground">
@@ -465,7 +467,7 @@ export default function ResponsesPage() {
                   <span className="text-xs text-muted-foreground">
                     {item.establishment
                       ? `${item.establishment.name} · ${item.establishment.city}, ${item.establishment.province}`
-                      : item.submitted_by.name}
+                      : `${item.submitted_by.name} ${item.submitted_by.last_name}`}
                   </span>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs text-muted-foreground">

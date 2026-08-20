@@ -219,7 +219,7 @@ export default function ResponseDetailPanel({
                 )}
                 <DetailField
                   label={RESPONSES_PAGE.respondent}
-                  value={detail.submitted_by.name}
+                  value={`${detail.submitted_by.name} ${detail.submitted_by.last_name}`}
                 />
                 <DetailField
                   label={RESPONSES_PAGE.date}
