@@ -16,6 +16,7 @@ export type SurveyListItem = {
   is_active: boolean;
   created_by_id: string;
   question_count: number;
+  response_count: number;
   created_at: string; // date-time
 };
 

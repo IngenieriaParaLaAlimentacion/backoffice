@@ -15,7 +15,7 @@ import { SurveyListItem } from "@/types/survey";
 import { SURVEY_FORM, SURVEYS_PAGE } from "@/constants/surveys";
 
 const MENU_ITEM_CLASS =
-  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none cursor-pointer data-[highlighted]:bg-foreground/10";
+  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none cursor-pointer data-[highlighted]:bg-foreground/10 data-[disabled]:cursor-not-allowed data-[disabled]:text-muted-foreground data-[disabled]:data-[highlighted]:bg-transparent";
 
 export default function SurveyActionsMenu({
   survey,
@@ -31,6 +31,7 @@ export default function SurveyActionsMenu({
   busy: boolean;
 }) {
   const router = useRouter();
+  const editLocked = survey.response_count > 0;
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -51,7 +52,13 @@ export default function SurveyActionsMenu({
             <Menu.Popup className="min-w-[180px] rounded-xl border bg-background p-1 shadow-xl">
               <Menu.Item
                 className={MENU_ITEM_CLASS}
-                onClick={() => router.push(`/dashboard/surveys/${survey.id}`)}
+                disabled={editLocked}
+                title={editLocked ? SURVEYS_PAGE.editDisabledReason : undefined}
+                onClick={
+                  editLocked
+                    ? undefined
+                    : () => router.push(`/dashboard/surveys/${survey.id}`)
+                }
               >
                 <Pencil size={14} />
                 {SURVEYS_PAGE.edit}
