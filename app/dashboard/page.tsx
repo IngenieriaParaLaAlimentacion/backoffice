@@ -45,13 +45,15 @@ function IndicatorCard({
   icon,
   value,
   label,
+  href,
 }: {
   icon: React.ReactNode;
   value: React.ReactNode;
   label: string;
+  href?: string;
 }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+  const content = (
+    <>
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
         {icon}
       </span>
@@ -59,6 +61,23 @@ function IndicatorCard({
         <span className="text-xl font-bold">{value}</span>
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/40 hover:bg-accent"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+      {content}
     </div>
   );
 }
@@ -227,6 +246,7 @@ export default function DashboardPage() {
                   )
                 }
                 label={DASHBOARD_INDICATORS.pendingUserRegistrations}
+                href="/dashboard/requests"
               />
               <IndicatorCard
                 icon={<UserCog size={18} />}
@@ -254,6 +274,7 @@ export default function DashboardPage() {
                   )
                 }
                 label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
+                href="/dashboard/establishments/requests"
               />
             </div>
           ) : null}
