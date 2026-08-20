@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { useAuth } from "@/context/AuthContext";
 import {
-  approveEstablishmentsAction,
+  approveFieldWorkerAction,
   listUsersAction,
   rejectEstablishmentsAction,
 } from "@/services/admin.service";
@@ -53,7 +53,9 @@ export default function SolicitudesPage() {
         setUsers(data.items);
         setTotalPages(data.total_pages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error al cargar solicitudes");
+        setError(
+          err instanceof Error ? err.message : "Error al cargar solicitudes",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -77,17 +79,28 @@ export default function SolicitudesPage() {
     setApplyError(null);
   };
 
+  /** Clicking the active decision again clears it, leaving the request pending. */
   const setDecision = (establishmentId: string, decision: Decision) => {
-    setDecisions((prev) => ({ ...prev, [establishmentId]: decision }));
+    setDecisions((prev) => {
+      if (prev[establishmentId] === decision) {
+        const next = { ...prev };
+        delete next[establishmentId];
+        return next;
+      }
+      return { ...prev, [establishmentId]: decision };
+    });
   };
 
-  const allDecided = useMemo(() => {
-    if (!selectedUser) return false;
-    return selectedUser.establishments.every((est) => decisions[est.id]);
+  const hasEstablishments = !!selectedUser?.establishments.length;
+
+  const pendingCount = useMemo(() => {
+    if (!selectedUser) return 0;
+    return selectedUser.establishments.filter((est) => !decisions[est.id])
+      .length;
   }, [selectedUser, decisions]);
 
   const handleApply = async () => {
-    if (!selectedUser || !allDecided) return;
+    if (!selectedUser) return;
 
     const approvedIds = selectedUser.establishments
       .filter((est) => decisions[est.id] === "approve")
@@ -99,13 +112,12 @@ export default function SolicitudesPage() {
     setIsApplying(true);
     setApplyError(null);
     try {
-      if (approvedIds.length > 0) {
-        await approveEstablishmentsAction(
-          selectedUser.id,
-          approvedIds,
-          makeAuthorizedRequest,
-        );
-      }
+      // Activates the account; undecided establishments stay pending.
+      await approveFieldWorkerAction(
+        selectedUser.id,
+        approvedIds,
+        makeAuthorizedRequest,
+      );
       if (rejectedIds.length > 0) {
         await rejectEstablishmentsAction(
           selectedUser.id,
@@ -116,7 +128,9 @@ export default function SolicitudesPage() {
       setUsers((prev) => prev.filter((u) => u.id !== selectedUser.id));
       closeReview();
     } catch (err) {
-      setApplyError(err instanceof Error ? err.message : "Error al aplicar los cambios");
+      setApplyError(
+        err instanceof Error ? err.message : "Error al aplicar los cambios",
+      );
     } finally {
       setIsApplying(false);
     }
@@ -157,7 +171,9 @@ export default function SolicitudesPage() {
                     <th className="px-4 py-3 font-medium">Nombre</th>
                     <th className="px-4 py-3 font-medium">Email</th>
                     <th className="px-4 py-3 font-medium">Establecimientos</th>
-                    <th className="px-4 py-3 font-medium text-right">Acciones</th>
+                    <th className="px-4 py-3 font-medium text-right">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -181,7 +197,11 @@ export default function SolicitudesPage() {
                         <div className="flex gap-2 justify-end">
                           <Button
                             size="sm"
-                            variant={selectedUser?.id === user.id ? "default" : "outline"}
+                            variant={
+                              selectedUser?.id === user.id
+                                ? "default"
+                                : "outline"
+                            }
                             onClick={() => openReview(user)}
                           >
                             <ClipboardCheck size={14} />
@@ -217,7 +237,9 @@ export default function SolicitudesPage() {
                   </div>
                   <Button
                     size="sm"
-                    variant={selectedUser?.id === user.id ? "default" : "outline"}
+                    variant={
+                      selectedUser?.id === user.id ? "default" : "outline"
+                    }
                     onClick={() => openReview(user)}
                   >
                     <ClipboardCheck size={14} />
@@ -264,19 +286,19 @@ export default function SolicitudesPage() {
           <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col gap-1">
-                <Dialog.Title className="text-xl font-bold tracking-tight">
+              <div className="flex min-w-0 flex-col gap-1">
+                <Dialog.Title className="text-xl font-bold tracking-tight break-words">
                   {selectedUser
                     ? `${selectedUser.name} ${selectedUser.last_name}`
                     : "Solicitud"}
                 </Dialog.Title>
-                <Dialog.Description className="text-muted-foreground text-sm">
+                <Dialog.Description className="text-muted-foreground text-sm break-all">
                   {selectedUser?.email}
                 </Dialog.Description>
               </div>
               <Dialog.Close
                 render={<button type="button" />}
-                className="text-muted-foreground hover:text-foreground mt-0.5"
+                className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0"
               >
                 <X size={18} />
               </Dialog.Close>
@@ -285,8 +307,9 @@ export default function SolicitudesPage() {
             <Separator />
 
             <p className="text-muted-foreground text-sm">
-              Establecimientos a los que solicita acceso. Acepta o rechaza cada uno y
-              presiona Aplicar.
+              {hasEstablishments
+                ? "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes."
+                : "No solicitó acceso a ningún establecimiento."}
             </p>
 
             {applyError && (
@@ -297,60 +320,77 @@ export default function SolicitudesPage() {
 
             {selectedUser && (
               <>
-                <div className="flex flex-col gap-3">
-                  {selectedUser.establishments.map((est) => {
-                    const decision = decisions[est.id];
-                    return (
-                      <div
-                        key={est.id}
-                        className="rounded-lg border border-border p-3 flex flex-col gap-2"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm">{est.name}</span>
-                          <span className="text-muted-foreground text-xs">
-                            {est.formatted_address}
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant={decision === "approve" ? "default" : "outline"}
-                            className="flex-1"
-                            disabled={isApplying}
-                            onClick={() => setDecision(est.id, "approve")}
+                {hasEstablishments && (
+                  <>
+                    <div className="flex flex-col gap-3">
+                      {selectedUser.establishments.map((est) => {
+                        const decision = decisions[est.id];
+                        return (
+                          <div
+                            key={est.id}
+                            className="rounded-lg border border-border p-3 flex flex-col gap-2"
                           >
-                            <Check size={14} />
-                            Aceptar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className={`flex-1 ${
-                              decision === "reject"
-                                ? "bg-destructive/10 text-destructive border-destructive/50 hover:bg-destructive/20 hover:text-destructive"
-                                : "text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                            }`}
-                            disabled={isApplying}
-                            onClick={() => setDecision(est.id, "reject")}
-                          >
-                            <X size={14} />
-                            Rechazar
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                            <div className="flex min-w-0 flex-col">
+                              <span className="font-medium text-sm break-words">
+                                {est.name}
+                              </span>
+                              <span className="text-muted-foreground text-xs break-words">
+                                {est.formatted_address}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant={
+                                  decision === "approve" ? "default" : "outline"
+                                }
+                                className="flex-1"
+                                disabled={isApplying}
+                                onClick={() => setDecision(est.id, "approve")}
+                              >
+                                <Check size={14} />
+                                Aceptar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className={`flex-1 ${
+                                  decision === "reject"
+                                    ? "bg-destructive/10 text-destructive border-destructive/50 hover:bg-destructive/20 hover:text-destructive"
+                                    : "text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                                }`}
+                                disabled={isApplying}
+                                onClick={() => setDecision(est.id, "reject")}
+                              >
+                                <X size={14} />
+                                Rechazar
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
 
-                <Separator />
+                    <Separator />
 
-                <Button disabled={!allDecided || isApplying} onClick={handleApply}>
+                    {pendingCount > 0 && (
+                      <p className="text-muted-foreground text-xs">
+                        {pendingCount} establecimiento
+                        {pendingCount === 1 ? "" : "s"} quedará
+                        {pendingCount === 1 ? "" : "n"} pendiente
+                        {pendingCount === 1 ? "" : "s"}.
+                      </p>
+                    )}
+                  </>
+                )}
+
+                <Button disabled={isApplying} onClick={handleApply}>
                   {isApplying ? (
                     <Loader2 size={16} className="animate-spin" />
                   ) : (
                     <Check size={16} />
                   )}
-                  Aplicar
+                  Aceptar solicitud
                 </Button>
               </>
             )}

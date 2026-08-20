@@ -1,6 +1,7 @@
 import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENTS_ENDPOINT,
+  APPROVE_FIELD_WORKER_ENDPOINT,
   GET_USER_ENDPOINT,
   INVITE_ADMIN_ENDPOINT,
   INVITE_ANALYST_ENDPOINT,
@@ -13,6 +14,7 @@ import {
   EstablishmentAccessRequest,
   InviteAdminResponse,
   PaginatedUsersResponse,
+  UserAccessRequest,
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
 import { ErrorResponse } from "@/lib/types";
@@ -58,6 +60,28 @@ export const getUserAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   return res.data as AdminUserDetail;
+};
+
+/**
+ * Activates the field worker's account and approves the given establishments.
+ * `establishmentIds` may be empty: the account is activated and every
+ * establishment request stays pending.
+ */
+export const approveFieldWorkerAction = async (
+  userId: string,
+  establishmentIds: string[],
+  dispatcher: AuthDispatcher,
+) => {
+  const body: UserAccessRequest = {
+    establishment_ids: establishmentIds,
+  };
+
+  const res = await dispatcher<UserAccessRequest, undefined>(
+    APPROVE_FIELD_WORKER_ENDPOINT(userId),
+    { method: "PATCH", body },
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 };
 
 export const approveEstablishmentsAction = async (

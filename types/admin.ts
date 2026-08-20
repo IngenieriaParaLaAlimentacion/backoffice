@@ -54,6 +54,10 @@ export type EstablishmentAccessRequest = {
   establishment_ids: string[];
 };
 
+export type UserAccessRequest = {
+  establishment_ids: string[];
+};
+
 export type InviteAdminResponse = {
   user_id: string;
 };
