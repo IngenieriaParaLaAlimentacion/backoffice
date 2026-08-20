@@ -86,8 +86,8 @@ export function makeEstablishmentFieldWorkersHandler() {
         return notFound(url.pathname);
 
       // Default relation_status is `approved`; the fixture only covers that one.
-      const relationStatus = url.searchParams.get("relation_status");
-      if (relationStatus && relationStatus !== "approved")
+      const relationStatuses = url.searchParams.getAll("relation_status");
+      if (relationStatuses.length && !relationStatuses.includes("approved"))
         return HttpResponse.json({
           items: [],
           total: 0,

@@ -3,12 +3,12 @@
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
 import { RelationStatus } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
 import Pagination from "@/components/Pagination";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
   RELATION_STATUS_LABELS,
   RELATION_STATUS_OPTIONS,
-  SELECT_CLASS,
   USER_STATUS_LABELS,
 } from "@/constants/establishments";
 import { EMPTY_VALUE, formatDateTime } from "@/lib/format";
@@ -45,7 +45,7 @@ export default function EstablishmentFieldWorkersList({
     search,
     setSearch,
     relationStatus,
-    setRelationStatus,
+    toggleRelationStatus,
   } = useEstablishmentFieldWorkers(establishmentId);
 
   const columns = COPY.fieldWorkerColumns;
@@ -82,19 +82,12 @@ export default function EstablishmentFieldWorkersList({
           <label className="text-xs text-muted-foreground">
             {COPY.relationStatus}
           </label>
-          <select
-            value={relationStatus}
-            onChange={(e) =>
-              setRelationStatus(e.target.value as RelationStatus)
-            }
-            className={`${SELECT_CLASS} w-full sm:w-48`}
-          >
-            {RELATION_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <MultiSelect
+            options={RELATION_STATUS_OPTIONS}
+            selected={relationStatus}
+            onToggle={toggleRelationStatus}
+            className="w-full sm:w-48"
+          />
         </div>
       </div>
 

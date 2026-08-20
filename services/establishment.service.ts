@@ -47,7 +47,7 @@ type ListEstablishmentFieldWorkersParams = {
   page?: number;
   page_size?: number;
   search?: string;
-  relation_status?: RelationStatus;
+  relation_status?: RelationStatus[];
 };
 
 export const listEstablishmentsAction = async (
@@ -141,8 +141,9 @@ export const listEstablishmentFieldWorkersAction = async (
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
   if (params?.search) query.set("search", params.search);
-  if (params?.relation_status)
-    query.set("relation_status", params.relation_status);
+  params?.relation_status?.forEach((status) =>
+    query.append("relation_status", status),
+  );
 
   const endpoint = ESTABLISHMENT_FIELD_WORKERS_ENDPOINT(establishmentId);
   const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
