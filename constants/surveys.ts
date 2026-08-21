@@ -157,5 +157,4 @@ export const DASHBOARD_INDICATORS = {
   pendingEstablishmentAccess: "Accesos pendientes",
   pendingEstablishmentCreations: "Establecimientos faltantes",
   notAvailable: "X",
-  notAvailableHint: "Aún no disponible: falta el endpoint en el backend",
 } as const;

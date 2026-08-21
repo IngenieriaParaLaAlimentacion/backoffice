@@ -15,7 +15,10 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { getMeAction } from "@/services/user.service";
 import { getDashboardIndicatorsAction } from "@/services/dashboard.service";
-import { listUsersAction } from "@/services/admin.service";
+import {
+  listPendingEstablishmentAccessAction,
+  listUsersAction,
+} from "@/services/admin.service";
 import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
 import { ProfileResponse } from "@/types/user";
 import { DashboardIndicators } from "@/types/survey";
@@ -46,40 +49,57 @@ function IndicatorCard({
   value,
   label,
   href,
+  emphasize,
 }: {
   icon: React.ReactNode;
   value: React.ReactNode;
   label: string;
   href?: string;
+  /** Draws attention with the app's destructive styling — use when there's at least 1 pending item. */
+  emphasize?: boolean;
 }) {
   const content = (
     <>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+          emphasize
+            ? "bg-destructive/15 text-destructive"
+            : "bg-primary/10 text-primary"
+        }`}
+      >
         {icon}
       </span>
       <div className="flex flex-col">
-        <span className="text-xl font-bold">{value}</span>
+        <span
+          className={`text-xl font-bold ${emphasize ? "text-destructive" : ""}`}
+        >
+          {value}
+        </span>
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
     </>
   );
 
+  const baseClass = "flex items-center gap-3 rounded-xl border p-3";
+  const toneClass = emphasize
+    ? "border-destructive/30 bg-destructive/5"
+    : "border-border bg-card";
+
   if (href) {
+    const hoverClass = emphasize
+      ? "hover:border-destructive/50 hover:bg-destructive/10"
+      : "hover:border-primary/40 hover:bg-accent";
     return (
       <Link
         href={href}
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/40 hover:bg-accent"
+        className={`${baseClass} ${toneClass} transition-colors ${hoverClass}`}
       >
         {content}
       </Link>
     );
   }
 
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
-      {content}
-    </div>
-  );
+  return <div className={`${baseClass} ${toneClass}`}>{content}</div>;
 }
 
 export default function DashboardPage() {
@@ -102,6 +122,14 @@ export default function DashboardPage() {
   const [
     pendingEstablishmentCreationsLoading,
     setPendingEstablishmentCreationsLoading,
+  ] = useState(true);
+
+  const [pendingEstablishmentAccess, setPendingEstablishmentAccess] = useState<
+    number | null
+  >(null);
+  const [
+    pendingEstablishmentAccessLoading,
+    setPendingEstablishmentAccessLoading,
   ] = useState(true);
 
   const fetchProfile = useCallback(async () => {
@@ -159,16 +187,33 @@ export default function DashboardPage() {
     }
   }, [makeAuthorizedRequest]);
 
+  const fetchPendingEstablishmentAccess = useCallback(async () => {
+    setPendingEstablishmentAccessLoading(true);
+    try {
+      const data = await listPendingEstablishmentAccessAction(
+        makeAuthorizedRequest,
+        COUNT_ONLY_QUERY,
+      );
+      setPendingEstablishmentAccess(data.total_pending_establishments);
+    } catch {
+      setPendingEstablishmentAccess(null);
+    } finally {
+      setPendingEstablishmentAccessLoading(false);
+    }
+  }, [makeAuthorizedRequest]);
+
   useEffect(() => {
     fetchProfile();
     fetchIndicators();
     fetchPendingUserRegistrations();
     fetchPendingEstablishmentCreations();
+    fetchPendingEstablishmentAccess();
   }, [
     fetchProfile,
     fetchIndicators,
     fetchPendingUserRegistrations,
     fetchPendingEstablishmentCreations,
+    fetchPendingEstablishmentAccess,
   ]);
 
   return (
@@ -247,18 +292,28 @@ export default function DashboardPage() {
                 }
                 label={DASHBOARD_INDICATORS.pendingUserRegistrations}
                 href="/dashboard/requests"
+                emphasize={
+                  !pendingUserRegistrationsLoading && !!pendingUserRegistrations
+                }
               />
               <IndicatorCard
                 icon={<UserCog size={18} />}
                 value={
-                  <span
-                    className="text-muted-foreground"
-                    title={DASHBOARD_INDICATORS.notAvailableHint}
-                  >
-                    {DASHBOARD_INDICATORS.notAvailable}
-                  </span>
+                  pendingEstablishmentAccessLoading ? (
+                    <Loader2
+                      className="animate-spin text-muted-foreground"
+                      size={18}
+                    />
+                  ) : (
+                    (pendingEstablishmentAccess ??
+                    DASHBOARD_INDICATORS.notAvailable)
+                  )
                 }
                 label={DASHBOARD_INDICATORS.pendingEstablishmentAccess}
+                emphasize={
+                  !pendingEstablishmentAccessLoading &&
+                  !!pendingEstablishmentAccess
+                }
               />
               <IndicatorCard
                 icon={<Building size={18} />}
@@ -275,6 +330,10 @@ export default function DashboardPage() {
                 }
                 label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
                 href="/dashboard/establishments/requests"
+                emphasize={
+                  !pendingEstablishmentCreationsLoading &&
+                  !!pendingEstablishmentCreations
+                }
               />
             </div>
           ) : null}
