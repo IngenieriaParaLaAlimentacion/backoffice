@@ -124,7 +124,7 @@ export class GeorefProvider implements GeoLocationProvider {
         if (cancelled || controller.signal.aborted) return;
         results = data.direcciones.map(toPlaceDetails);
         renderResults();
-      } catch (error) {
+      } catch {
         if (controller.signal.aborted) return;
         onError(new Error("No se pudo buscar la dirección"));
         closeList();
