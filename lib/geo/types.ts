@@ -7,6 +7,10 @@ export type PlaceDetails = {
 
 export type GeoLocationProviderCallbacks = {
   onSelect: (place: PlaceDetails) => void;
+  /** Fired on every keystroke in the underlying search input, so the
+   * consumer can invalidate a previously selected place. Not fired when the
+   * input's value is set programmatically (e.g. right after `onSelect`). */
+  onInputChange: () => void;
   onError: (error: Error) => void;
 };
 

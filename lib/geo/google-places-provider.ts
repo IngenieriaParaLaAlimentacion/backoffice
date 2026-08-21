@@ -29,7 +29,7 @@ function loadPlacesLibrary(): Promise<google.maps.PlacesLibrary> {
 export class GooglePlacesProvider implements GeoLocationProvider {
   mount(
     container: HTMLElement,
-    { onSelect, onError }: GeoLocationProviderCallbacks,
+    { onSelect, onInputChange, onError }: GeoLocationProviderCallbacks,
   ): () => void {
     let cancelled = false;
     let element: google.maps.places.PlaceAutocompleteElement | null = null;
@@ -58,6 +58,8 @@ export class GooglePlacesProvider implements GeoLocationProvider {
       }
     };
 
+    const handleInput = () => onInputChange();
+
     loadPlacesLibrary()
       .then((places) => {
         if (cancelled) return;
@@ -66,6 +68,7 @@ export class GooglePlacesProvider implements GeoLocationProvider {
         });
         container.appendChild(element);
         element.addEventListener("gmp-select", handleSelect);
+        element.addEventListener("input", handleInput);
       })
       .catch(() => {
         if (!cancelled) onError(new Error("No se pudo cargar Google Maps"));
@@ -74,6 +77,7 @@ export class GooglePlacesProvider implements GeoLocationProvider {
     return () => {
       cancelled = true;
       element?.removeEventListener("gmp-select", handleSelect);
+      element?.removeEventListener("input", handleInput);
       element?.remove();
     };
   }
