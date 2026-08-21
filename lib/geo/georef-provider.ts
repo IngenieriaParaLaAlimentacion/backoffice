@@ -7,7 +7,12 @@ import {
 const SEARCH_ENDPOINT = "https://apis.datos.gob.ar/georef/api/direcciones";
 const MIN_QUERY_LENGTH = 5;
 const DEBOUNCE_MS = 300;
-const MAX_RESULTS = 5;
+// Georef can list the same street under more than one cartographic segment
+// id, which renders as visually identical duplicate rows. Ask for more raw
+// results than we display so there's still a full page left after
+// collapsing those by their displayed text (see dedupeByAddress below).
+const RAW_RESULTS = 10;
+const DISPLAY_RESULTS = 5;
 
 type GeorefAddress = {
   nomenclatura: string;
@@ -35,6 +40,23 @@ function toPlaceDetails(address: GeorefAddress): PlaceDetails {
     lat: address.ubicacion.lat,
     lng: address.ubicacion.lon,
   };
+}
+
+// Georef can return the same street under different calle.id segments
+// (a street split into cartographic blocks), which produces entries with
+// distinct ids but identical displayed text. Collapse those so the dropdown
+// never shows the same address twice; keep the first of each group since
+// Georef already orders results by relevance.
+function dedupeByAddress(places: PlaceDetails[]): PlaceDetails[] {
+  const seen = new Set<string>();
+  const unique: PlaceDetails[] = [];
+  for (const place of places) {
+    const key = place.formattedAddress.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(place);
+  }
+  return unique;
 }
 
 const INPUT_CLASS =
@@ -117,12 +139,15 @@ export class GeorefProvider implements GeoLocationProvider {
       const controller = new AbortController();
       activeController = controller;
       try {
-        const url = `${SEARCH_ENDPOINT}?direccion=${encodeURIComponent(query)}&max=${MAX_RESULTS}`;
+        const url = `${SEARCH_ENDPOINT}?direccion=${encodeURIComponent(query)}&max=${RAW_RESULTS}`;
         const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error(`Georef respondió ${res.status}`);
         const data = (await res.json()) as GeorefResponse;
         if (cancelled || controller.signal.aborted) return;
-        results = data.direcciones.map(toPlaceDetails);
+        results = dedupeByAddress(data.direcciones.map(toPlaceDetails)).slice(
+          0,
+          DISPLAY_RESULTS,
+        );
         renderResults();
       } catch {
         if (controller.signal.aborted) return;
