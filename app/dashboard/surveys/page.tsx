@@ -214,7 +214,9 @@ export default function SurveysPage() {
                     <th className="px-4 py-3 font-medium">
                       {SURVEYS_PAGE.columns.created}
                     </th>
-                    <th className="px-4 py-3 font-medium sr-only">Acciones</th>
+                    <th className="px-4 py-3 font-medium sr-only">
+                      {SURVEYS_PAGE.actions}
+                    </th>
                     <ChevronHeaderCell />
                   </tr>
                 </thead>

@@ -37,6 +37,10 @@ import {
   FiltersToggle,
 } from "@/components/listings/FiltersToggle";
 import { Loader2, RefreshCw, X } from "lucide-react";
+import {
+  MEASUREMENT_SORT_LABELS,
+  MEASUREMENTS_PAGE,
+} from "@/constants/measurements";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -44,14 +48,9 @@ const FILTER_DEBOUNCE_MS = 300;
 const SELECT_CLASS =
   "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-const SORT_OPTIONS: { value: MeasurementSortOrder; label: string }[] = [
-  { value: "date_desc", label: "Fecha (más reciente)" },
-  { value: "date_asc", label: "Fecha (más antigua)" },
-  { value: "weight_desc", label: "Peso (mayor)" },
-  { value: "weight_asc", label: "Peso (menor)" },
-  { value: "height_desc", label: "Talla (mayor)" },
-  { value: "height_asc", label: "Talla (menor)" },
-];
+const SORT_OPTIONS: { value: MeasurementSortOrder; label: string }[] = (
+  Object.keys(MEASUREMENT_SORT_LABELS) as MeasurementSortOrder[]
+).map((value) => ({ value, label: MEASUREMENT_SORT_LABELS[value] }));
 
 type Filters = {
   city: string;
@@ -150,7 +149,7 @@ export default function AnthropometricMeasurementsPage() {
           : undefined;
       if (minAge !== undefined && maxAge !== undefined && minAge > maxAge) {
         setMeasurements([]);
-        setError("La edad mínima no puede ser mayor que la máxima.");
+        setError(MEASUREMENTS_PAGE.minAgeGreaterThanMaxError);
         setIsLoading(false);
         return;
       }
@@ -160,7 +159,7 @@ export default function AnthropometricMeasurementsPage() {
         currentFilters.measuredFrom > currentFilters.measuredTo
       ) {
         setMeasurements([]);
-        setError("La fecha desde no puede ser posterior a la fecha hasta.");
+        setError(MEASUREMENTS_PAGE.measuredFromAfterToError);
         setIsLoading(false);
         return;
       }
@@ -184,7 +183,7 @@ export default function AnthropometricMeasurementsPage() {
       } catch (err) {
         setMeasurements([]);
         setError(
-          err instanceof Error ? err.message : "Error al cargar mediciones",
+          err instanceof Error ? err.message : MEASUREMENTS_PAGE.loadError,
         );
       } finally {
         setIsLoading(false);
@@ -222,9 +221,7 @@ export default function AnthropometricMeasurementsPage() {
         setEvolution(data);
       } catch (err) {
         setDetailError(
-          err instanceof Error
-            ? err.message
-            : "Error al cargar la evolución del sujeto",
+          err instanceof Error ? err.message : MEASUREMENTS_PAGE.evolutionError,
         );
       } finally {
         setDetailLoading(false);
@@ -245,10 +242,10 @@ export default function AnthropometricMeasurementsPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">
-              Mediciones antropométricas
+              {MEASUREMENTS_PAGE.title}
             </h1>
             <p className="text-muted-foreground text-sm">
-              Peso, talla y fecha de relevamiento de los sujetos
+              {MEASUREMENTS_PAGE.subtitle}
             </p>
           </div>
           <Button
@@ -258,7 +255,7 @@ export default function AnthropometricMeasurementsPage() {
             onClick={() => setReloadKey((k) => k + 1)}
           >
             <RefreshCw size={14} />
-            Actualizar
+            {MEASUREMENTS_PAGE.refresh}
           </Button>
         </div>
 
@@ -269,7 +266,7 @@ export default function AnthropometricMeasurementsPage() {
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs text-muted-foreground">
-                Ordenar por
+                {MEASUREMENTS_PAGE.sortLabel}
               </label>
               <select
                 value={sortOrder}
@@ -298,33 +295,37 @@ export default function AnthropometricMeasurementsPage() {
 
           <FilterPanel open={filtersOpen}>
             <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">Ciudad</label>
+              <label className="text-xs text-muted-foreground">
+                {MEASUREMENTS_PAGE.filters.city}
+              </label>
               <Input
                 value={filters.city}
                 onChange={(e) => updateFilter("city", e.target.value)}
-                placeholder="Ciudad"
-                className="w-full sm:w-40"
-              />
-            </div>
-
-            <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">Provincia</label>
-              <Input
-                value={filters.province}
-                onChange={(e) => updateFilter("province", e.target.value)}
-                placeholder="Provincia"
+                placeholder={MEASUREMENTS_PAGE.filters.city}
                 className="w-full sm:w-40"
               />
             </div>
 
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs text-muted-foreground">
-                Fecha de relevamiento
+                {MEASUREMENTS_PAGE.filters.province}
+              </label>
+              <Input
+                value={filters.province}
+                onChange={(e) => updateFilter("province", e.target.value)}
+                placeholder={MEASUREMENTS_PAGE.filters.province}
+                className="w-full sm:w-40"
+              />
+            </div>
+
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                {MEASUREMENTS_PAGE.filters.measuredDate}
               </label>
               <div className="flex items-center gap-2">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] text-muted-foreground">
-                    Desde
+                    {MEASUREMENTS_PAGE.filters.from}
                   </span>
                   <Input
                     type="date"
@@ -338,7 +339,7 @@ export default function AnthropometricMeasurementsPage() {
                 <span className="mt-3 text-muted-foreground">–</span>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] text-muted-foreground">
-                    Hasta
+                    {MEASUREMENTS_PAGE.filters.to}
                   </span>
                   <Input
                     type="date"
@@ -351,11 +352,13 @@ export default function AnthropometricMeasurementsPage() {
             </div>
 
             <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">Edad</label>
+              <label className="text-xs text-muted-foreground">
+                {MEASUREMENTS_PAGE.filters.age}
+              </label>
               <div className="flex items-center gap-2">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] text-muted-foreground">
-                    Mín.
+                    {MEASUREMENTS_PAGE.filters.min}
                   </span>
                   <Input
                     type="number"
@@ -370,7 +373,7 @@ export default function AnthropometricMeasurementsPage() {
                 <span className="mt-3 text-muted-foreground">–</span>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] text-muted-foreground">
-                    Máx.
+                    {MEASUREMENTS_PAGE.filters.max}
                   </span>
                   <Input
                     type="number"
@@ -399,7 +402,7 @@ export default function AnthropometricMeasurementsPage() {
           </div>
         ) : measurements.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-            No hay mediciones
+            {MEASUREMENTS_PAGE.noMeasurements}
           </div>
         ) : (
           <>
@@ -407,14 +410,30 @@ export default function AnthropometricMeasurementsPage() {
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-muted text-muted-foreground text-left [&>th]:sticky [&>th]:top-0">
-                    <th className="px-4 py-3 font-medium">Peso (kg)</th>
-                    <th className="px-4 py-3 font-medium">Talla (cm)</th>
-                    <th className="px-4 py-3 font-medium">IMC</th>
-                    <th className="px-4 py-3 font-medium">Fecha</th>
-                    <th className="px-4 py-3 font-medium">Sujeto</th>
-                    <th className="px-4 py-3 font-medium">Comedor</th>
-                    <th className="px-4 py-3 font-medium">Responsable</th>
-                    <th className="px-4 py-3 font-medium">Alertas</th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.weight}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.height}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.bmi}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.date}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.subject}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.establishment}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.responsible}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.alerts}
+                    </th>
                     <ChevronHeaderCell />
                   </tr>
                 </thead>
@@ -539,7 +558,7 @@ export default function AnthropometricMeasurementsPage() {
               <Dialog.Title className="text-xl font-bold tracking-tight">
                 {evolution
                   ? `${evolution.subject.name} ${evolution.subject.last_name}`
-                  : "Evolución"}
+                  : MEASUREMENTS_PAGE.evolutionDefaultTitle}
               </Dialog.Title>
               <Dialog.Close
                 render={<button type="button" />}
@@ -566,23 +585,23 @@ export default function AnthropometricMeasurementsPage() {
               <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <DetailField
-                    label="Documento de identidad"
+                    label={MEASUREMENTS_PAGE.detail.dni}
                     value={evolution.subject.dni}
                   />
                   <DetailField
-                    label="Sexo"
+                    label={MEASUREMENTS_PAGE.detail.sex}
                     value={
                       evolution.subject.sex === "male"
-                        ? "Masculino"
-                        : "Femenino"
+                        ? MEASUREMENTS_PAGE.detail.sexMale
+                        : MEASUREMENTS_PAGE.detail.sexFemale
                     }
                   />
                   <DetailField
-                    label="Fecha de nacimiento"
+                    label={MEASUREMENTS_PAGE.detail.birthDate}
                     value={formatDate(evolution.subject.birth_date)}
                   />
                   <DetailField
-                    label="Mediciones"
+                    label={MEASUREMENTS_PAGE.detail.measurementsCount}
                     value={evolution.points.length}
                   />
                 </div>
@@ -591,7 +610,7 @@ export default function AnthropometricMeasurementsPage() {
 
                 <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">
-                    Evolución de peso y talla
+                    {MEASUREMENTS_PAGE.detail.chartTitle}
                   </span>
                   <MeasurementEvolutionChart points={evolution.points} />
                 </div>

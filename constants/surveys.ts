@@ -86,6 +86,7 @@ export const SURVEYS_PAGE = {
     created: "Creada",
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
+  actions: "Acciones",
   actionsMenuLabel: "Más acciones",
   edit: "Editar",
   editDisabledReason: "No se puede editar: ya tiene respuestas registradas.",
@@ -156,5 +157,5 @@ export const DASHBOARD_INDICATORS = {
   pendingUserRegistrations: "Registros pendientes",
   pendingEstablishmentAccess: "Accesos pendientes",
   pendingEstablishmentCreations: "Establecimientos faltantes",
-  notAvailable: "X",
+  notAvailable: "—",
 } as const;

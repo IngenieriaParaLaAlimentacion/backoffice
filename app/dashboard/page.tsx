@@ -26,6 +26,7 @@ import { navItems } from "@/components/SideBar";
 import { Card } from "@/components/ui/card";
 import { DASHBOARD_INDICATORS } from "@/constants/surveys";
 import { UserStatus } from "@/types/establishment";
+import { usePendingCount } from "@/hooks/usePendingCount";
 
 // Quick-access cards mirror the sidebar, minus the dashboard self-link.
 const accessItems = navItems.filter((item) => item.href !== "/dashboard");
@@ -111,26 +112,48 @@ export default function DashboardPage() {
   const [indicatorsLoading, setIndicatorsLoading] = useState(true);
   const [indicatorsError, setIndicatorsError] = useState<string | null>(null);
 
-  const [pendingUserRegistrations, setPendingUserRegistrations] = useState<
-    number | null
-  >(null);
-  const [pendingUserRegistrationsLoading, setPendingUserRegistrationsLoading] =
-    useState(true);
+  const {
+    count: pendingUserRegistrations,
+    loading: pendingUserRegistrationsLoading,
+    fetch: fetchPendingUserRegistrations,
+  } = usePendingCount(
+    useCallback(async () => {
+      const data = await listUsersAction(makeAuthorizedRequest, {
+        status: PENDING_VALIDATION_STATUS,
+        role: FIELD_WORKER_ROLE,
+        ...COUNT_ONLY_QUERY,
+      });
+      return data.total;
+    }, [makeAuthorizedRequest]),
+  );
 
-  const [pendingEstablishmentCreations, setPendingEstablishmentCreations] =
-    useState<number | null>(null);
-  const [
-    pendingEstablishmentCreationsLoading,
-    setPendingEstablishmentCreationsLoading,
-  ] = useState(true);
+  const {
+    count: pendingEstablishmentCreations,
+    loading: pendingEstablishmentCreationsLoading,
+    fetch: fetchPendingEstablishmentCreations,
+  } = usePendingCount(
+    useCallback(async () => {
+      const data = await listEstablishmentRequestsAction(
+        makeAuthorizedRequest,
+        COUNT_ONLY_QUERY,
+      );
+      return data.total;
+    }, [makeAuthorizedRequest]),
+  );
 
-  const [pendingEstablishmentAccess, setPendingEstablishmentAccess] = useState<
-    number | null
-  >(null);
-  const [
-    pendingEstablishmentAccessLoading,
-    setPendingEstablishmentAccessLoading,
-  ] = useState(true);
+  const {
+    count: pendingEstablishmentAccess,
+    loading: pendingEstablishmentAccessLoading,
+    fetch: fetchPendingEstablishmentAccess,
+  } = usePendingCount(
+    useCallback(async () => {
+      const data = await listPendingEstablishmentAccessAction(
+        makeAuthorizedRequest,
+        COUNT_ONLY_QUERY,
+      );
+      return data.total_pending_establishments;
+    }, [makeAuthorizedRequest]),
+  );
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -153,52 +176,6 @@ export default function DashboardPage() {
       );
     } finally {
       setIndicatorsLoading(false);
-    }
-  }, [makeAuthorizedRequest]);
-
-  const fetchPendingUserRegistrations = useCallback(async () => {
-    setPendingUserRegistrationsLoading(true);
-    try {
-      const data = await listUsersAction(makeAuthorizedRequest, {
-        status: PENDING_VALIDATION_STATUS,
-        role: FIELD_WORKER_ROLE,
-        ...COUNT_ONLY_QUERY,
-      });
-      setPendingUserRegistrations(data.total);
-    } catch {
-      setPendingUserRegistrations(null);
-    } finally {
-      setPendingUserRegistrationsLoading(false);
-    }
-  }, [makeAuthorizedRequest]);
-
-  const fetchPendingEstablishmentCreations = useCallback(async () => {
-    setPendingEstablishmentCreationsLoading(true);
-    try {
-      const data = await listEstablishmentRequestsAction(
-        makeAuthorizedRequest,
-        COUNT_ONLY_QUERY,
-      );
-      setPendingEstablishmentCreations(data.total);
-    } catch {
-      setPendingEstablishmentCreations(null);
-    } finally {
-      setPendingEstablishmentCreationsLoading(false);
-    }
-  }, [makeAuthorizedRequest]);
-
-  const fetchPendingEstablishmentAccess = useCallback(async () => {
-    setPendingEstablishmentAccessLoading(true);
-    try {
-      const data = await listPendingEstablishmentAccessAction(
-        makeAuthorizedRequest,
-        COUNT_ONLY_QUERY,
-      );
-      setPendingEstablishmentAccess(data.total_pending_establishments);
-    } catch {
-      setPendingEstablishmentAccess(null);
-    } finally {
-      setPendingEstablishmentAccessLoading(false);
     }
   }, [makeAuthorizedRequest]);
 
