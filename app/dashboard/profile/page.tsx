@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, SquarePen } from "lucide-react";
+import { PROFILE_PAGE } from "@/constants/users";
 
 function ProfileField({
   label,
@@ -39,9 +40,7 @@ export default function ProfilePage() {
       const data = await getMeAction(makeAuthorizedRequest);
       setProfile(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al cargar el perfil",
-      );
+      setError(err instanceof Error ? err.message : PROFILE_PAGE.loadError);
     } finally {
       setIsLoading(false);
     }
@@ -56,9 +55,11 @@ export default function ProfilePage() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">Perfil</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {PROFILE_PAGE.title}
+            </h1>
             <p className="text-muted-foreground text-sm">
-              Mi información personal
+              {PROFILE_PAGE.subtitle}
             </p>
           </div>
           <Link
@@ -70,7 +71,7 @@ export default function ProfilePage() {
             })}
           >
             <SquarePen size={14} />
-            Editar perfil
+            {PROFILE_PAGE.editProfile}
           </Link>
         </div>
 
@@ -88,14 +89,26 @@ export default function ProfilePage() {
           </div>
         ) : profile ? (
           <div className="flex flex-col gap-4 max-w-md">
-            <ProfileField label="Nombre" value={profile.name} />
-            <ProfileField label="Apellido" value={profile.last_name} />
-            <ProfileField label="Email" value={profile.email} />
             <ProfileField
-              label="Rol"
+              label={PROFILE_PAGE.fields.name}
+              value={profile.name}
+            />
+            <ProfileField
+              label={PROFILE_PAGE.fields.lastName}
+              value={profile.last_name}
+            />
+            <ProfileField
+              label={PROFILE_PAGE.fields.email}
+              value={profile.email}
+            />
+            <ProfileField
+              label={PROFILE_PAGE.fields.role}
               value={ROLE_LABELS[profile.role] ?? profile.role}
             />
-            <ProfileField label="Estado de la cuenta" value="Activo" />
+            <ProfileField
+              label={PROFILE_PAGE.fields.accountStatus}
+              value={PROFILE_PAGE.active}
+            />
           </div>
         ) : null}
       </Card>

@@ -3,6 +3,10 @@ import {
   RelationStatus,
   UserStatus,
 } from "@/types/establishment";
+import {
+  EstablishmentRequestSortOrder,
+  EstablishmentSortOrder,
+} from "@/types/admin";
 
 export const PAGE_SIZE = 20;
 export const FILTER_DEBOUNCE_MS = 300;
@@ -114,4 +118,107 @@ export const ESTABLISHMENT_DASHBOARD_PAGE = {
   search: "Buscar",
   sortBy: "Ordenar por",
   relationStatus: "Inscripción",
+} as const;
+
+export const ESTABLISHMENT_TABS = {
+  establishments: "Establecimientos",
+  requests: "Solicitudes",
+} as const;
+
+// Shared by the create-establishment form and the request review form —
+// address/city/province are identical in both contexts, only the "name"
+// placeholder differs (see CREATE_ESTABLISHMENT_PAGE / ESTABLISHMENT_REQUEST_REVIEW_PANEL).
+export const ESTABLISHMENT_FORM_FIELDS = {
+  name: { label: "Nombre" },
+  address: { label: "Dirección", placeholder: "Ej: Av. Corrientes 1234, CABA" },
+  city: { label: "Ciudad", placeholder: "Ej: Buenos Aires" },
+  province: { label: "Provincia", placeholder: "Ej: CABA" },
+} as const;
+
+export const ESTABLISHMENT_SORT_OPTIONS: {
+  value: EstablishmentSortOrder;
+  label: string;
+}[] = [
+  { value: "newest", label: "Más recientes primero" },
+  { value: "oldest", label: "Más antiguos primero" },
+  { value: "name_asc", label: "Nombre A → Z" },
+  { value: "name_desc", label: "Nombre Z → A" },
+  { value: "city_asc", label: "Ciudad A → Z" },
+  { value: "city_desc", label: "Ciudad Z → A" },
+  { value: "province_asc", label: "Provincia A → Z" },
+  { value: "province_desc", label: "Provincia Z → A" },
+];
+
+export const ESTABLISHMENTS_LIST_PAGE = {
+  title: "Establecimientos",
+  subtitle: "Establecimientos registrados en el sistema",
+  createButton: "Nuevo establecimiento",
+  searchLabel: "Buscar",
+  searchPlaceholder: "Nombre o dirección",
+  sortLabel: "Ordenar por",
+  noEstablishments: "No hay establecimientos",
+  loadError: "Error al cargar establecimientos",
+  columns: {
+    name: "Nombre",
+    address: "Dirección",
+    city: "Ciudad",
+    province: "Provincia",
+  },
+} as const;
+
+export const ESTABLISHMENT_REQUEST_SORT_OPTIONS: {
+  value: EstablishmentRequestSortOrder;
+  label: string;
+}[] = [
+  { value: "oldest", label: "Más antiguos primero" },
+  { value: "newest", label: "Más recientes primero" },
+];
+
+export const ESTABLISHMENT_REQUESTS_PAGE = {
+  title: "Establecimientos faltantes",
+  subtitle: "Notificaciones de establecimientos pendientes de alta",
+  searchLabel: "Buscar",
+  searchPlaceholder: "Nombre, dirección o relevador",
+  sortLabel: "Ordenar por",
+  noRequests: "No hay establecimientos pendientes de alta",
+  loadError: "Error al cargar solicitudes",
+  closeAria: "Cerrar",
+  successReused:
+    "Establecimiento dado de alta correctamente. Se reutilizó un establecimiento ya existente con esa ubicación.",
+  successCreated: "Establecimiento dado de alta correctamente.",
+  staleMessage:
+    "Esta solicitud ya fue revisada por otro administrador. Se actualizó la lista.",
+  columns: {
+    name: "Nombre",
+    requester: "Relevador",
+    location: "Ciudad / Provincia",
+    requestedAt: "Fecha de solicitud",
+    actions: "Acciones",
+  },
+  reviewButton: "Revisar",
+} as const;
+
+export const ESTABLISHMENT_REQUEST_REVIEW_PANEL = {
+  approveLabel: "Aprobar",
+  approveConfirmLabel: "Confirmar alta",
+  approveConfirmationMessage:
+    "Confirmá el alta para crear el establecimiento con estos datos.",
+  rejectLabel: "Rechazar",
+  rejectConfirmLabel: "Confirmar rechazo",
+  rejectReasonLabel: "Motivo del rechazo",
+  optionalTag: "(opcional)",
+  rejectReasonPlaceholder: "Ej: Datos incompletos, comedor duplicado...",
+  cancelLabel: "Cancelar",
+  namePlaceholder: "Ej: Establecimiento Central Norte",
+  approveError: "Error al aprobar la solicitud",
+  rejectError: "Error al rechazar la solicitud",
+} as const;
+
+export const CREATE_ESTABLISHMENT_PAGE = {
+  title: "Nuevo establecimiento",
+  subtitle: "Completá los datos del establecimiento",
+  back: "Volver",
+  namePlaceholder: "Ej: Comedor Central Norte",
+  submitError: "Error al crear el establecimiento",
+  submitButton: "Crear establecimiento",
 } as const;

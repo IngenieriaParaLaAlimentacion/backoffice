@@ -20,6 +20,7 @@ import {
   Loader2,
   X,
 } from "lucide-react";
+import { PENDING_REQUESTS_PAGE, USERS_PAGE } from "@/constants/users";
 
 const PAGE_SIZE = 20;
 
@@ -54,7 +55,7 @@ export default function RequestsPage() {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error al cargar solicitudes",
+          err instanceof Error ? err.message : PENDING_REQUESTS_PAGE.loadError,
         );
       } finally {
         setIsLoading(false);
@@ -129,7 +130,7 @@ export default function RequestsPage() {
       closeReview();
     } catch (err) {
       setApplyError(
-        err instanceof Error ? err.message : "Error al aplicar los cambios",
+        err instanceof Error ? err.message : PENDING_REQUESTS_PAGE.applyError,
       );
     } finally {
       setIsApplying(false);
@@ -140,9 +141,11 @@ export default function RequestsPage() {
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">Solicitudes</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {PENDING_REQUESTS_PAGE.title}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            Usuarios técnicos pendientes de validación
+            {PENDING_REQUESTS_PAGE.subtitle}
           </p>
         </div>
 
@@ -160,7 +163,7 @@ export default function RequestsPage() {
           </div>
         ) : users.length === 0 ? (
           <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm">
-            No hay solicitudes pendientes
+            {PENDING_REQUESTS_PAGE.noRequests}
           </div>
         ) : (
           <>
@@ -168,11 +171,17 @@ export default function RequestsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
-                    <th className="px-4 py-3 font-medium">Nombre</th>
-                    <th className="px-4 py-3 font-medium">Email</th>
-                    <th className="px-4 py-3 font-medium">Establecimientos</th>
+                    <th className="px-4 py-3 font-medium">
+                      {PENDING_REQUESTS_PAGE.columns.name}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {PENDING_REQUESTS_PAGE.columns.email}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {PENDING_REQUESTS_PAGE.columns.establishments}
+                    </th>
                     <th className="px-4 py-3 font-medium text-right">
-                      Acciones
+                      {PENDING_REQUESTS_PAGE.columns.actions}
                     </th>
                   </tr>
                 </thead>
@@ -205,7 +214,7 @@ export default function RequestsPage() {
                             onClick={() => openReview(user)}
                           >
                             <ClipboardCheck size={14} />
-                            Revisar
+                            {PENDING_REQUESTS_PAGE.review}
                           </Button>
                         </div>
                       </td>
@@ -231,8 +240,9 @@ export default function RequestsPage() {
                       {user.email}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {user.establishments.length} establecimiento
-                      {user.establishments.length === 1 ? "" : "s"}
+                      {PENDING_REQUESTS_PAGE.establishmentsCount(
+                        user.establishments.length,
+                      )}
                     </span>
                   </div>
                   <Button
@@ -243,7 +253,7 @@ export default function RequestsPage() {
                     onClick={() => openReview(user)}
                   >
                     <ClipboardCheck size={14} />
-                    Revisar
+                    {PENDING_REQUESTS_PAGE.review}
                   </Button>
                 </div>
               ))}
@@ -259,9 +269,7 @@ export default function RequestsPage() {
                 >
                   <ChevronLeft size={16} />
                 </Button>
-                <span>
-                  Página {page} de {totalPages}
-                </span>
+                <span>{USERS_PAGE.pagination(page, totalPages)}</span>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -290,7 +298,7 @@ export default function RequestsPage() {
                 <Dialog.Title className="text-xl font-bold tracking-tight break-words">
                   {selectedUser
                     ? `${selectedUser.name} ${selectedUser.last_name}`
-                    : "Solicitud"}
+                    : PENDING_REQUESTS_PAGE.defaultDialogTitle}
                 </Dialog.Title>
                 <Dialog.Description className="text-muted-foreground text-sm break-all">
                   {selectedUser?.email}
@@ -308,8 +316,8 @@ export default function RequestsPage() {
 
             <p className="text-muted-foreground text-sm">
               {hasEstablishments
-                ? "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes."
-                : "No solicitó acceso a ningún establecimiento."}
+                ? PENDING_REQUESTS_PAGE.establishmentsIntro
+                : PENDING_REQUESTS_PAGE.noEstablishmentsRequested}
             </p>
 
             {applyError && (
@@ -349,7 +357,7 @@ export default function RequestsPage() {
                                 onClick={() => setDecision(est.id, "approve")}
                               >
                                 <Check size={14} />
-                                Aceptar
+                                {PENDING_REQUESTS_PAGE.accept}
                               </Button>
                               <Button
                                 size="sm"
@@ -363,7 +371,7 @@ export default function RequestsPage() {
                                 onClick={() => setDecision(est.id, "reject")}
                               >
                                 <X size={14} />
-                                Rechazar
+                                {PENDING_REQUESTS_PAGE.reject}
                               </Button>
                             </div>
                           </div>
@@ -375,10 +383,7 @@ export default function RequestsPage() {
 
                     {pendingCount > 0 && (
                       <p className="text-muted-foreground text-xs">
-                        {pendingCount} establecimiento
-                        {pendingCount === 1 ? "" : "s"} quedará
-                        {pendingCount === 1 ? "" : "n"} pendiente
-                        {pendingCount === 1 ? "" : "s"}.
+                        {PENDING_REQUESTS_PAGE.pendingSummary(pendingCount)}
                       </p>
                     )}
                   </>
@@ -390,7 +395,7 @@ export default function RequestsPage() {
                   ) : (
                     <Check size={16} />
                   )}
-                  Aceptar solicitud
+                  {PENDING_REQUESTS_PAGE.acceptRequest}
                 </Button>
               </>
             )}

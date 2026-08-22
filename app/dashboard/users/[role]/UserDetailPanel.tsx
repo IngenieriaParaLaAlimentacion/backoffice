@@ -4,6 +4,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, X } from "lucide-react";
 import { useUserDetail } from "@/hooks/useUserDetail";
 import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
+import { USER_DETAIL_PANEL } from "@/constants/users";
 
 type UserDetailPanelProps = {
   userId: string | null;
@@ -44,10 +45,10 @@ export default function UserDetailPanel({
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="text-lg font-semibold">
-                Perfil
+                {USER_DETAIL_PANEL.title}
               </Dialog.Title>
               <Dialog.Description className="text-sm text-muted-foreground">
-                Información del usuario
+                {USER_DETAIL_PANEL.description}
               </Dialog.Description>
             </div>
             <Dialog.Close
@@ -75,40 +76,49 @@ export default function UserDetailPanel({
             <div className="flex flex-col gap-4">
               {/* --- Profile Fields --- */}
               <ProfileField
-                label="Nombre"
+                label={USER_DETAIL_PANEL.fields.name}
                 value={
                   user.last_name ? `${user.name} ${user.last_name}` : user.name
                 }
               />
-              <ProfileField label="Email" value={user.email} />
+              <ProfileField
+                label={USER_DETAIL_PANEL.fields.email}
+                value={user.email}
+              />
               {user.role && (
                 <ProfileField
-                  label="Rol"
+                  label={USER_DETAIL_PANEL.fields.role}
                   value={ROLE_LABELS[user.role] ?? user.role}
                 />
               )}
               {user.status && (
                 <ProfileField
-                  label="Estado"
+                  label={USER_DETAIL_PANEL.fields.status}
                   value={STATUS_LABELS[user.status] ?? user.status}
                 />
               )}
               {user.contact_phone && (
                 <ProfileField
-                  label="Teléfono de contacto"
+                  label={USER_DETAIL_PANEL.fields.contactPhone}
                   value={user.contact_phone}
                 />
               )}
               {user.locality && (
-                <ProfileField label="Localidad" value={user.locality} />
+                <ProfileField
+                  label={USER_DETAIL_PANEL.fields.locality}
+                  value={user.locality}
+                />
               )}
               {user.description && (
-                <ProfileField label="Descripción" value={user.description} />
+                <ProfileField
+                  label={USER_DETAIL_PANEL.fields.description}
+                  value={user.description}
+                />
               )}
               {user.establishments && user.establishments.length > 0 && (
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs text-muted-foreground">
-                    Establecimientos
+                    {USER_DETAIL_PANEL.fields.establishments}
                   </span>
                   <div className="flex flex-col gap-2">
                     {user.establishments.map((est) => (

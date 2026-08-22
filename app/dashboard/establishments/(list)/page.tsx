@@ -21,6 +21,10 @@ import {
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
 import { Loader2, Plus, Search } from "lucide-react";
+import {
+  ESTABLISHMENT_SORT_OPTIONS,
+  ESTABLISHMENTS_LIST_PAGE,
+} from "@/constants/establishments";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -30,16 +34,7 @@ const SELECT_CLASS =
 
 const DEFAULT_SORT_ORDER: EstablishmentSortOrder = "newest";
 
-const SORT_OPTIONS: { value: EstablishmentSortOrder; label: string }[] = [
-  { value: "newest", label: "Más recientes primero" },
-  { value: "oldest", label: "Más antiguos primero" },
-  { value: "name_asc", label: "Nombre A → Z" },
-  { value: "name_desc", label: "Nombre Z → A" },
-  { value: "city_asc", label: "Ciudad A → Z" },
-  { value: "city_desc", label: "Ciudad Z → A" },
-  { value: "province_asc", label: "Provincia A → Z" },
-  { value: "province_desc", label: "Provincia Z → A" },
-];
+const SORT_OPTIONS = ESTABLISHMENT_SORT_OPTIONS;
 
 const SORT_VALUES = SORT_OPTIONS.map((o) => o.value);
 
@@ -131,7 +126,7 @@ function EstablishmentsContent() {
         setError(
           err instanceof Error
             ? err.message
-            : "Error al cargar establecimientos",
+            : ESTABLISHMENTS_LIST_PAGE.loadError,
         );
       } finally {
         setIsLoading(false);
@@ -152,10 +147,10 @@ function EstablishmentsContent() {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">
-              Establecimientos
+              {ESTABLISHMENTS_LIST_PAGE.title}
             </h1>
             <p className="text-muted-foreground text-sm">
-              Establecimientos registrados en el sistema
+              {ESTABLISHMENTS_LIST_PAGE.subtitle}
             </p>
           </div>
           <Link
@@ -163,7 +158,7 @@ function EstablishmentsContent() {
             className={buttonVariants({ size: "sm", className: "self-start" })}
           >
             <Plus size={14} />
-            Nuevo establecimiento
+            {ESTABLISHMENTS_LIST_PAGE.createButton}
           </Link>
         </div>
 
@@ -171,7 +166,9 @@ function EstablishmentsContent() {
 
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Buscar</label>
+            <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENTS_LIST_PAGE.searchLabel}
+            </label>
             <div className="relative w-full sm:w-72">
               <Search
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
@@ -180,14 +177,16 @@ function EstablishmentsContent() {
               <Input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Nombre o dirección"
+                placeholder={ESTABLISHMENTS_LIST_PAGE.searchPlaceholder}
                 className="pl-8"
               />
             </div>
           </div>
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Ordenar por</label>
+            <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENTS_LIST_PAGE.sortLabel}
+            </label>
             <select
               value={sortOrder}
               onChange={(e) =>
@@ -216,7 +215,7 @@ function EstablishmentsContent() {
           </div>
         ) : establishments.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-            No hay establecimientos
+            {ESTABLISHMENTS_LIST_PAGE.noEstablishments}
           </div>
         ) : (
           <>
@@ -224,10 +223,18 @@ function EstablishmentsContent() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
-                    <th className="px-4 py-3 font-medium">Nombre</th>
-                    <th className="px-4 py-3 font-medium">Dirección</th>
-                    <th className="px-4 py-3 font-medium">Ciudad</th>
-                    <th className="px-4 py-3 font-medium">Provincia</th>
+                    <th className="px-4 py-3 font-medium">
+                      {ESTABLISHMENTS_LIST_PAGE.columns.name}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {ESTABLISHMENTS_LIST_PAGE.columns.address}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {ESTABLISHMENTS_LIST_PAGE.columns.city}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {ESTABLISHMENTS_LIST_PAGE.columns.province}
+                    </th>
                     <ChevronHeaderCell />
                   </tr>
                 </thead>

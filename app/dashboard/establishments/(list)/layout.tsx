@@ -12,14 +12,21 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
 import { getMeAction } from "@/services/user.service";
+import { ESTABLISHMENT_TABS } from "@/constants/establishments";
 
 const REQUESTS_TAB_HREF = "/dashboard/establishments/requests";
 const ADMIN_ROLES = new Set(["admin", "superadmin"]);
 
 const BASE_TABS = [
-  { label: "Establecimientos", href: "/dashboard/establishments" },
+  {
+    label: ESTABLISHMENT_TABS.establishments,
+    href: "/dashboard/establishments",
+  },
 ];
-const REQUESTS_TAB = { label: "Solicitudes", href: REQUESTS_TAB_HREF };
+const REQUESTS_TAB = {
+  label: ESTABLISHMENT_TABS.requests,
+  href: REQUESTS_TAB_HREF,
+};
 
 // Lets the requests page tell the layout to refresh the tab badge right
 // after an approve/reject, since that action doesn't navigate anywhere

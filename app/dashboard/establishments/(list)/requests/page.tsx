@@ -23,6 +23,11 @@ import {
 import EstablishmentRequestReviewPanel from "./EstablishmentRequestReviewPanel";
 import { useRefreshPendingRequestsCount } from "../layout";
 import { CircleCheck, ClipboardCheck, Loader2, Search, X } from "lucide-react";
+import {
+  ESTABLISHMENT_FORM_FIELDS,
+  ESTABLISHMENT_REQUEST_SORT_OPTIONS,
+  ESTABLISHMENT_REQUESTS_PAGE,
+} from "@/constants/establishments";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -34,11 +39,7 @@ const SELECT_CLASS =
 // oldest-first surfaces the requests waiting the longest for review.
 const DEFAULT_SORT_ORDER: EstablishmentRequestSortOrder = "oldest";
 
-const SORT_OPTIONS: { value: EstablishmentRequestSortOrder; label: string }[] =
-  [
-    { value: "oldest", label: "Más antiguos primero" },
-    { value: "newest", label: "Más recientes primero" },
-  ];
+const SORT_OPTIONS = ESTABLISHMENT_REQUEST_SORT_OPTIONS;
 
 function parseSortOrder(value: string | null): EstablishmentRequestSortOrder {
   return value === "newest" || value === "oldest" ? value : DEFAULT_SORT_ORDER;
@@ -174,7 +175,7 @@ function EstablishmentRequestsContent() {
         setError(
           err instanceof Error
             ? err.message
-            : "Error al cargar establecimientos",
+            : ESTABLISHMENT_REQUESTS_PAGE.loadError,
         );
       } finally {
         setIsLoading(false);
@@ -197,8 +198,8 @@ function EstablishmentRequestsContent() {
     refreshPendingCount();
     setSuccessMessage(
       result.reused
-        ? "Establecimiento dado de alta correctamente. Se reutilizó un establecimiento ya existente con esa ubicación."
-        : "Establecimiento dado de alta correctamente.",
+        ? ESTABLISHMENT_REQUESTS_PAGE.successReused
+        : ESTABLISHMENT_REQUESTS_PAGE.successCreated,
     );
     setSelectedRequest(null);
   };
@@ -215,9 +216,7 @@ function EstablishmentRequestsContent() {
     if (!selectedRequest) return;
     removeFromList(selectedRequest.id);
     refreshPendingCount();
-    setSuccessMessage(
-      "Esta solicitud ya fue revisada por otro administrador. Se actualizó la lista.",
-    );
+    setSuccessMessage(ESTABLISHMENT_REQUESTS_PAGE.staleMessage);
     setSelectedRequest(null);
   };
 
@@ -231,10 +230,10 @@ function EstablishmentRequestsContent() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">
-            Establecimientos faltantes
+            {ESTABLISHMENT_REQUESTS_PAGE.title}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Notificaciones de establecimientos pendientes de alta
+            {ESTABLISHMENT_REQUESTS_PAGE.subtitle}
           </p>
         </div>
 
@@ -242,7 +241,9 @@ function EstablishmentRequestsContent() {
 
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Buscar</label>
+            <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENT_REQUESTS_PAGE.searchLabel}
+            </label>
             <div className="relative w-full sm:w-72">
               <Search
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
@@ -251,34 +252,40 @@ function EstablishmentRequestsContent() {
               <Input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Nombre, dirección o relevador"
+                placeholder={ESTABLISHMENT_REQUESTS_PAGE.searchPlaceholder}
                 className="pl-8"
               />
             </div>
           </div>
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Ciudad</label>
+            <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENT_FORM_FIELDS.city.label}
+            </label>
             <Input
               value={cityInput}
               onChange={(e) => setCityInput(e.target.value)}
-              placeholder="Ej: Buenos Aires"
+              placeholder={ESTABLISHMENT_FORM_FIELDS.city.placeholder}
               className="w-full sm:w-40"
             />
           </div>
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Provincia</label>
+            <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENT_FORM_FIELDS.province.label}
+            </label>
             <Input
               value={provinceInput}
               onChange={(e) => setProvinceInput(e.target.value)}
-              placeholder="Ej: CABA"
+              placeholder={ESTABLISHMENT_FORM_FIELDS.province.placeholder}
               className="w-full sm:w-40"
             />
           </div>
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Ordenar por</label>
+            <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENT_REQUESTS_PAGE.sortLabel}
+            </label>
             <select
               value={sortOrder}
               onChange={(e) =>
@@ -309,7 +316,7 @@ function EstablishmentRequestsContent() {
               type="button"
               onClick={() => setSuccessMessage(null)}
               className="shrink-0 text-emerald-600/70 hover:text-emerald-600"
-              aria-label="Cerrar"
+              aria-label={ESTABLISHMENT_REQUESTS_PAGE.closeAria}
             >
               <X size={16} />
             </button>
@@ -322,7 +329,7 @@ function EstablishmentRequestsContent() {
           </div>
         ) : requests.length === 0 ? (
           <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm">
-            No hay establecimientos pendientes de alta
+            {ESTABLISHMENT_REQUESTS_PAGE.noRequests}
           </div>
         ) : (
           <>
@@ -330,16 +337,20 @@ function EstablishmentRequestsContent() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
-                    <th className="px-4 py-3 font-medium">Nombre</th>
-                    <th className="px-4 py-3 font-medium">Relevador</th>
                     <th className="px-4 py-3 font-medium">
-                      Ciudad / Provincia
+                      {ESTABLISHMENT_REQUESTS_PAGE.columns.name}
                     </th>
                     <th className="px-4 py-3 font-medium">
-                      Fecha de solicitud
+                      {ESTABLISHMENT_REQUESTS_PAGE.columns.requester}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {ESTABLISHMENT_REQUESTS_PAGE.columns.location}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {ESTABLISHMENT_REQUESTS_PAGE.columns.requestedAt}
                     </th>
                     <th className="px-4 py-3 font-medium text-right">
-                      Acciones
+                      {ESTABLISHMENT_REQUESTS_PAGE.columns.actions}
                     </th>
                   </tr>
                 </thead>
@@ -382,7 +393,7 @@ function EstablishmentRequestsContent() {
                               onClick={() => openReview(request)}
                             >
                               <ClipboardCheck size={14} />
-                              Revisar
+                              {ESTABLISHMENT_REQUESTS_PAGE.reviewButton}
                             </Button>
                           </div>
                         </td>
@@ -425,7 +436,7 @@ function EstablishmentRequestsContent() {
                       onClick={() => openReview(request)}
                     >
                       <ClipboardCheck size={14} />
-                      Revisar
+                      {ESTABLISHMENT_REQUESTS_PAGE.reviewButton}
                     </Button>
                   </div>
                 );

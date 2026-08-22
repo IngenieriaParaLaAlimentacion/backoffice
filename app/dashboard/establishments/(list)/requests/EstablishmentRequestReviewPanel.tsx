@@ -23,15 +23,12 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
 import { Check, Loader2, X } from "lucide-react";
+import {
+  ESTABLISHMENT_FORM_FIELDS,
+  ESTABLISHMENT_REQUEST_REVIEW_PANEL,
+} from "@/constants/establishments";
 
 type PendingAction = "approve" | "reject" | null;
-
-const APPROVE_LABEL = "Aprobar";
-const APPROVE_CONFIRM_LABEL = "Confirmar alta";
-const APPROVE_CONFIRMATION_MESSAGE =
-  "Confirmá el alta para crear el establecimiento con estos datos.";
-const REJECT_LABEL = "Rechazar";
-const REJECT_CONFIRM_LABEL = "Confirmar rechazo";
 
 type EstablishmentRequestReviewPanelProps = {
   request: EstablishmentRequestAdminView | null;
@@ -105,7 +102,9 @@ export default function EstablishmentRequestReviewPanel({
         return;
       }
       setPanelError(
-        err instanceof Error ? err.message : "Error al aprobar la solicitud",
+        err instanceof Error
+          ? err.message
+          : ESTABLISHMENT_REQUEST_REVIEW_PANEL.approveError,
       );
     }
   };
@@ -127,7 +126,9 @@ export default function EstablishmentRequestReviewPanel({
         return;
       }
       setPanelError(
-        err instanceof Error ? err.message : "Error al rechazar la solicitud",
+        err instanceof Error
+          ? err.message
+          : ESTABLISHMENT_REQUEST_REVIEW_PANEL.rejectError,
       );
     } finally {
       setIsRejecting(false);
@@ -191,29 +192,29 @@ export default function EstablishmentRequestReviewPanel({
               <AppTextField
                 control={control}
                 name="name"
-                label="Nombre"
-                placeholder="Ej: Establecimiento Central Norte"
+                label={ESTABLISHMENT_FORM_FIELDS.name.label}
+                placeholder={ESTABLISHMENT_REQUEST_REVIEW_PANEL.namePlaceholder}
                 required
               />
               <AppTextField
                 control={control}
                 name="formatted_address"
-                label="Dirección"
-                placeholder="Ej: Av. Corrientes 1234, CABA"
+                label={ESTABLISHMENT_FORM_FIELDS.address.label}
+                placeholder={ESTABLISHMENT_FORM_FIELDS.address.placeholder}
                 required
               />
               <AppTextField
                 control={control}
                 name="city"
-                label="Ciudad"
-                placeholder="Ej: Buenos Aires"
+                label={ESTABLISHMENT_FORM_FIELDS.city.label}
+                placeholder={ESTABLISHMENT_FORM_FIELDS.city.placeholder}
                 required
               />
               <AppTextField
                 control={control}
                 name="province"
-                label="Provincia"
-                placeholder="Ej: CABA"
+                label={ESTABLISHMENT_FORM_FIELDS.province.label}
+                placeholder={ESTABLISHMENT_FORM_FIELDS.province.placeholder}
                 required
               />
 
@@ -222,16 +223,18 @@ export default function EstablishmentRequestReviewPanel({
               {pendingAction === "reject" && (
                 <div className="flex flex-col gap-1">
                   <label className="text-sm font-medium text-foreground">
-                    Motivo del rechazo
+                    {ESTABLISHMENT_REQUEST_REVIEW_PANEL.rejectReasonLabel}
                     <span className="text-muted-foreground font-normal">
                       {" "}
-                      (opcional)
+                      {ESTABLISHMENT_REQUEST_REVIEW_PANEL.optionalTag}
                     </span>
                   </label>
                   <textarea
                     value={rejectReason}
                     onChange={(e) => setRejectReason(e.target.value)}
-                    placeholder="Ej: Datos incompletos, comedor duplicado..."
+                    placeholder={
+                      ESTABLISHMENT_REQUEST_REVIEW_PANEL.rejectReasonPlaceholder
+                    }
                     rows={2}
                     maxLength={500}
                     autoFocus
@@ -243,7 +246,9 @@ export default function EstablishmentRequestReviewPanel({
 
               {pendingAction === "approve" && (
                 <p className="text-sm text-muted-foreground">
-                  {APPROVE_CONFIRMATION_MESSAGE}
+                  {
+                    ESTABLISHMENT_REQUEST_REVIEW_PANEL.approveConfirmationMessage
+                  }
                 </p>
               )}
 
@@ -260,8 +265,8 @@ export default function EstablishmentRequestReviewPanel({
                     <Check size={16} />
                   )}
                   {pendingAction === "approve"
-                    ? APPROVE_CONFIRM_LABEL
-                    : APPROVE_LABEL}
+                    ? ESTABLISHMENT_REQUEST_REVIEW_PANEL.approveConfirmLabel
+                    : ESTABLISHMENT_REQUEST_REVIEW_PANEL.approveLabel}
                 </Button>
                 <Button
                   type="button"
@@ -276,8 +281,8 @@ export default function EstablishmentRequestReviewPanel({
                     <X size={16} />
                   )}
                   {pendingAction === "reject"
-                    ? REJECT_CONFIRM_LABEL
-                    : REJECT_LABEL}
+                    ? ESTABLISHMENT_REQUEST_REVIEW_PANEL.rejectConfirmLabel
+                    : ESTABLISHMENT_REQUEST_REVIEW_PANEL.rejectLabel}
                 </Button>
               </div>
 
@@ -289,7 +294,7 @@ export default function EstablishmentRequestReviewPanel({
                   disabled={isSubmitting || isRejecting}
                   onClick={() => setPendingAction(null)}
                 >
-                  Cancelar
+                  {ESTABLISHMENT_REQUEST_REVIEW_PANEL.cancelLabel}
                 </Button>
               )}
             </div>

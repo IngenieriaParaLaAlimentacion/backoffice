@@ -14,6 +14,7 @@ import {
 } from "@/schemas/inviteAdmin.schema";
 import { useAuth, AuthDispatcher } from "@/context/AuthContext";
 import { resendInviteAction } from "@/services/admin.service";
+import { INVITE_USER_DIALOG } from "@/constants/users";
 
 type InviteUserDialogProps = {
   label: string;
@@ -97,7 +98,7 @@ export default function InviteUserDialog({
                 {label}
               </Dialog.Title>
               <Dialog.Description className="text-sm text-muted-foreground">
-                Se enviará un correo con el enlace de invitación.
+                {INVITE_USER_DIALOG.description}
               </Dialog.Description>
             </div>
             <Dialog.Close
@@ -113,16 +114,17 @@ export default function InviteUserDialog({
               {sendError ? (
                 <Alert variant="destructive">
                   <AlertDescription>
-                    Hubo un problema al enviar la invitación a{" "}
-                    <span className="font-medium">{sentEmail}</span>. Podés
-                    reintentar.
+                    {INVITE_USER_DIALOG.errorPrefix}{" "}
+                    <span className="font-medium">{sentEmail}</span>
+                    {INVITE_USER_DIALOG.errorSuffix}
                   </AlertDescription>
                 </Alert>
               ) : (
                 <Alert>
                   <AlertDescription>
-                    Invitación enviada a{" "}
-                    <span className="font-medium">{sentEmail}</span>.
+                    {INVITE_USER_DIALOG.successPrefix}{" "}
+                    <span className="font-medium">{sentEmail}</span>
+                    {INVITE_USER_DIALOG.successSuffix}
                   </AlertDescription>
                 </Alert>
               )}
@@ -134,7 +136,9 @@ export default function InviteUserDialog({
                 disabled={isResending}
                 onClick={handleResend}
               >
-                {isResending ? "Reenviando..." : "Reenviar invitación"}
+                {isResending
+                  ? INVITE_USER_DIALOG.resending
+                  : INVITE_USER_DIALOG.resend}
               </Button>
             </div>
           ) : (
@@ -143,9 +147,9 @@ export default function InviteUserDialog({
                 <AppTextField
                   name="email"
                   control={control}
-                  label="Email"
+                  label={INVITE_USER_DIALOG.emailLabel}
                   required
-                  placeholder="admin@ejemplo.com"
+                  placeholder={INVITE_USER_DIALOG.emailPlaceholder}
                   type="email"
                 />
                 <Button
@@ -154,7 +158,9 @@ export default function InviteUserDialog({
                   className="w-full"
                   size="lg"
                 >
-                  {isSubmitting ? "Enviando..." : "Enviar invitación"}
+                  {isSubmitting
+                    ? INVITE_USER_DIALOG.sending
+                    : INVITE_USER_DIALOG.send}
                 </Button>
               </div>
             </form>

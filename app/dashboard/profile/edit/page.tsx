@@ -17,6 +17,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { PROFILE_EDIT_PAGE } from "@/constants/users";
 
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
@@ -60,7 +61,7 @@ export default function EditProfilePage() {
       });
     } catch (err) {
       setApiError(
-        err instanceof Error ? err.message : "Error al cargar el perfil",
+        err instanceof Error ? err.message : PROFILE_EDIT_PAGE.loadError,
       );
     } finally {
       setIsLoadingProfile(false);
@@ -78,7 +79,7 @@ export default function EditProfilePage() {
       router.push("/dashboard/profile");
     } catch (err) {
       setApiError(
-        err instanceof Error ? err.message : "Error al guardar los cambios",
+        err instanceof Error ? err.message : PROFILE_EDIT_PAGE.saveError,
       );
     }
   };
@@ -88,9 +89,11 @@ export default function EditProfilePage() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">Editar perfil</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {PROFILE_EDIT_PAGE.title}
+            </h1>
             <p className="text-muted-foreground text-sm">
-              Actualizá tu información personal
+              {PROFILE_EDIT_PAGE.subtitle}
             </p>
           </div>
           <Link
@@ -102,7 +105,7 @@ export default function EditProfilePage() {
             })}
           >
             <ArrowLeft size={14} />
-            Volver
+            {PROFILE_EDIT_PAGE.back}
           </Link>
         </div>
 
@@ -120,22 +123,28 @@ export default function EditProfilePage() {
             <AppTextField
               control={control}
               name="name"
-              label="Nombre"
-              placeholder="Tu nombre"
+              label={PROFILE_EDIT_PAGE.fields.name}
+              placeholder={PROFILE_EDIT_PAGE.fields.namePlaceholder}
               required
             />
             <AppTextField
               control={control}
               name="last_name"
-              label="Apellido"
-              placeholder="Tu apellido"
+              label={PROFILE_EDIT_PAGE.fields.lastName}
+              placeholder={PROFILE_EDIT_PAGE.fields.lastNamePlaceholder}
               required
             />
 
             {readOnlyFields && (
               <>
-                <ReadOnlyField label="Email" value={readOnlyFields.email} />
-                <ReadOnlyField label="Rol" value={readOnlyFields.role} />
+                <ReadOnlyField
+                  label={PROFILE_EDIT_PAGE.fields.email}
+                  value={readOnlyFields.email}
+                />
+                <ReadOnlyField
+                  label={PROFILE_EDIT_PAGE.fields.role}
+                  value={readOnlyFields.role}
+                />
               </>
             )}
 
@@ -151,7 +160,7 @@ export default function EditProfilePage() {
               className="self-start"
             >
               {isSubmitting && <Loader2 className="animate-spin" size={14} />}
-              Guardar cambios
+              {PROFILE_EDIT_PAGE.save}
             </Button>
           </form>
         )}

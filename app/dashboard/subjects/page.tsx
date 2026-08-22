@@ -27,6 +27,13 @@ import {
   FiltersToggle,
 } from "@/components/listings/FiltersToggle";
 import { Loader2, RefreshCw, Search } from "lucide-react";
+import {
+  SUBJECT_INDIGENOUS_FILTER_LABELS,
+  SUBJECT_RURAL_FILTER_LABELS,
+  SUBJECT_SEX_FILTER_LABELS,
+  SUBJECT_SORT_LABELS,
+  SUBJECTS_PAGE,
+} from "@/constants/subjects";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -35,30 +42,21 @@ const ESTABLISHMENTS_PAGE_SIZE = 100;
 const SELECT_CLASS =
   "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-const SORT_OPTIONS: { value: SubjectSortOrder; label: string }[] = [
-  { value: "name_asc", label: "Nombre A → Z" },
-  { value: "name_desc", label: "Nombre Z → A" },
-  { value: "birth_date_asc", label: "Fecha de nacimiento (más antigua)" },
-  { value: "birth_date_desc", label: "Fecha de nacimiento (más reciente)" },
-];
+const SORT_OPTIONS: { value: SubjectSortOrder; label: string }[] = (
+  Object.keys(SUBJECT_SORT_LABELS) as SubjectSortOrder[]
+).map((value) => ({ value, label: SUBJECT_SORT_LABELS[value] }));
 
-const RURAL_OPTIONS: { value: "" | "true" | "false"; label: string }[] = [
-  { value: "", label: "Todos" },
-  { value: "true", label: "Rural" },
-  { value: "false", label: "No rural" },
-];
+const RURAL_OPTIONS: { value: "" | "true" | "false"; label: string }[] = (
+  Object.keys(SUBJECT_RURAL_FILTER_LABELS) as ("" | "true" | "false")[]
+).map((value) => ({ value, label: SUBJECT_RURAL_FILTER_LABELS[value] }));
 
-const INDIGENOUS_OPTIONS: { value: "" | "true" | "false"; label: string }[] = [
-  { value: "", label: "Todos" },
-  { value: "true", label: "Sí" },
-  { value: "false", label: "No" },
-];
+const INDIGENOUS_OPTIONS: { value: "" | "true" | "false"; label: string }[] = (
+  Object.keys(SUBJECT_INDIGENOUS_FILTER_LABELS) as ("" | "true" | "false")[]
+).map((value) => ({ value, label: SUBJECT_INDIGENOUS_FILTER_LABELS[value] }));
 
-const SEX_OPTIONS: { value: "" | "female" | "male"; label: string }[] = [
-  { value: "", label: "Todos" },
-  { value: "female", label: "Femenino" },
-  { value: "male", label: "Masculino" },
-];
+const SEX_OPTIONS: { value: "" | "female" | "male"; label: string }[] = (
+  Object.keys(SUBJECT_SEX_FILTER_LABELS) as ("" | "female" | "male")[]
+).map((value) => ({ value, label: SUBJECT_SEX_FILTER_LABELS[value] }));
 
 type Filters = {
   search: string;
@@ -148,7 +146,7 @@ export default function SubjectsPage() {
         currentFilters.birthDateFrom > currentFilters.birthDateTo
       ) {
         setSubjects([]);
-        setError("La fecha desde no puede ser posterior a la fecha hasta.");
+        setError(SUBJECTS_PAGE.measuredFromAfterToError);
         setIsLoading(false);
         return;
       }
@@ -177,9 +175,7 @@ export default function SubjectsPage() {
         setSubjects(data.items);
         setTotalPages(data.total_pages);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Error al cargar sujetos",
-        );
+        setError(err instanceof Error ? err.message : SUBJECTS_PAGE.loadError);
       } finally {
         setIsLoading(false);
       }
@@ -212,8 +208,12 @@ export default function SubjectsPage() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">Sujetos</h1>
-            <p className="text-muted-foreground text-sm">Sujetos registrados</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {SUBJECTS_PAGE.title}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {SUBJECTS_PAGE.subtitle}
+            </p>
           </div>
           <Button
             size="sm"
@@ -222,7 +222,7 @@ export default function SubjectsPage() {
             onClick={() => setReloadKey((k) => k + 1)}
           >
             <RefreshCw size={14} />
-            Actualizar
+            {SUBJECTS_PAGE.refresh}
           </Button>
         </div>
 
@@ -232,7 +232,9 @@ export default function SubjectsPage() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">Buscar</label>
+              <label className="text-xs text-muted-foreground">
+                {SUBJECTS_PAGE.search}
+              </label>
               <div className="relative w-full sm:w-64">
                 <Search
                   className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
@@ -241,7 +243,7 @@ export default function SubjectsPage() {
                 <Input
                   value={filters.search}
                   onChange={(e) => updateFilter("search", e.target.value)}
-                  placeholder="Nombre, apellido o documento"
+                  placeholder={SUBJECTS_PAGE.searchPlaceholder}
                   className="pl-8"
                 />
               </div>
@@ -249,7 +251,7 @@ export default function SubjectsPage() {
 
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs text-muted-foreground">
-                Ordenar por
+                {SUBJECTS_PAGE.sortLabel}
               </label>
               <select
                 value={sortOrder}
@@ -279,12 +281,12 @@ export default function SubjectsPage() {
           <FilterPanel open={filtersOpen}>
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs text-muted-foreground">
-                Fecha de nacimiento
+                {SUBJECTS_PAGE.filters.birthDate}
               </label>
               <div className="flex items-center gap-2">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] text-muted-foreground">
-                    Desde
+                    {SUBJECTS_PAGE.filters.from}
                   </span>
                   <Input
                     type="date"
@@ -298,7 +300,7 @@ export default function SubjectsPage() {
                 <span className="mt-3 text-muted-foreground">–</span>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] text-muted-foreground">
-                    Hasta
+                    {SUBJECTS_PAGE.filters.to}
                   </span>
                   <Input
                     type="date"
@@ -314,7 +316,7 @@ export default function SubjectsPage() {
 
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs text-muted-foreground">
-                Establecimiento
+                {SUBJECTS_PAGE.filters.establishment}
               </label>
               <select
                 value={filters.establishmentId}
@@ -323,7 +325,9 @@ export default function SubjectsPage() {
                 }
                 className={`${SELECT_CLASS} w-full sm:w-48`}
               >
-                <option value="">Todos</option>
+                <option value="">
+                  {SUBJECTS_PAGE.filters.allEstablishments}
+                </option>
                 {establishments.map((est) => (
                   <option key={est.id} value={est.id}>
                     {est.name}
@@ -334,7 +338,7 @@ export default function SubjectsPage() {
 
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs text-muted-foreground">
-                Zona rural
+                {SUBJECTS_PAGE.filters.rural}
               </label>
               <select
                 value={filters.isRural}
@@ -353,7 +357,7 @@ export default function SubjectsPage() {
 
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs text-muted-foreground">
-                Población indígena
+                {SUBJECTS_PAGE.filters.indigenous}
               </label>
               <select
                 value={filters.isIndigenous}
@@ -374,7 +378,9 @@ export default function SubjectsPage() {
             </div>
 
             <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">Sexo</label>
+              <label className="text-xs text-muted-foreground">
+                {SUBJECTS_PAGE.filters.sex}
+              </label>
               <select
                 value={filters.sex}
                 onChange={(e) =>
@@ -404,7 +410,7 @@ export default function SubjectsPage() {
           </div>
         ) : subjects.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-            No hay sujetos
+            {SUBJECTS_PAGE.noSubjects}
           </div>
         ) : (
           <>
@@ -412,13 +418,17 @@ export default function SubjectsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
-                    <th className="px-4 py-3 font-medium">Nombre</th>
-                    <th className="px-4 py-3 font-medium">Documento</th>
                     <th className="px-4 py-3 font-medium">
-                      Fecha de nacimiento
+                      {SUBJECTS_PAGE.columns.name}
                     </th>
                     <th className="px-4 py-3 font-medium">
-                      Último relevamiento
+                      {SUBJECTS_PAGE.columns.document}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {SUBJECTS_PAGE.columns.birthDate}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
+                      {SUBJECTS_PAGE.columns.lastMeasurement}
                     </th>
                     <ChevronHeaderCell />
                   </tr>

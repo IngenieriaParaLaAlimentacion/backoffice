@@ -17,6 +17,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import {
+  CREATE_ESTABLISHMENT_PAGE,
+  ESTABLISHMENT_FORM_FIELDS,
+} from "@/constants/establishments";
 
 export default function CreateEstablishmentPage() {
   const router = useRouter();
@@ -49,7 +53,7 @@ export default function CreateEstablishmentPage() {
       setApiError(
         err instanceof Error
           ? err.message
-          : "Error al crear el establecimiento",
+          : CREATE_ESTABLISHMENT_PAGE.submitError,
       );
     }
   };
@@ -60,10 +64,10 @@ export default function CreateEstablishmentPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">
-              Nuevo establecimiento
+              {CREATE_ESTABLISHMENT_PAGE.title}
             </h1>
             <p className="text-muted-foreground text-sm">
-              Completá los datos del establecimiento
+              {CREATE_ESTABLISHMENT_PAGE.subtitle}
             </p>
           </div>
           <Link
@@ -75,7 +79,7 @@ export default function CreateEstablishmentPage() {
             })}
           >
             <ArrowLeft size={14} />
-            Volver
+            {CREATE_ESTABLISHMENT_PAGE.back}
           </Link>
         </div>
 
@@ -88,29 +92,29 @@ export default function CreateEstablishmentPage() {
           <AppTextField
             control={control}
             name="name"
-            label="Nombre"
-            placeholder="Ej: Comedor Central Norte"
+            label={ESTABLISHMENT_FORM_FIELDS.name.label}
+            placeholder={CREATE_ESTABLISHMENT_PAGE.namePlaceholder}
             required
           />
           <AppTextField
             control={control}
             name="formatted_address"
-            label="Dirección"
-            placeholder="Ej: Av. Corrientes 1234, CABA"
+            label={ESTABLISHMENT_FORM_FIELDS.address.label}
+            placeholder={ESTABLISHMENT_FORM_FIELDS.address.placeholder}
             required
           />
           <AppTextField
             control={control}
             name="city"
-            label="Ciudad"
-            placeholder="Ej: Buenos Aires"
+            label={ESTABLISHMENT_FORM_FIELDS.city.label}
+            placeholder={ESTABLISHMENT_FORM_FIELDS.city.placeholder}
             required
           />
           <AppTextField
             control={control}
             name="province"
-            label="Provincia"
-            placeholder="Ej: CABA"
+            label={ESTABLISHMENT_FORM_FIELDS.province.label}
+            placeholder={ESTABLISHMENT_FORM_FIELDS.province.placeholder}
             required
           />
           {apiError && (
@@ -121,7 +125,7 @@ export default function CreateEstablishmentPage() {
 
           <Button type="submit" disabled={isSubmitting} className="self-start">
             {isSubmitting && <Loader2 className="animate-spin" size={14} />}
-            Crear establecimiento
+            {CREATE_ESTABLISHMENT_PAGE.submitButton}
           </Button>
         </form>
       </Card>
