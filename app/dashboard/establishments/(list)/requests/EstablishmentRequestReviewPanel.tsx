@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { StatusCodes } from "http-status-codes";
 import { Dialog } from "@base-ui/react/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -99,7 +100,7 @@ export default function EstablishmentRequestReviewPanel({
       );
       onApproved(result);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
+      if (err instanceof ApiError && err.status === StatusCodes.CONFLICT) {
         onStale();
         return;
       }
@@ -121,7 +122,7 @@ export default function EstablishmentRequestReviewPanel({
       );
       onRejected();
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
+      if (err instanceof ApiError && err.status === StatusCodes.CONFLICT) {
         onStale();
         return;
       }
