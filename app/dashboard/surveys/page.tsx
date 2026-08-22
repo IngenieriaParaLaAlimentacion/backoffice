@@ -110,7 +110,13 @@ export default function SurveysPage() {
     setDeletingId(surveyId);
     try {
       await deleteSurveyAction(makeAuthorizedRequest, surveyId);
-      await refetch();
+      // Deleting the last item on a page beyond the first would otherwise
+      // refetch a now out-of-range page; step back instead.
+      if (surveys.length === 1 && page > 1) {
+        setPage((p) => p - 1);
+      } else {
+        await refetch();
+      }
     } catch (err) {
       setActionError(
         err instanceof Error ? err.message : SURVEYS_PAGE.deleteError,
