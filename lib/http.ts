@@ -1,3 +1,4 @@
+import { StatusCodes } from "http-status-codes";
 import {
   ApiHeaders,
   ApiMethod,
@@ -88,7 +89,7 @@ export async function apiRequest<TRequest = object, TResponse = undefined>(
 ): Promise<ApiResponse<TResponse>> {
   let response = await makeRequest(path, options);
 
-  if (response.status === 401 && options?.auth) {
+  if (response.status === StatusCodes.UNAUTHORIZED && options?.auth) {
     const {
       tokens: { refreshToken },
       onRefresh,

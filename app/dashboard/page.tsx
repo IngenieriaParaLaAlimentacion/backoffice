@@ -3,28 +3,104 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Building2, Calendar, FileText, Loader2 } from "lucide-react";
+import {
+  Building,
+  Building2,
+  Calendar,
+  FileText,
+  Loader2,
+  UserCog,
+  UserPlus,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getMeAction } from "@/services/user.service";
 import { getDashboardIndicatorsAction } from "@/services/dashboard.service";
+import {
+  listPendingEstablishmentAccessAction,
+  listUsersAction,
+} from "@/services/admin.service";
+import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
 import { ProfileResponse } from "@/types/user";
 import { DashboardIndicators } from "@/types/survey";
 import { navItems } from "@/components/SideBar";
 import { Card } from "@/components/ui/card";
 import { DASHBOARD_INDICATORS } from "@/constants/surveys";
+import { UserStatus } from "@/types/establishment";
+import { usePendingCount } from "@/hooks/usePendingCount";
 
 // Quick-access cards mirror the sidebar, minus the dashboard self-link.
 const accessItems = navItems.filter((item) => item.href !== "/dashboard");
 
-function formatDateTime(value: string) {
+const PENDING_VALIDATION_STATUS: UserStatus = "pending_validation";
+const FIELD_WORKER_ROLE = "field_worker";
+// "Just fetch the total" — smallest page that still returns the count.
+const COUNT_ONLY_QUERY = { page: 1, page_size: 1 } as const;
+
+function formatDate(value: string) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   const day = String(d.getUTCDate()).padStart(2, "0");
   const month = String(d.getUTCMonth() + 1).padStart(2, "0");
   const year = d.getUTCFullYear();
-  const hours = String(d.getUTCHours()).padStart(2, "0");
-  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+  return `${day}/${month}/${year}`;
+}
+
+function IndicatorCard({
+  icon,
+  value,
+  label,
+  href,
+  emphasize,
+}: {
+  icon: React.ReactNode;
+  value: React.ReactNode;
+  label: string;
+  href?: string;
+  /** Draws attention with the app's destructive styling — use when there's at least 1 pending item. */
+  emphasize?: boolean;
+}) {
+  const content = (
+    <>
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+          emphasize
+            ? "bg-destructive/15 text-destructive"
+            : "bg-primary/10 text-primary"
+        }`}
+      >
+        {icon}
+      </span>
+      <div className="flex flex-col">
+        <span
+          className={`text-xl font-bold ${emphasize ? "text-destructive" : ""}`}
+        >
+          {value}
+        </span>
+        <span className="text-xs text-muted-foreground">{label}</span>
+      </div>
+    </>
+  );
+
+  const baseClass = "flex items-center gap-3 rounded-xl border p-3";
+  const toneClass = emphasize
+    ? "border-destructive/30 bg-destructive/5"
+    : "border-border bg-card";
+
+  if (href) {
+    const hoverClass = emphasize
+      ? "hover:border-destructive/50 hover:bg-destructive/10"
+      : "hover:border-primary/40 hover:bg-accent";
+    return (
+      <Link
+        href={href}
+        className={`${baseClass} ${toneClass} transition-colors ${hoverClass}`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={`${baseClass} ${toneClass}`}>{content}</div>;
 }
 
 export default function DashboardPage() {
@@ -35,6 +111,49 @@ export default function DashboardPage() {
   );
   const [indicatorsLoading, setIndicatorsLoading] = useState(true);
   const [indicatorsError, setIndicatorsError] = useState<string | null>(null);
+
+  const {
+    count: pendingUserRegistrations,
+    loading: pendingUserRegistrationsLoading,
+    fetch: fetchPendingUserRegistrations,
+  } = usePendingCount(
+    useCallback(async () => {
+      const data = await listUsersAction(makeAuthorizedRequest, {
+        status: PENDING_VALIDATION_STATUS,
+        role: FIELD_WORKER_ROLE,
+        ...COUNT_ONLY_QUERY,
+      });
+      return data.total;
+    }, [makeAuthorizedRequest]),
+  );
+
+  const {
+    count: pendingEstablishmentCreations,
+    loading: pendingEstablishmentCreationsLoading,
+    fetch: fetchPendingEstablishmentCreations,
+  } = usePendingCount(
+    useCallback(async () => {
+      const data = await listEstablishmentRequestsAction(
+        makeAuthorizedRequest,
+        COUNT_ONLY_QUERY,
+      );
+      return data.total;
+    }, [makeAuthorizedRequest]),
+  );
+
+  const {
+    count: pendingEstablishmentAccess,
+    loading: pendingEstablishmentAccessLoading,
+    fetch: fetchPendingEstablishmentAccess,
+  } = usePendingCount(
+    useCallback(async () => {
+      const data = await listPendingEstablishmentAccessAction(
+        makeAuthorizedRequest,
+        COUNT_ONLY_QUERY,
+      );
+      return data.total_pending_establishments;
+    }, [makeAuthorizedRequest]),
+  );
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -63,7 +182,16 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchProfile();
     fetchIndicators();
-  }, [fetchProfile, fetchIndicators]);
+    fetchPendingUserRegistrations();
+    fetchPendingEstablishmentCreations();
+    fetchPendingEstablishmentAccess();
+  }, [
+    fetchProfile,
+    fetchIndicators,
+    fetchPendingUserRegistrations,
+    fetchPendingEstablishmentCreations,
+    fetchPendingEstablishmentAccess,
+  ]);
 
   return (
     <div className="flex flex-1 p-4">
@@ -106,48 +234,84 @@ export default function DashboardPage() {
               {indicatorsError}
             </div>
           ) : indicators ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <FileText size={20} />
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold">
-                    {indicators.response_count}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {DASHBOARD_INDICATORS.responseCount}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Building2 size={20} />
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold">
-                    {indicators.participating_establishments_count}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {DASHBOARD_INDICATORS.establishmentsCount}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Calendar size={20} />
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold">
-                    {indicators.last_event_at
-                      ? formatDateTime(indicators.last_event_at)
-                      : DASHBOARD_INDICATORS.noDate}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {DASHBOARD_INDICATORS.lastEvent}
-                  </span>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <IndicatorCard
+                icon={<FileText size={18} />}
+                value={indicators.response_count}
+                label={DASHBOARD_INDICATORS.responseCount}
+              />
+              <IndicatorCard
+                icon={<Building2 size={18} />}
+                value={indicators.participating_establishments_count}
+                label={DASHBOARD_INDICATORS.establishmentsCount}
+              />
+              <IndicatorCard
+                icon={<Calendar size={18} />}
+                value={
+                  indicators.last_event_at
+                    ? formatDate(indicators.last_event_at)
+                    : DASHBOARD_INDICATORS.noDate
+                }
+                label={DASHBOARD_INDICATORS.lastEvent}
+              />
+              <IndicatorCard
+                icon={<UserPlus size={18} />}
+                value={
+                  pendingUserRegistrationsLoading ? (
+                    <Loader2
+                      className="animate-spin text-muted-foreground"
+                      size={18}
+                    />
+                  ) : (
+                    (pendingUserRegistrations ??
+                    DASHBOARD_INDICATORS.notAvailable)
+                  )
+                }
+                label={DASHBOARD_INDICATORS.pendingUserRegistrations}
+                href="/dashboard/requests"
+                emphasize={
+                  !pendingUserRegistrationsLoading && !!pendingUserRegistrations
+                }
+              />
+              <IndicatorCard
+                icon={<UserCog size={18} />}
+                value={
+                  pendingEstablishmentAccessLoading ? (
+                    <Loader2
+                      className="animate-spin text-muted-foreground"
+                      size={18}
+                    />
+                  ) : (
+                    (pendingEstablishmentAccess ??
+                    DASHBOARD_INDICATORS.notAvailable)
+                  )
+                }
+                label={DASHBOARD_INDICATORS.pendingEstablishmentAccess}
+                emphasize={
+                  !pendingEstablishmentAccessLoading &&
+                  !!pendingEstablishmentAccess
+                }
+              />
+              <IndicatorCard
+                icon={<Building size={18} />}
+                value={
+                  pendingEstablishmentCreationsLoading ? (
+                    <Loader2
+                      className="animate-spin text-muted-foreground"
+                      size={18}
+                    />
+                  ) : (
+                    (pendingEstablishmentCreations ??
+                    DASHBOARD_INDICATORS.notAvailable)
+                  )
+                }
+                label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
+                href="/dashboard/establishments/requests"
+                emphasize={
+                  !pendingEstablishmentCreationsLoading &&
+                  !!pendingEstablishmentCreations
+                }
+              />
             </div>
           ) : null}
         </div>

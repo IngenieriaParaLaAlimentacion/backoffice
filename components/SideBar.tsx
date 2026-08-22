@@ -32,32 +32,32 @@ export const navItems = [
   },
   {
     label: "Solicitudes",
-    href: "/dashboard/solicitudes",
+    href: "/dashboard/requests",
     icon: <ClipboardList size={20} />,
   },
   {
     label: "Usuarios",
-    href: "/dashboard/usuarios",
+    href: "/dashboard/users",
     icon: <Users size={20} />,
   },
   {
     label: "Establecimientos",
-    href: "/dashboard/establecimientos",
+    href: "/dashboard/establishments",
     icon: <Building2 size={20} />,
   },
   {
     label: "Sujetos",
-    href: "/dashboard/sujetos",
+    href: "/dashboard/subjects",
     icon: <Users size={20} />,
   },
   {
     label: "Mediciones",
-    href: "/dashboard/mediciones-antropometricas",
+    href: "/dashboard/anthropometric-measurements",
     icon: <Ruler size={20} />,
   },
   {
     label: "Encuestas",
-    href: "/dashboard/encuestas",
+    href: "/dashboard/surveys",
     icon: <ListChecks size={20} />,
   },
 ];
@@ -148,7 +148,7 @@ export default function SideBar() {
 
       <div className="px-2 pb-2">
         <SideBarItem
-          href="/dashboard/perfil"
+          href="/dashboard/profile"
           label="Perfil"
           icon={<User size={20} />}
           isSidebarOpen={isSidebarOpen}

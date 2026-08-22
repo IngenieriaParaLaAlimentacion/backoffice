@@ -67,7 +67,7 @@ export const ESTABLISHMENT_SURVEY_RESPONSES: PaginatedSurveyResponses = {
         province: "Córdoba",
       },
       subject: null,
-      submitted_by: { id: USER_ID, name: "Juan Pérez" },
+      submitted_by: { id: USER_ID, name: "Juan", last_name: "Pérez" },
       score_fies: 4,
     },
     {
@@ -83,7 +83,8 @@ export const ESTABLISHMENT_SURVEY_RESPONSES: PaginatedSurveyResponses = {
       subject: null,
       submitted_by: {
         id: "b1c2d3e4-0000-0000-0000-000000000002",
-        name: "María López",
+        name: "María",
+        last_name: "López",
       },
       score_fies: 2,
     },
@@ -110,7 +111,7 @@ export const SUBJECT_SURVEY_RESPONSES: PaginatedSurveyResponses = {
         last_name: "Gómez",
         birth_date: "1990-05-02",
       },
-      submitted_by: { id: USER_ID, name: "Juan Pérez" },
+      submitted_by: { id: USER_ID, name: "Juan", last_name: "Pérez" },
       score_fies: 3,
     },
     {
@@ -126,7 +127,7 @@ export const SUBJECT_SURVEY_RESPONSES: PaginatedSurveyResponses = {
         last_name: "Quiroga",
         birth_date: "1985-11-17",
       },
-      submitted_by: { id: USER_ID, name: "Juan Pérez" },
+      submitted_by: { id: USER_ID, name: "Juan", last_name: "Pérez" },
       score_fies: null,
     },
   ],
@@ -147,7 +148,8 @@ export const ANONYMOUS_SURVEY_RESPONSES: PaginatedSurveyResponses = {
       subject: null,
       submitted_by: {
         id: "b1c2d3e4-0000-0000-0000-000000000003",
-        name: "Carlos García",
+        name: "Carlos",
+        last_name: "García",
       },
       score_fies: 6,
     },

@@ -22,6 +22,8 @@ export const APPROVE_ESTABLISHMENTS_ENDPOINT = (userId: string) =>
   `/api/v1/admin/field-worker/${userId}/establishments/approve`;
 export const REJECT_ESTABLISHMENTS_ENDPOINT = (userId: string) =>
   `/api/v1/admin/field-worker/${userId}/establishments/reject`;
+export const PENDING_ESTABLISHMENT_ACCESS_ENDPOINT =
+  "/api/v1/admin/field-worker/establishments/pending";
 export const REJECT_FIELD_WORKER_ENDPOINT = (userId: string) =>
   `/api/v1/admin/field-worker/${userId}/reject`;
 export const ADMIN_SUBJECT_DETAIL_ENDPOINT = (subjectId: string) =>

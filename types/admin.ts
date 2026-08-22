@@ -50,6 +50,10 @@ export type PaginatedUsersResponse = {
   total_pages: number;
 };
 
+export type PendingEstablishmentAccessResponse = PaginatedUsersResponse & {
+  total_pending_establishments: number;
+};
+
 export type EstablishmentAccessRequest = {
   establishment_ids: string[];
 };

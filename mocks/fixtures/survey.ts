@@ -18,6 +18,7 @@ export const DEFAULT_SURVEYS_RESPONSE: PaginatedSurveysResponse = {
       is_active: true,
       created_by_id: CREATED_BY,
       question_count: 8,
+      response_count: 47,
       created_at: "2026-03-10T14:00:00Z",
     },
     {
@@ -27,6 +28,7 @@ export const DEFAULT_SURVEYS_RESPONSE: PaginatedSurveysResponse = {
       is_active: true,
       created_by_id: CREATED_BY,
       question_count: 12,
+      response_count: 2,
       created_at: "2026-04-22T09:30:00Z",
     },
     {
@@ -36,6 +38,7 @@ export const DEFAULT_SURVEYS_RESPONSE: PaginatedSurveysResponse = {
       is_active: false,
       created_by_id: CREATED_BY,
       question_count: 5,
+      response_count: 0,
       created_at: "2026-05-05T18:45:00Z",
     },
   ],

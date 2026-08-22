@@ -81,7 +81,7 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
 
           <div className="px-2 pb-2">
             <SideBarItem
-              href="/dashboard/perfil"
+              href="/dashboard/profile"
               label="Perfil"
               icon={<User size={20} />}
               isSidebarOpen

@@ -6,6 +6,7 @@ import {
   INVITE_ADMIN_ENDPOINT,
   INVITE_ANALYST_ENDPOINT,
   LIST_USERS_ENDPOINT,
+  PENDING_ESTABLISHMENT_ACCESS_ENDPOINT,
   REJECT_ESTABLISHMENTS_ENDPOINT,
   RESEND_INVITE_ENDPOINT,
 } from "@/constants/api";
@@ -14,6 +15,7 @@ import {
   EstablishmentAccessRequest,
   InviteAdminResponse,
   PaginatedUsersResponse,
+  PendingEstablishmentAccessResponse,
   UserAccessRequest,
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
@@ -47,6 +49,37 @@ export const listUsersAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   return res.data as PaginatedUsersResponse;
+};
+
+type ListPendingEstablishmentAccessParams = {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  establishment_id?: string;
+};
+
+export const listPendingEstablishmentAccessAction = async (
+  dispatcher: AuthDispatcher,
+  params?: ListPendingEstablishmentAccessParams,
+) => {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.page_size) query.set("page_size", String(params.page_size));
+  if (params?.search) query.set("search", params.search);
+  if (params?.establishment_id)
+    query.set("establishment_id", params.establishment_id);
+
+  const path = query.size
+    ? `${PENDING_ESTABLISHMENT_ACCESS_ENDPOINT}?${query.toString()}`
+    : PENDING_ESTABLISHMENT_ACCESS_ENDPOINT;
+
+  const res = await dispatcher<undefined, PendingEstablishmentAccessResponse>(
+    path,
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+
+  return res.data as PendingEstablishmentAccessResponse;
 };
 
 export const getUserAction = async (
