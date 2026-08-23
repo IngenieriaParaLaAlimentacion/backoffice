@@ -47,12 +47,14 @@ export default function UserRequestReviewPanel({
   // First click arms the action (shows its confirmation message); a second
   // click on the same button submits it.
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [isAccountActivated, setIsAccountActivated] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     setDecisions({});
     setPanelError(null);
     setPendingAction(null);
+    setIsAccountActivated(false);
   }, [user]);
 
   const setDecision = (establishmentId: string, decision: Decision) => {
@@ -77,13 +79,20 @@ export default function UserRequestReviewPanel({
 
     setIsApplying(true);
     setPanelError(null);
+    // Local mirror of the state: the catch below needs the value this attempt
+    // reached, not the one captured when the closure was created.
+    let activated = isAccountActivated;
     try {
-      // Activates the account; undecided establishments stay pending.
-      await approveFieldWorkerAction(
-        user.id,
-        approvedIds,
-        makeAuthorizedRequest,
-      );
+      if (!activated) {
+        // Activates the account; undecided establishments stay pending.
+        await approveFieldWorkerAction(
+          user.id,
+          approvedIds,
+          makeAuthorizedRequest,
+        );
+        activated = true;
+        setIsAccountActivated(true);
+      }
       // The endpoint requires a non-empty list.
       if (rejectedIds.length > 0) {
         await rejectEstablishmentsAction(
@@ -94,8 +103,11 @@ export default function UserRequestReviewPanel({
       }
       onResolved(user.id);
     } catch (err) {
+      const detail = err instanceof Error ? err.message : null;
       setPanelError(
-        err instanceof Error ? err.message : PENDING_REQUESTS_PAGE.applyError,
+        activated
+          ? `${PENDING_REQUESTS_PAGE.partialApplyError}${detail ? ` (${detail})` : ""}`
+          : (detail ?? PENDING_REQUESTS_PAGE.applyError),
       );
     } finally {
       setIsApplying(false);
@@ -141,7 +153,9 @@ export default function UserRequestReviewPanel({
     <Dialog.Root
       open={!!user}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) onClose();
+        if (nextOpen) return;
+        if (isAccountActivated && user) onResolved(user.id);
+        else onClose();
       }}
     >
       <Dialog.Portal>
@@ -233,7 +247,7 @@ export default function UserRequestReviewPanel({
                   type="button"
                   variant="outline"
                   className="flex-1 text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                  disabled={isBusy}
+                  disabled={isBusy || isAccountActivated}
                   onClick={handleRejectClick}
                 >
                   {isRejecting ? (

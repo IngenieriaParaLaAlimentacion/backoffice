@@ -27,6 +27,8 @@ export const PENDING_REQUESTS_PAGE = {
   subtitle: "Relevadores pendientes de validación",
   loadError: "Error al cargar solicitudes",
   applyError: "Error al aplicar los cambios",
+  partialApplyError:
+    "La cuenta se activó, pero no se pudieron rechazar algunos establecimientos. Reintentá o resolvelos desde la pestaña Establecimientos.",
   rejectError: "Error al rechazar la solicitud",
   noRequests: "No hay solicitudes pendientes",
   columns: {
