@@ -8,6 +8,7 @@ import {
   LIST_USERS_ENDPOINT,
   PENDING_ESTABLISHMENT_ACCESS_ENDPOINT,
   REJECT_ESTABLISHMENTS_ENDPOINT,
+  REJECT_FIELD_WORKER_ENDPOINT,
   RESEND_INVITE_ENDPOINT,
 } from "@/constants/api";
 import {
@@ -172,6 +173,22 @@ export const resendInviteAction = async (
 ) => {
   const res = await dispatcher<undefined, undefined>(
     RESEND_INVITE_ENDPOINT(userId),
+    { method: "PATCH" },
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+};
+
+/**
+ * Rejects every establishment requested by the field worker and leaves the
+ * account inactive. Takes no body: the backend resolves all of them at once.
+ */
+export const rejectFieldWorkerAction = async (
+  userId: string,
+  dispatcher: AuthDispatcher,
+) => {
+  const res = await dispatcher<undefined, undefined>(
+    REJECT_FIELD_WORKER_ENDPOINT(userId),
     { method: "PATCH" },
   );
 

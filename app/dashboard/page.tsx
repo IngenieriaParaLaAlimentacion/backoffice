@@ -287,6 +287,7 @@ export default function DashboardPage() {
                   )
                 }
                 label={DASHBOARD_INDICATORS.pendingEstablishmentAccess}
+                href="/dashboard/requests/establishments"
                 emphasize={
                   !pendingEstablishmentAccessLoading &&
                   !!pendingEstablishmentAccess

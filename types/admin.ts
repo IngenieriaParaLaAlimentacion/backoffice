@@ -26,6 +26,7 @@ export type UserAdminView = {
   last_name: string;
   role: string;
   status: string;
+  is_email_verified: boolean;
   establishments: EstablishmentResponse[];
 };
 
