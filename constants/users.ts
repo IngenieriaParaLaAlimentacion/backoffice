@@ -41,6 +41,7 @@ export const PENDING_REQUESTS_PAGE = {
   establishmentsCount: (count: number) =>
     `${count} establecimiento${count === 1 ? "" : "s"}`,
   defaultDialogTitle: "Solicitud",
+  emailNotVerified: "Email sin verificar",
   establishmentsIntro:
     "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes y se resuelven en la pestaña Establecimientos.",
   noEstablishmentsRequested: "No solicitó acceso a ningún establecimiento.",

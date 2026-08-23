@@ -171,6 +171,11 @@ export default function UserRequestReviewPanel({
               <Dialog.Description className="text-muted-foreground text-sm break-all">
                 {user?.email}
               </Dialog.Description>
+              {user && !user.is_email_verified && (
+                <span className="inline-block self-start rounded-full border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-xs text-amber-600">
+                  {PENDING_REQUESTS_PAGE.emailNotVerified}
+                </span>
+              )}
             </div>
             <Dialog.Close
               render={<button type="button" />}
