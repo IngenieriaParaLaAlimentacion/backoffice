@@ -63,6 +63,9 @@ export default function UserRequestReviewPanel({
 
   const hasEstablishments = !!user?.establishments.length;
   const isBusy = isApplying || isRejecting;
+  // Rejecting the worker discards the per-establishment decisions and rejects
+  // every establishment, so they are dimmed out while that action is armed.
+  const isRejectArmed = pendingAction === "reject";
 
   const undecidedCount = useMemo(() => {
     if (!user) return 0;
@@ -187,7 +190,11 @@ export default function UserRequestReviewPanel({
 
           <Separator />
 
-          <p className="text-muted-foreground text-sm">
+          <p
+            className={`text-muted-foreground text-sm transition-opacity ${
+              isRejectArmed ? "opacity-40" : ""
+            }`}
+          >
             {hasEstablishments
               ? PENDING_REQUESTS_PAGE.establishmentsIntro
               : PENDING_REQUESTS_PAGE.noEstablishmentsRequested}
@@ -203,16 +210,22 @@ export default function UserRequestReviewPanel({
             <>
               {hasEstablishments && (
                 <>
-                  <EstablishmentDecisionList
-                    establishments={user.establishments}
-                    decisions={decisions}
-                    onDecide={setDecision}
-                    disabled={isBusy}
-                  />
+                  <div
+                    className={`transition-opacity ${
+                      isRejectArmed ? "opacity-40" : ""
+                    }`}
+                  >
+                    <EstablishmentDecisionList
+                      establishments={user.establishments}
+                      decisions={decisions}
+                      onDecide={setDecision}
+                      disabled={isBusy || isRejectArmed}
+                    />
+                  </div>
 
                   <Separator />
 
-                  {undecidedCount > 0 && (
+                  {undecidedCount > 0 && !isRejectArmed && (
                     <p className="text-muted-foreground text-xs">
                       {PENDING_REQUESTS_PAGE.pendingSummary(undecidedCount)}
                     </p>
