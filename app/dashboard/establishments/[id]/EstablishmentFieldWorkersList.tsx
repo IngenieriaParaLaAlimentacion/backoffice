@@ -20,6 +20,7 @@ const RELATION_STATUS_CLASS: Record<RelationStatus, string> = {
   approved: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
   pending: "bg-amber-500/15 text-amber-600 border-amber-500/30",
   rejected: "bg-destructive/15 text-destructive border-destructive/30",
+  revoked: "bg-muted text-muted-foreground border-border",
 };
 
 const PILL_CLASS = "inline-block rounded-full border px-2 py-0.5 text-xs";
@@ -53,7 +54,7 @@ export default function EstablishmentFieldWorkersList({
 
   const columns = COPY.fieldWorkerColumns;
 
-  const { revokingId, actionError, removedIds, revoke } = useRevokeAccess(
+  const { revokingId, actionError, revoke } = useRevokeAccess(
     {
       confirmDialog: COPY.removeAccessConfirmDialog,
       conflict: COPY.removeAccessConflict,
@@ -64,10 +65,6 @@ export default function EstablishmentFieldWorkersList({
 
   const handleRemoveAccess = (workerId: string) =>
     revoke(workerId, workerId, establishmentId);
-
-  const visibleFieldWorkers = fieldWorkers.filter(
-    (worker) => !removedIds.has(worker.id),
-  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -126,7 +123,7 @@ export default function EstablishmentFieldWorkersList({
         <div className="flex items-center justify-center py-8">
           <Loader2 className="animate-spin text-muted-foreground" size={28} />
         </div>
-      ) : visibleFieldWorkers.length === 0 ? (
+      ) : fieldWorkers.length === 0 ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
           {COPY.noFieldWorkers}
         </div>
@@ -156,7 +153,7 @@ export default function EstablishmentFieldWorkersList({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {visibleFieldWorkers.map((worker) => (
+                {fieldWorkers.map((worker) => (
                   <tr
                     key={worker.id}
                     className="bg-card transition-colors hover:bg-muted/30"
@@ -206,7 +203,7 @@ export default function EstablishmentFieldWorkersList({
           </div>
 
           <div className="flex flex-col gap-2 md:hidden">
-            {visibleFieldWorkers.map((worker) => (
+            {fieldWorkers.map((worker) => (
               <div
                 key={worker.id}
                 className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3"

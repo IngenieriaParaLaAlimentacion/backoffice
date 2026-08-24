@@ -35,15 +35,14 @@ export default function UserDetailPanel({
 }: UserDetailPanelProps) {
   const { user, isLoading, error, refetch } = useUserDetail(userId);
 
-  const { revokingId, actionError, removedIds, revoke, reset } =
-    useRevokeAccess(
-      {
-        confirmDialog: USER_DETAIL_PANEL.removeAccessConfirmDialog,
-        conflict: USER_DETAIL_PANEL.removeAccessConflict,
-        genericError: USER_DETAIL_PANEL.removeAccessError,
-      },
-      refetch,
-    );
+  const { revokingId, actionError, revoke, reset } = useRevokeAccess(
+    {
+      confirmDialog: USER_DETAIL_PANEL.removeAccessConfirmDialog,
+      conflict: USER_DETAIL_PANEL.removeAccessConflict,
+      genericError: USER_DETAIL_PANEL.removeAccessError,
+    },
+    refetch,
+  );
 
   useEffect(() => {
     reset();
@@ -53,10 +52,6 @@ export default function UserDetailPanel({
     if (!user) return;
     revoke(establishmentId, user.id, establishmentId);
   };
-
-  const visibleEstablishments = (user?.establishments ?? []).filter(
-    (est) => !removedIds.has(est.id),
-  );
 
   return (
     <Dialog.Root
@@ -147,13 +142,13 @@ export default function UserDetailPanel({
                   value={user.description}
                 />
               )}
-              {visibleEstablishments.length > 0 && (
+              {user.establishments && user.establishments.length > 0 && (
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs text-muted-foreground">
                     {USER_DETAIL_PANEL.fields.establishments}
                   </span>
                   <div className="flex flex-col gap-2">
-                    {visibleEstablishments.map((est) => (
+                    {user.establishments.map((est) => (
                       <div
                         key={est.id}
                         className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"

@@ -35,12 +35,14 @@ export const RELATION_STATUS_OPTIONS: {
   { value: "approved", label: "Aprobados" },
   { value: "pending", label: "Pendientes" },
   { value: "rejected", label: "Rechazados" },
+  { value: "revoked", label: "Revocados" },
 ];
 
 export const RELATION_STATUS_LABELS: Record<RelationStatus, string> = {
   approved: "Aprobado",
   pending: "Pendiente",
   rejected: "Rechazado",
+  revoked: "Revocado",
 };
 
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
