@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { StatusCodes } from "http-status-codes";
 import { Dialog } from "@base-ui/react/dialog";
-import { useForm } from "react-hook-form";
+import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -19,9 +19,11 @@ import {
   createEstablishmentSchema,
   CreateEstablishmentInput,
 } from "@/schemas/establishment.schema";
+import { PlaceDetails } from "@/lib/geo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { Check, Loader2, X } from "lucide-react";
 import {
   ESTABLISHMENT_FORM_FIELDS,
@@ -61,11 +63,13 @@ export default function EstablishmentRequestReviewPanel({
   // one is armed re-arms that one instead, so switching also needs its own
   // confirmation.
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceDetails | null>(null);
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { isValid, isSubmitting },
   } = useForm<CreateEstablishmentInput>({
     resolver: zodResolver(createEstablishmentSchema),
@@ -73,27 +77,38 @@ export default function EstablishmentRequestReviewPanel({
     defaultValues: { name: "", formatted_address: "", city: "", province: "" },
   });
 
+  const { fieldState: addressFieldState } = useController({
+    control,
+    name: "formatted_address",
+  });
+
   useEffect(() => {
     if (!request) return;
     setPanelError(null);
     setRejectReason("");
     setPendingAction(null);
+    setSelectedPlace(null);
     reset({
       name: request.name,
-      formatted_address: request.formatted_address,
+      formatted_address: "",
       city: request.city ?? "",
       province: request.province ?? "",
     });
   }, [request, reset]);
 
   const onApprove = async (data: CreateEstablishmentInput) => {
-    if (!request) return;
+    if (!request || !selectedPlace) return;
     setPanelError(null);
     try {
       const result = await approveEstablishmentRequestAction(
         makeAuthorizedRequest,
         request.id,
-        data,
+        {
+          ...data,
+          place_id: selectedPlace.id,
+          latitude: selectedPlace.lat,
+          longitude: selectedPlace.lng,
+        },
       );
       onApproved(result);
     } catch (err) {
@@ -196,12 +211,36 @@ export default function EstablishmentRequestReviewPanel({
                 placeholder={ESTABLISHMENT_REQUEST_REVIEW_PANEL.namePlaceholder}
                 required
               />
-              <AppTextField
-                control={control}
-                name="formatted_address"
-                label={ESTABLISHMENT_FORM_FIELDS.address.label}
-                placeholder={ESTABLISHMENT_FORM_FIELDS.address.placeholder}
+              {request.formatted_address && (
+                <p className="text-xs text-muted-foreground -mb-2">
+                  Dirección declarada por el solicitante:{" "}
+                  <span className="font-medium text-foreground">
+                    {request.formatted_address}
+                  </span>
+                </p>
+              )}
+              <AddressAutocomplete
+                label="Dirección"
                 required
+                error={
+                  addressFieldState.isTouched
+                    ? addressFieldState.error?.message
+                    : undefined
+                }
+                onSelect={(place) => {
+                  setSelectedPlace(place);
+                  setValue("formatted_address", place.formattedAddress, {
+                    shouldValidate: true,
+                    shouldTouch: true,
+                  });
+                }}
+                onInvalidate={() => {
+                  setSelectedPlace(null);
+                  setValue("formatted_address", "", {
+                    shouldValidate: true,
+                    shouldTouch: true,
+                  });
+                }}
               />
               <AppTextField
                 control={control}
@@ -256,7 +295,9 @@ export default function EstablishmentRequestReviewPanel({
                 <Button
                   type="button"
                   className="flex-1"
-                  disabled={!isValid || isSubmitting || isRejecting}
+                  disabled={
+                    !isValid || !selectedPlace || isSubmitting || isRejecting
+                  }
                   onClick={handleApproveClick}
                 >
                   {isSubmitting ? (

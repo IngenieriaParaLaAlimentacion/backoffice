@@ -26,7 +26,7 @@ type ListEstablishmentsParams = {
   sort_order?: EstablishmentSortOrder;
 };
 
-type CreateEstablishmentData = {
+export type CreateEstablishmentData = {
   name: string;
   formatted_address: string;
   latitude: number;

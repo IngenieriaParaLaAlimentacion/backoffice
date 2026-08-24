@@ -10,8 +10,7 @@ import {
   EstablishmentRequestStatus,
   PaginatedEstablishmentRequestsResponse,
 } from "@/types/admin";
-import { CreateEstablishmentInput } from "@/schemas/establishment.schema";
-import { withPlaceholderGeoData } from "@/lib/establishmentGeoPlaceholder";
+import { CreateEstablishmentData } from "@/services/establishment.service";
 import { ApiError } from "@/lib/apiError";
 import { ErrorResponse } from "@/lib/types";
 
@@ -53,14 +52,15 @@ export const listEstablishmentRequestsAction = async (
 export const approveEstablishmentRequestAction = async (
   dispatcher: AuthDispatcher,
   requestId: string,
-  data: CreateEstablishmentInput,
+  data: CreateEstablishmentData,
 ) => {
-  const body = withPlaceholderGeoData(data);
-
-  const res = await dispatcher<typeof body, EstablishmentApprovalResponse>(
-    APPROVE_ESTABLISHMENT_REQUEST_ENDPOINT(requestId),
-    { method: "PATCH", body },
-  );
+  const res = await dispatcher<
+    CreateEstablishmentData,
+    EstablishmentApprovalResponse
+  >(APPROVE_ESTABLISHMENT_REQUEST_ENDPOINT(requestId), {
+    method: "PATCH",
+    body: data,
+  });
 
   if (!res.ok)
     throw new ApiError((res.data as ErrorResponse).detail, res.status);

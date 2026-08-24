@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { createEstablishmentAction } from "@/services/establishment.service";
-import { withPlaceholderGeoData } from "@/lib/establishmentGeoPlaceholder";
+import { PlaceDetails } from "@/lib/geo";
 import {
   createEstablishmentSchema,
   CreateEstablishmentInput,
@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import {
   CREATE_ESTABLISHMENT_PAGE,
@@ -26,10 +27,12 @@ export default function CreateEstablishmentPage() {
   const router = useRouter();
   const { makeAuthorizedRequest } = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceDetails | null>(null);
 
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { isSubmitting },
   } = useForm<CreateEstablishmentInput>({
     resolver: zodResolver(createEstablishmentSchema),
@@ -41,13 +44,21 @@ export default function CreateEstablishmentPage() {
     },
   });
 
+  const { fieldState: addressFieldState } = useController({
+    control,
+    name: "formatted_address",
+  });
+
   const onSubmit = async (data: CreateEstablishmentInput) => {
+    if (!selectedPlace) return;
     setApiError(null);
     try {
-      await createEstablishmentAction(
-        makeAuthorizedRequest,
-        withPlaceholderGeoData(data),
-      );
+      await createEstablishmentAction(makeAuthorizedRequest, {
+        ...data,
+        place_id: selectedPlace.id,
+        latitude: selectedPlace.lat,
+        longitude: selectedPlace.lng,
+      });
       router.push("/dashboard/establishments");
     } catch (err) {
       setApiError(
@@ -96,12 +107,28 @@ export default function CreateEstablishmentPage() {
             placeholder={CREATE_ESTABLISHMENT_PAGE.namePlaceholder}
             required
           />
-          <AppTextField
-            control={control}
-            name="formatted_address"
-            label={ESTABLISHMENT_FORM_FIELDS.address.label}
-            placeholder={ESTABLISHMENT_FORM_FIELDS.address.placeholder}
+          <AddressAutocomplete
+            label="Dirección"
             required
+            error={
+              addressFieldState.isTouched
+                ? addressFieldState.error?.message
+                : undefined
+            }
+            onSelect={(place) => {
+              setSelectedPlace(place);
+              setValue("formatted_address", place.formattedAddress, {
+                shouldValidate: true,
+                shouldTouch: true,
+              });
+            }}
+            onInvalidate={() => {
+              setSelectedPlace(null);
+              setValue("formatted_address", "", {
+                shouldValidate: true,
+                shouldTouch: true,
+              });
+            }}
           />
           <AppTextField
             control={control}
@@ -123,7 +150,11 @@ export default function CreateEstablishmentPage() {
             </div>
           )}
 
-          <Button type="submit" disabled={isSubmitting} className="self-start">
+          <Button
+            type="submit"
+            disabled={isSubmitting || !selectedPlace}
+            className="self-start"
+          >
             {isSubmitting && <Loader2 className="animate-spin" size={14} />}
             {CREATE_ESTABLISHMENT_PAGE.submitButton}
           </Button>
