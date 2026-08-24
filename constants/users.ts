@@ -17,11 +17,19 @@ export const USERS_PAGE = {
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
 
+export const REQUEST_TABS = {
+  users: "Usuarios",
+  establishments: "Establecimientos",
+} as const;
+
 export const PENDING_REQUESTS_PAGE = {
-  title: "Solicitudes",
-  subtitle: "Usuarios técnicos pendientes de validación",
+  title: "Solicitudes de usuario",
+  subtitle: "Relevadores pendientes de validación",
   loadError: "Error al cargar solicitudes",
   applyError: "Error al aplicar los cambios",
+  partialApplyError:
+    "La cuenta se activó, pero no se pudieron rechazar algunos establecimientos. Reintentá o resolvelos desde la pestaña Establecimientos.",
+  rejectError: "Error al rechazar la solicitud",
   noRequests: "No hay solicitudes pendientes",
   columns: {
     name: "Nombre",
@@ -33,8 +41,9 @@ export const PENDING_REQUESTS_PAGE = {
   establishmentsCount: (count: number) =>
     `${count} establecimiento${count === 1 ? "" : "s"}`,
   defaultDialogTitle: "Solicitud",
+  emailNotVerified: "Email sin verificar",
   establishmentsIntro:
-    "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes.",
+    "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes y se resuelven en la pestaña Establecimientos.",
   noEstablishmentsRequested: "No solicitó acceso a ningún establecimiento.",
   accept: "Aceptar",
   reject: "Rechazar",
@@ -43,6 +52,44 @@ export const PENDING_REQUESTS_PAGE = {
       count === 1 ? "" : "n"
     } pendiente${count === 1 ? "" : "s"}.`,
   acceptRequest: "Aceptar solicitud",
+  acceptConfirm: "Confirmar aceptación",
+  acceptConfirmationMessage:
+    "Se activará la cuenta del relevador con las decisiones tomadas.",
+  rejectRequest: "Rechazar solicitud",
+  rejectConfirm: "Confirmar rechazo",
+  rejectConfirmationMessage:
+    "La cuenta quedará inactiva y se rechazarán todos los establecimientos que solicitó.",
+  cancel: "Cancelar",
+} as const;
+
+export const ESTABLISHMENT_ACCESS_REQUESTS_PAGE = {
+  title: "Solicitudes de establecimiento",
+  subtitle: "Relevadores activos con accesos pendientes de revisión",
+  searchLabel: "Buscar",
+  searchPlaceholder: "Nombre, apellido o email",
+  loadError: "Error al cargar los accesos pendientes",
+  applyError: "Error al aplicar los cambios",
+  noRequests: "No hay accesos pendientes",
+  columns: {
+    name: "Nombre",
+    email: "Email",
+    pendingEstablishments: "Establecimientos pendientes",
+    actions: "Acciones",
+  },
+  reviewButton: "Revisar",
+  establishmentsIntro:
+    "Aceptá o rechazá los accesos que quieras resolver ahora; los que dejes sin decidir siguen pendientes.",
+  pendingEstablishmentsCount: (count: number) =>
+    `${count} establecimiento${count === 1 ? "" : "s"} pendiente${
+      count === 1 ? "" : "s"
+    }`,
+  apply: "Aplicar cambios",
+  applyConfirm: "Confirmar cambios",
+  applyConfirmationMessage:
+    "Se aplicarán las decisiones tomadas; los establecimientos sin decidir quedan pendientes.",
+  cancel: "Cancelar",
+  successMessage: "Accesos actualizados.",
+  closeAria: "Cerrar mensaje",
 } as const;
 
 export const PROFILE_PAGE = {

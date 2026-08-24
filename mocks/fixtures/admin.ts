@@ -2,6 +2,7 @@ import {
   EstablishmentApprovalResponse,
   PaginatedEstablishmentRequestsResponse,
   PaginatedUsersResponse,
+  PendingEstablishmentAccessResponse,
 } from "@/types/admin";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 
@@ -14,6 +15,7 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
       last_name: "López",
       role: "field_worker",
       status: "pending_validation",
+      is_email_verified: true,
       establishments: [MOCK_ESTABLISHMENTS[0], MOCK_ESTABLISHMENTS[1]],
     },
     {
@@ -23,6 +25,7 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
       last_name: "García",
       role: "field_worker",
       status: "pending_validation",
+      is_email_verified: true,
       establishments: [MOCK_ESTABLISHMENTS[2]],
     },
     {
@@ -32,6 +35,7 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
       last_name: "Martínez",
       role: "field_worker",
       status: "pending_validation",
+      is_email_verified: false,
       establishments: [MOCK_ESTABLISHMENTS[3]],
     },
     {
@@ -41,6 +45,7 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
       last_name: "Fernández",
       role: "field_worker",
       status: "pending_validation",
+      is_email_verified: true,
       establishments: [],
     },
   ],
@@ -49,6 +54,41 @@ export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
   page_size: 20,
   total_pages: 1,
 };
+
+/**
+ * Active field workers awaiting establishment access. Each item's
+ * `establishments` holds only that worker's pending ones, like the backend.
+ */
+export const DEFAULT_PENDING_ESTABLISHMENT_ACCESS_RESPONSE: PendingEstablishmentAccessResponse =
+  {
+    items: [
+      {
+        id: "a1b2c3d4-0000-0000-0000-000000000011",
+        email: "marta.suarez@example.com",
+        name: "Marta",
+        last_name: "Suárez",
+        role: "field_worker",
+        status: "active",
+        is_email_verified: true,
+        establishments: [MOCK_ESTABLISHMENTS[0], MOCK_ESTABLISHMENTS[2]],
+      },
+      {
+        id: "a1b2c3d4-0000-0000-0000-000000000012",
+        email: "pedro.ramirez@example.com",
+        name: "Pedro",
+        last_name: "Ramírez",
+        role: "field_worker",
+        status: "active",
+        is_email_verified: true,
+        establishments: [MOCK_ESTABLISHMENTS[1]],
+      },
+    ],
+    total: 2,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+    total_pending_establishments: 3,
+  };
 
 export const DEFAULT_ESTABLISHMENT_REQUESTS_RESPONSE: PaginatedEstablishmentRequestsResponse =
   {
