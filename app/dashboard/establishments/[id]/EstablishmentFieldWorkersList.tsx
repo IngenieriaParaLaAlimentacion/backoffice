@@ -2,6 +2,7 @@
 
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
 import { useRevokeAccess } from "@/hooks/useRevokeAccess";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { RelationStatus } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -53,6 +54,7 @@ export default function EstablishmentFieldWorkersList({
   } = useEstablishmentFieldWorkers(establishmentId);
 
   const columns = COPY.fieldWorkerColumns;
+  const isAdmin = useIsAdmin();
 
   const { revokingId, actionError, revoke } = useRevokeAccess(
     {
@@ -187,7 +189,7 @@ export default function EstablishmentFieldWorkersList({
                       )}
                     </td>
                     <td className="w-12 px-4 py-3">
-                      {worker.relation_status === "approved" && (
+                      {worker.relation_status === "approved" && isAdmin && (
                         <RevokeAccessMenu
                           label={COPY.removeAccess}
                           menuLabel={COPY.actionsMenuLabel}
@@ -217,7 +219,7 @@ export default function EstablishmentFieldWorkersList({
                       {worker.email}
                     </span>
                   </div>
-                  {worker.relation_status === "approved" && (
+                  {worker.relation_status === "approved" && isAdmin && (
                     <RevokeAccessMenu
                       label={COPY.removeAccess}
                       menuLabel={COPY.actionsMenuLabel}
