@@ -1,11 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { StatusCodes } from "http-status-codes";
-import { useAuth } from "@/context/AuthContext";
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
-import { revokeEstablishmentsAction } from "@/services/admin.service";
-import { ApiError } from "@/lib/apiError";
+import { useRevokeAccess } from "@/hooks/useRevokeAccess";
 import { RelationStatus } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -54,42 +50,20 @@ export default function EstablishmentFieldWorkersList({
     toggleRelationStatus,
     refetch,
   } = useEstablishmentFieldWorkers(establishmentId);
-  const { makeAuthorizedRequest } = useAuth();
 
   const columns = COPY.fieldWorkerColumns;
 
-  // Confirmed via window.confirm, same as handleDelete in the surveys page.
-  // Revoked rows are removed from view on success rather than refetched,
-  // matching how the rest of the app updates these lists after an action.
-  const [revokingId, setRevokingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const { revokingId, actionError, removedIds, revoke } = useRevokeAccess(
+    {
+      confirmDialog: COPY.removeAccessConfirmDialog,
+      conflict: COPY.removeAccessConflict,
+      genericError: COPY.removeAccessError,
+    },
+    refetch,
+  );
 
-  const handleRemoveAccess = async (workerId: string) => {
-    if (!window.confirm(COPY.removeAccessConfirmDialog)) return;
-
-    setRevokingId(workerId);
-    setActionError(null);
-    try {
-      await revokeEstablishmentsAction(
-        workerId,
-        [establishmentId],
-        makeAuthorizedRequest,
-      );
-      setRemovedIds((prev) => new Set(prev).add(workerId));
-    } catch (err) {
-      if (err instanceof ApiError && err.status === StatusCodes.CONFLICT) {
-        setActionError(COPY.removeAccessConflict);
-        refetch();
-      } else {
-        setActionError(
-          err instanceof Error ? err.message : COPY.removeAccessError,
-        );
-      }
-    } finally {
-      setRevokingId(null);
-    }
-  };
+  const handleRemoveAccess = (workerId: string) =>
+    revoke(workerId, workerId, establishmentId);
 
   const visibleFieldWorkers = fieldWorkers.filter(
     (worker) => !removedIds.has(worker.id),

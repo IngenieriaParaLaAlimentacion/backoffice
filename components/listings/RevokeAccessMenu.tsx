@@ -3,9 +3,7 @@
 import { Menu } from "@base-ui/react/menu";
 import { Loader2, MoreVertical, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const MENU_ITEM_CLASS =
-  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none cursor-pointer data-[highlighted]:bg-foreground/10 data-[disabled]:cursor-not-allowed data-[disabled]:text-muted-foreground data-[disabled]:data-[highlighted]:bg-transparent";
+import { MENU_ITEM_CLASS } from "@/components/ui/menu";
 
 /**
  * Single-item kebab menu for revoking a user↔establishment relation, shared

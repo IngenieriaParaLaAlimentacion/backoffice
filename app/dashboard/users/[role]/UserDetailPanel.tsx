@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { StatusCodes } from "http-status-codes";
+import { useEffect } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, X } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { useUserDetail } from "@/hooks/useUserDetail";
-import { revokeEstablishmentsAction } from "@/services/admin.service";
-import { ApiError } from "@/lib/apiError";
+import { useRevokeAccess } from "@/hooks/useRevokeAccess";
 import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
 import { USER_DETAIL_PANEL } from "@/constants/users";
 import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
@@ -37,48 +34,24 @@ export default function UserDetailPanel({
   onClose,
 }: UserDetailPanelProps) {
   const { user, isLoading, error, refetch } = useUserDetail(userId);
-  const { makeAuthorizedRequest } = useAuth();
 
-  // Confirmed via window.confirm, same as the establishment-detail view.
-  // Revoked rows are removed from view on success rather than refetched,
-  // matching how the rest of the app updates these lists after an action.
-  const [revokingId, setRevokingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const { revokingId, actionError, removedIds, revoke, reset } =
+    useRevokeAccess(
+      {
+        confirmDialog: USER_DETAIL_PANEL.removeAccessConfirmDialog,
+        conflict: USER_DETAIL_PANEL.removeAccessConflict,
+        genericError: USER_DETAIL_PANEL.removeAccessError,
+      },
+      refetch,
+    );
 
   useEffect(() => {
-    setRevokingId(null);
-    setActionError(null);
-    setRemovedIds(new Set());
-  }, [userId]);
+    reset();
+  }, [userId, reset]);
 
-  const handleRemoveAccess = async (establishmentId: string) => {
+  const handleRemoveAccess = (establishmentId: string) => {
     if (!user) return;
-    if (!window.confirm(USER_DETAIL_PANEL.removeAccessConfirmDialog)) return;
-
-    setRevokingId(establishmentId);
-    setActionError(null);
-    try {
-      await revokeEstablishmentsAction(
-        user.id,
-        [establishmentId],
-        makeAuthorizedRequest,
-      );
-      setRemovedIds((prev) => new Set(prev).add(establishmentId));
-    } catch (err) {
-      if (err instanceof ApiError && err.status === StatusCodes.CONFLICT) {
-        setActionError(USER_DETAIL_PANEL.removeAccessConflict);
-        refetch();
-      } else {
-        setActionError(
-          err instanceof Error
-            ? err.message
-            : USER_DETAIL_PANEL.removeAccessError,
-        );
-      }
-    } finally {
-      setRevokingId(null);
-    }
+    revoke(establishmentId, user.id, establishmentId);
   };
 
   const visibleEstablishments = (user?.establishments ?? []).filter(
@@ -119,7 +92,7 @@ export default function UserDetailPanel({
           )}
 
           {actionError && (
-            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm mb-4">
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
               {actionError}
             </div>
           )}
