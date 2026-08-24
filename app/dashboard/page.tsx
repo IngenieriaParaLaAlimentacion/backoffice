@@ -27,6 +27,7 @@ import { Card } from "@/components/ui/card";
 import { DASHBOARD_INDICATORS } from "@/constants/surveys";
 import { UserStatus } from "@/types/establishment";
 import { usePendingCount } from "@/hooks/usePendingCount";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 // Quick-access cards mirror the sidebar, minus the dashboard self-link.
 const accessItems = navItems.filter((item) => item.href !== "/dashboard");
@@ -105,6 +106,7 @@ function IndicatorCard({
 
 export default function DashboardPage() {
   const { makeAuthorizedRequest } = useAuth();
+  const isAdmin = useIsAdmin();
   const [, setProfile] = useState<ProfileResponse | null>(null);
   const [indicators, setIndicators] = useState<DashboardIndicators | null>(
     null,
@@ -182,12 +184,17 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchProfile();
     fetchIndicators();
+  }, [fetchProfile, fetchIndicators]);
+
+  // Approve/reject on every request type is admin-only, so analysts never
+  // hit these admin-scoped counts — no point fetching what they can't act on.
+  useEffect(() => {
+    if (!isAdmin) return;
     fetchPendingUserRegistrations();
     fetchPendingEstablishmentCreations();
     fetchPendingEstablishmentAccess();
   }, [
-    fetchProfile,
-    fetchIndicators,
+    isAdmin,
     fetchPendingUserRegistrations,
     fetchPendingEstablishmentCreations,
     fetchPendingEstablishmentAccess,
@@ -254,65 +261,70 @@ export default function DashboardPage() {
                 }
                 label={DASHBOARD_INDICATORS.lastEvent}
               />
-              <IndicatorCard
-                icon={<UserPlus size={18} />}
-                value={
-                  pendingUserRegistrationsLoading ? (
-                    <Loader2
-                      className="animate-spin text-muted-foreground"
-                      size={18}
-                    />
-                  ) : (
-                    (pendingUserRegistrations ??
-                    DASHBOARD_INDICATORS.notAvailable)
-                  )
-                }
-                label={DASHBOARD_INDICATORS.pendingUserRegistrations}
-                href="/dashboard/requests"
-                emphasize={
-                  !pendingUserRegistrationsLoading && !!pendingUserRegistrations
-                }
-              />
-              <IndicatorCard
-                icon={<UserCog size={18} />}
-                value={
-                  pendingEstablishmentAccessLoading ? (
-                    <Loader2
-                      className="animate-spin text-muted-foreground"
-                      size={18}
-                    />
-                  ) : (
-                    (pendingEstablishmentAccess ??
-                    DASHBOARD_INDICATORS.notAvailable)
-                  )
-                }
-                label={DASHBOARD_INDICATORS.pendingEstablishmentAccess}
-                href="/dashboard/requests/establishments"
-                emphasize={
-                  !pendingEstablishmentAccessLoading &&
-                  !!pendingEstablishmentAccess
-                }
-              />
-              <IndicatorCard
-                icon={<Building size={18} />}
-                value={
-                  pendingEstablishmentCreationsLoading ? (
-                    <Loader2
-                      className="animate-spin text-muted-foreground"
-                      size={18}
-                    />
-                  ) : (
-                    (pendingEstablishmentCreations ??
-                    DASHBOARD_INDICATORS.notAvailable)
-                  )
-                }
-                label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
-                href="/dashboard/establishments/requests"
-                emphasize={
-                  !pendingEstablishmentCreationsLoading &&
-                  !!pendingEstablishmentCreations
-                }
-              />
+              {isAdmin && (
+                <>
+                  <IndicatorCard
+                    icon={<UserPlus size={18} />}
+                    value={
+                      pendingUserRegistrationsLoading ? (
+                        <Loader2
+                          className="animate-spin text-muted-foreground"
+                          size={18}
+                        />
+                      ) : (
+                        (pendingUserRegistrations ??
+                        DASHBOARD_INDICATORS.notAvailable)
+                      )
+                    }
+                    label={DASHBOARD_INDICATORS.pendingUserRegistrations}
+                    href="/dashboard/requests"
+                    emphasize={
+                      !pendingUserRegistrationsLoading &&
+                      !!pendingUserRegistrations
+                    }
+                  />
+                  <IndicatorCard
+                    icon={<UserCog size={18} />}
+                    value={
+                      pendingEstablishmentAccessLoading ? (
+                        <Loader2
+                          className="animate-spin text-muted-foreground"
+                          size={18}
+                        />
+                      ) : (
+                        (pendingEstablishmentAccess ??
+                        DASHBOARD_INDICATORS.notAvailable)
+                      )
+                    }
+                    label={DASHBOARD_INDICATORS.pendingEstablishmentAccess}
+                    href="/dashboard/requests/establishments"
+                    emphasize={
+                      !pendingEstablishmentAccessLoading &&
+                      !!pendingEstablishmentAccess
+                    }
+                  />
+                  <IndicatorCard
+                    icon={<Building size={18} />}
+                    value={
+                      pendingEstablishmentCreationsLoading ? (
+                        <Loader2
+                          className="animate-spin text-muted-foreground"
+                          size={18}
+                        />
+                      ) : (
+                        (pendingEstablishmentCreations ??
+                        DASHBOARD_INDICATORS.notAvailable)
+                      )
+                    }
+                    label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
+                    href="/dashboard/establishments/requests"
+                    emphasize={
+                      !pendingEstablishmentCreationsLoading &&
+                      !!pendingEstablishmentCreations
+                    }
+                  />
+                </>
+              )}
             </div>
           ) : null}
         </div>
