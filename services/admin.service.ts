@@ -1,11 +1,14 @@
 import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENTS_ENDPOINT,
+  APPROVE_FIELD_WORKER_ENDPOINT,
   GET_USER_ENDPOINT,
   INVITE_ADMIN_ENDPOINT,
   INVITE_ANALYST_ENDPOINT,
   LIST_USERS_ENDPOINT,
+  PENDING_ESTABLISHMENT_ACCESS_ENDPOINT,
   REJECT_ESTABLISHMENTS_ENDPOINT,
+  REJECT_FIELD_WORKER_ENDPOINT,
   RESEND_INVITE_ENDPOINT,
 } from "@/constants/api";
 import {
@@ -13,6 +16,8 @@ import {
   EstablishmentAccessRequest,
   InviteAdminResponse,
   PaginatedUsersResponse,
+  PendingEstablishmentAccessResponse,
+  UserAccessRequest,
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
 import { ErrorResponse } from "@/lib/types";
@@ -47,6 +52,37 @@ export const listUsersAction = async (
   return res.data as PaginatedUsersResponse;
 };
 
+type ListPendingEstablishmentAccessParams = {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  establishment_id?: string;
+};
+
+export const listPendingEstablishmentAccessAction = async (
+  dispatcher: AuthDispatcher,
+  params?: ListPendingEstablishmentAccessParams,
+) => {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.page_size) query.set("page_size", String(params.page_size));
+  if (params?.search) query.set("search", params.search);
+  if (params?.establishment_id)
+    query.set("establishment_id", params.establishment_id);
+
+  const path = query.size
+    ? `${PENDING_ESTABLISHMENT_ACCESS_ENDPOINT}?${query.toString()}`
+    : PENDING_ESTABLISHMENT_ACCESS_ENDPOINT;
+
+  const res = await dispatcher<undefined, PendingEstablishmentAccessResponse>(
+    path,
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+
+  return res.data as PendingEstablishmentAccessResponse;
+};
+
 export const getUserAction = async (
   dispatcher: AuthDispatcher,
   userId: string,
@@ -58,6 +94,28 @@ export const getUserAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   return res.data as AdminUserDetail;
+};
+
+/**
+ * Activates the field worker's account and approves the given establishments.
+ * `establishmentIds` may be empty: the account is activated and every
+ * establishment request stays pending.
+ */
+export const approveFieldWorkerAction = async (
+  userId: string,
+  establishmentIds: string[],
+  dispatcher: AuthDispatcher,
+) => {
+  const body: UserAccessRequest = {
+    establishment_ids: establishmentIds,
+  };
+
+  const res = await dispatcher<UserAccessRequest, undefined>(
+    APPROVE_FIELD_WORKER_ENDPOINT(userId),
+    { method: "PATCH", body },
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 };
 
 export const approveEstablishmentsAction = async (
@@ -115,6 +173,22 @@ export const resendInviteAction = async (
 ) => {
   const res = await dispatcher<undefined, undefined>(
     RESEND_INVITE_ENDPOINT(userId),
+    { method: "PATCH" },
+  );
+
+  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+};
+
+/**
+ * Rejects every establishment requested by the field worker and leaves the
+ * account inactive. Takes no body: the backend resolves all of them at once.
+ */
+export const rejectFieldWorkerAction = async (
+  userId: string,
+  dispatcher: AuthDispatcher,
+) => {
+  const res = await dispatcher<undefined, undefined>(
+    REJECT_FIELD_WORKER_ENDPOINT(userId),
     { method: "PATCH" },
   );
 

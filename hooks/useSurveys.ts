@@ -60,6 +60,11 @@ export function useSurveys(pageSize: number) {
     setPage(1);
   }, []);
 
+  const refetch = useCallback(
+    () => fetchSurveys(page, search, responseTarget),
+    [fetchSurveys, page, search, responseTarget],
+  );
+
   return {
     surveys,
     page,
@@ -71,5 +76,6 @@ export function useSurveys(pageSize: number) {
     isLoading,
     error,
     setPage,
+    refetch,
   };
 }

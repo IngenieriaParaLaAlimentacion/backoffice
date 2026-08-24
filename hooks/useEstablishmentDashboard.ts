@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { getEstablishmentDashboardAction } from "@/services/establishment.service";
 import { EstablishmentDashboardResponse } from "@/types/establishment";
@@ -45,8 +46,8 @@ export function useEstablishmentDashboard(establishmentId: string) {
     dashboard,
     isLoading,
     error,
-    notFound: status === 404,
-    forbidden: status === 403,
+    notFound: status === StatusCodes.NOT_FOUND,
+    forbidden: status === StatusCodes.FORBIDDEN,
     refetch: fetchDashboard,
   };
 }

@@ -26,6 +26,7 @@ export type UserAdminView = {
   last_name: string;
   role: string;
   status: string;
+  is_email_verified: boolean;
   establishments: EstablishmentResponse[];
 };
 
@@ -50,7 +51,15 @@ export type PaginatedUsersResponse = {
   total_pages: number;
 };
 
+export type PendingEstablishmentAccessResponse = PaginatedUsersResponse & {
+  total_pending_establishments: number;
+};
+
 export type EstablishmentAccessRequest = {
+  establishment_ids: string[];
+};
+
+export type UserAccessRequest = {
   establishment_ids: string[];
 };
 

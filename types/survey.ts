@@ -16,6 +16,7 @@ export type SurveyListItem = {
   is_active: boolean;
   created_by_id: string;
   question_count: number;
+  response_count: number;
   created_at: string; // date-time
 };
 
@@ -117,7 +118,7 @@ export type SurveyTemplateResponse = {
 // --- Survey Response types (Dashboard) ---
 
 export type SurveyRef = { id: string; name: string };
-export type UserRef = { id: string; name: string };
+export type UserRef = { id: string; name: string; last_name: string };
 export type EstablishmentRef = {
   id: string;
   name: string;

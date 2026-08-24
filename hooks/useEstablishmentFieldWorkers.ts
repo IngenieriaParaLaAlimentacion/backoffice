@@ -5,7 +5,11 @@ import {
   EstablishmentFieldWorkerListItem,
   RelationStatus,
 } from "@/types/establishment";
-import { FILTER_DEBOUNCE_MS, PAGE_SIZE } from "@/constants/establishments";
+import {
+  FILTER_DEBOUNCE_MS,
+  PAGE_SIZE,
+  RELATION_STATUS_OPTIONS,
+} from "@/constants/establishments";
 
 export function useEstablishmentFieldWorkers(establishmentId: string) {
   const { makeAuthorizedRequest } = useAuth();
@@ -21,8 +25,9 @@ export function useEstablishmentFieldWorkers(establishmentId: string) {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [relationStatus, setRelationStatus] =
-    useState<RelationStatus>("approved");
+  const [relationStatus, setRelationStatus] = useState<RelationStatus[]>([
+    "approved",
+  ]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -36,7 +41,7 @@ export function useEstablishmentFieldWorkers(establishmentId: string) {
     async (
       currentPage: number,
       currentSearch: string,
-      currentRelationStatus: RelationStatus,
+      currentRelationStatus: RelationStatus[],
     ) => {
       setIsLoading(true);
       setError(null);
@@ -71,8 +76,21 @@ export function useEstablishmentFieldWorkers(establishmentId: string) {
     fetchFieldWorkers(page, debouncedSearch, relationStatus);
   }, [fetchFieldWorkers, page, debouncedSearch, relationStatus]);
 
-  const changeRelationStatus = (next: RelationStatus) => {
-    setRelationStatus(next);
+  const toggleRelationStatus = (status: RelationStatus) => {
+    setRelationStatus((current) => {
+      if (current.includes(status)) {
+        // Keep at least one status selected — an empty filter is ambiguous
+        // (the backend would fall back to its own "approved" default).
+        if (current.length === 1) return current;
+        return current.filter((s) => s !== status);
+      }
+      // Sorted to match RELATION_STATUS_OPTIONS, not click order, so the
+      // outgoing query string is deterministic regardless of selection order.
+      const next = new Set([...current, status]);
+      return RELATION_STATUS_OPTIONS.map((opt) => opt.value).filter((v) =>
+        next.has(v),
+      );
+    });
     setPage(1);
   };
 
@@ -87,6 +105,6 @@ export function useEstablishmentFieldWorkers(establishmentId: string) {
     search,
     setSearch,
     relationStatus,
-    setRelationStatus: changeRelationStatus,
+    toggleRelationStatus,
   };
 }
