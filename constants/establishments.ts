@@ -35,12 +35,14 @@ export const RELATION_STATUS_OPTIONS: {
   { value: "approved", label: "Aprobados" },
   { value: "pending", label: "Pendientes" },
   { value: "rejected", label: "Rechazados" },
+  { value: "revoked", label: "Revocados" },
 ];
 
 export const RELATION_STATUS_LABELS: Record<RelationStatus, string> = {
   approved: "Aprobado",
   pending: "Pendiente",
   rejected: "Rechazado",
+  revoked: "Revocado",
 };
 
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
@@ -114,6 +116,13 @@ export const ESTABLISHMENT_DASHBOARD_PAGE = {
     measurements: "Mediciones",
     lastMeasuredAt: "Último relevamiento",
   },
+  actionsMenuLabel: "Más acciones",
+  removeAccess: "Quitar acceso",
+  removeAccessConfirmDialog:
+    "¿Quitar el acceso de este relevador a este comedor? Podrá volver a solicitarlo más adelante.",
+  removeAccessError: "No se pudo quitar el acceso",
+  removeAccessConflict:
+    "El acceso de este relevador ya no está aprobado; se actualizó la lista.",
 
   search: "Buscar",
   sortBy: "Ordenar por",

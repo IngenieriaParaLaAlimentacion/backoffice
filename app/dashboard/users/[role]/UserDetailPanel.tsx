@@ -1,10 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, X } from "lucide-react";
 import { useUserDetail } from "@/hooks/useUserDetail";
+import { useRevokeAccess } from "@/hooks/useRevokeAccess";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
 import { USER_DETAIL_PANEL } from "@/constants/users";
+import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
 
 type UserDetailPanelProps = {
   userId: string | null;
@@ -30,7 +34,26 @@ export default function UserDetailPanel({
   userId,
   onClose,
 }: UserDetailPanelProps) {
-  const { user, isLoading, error } = useUserDetail(userId);
+  const { user, isLoading, error, refetch } = useUserDetail(userId);
+  const isAdmin = useIsAdmin();
+
+  const { revokingId, actionError, revoke, reset } = useRevokeAccess(
+    {
+      confirmDialog: USER_DETAIL_PANEL.removeAccessConfirmDialog,
+      conflict: USER_DETAIL_PANEL.removeAccessConflict,
+      genericError: USER_DETAIL_PANEL.removeAccessError,
+    },
+    refetch,
+  );
+
+  useEffect(() => {
+    reset();
+  }, [userId, reset]);
+
+  const handleRemoveAccess = (establishmentId: string) => {
+    if (!user) return;
+    revoke(establishmentId, user.id, establishmentId);
+  };
 
   return (
     <Dialog.Root
@@ -62,6 +85,12 @@ export default function UserDetailPanel({
           {error && (
             <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
               {error}
+            </div>
+          )}
+
+          {actionError && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+              {actionError}
             </div>
           )}
 
@@ -124,13 +153,25 @@ export default function UserDetailPanel({
                     {user.establishments.map((est) => (
                       <div
                         key={est.id}
-                        className="rounded-md border border-border px-3 py-2"
+                        className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
                       >
-                        <span className="text-sm font-medium">{est.name}</span>
-                        {est.formatted_address && (
-                          <span className="block text-xs text-muted-foreground">
-                            {est.formatted_address}
+                        <div>
+                          <span className="text-sm font-medium">
+                            {est.name}
                           </span>
+                          {est.formatted_address && (
+                            <span className="block text-xs text-muted-foreground">
+                              {est.formatted_address}
+                            </span>
+                          )}
+                        </div>
+                        {isAdmin && (
+                          <RevokeAccessMenu
+                            label={USER_DETAIL_PANEL.removeAccess}
+                            menuLabel={USER_DETAIL_PANEL.actionsMenuLabel}
+                            isSubmitting={revokingId === est.id}
+                            onRevoke={() => handleRemoveAccess(est.id)}
+                          />
                         )}
                       </div>
                     ))}

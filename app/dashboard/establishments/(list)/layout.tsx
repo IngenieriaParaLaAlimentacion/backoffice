@@ -10,12 +10,11 @@ import {
   useState,
 } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
-import { getMeAction } from "@/services/user.service";
 import { ESTABLISHMENT_TABS } from "@/constants/establishments";
 
 const REQUESTS_TAB_HREF = "/dashboard/establishments/requests";
-const ADMIN_ROLES = new Set(["admin", "superadmin"]);
 
 const BASE_TABS = [
   {
@@ -41,24 +40,8 @@ export default function EstablishmentsLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const { makeAuthorizedRequest } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isAdmin = useIsAdmin();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    getMeAction(makeAuthorizedRequest)
-      .then((profile) => {
-        if (!cancelled) setIsAdmin(ADMIN_ROLES.has(profile.role));
-      })
-      .catch(() => {
-        if (!cancelled) setIsAdmin(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [makeAuthorizedRequest]);
 
   const refreshPendingCount = useCallback(() => {
     if (!isAdmin) return;

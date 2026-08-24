@@ -76,6 +76,12 @@ export function useEstablishmentFieldWorkers(establishmentId: string) {
     fetchFieldWorkers(page, debouncedSearch, relationStatus);
   }, [fetchFieldWorkers, page, debouncedSearch, relationStatus]);
 
+  /** Re-fetches the current page/filters, e.g. after an action invalidates it. */
+  const refetch = useCallback(
+    () => fetchFieldWorkers(page, debouncedSearch, relationStatus),
+    [fetchFieldWorkers, page, debouncedSearch, relationStatus],
+  );
+
   const toggleRelationStatus = (status: RelationStatus) => {
     setRelationStatus((current) => {
       if (current.includes(status)) {
@@ -106,5 +112,6 @@ export function useEstablishmentFieldWorkers(establishmentId: string) {
     setSearch,
     relationStatus,
     toggleRelationStatus,
+    refetch,
   };
 }

@@ -1,10 +1,13 @@
 "use client";
 
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
+import { useRevokeAccess } from "@/hooks/useRevokeAccess";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { RelationStatus } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import Pagination from "@/components/Pagination";
+import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
   RELATION_STATUS_LABELS,
@@ -18,6 +21,7 @@ const RELATION_STATUS_CLASS: Record<RelationStatus, string> = {
   approved: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
   pending: "bg-amber-500/15 text-amber-600 border-amber-500/30",
   rejected: "bg-destructive/15 text-destructive border-destructive/30",
+  revoked: "bg-muted text-muted-foreground border-border",
 };
 
 const PILL_CLASS = "inline-block rounded-full border px-2 py-0.5 text-xs";
@@ -46,9 +50,23 @@ export default function EstablishmentFieldWorkersList({
     setSearch,
     relationStatus,
     toggleRelationStatus,
+    refetch,
   } = useEstablishmentFieldWorkers(establishmentId);
 
   const columns = COPY.fieldWorkerColumns;
+  const isAdmin = useIsAdmin();
+
+  const { revokingId, actionError, revoke } = useRevokeAccess(
+    {
+      confirmDialog: COPY.removeAccessConfirmDialog,
+      conflict: COPY.removeAccessConflict,
+      genericError: COPY.removeAccessError,
+    },
+    refetch,
+  );
+
+  const handleRemoveAccess = (workerId: string) =>
+    revoke(workerId, workerId, establishmentId);
 
   return (
     <div className="flex flex-col gap-4">
@@ -97,6 +115,12 @@ export default function EstablishmentFieldWorkersList({
         </div>
       )}
 
+      {actionError && (
+        <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+          {actionError}
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="animate-spin text-muted-foreground" size={28} />
@@ -124,6 +148,9 @@ export default function EstablishmentFieldWorkersList({
                   </th>
                   <th className="px-4 py-3 font-medium">
                     {columns.lastMeasuredAt}
+                  </th>
+                  <th className="w-12 px-4 py-3 font-medium">
+                    <span className="sr-only">{COPY.actionsMenuLabel}</span>
                   </th>
                 </tr>
               </thead>
@@ -161,6 +188,16 @@ export default function EstablishmentFieldWorkersList({
                         </span>
                       )}
                     </td>
+                    <td className="w-12 px-4 py-3">
+                      {worker.relation_status === "approved" && isAdmin && (
+                        <RevokeAccessMenu
+                          label={COPY.removeAccess}
+                          menuLabel={COPY.actionsMenuLabel}
+                          isSubmitting={revokingId === worker.id}
+                          onRevoke={() => handleRemoveAccess(worker.id)}
+                        />
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -173,13 +210,23 @@ export default function EstablishmentFieldWorkersList({
                 key={worker.id}
                 className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3"
               >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">
-                    {worker.name} {worker.last_name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {worker.email}
-                  </span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium">
+                      {worker.name} {worker.last_name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {worker.email}
+                    </span>
+                  </div>
+                  {worker.relation_status === "approved" && isAdmin && (
+                    <RevokeAccessMenu
+                      label={COPY.removeAccess}
+                      menuLabel={COPY.actionsMenuLabel}
+                      isSubmitting={revokingId === worker.id}
+                      onRevoke={() => handleRemoveAccess(worker.id)}
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
