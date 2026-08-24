@@ -59,7 +59,7 @@ export default function CreateEstablishmentPage() {
         latitude: selectedPlace.lat,
         longitude: selectedPlace.lng,
       });
-      router.push("/dashboard/establecimientos");
+      router.push("/dashboard/establishments");
     } catch (err) {
       setApiError(
         err instanceof Error
