@@ -13,6 +13,7 @@ const DEBOUNCE_MS = 300;
 // collapsing those by their displayed text (see dedupeByAddress below).
 const RAW_RESULTS = 10;
 const DISPLAY_RESULTS = 5;
+const BLUR_CLOSE_DELAY_MS = 100;
 
 type GeorefAddress = {
   nomenclatura: string;
@@ -168,7 +169,7 @@ export class GeorefProvider implements GeoLocationProvider {
     };
 
     const handleBlur = () => {
-      window.setTimeout(closeList, 100);
+      window.setTimeout(closeList, BLUR_CLOSE_DELAY_MS);
     };
 
     input.addEventListener("input", handleInput);
