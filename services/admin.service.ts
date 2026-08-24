@@ -10,6 +10,7 @@ import {
   REJECT_ESTABLISHMENTS_ENDPOINT,
   REJECT_FIELD_WORKER_ENDPOINT,
   RESEND_INVITE_ENDPOINT,
+  REVOKE_ESTABLISHMENTS_ENDPOINT,
 } from "@/constants/api";
 import {
   AdminUserDetail,
@@ -21,6 +22,7 @@ import {
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
 import { ErrorResponse } from "@/lib/types";
+import { ApiError } from "@/lib/apiError";
 
 type ListUsersParams = {
   page?: number;
@@ -210,4 +212,28 @@ export const rejectEstablishmentsAction = async (
   );
 
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+};
+
+/**
+ * Revokes the field worker's access to establishments that are currently
+ * `approved`. Atomic over the batch: if any of `establishmentIds` isn't
+ * `approved`, the backend rejects the whole request with 409 and revokes
+ * none of them — callers should surface that instead of retrying blindly.
+ */
+export const revokeEstablishmentsAction = async (
+  userId: string,
+  establishmentIds: string[],
+  dispatcher: AuthDispatcher,
+) => {
+  const body: EstablishmentAccessRequest = {
+    establishment_ids: establishmentIds,
+  };
+
+  const res = await dispatcher<EstablishmentAccessRequest, undefined>(
+    REVOKE_ESTABLISHMENTS_ENDPOINT(userId),
+    { method: "PATCH", body },
+  );
+
+  if (!res.ok)
+    throw new ApiError((res.data as ErrorResponse).detail, res.status);
 };

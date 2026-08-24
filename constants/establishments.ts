@@ -114,6 +114,13 @@ export const ESTABLISHMENT_DASHBOARD_PAGE = {
     measurements: "Mediciones",
     lastMeasuredAt: "Último relevamiento",
   },
+  actionsMenuLabel: "Más acciones",
+  removeAccess: "Quitar acceso",
+  removeAccessConfirmDialog:
+    "¿Quitar el acceso de este relevador a este comedor? Podrá volver a solicitarlo más adelante.",
+  removeAccessError: "No se pudo quitar el acceso",
+  removeAccessConflict:
+    "El acceso de este relevador ya no está aprobado; se actualizó la lista.",
 
   search: "Buscar",
   sortBy: "Ordenar por",

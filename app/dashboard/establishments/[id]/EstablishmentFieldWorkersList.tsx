@@ -1,9 +1,16 @@
 "use client";
 
+import { useState } from "react";
+import { StatusCodes } from "http-status-codes";
+import { Menu } from "@base-ui/react/menu";
+import { useAuth } from "@/context/AuthContext";
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
+import { revokeEstablishmentsAction } from "@/services/admin.service";
+import { ApiError } from "@/lib/apiError";
 import { RelationStatus } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
@@ -12,7 +19,10 @@ import {
   USER_STATUS_LABELS,
 } from "@/constants/establishments";
 import { EMPTY_VALUE, formatDateTime } from "@/lib/format";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, MoreVertical, Search, UserMinus } from "lucide-react";
+
+const MENU_ITEM_CLASS =
+  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none cursor-pointer data-[highlighted]:bg-foreground/10 data-[disabled]:cursor-not-allowed data-[disabled]:text-muted-foreground data-[disabled]:data-[highlighted]:bg-transparent";
 
 const RELATION_STATUS_CLASS: Record<RelationStatus, string> = {
   approved: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
@@ -46,9 +56,48 @@ export default function EstablishmentFieldWorkersList({
     setSearch,
     relationStatus,
     toggleRelationStatus,
+    refetch,
   } = useEstablishmentFieldWorkers(establishmentId);
+  const { makeAuthorizedRequest } = useAuth();
 
   const columns = COPY.fieldWorkerColumns;
+
+  // Confirmed via window.confirm, same as handleDelete in the surveys page.
+  // Revoked rows are removed from view on success rather than refetched,
+  // matching how the rest of the app updates these lists after an action.
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+
+  const handleRemoveAccess = async (workerId: string) => {
+    if (!window.confirm(COPY.removeAccessConfirmDialog)) return;
+
+    setRevokingId(workerId);
+    setActionError(null);
+    try {
+      await revokeEstablishmentsAction(
+        workerId,
+        [establishmentId],
+        makeAuthorizedRequest,
+      );
+      setRemovedIds((prev) => new Set(prev).add(workerId));
+    } catch (err) {
+      if (err instanceof ApiError && err.status === StatusCodes.CONFLICT) {
+        setActionError(COPY.removeAccessConflict);
+        refetch();
+      } else {
+        setActionError(
+          err instanceof Error ? err.message : COPY.removeAccessError,
+        );
+      }
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
+  const visibleFieldWorkers = fieldWorkers.filter(
+    (worker) => !removedIds.has(worker.id),
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -97,11 +146,17 @@ export default function EstablishmentFieldWorkersList({
         </div>
       )}
 
+      {actionError && (
+        <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+          {actionError}
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="animate-spin text-muted-foreground" size={28} />
         </div>
-      ) : fieldWorkers.length === 0 ? (
+      ) : visibleFieldWorkers.length === 0 ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
           {COPY.noFieldWorkers}
         </div>
@@ -125,10 +180,13 @@ export default function EstablishmentFieldWorkersList({
                   <th className="px-4 py-3 font-medium">
                     {columns.lastMeasuredAt}
                   </th>
+                  <th className="w-12 px-4 py-3 font-medium">
+                    <span className="sr-only">{COPY.actionsMenuLabel}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {fieldWorkers.map((worker) => (
+                {visibleFieldWorkers.map((worker) => (
                   <tr
                     key={worker.id}
                     className="bg-card transition-colors hover:bg-muted/30"
@@ -161,6 +219,14 @@ export default function EstablishmentFieldWorkersList({
                         </span>
                       )}
                     </td>
+                    <td className="w-12 px-4 py-3">
+                      {worker.relation_status === "approved" && (
+                        <FieldWorkerActionsMenu
+                          isSubmitting={revokingId === worker.id}
+                          onRemoveAccess={() => handleRemoveAccess(worker.id)}
+                        />
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -168,18 +234,26 @@ export default function EstablishmentFieldWorkersList({
           </div>
 
           <div className="flex flex-col gap-2 md:hidden">
-            {fieldWorkers.map((worker) => (
+            {visibleFieldWorkers.map((worker) => (
               <div
                 key={worker.id}
                 className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3"
               >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">
-                    {worker.name} {worker.last_name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {worker.email}
-                  </span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium">
+                      {worker.name} {worker.last_name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {worker.email}
+                    </span>
+                  </div>
+                  {worker.relation_status === "approved" && (
+                    <FieldWorkerActionsMenu
+                      isSubmitting={revokingId === worker.id}
+                      onRemoveAccess={() => handleRemoveAccess(worker.id)}
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -213,5 +287,43 @@ export default function EstablishmentFieldWorkersList({
         </>
       )}
     </div>
+  );
+}
+
+/** Kebab menu, matching SurveyActionsMenu's pattern. */
+function FieldWorkerActionsMenu({
+  isSubmitting,
+  onRemoveAccess,
+}: {
+  isSubmitting: boolean;
+  onRemoveAccess: () => void;
+}) {
+  return (
+    <Menu.Root>
+      <Menu.Trigger
+        disabled={isSubmitting}
+        render={<Button variant="ghost" size="icon-sm" />}
+        title={COPY.actionsMenuLabel}
+      >
+        {isSubmitting ? (
+          <Loader2 className="animate-spin" size={14} />
+        ) : (
+          <MoreVertical size={14} />
+        )}
+      </Menu.Trigger>
+      <Menu.Portal>
+        <Menu.Positioner side="bottom" align="end" sideOffset={4}>
+          <Menu.Popup className="min-w-[180px] rounded-xl border bg-background p-1 shadow-xl">
+            <Menu.Item
+              className={`${MENU_ITEM_CLASS} text-destructive data-[highlighted]:bg-destructive/20`}
+              onClick={onRemoveAccess}
+            >
+              <UserMinus size={14} />
+              {COPY.removeAccess}
+            </Menu.Item>
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
   );
 }
