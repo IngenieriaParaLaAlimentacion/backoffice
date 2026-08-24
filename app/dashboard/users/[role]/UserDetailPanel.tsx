@@ -1,10 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { StatusCodes } from "http-status-codes";
 import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, X } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { useUserDetail } from "@/hooks/useUserDetail";
+import { revokeEstablishmentsAction } from "@/services/admin.service";
+import { ApiError } from "@/lib/apiError";
 import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
 import { USER_DETAIL_PANEL } from "@/constants/users";
+import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
 
 type UserDetailPanelProps = {
   userId: string | null;
@@ -30,7 +36,54 @@ export default function UserDetailPanel({
   userId,
   onClose,
 }: UserDetailPanelProps) {
-  const { user, isLoading, error } = useUserDetail(userId);
+  const { user, isLoading, error, refetch } = useUserDetail(userId);
+  const { makeAuthorizedRequest } = useAuth();
+
+  // Confirmed via window.confirm, same as the establishment-detail view.
+  // Revoked rows are removed from view on success rather than refetched,
+  // matching how the rest of the app updates these lists after an action.
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setRevokingId(null);
+    setActionError(null);
+    setRemovedIds(new Set());
+  }, [userId]);
+
+  const handleRemoveAccess = async (establishmentId: string) => {
+    if (!user) return;
+    if (!window.confirm(USER_DETAIL_PANEL.removeAccessConfirmDialog)) return;
+
+    setRevokingId(establishmentId);
+    setActionError(null);
+    try {
+      await revokeEstablishmentsAction(
+        user.id,
+        [establishmentId],
+        makeAuthorizedRequest,
+      );
+      setRemovedIds((prev) => new Set(prev).add(establishmentId));
+    } catch (err) {
+      if (err instanceof ApiError && err.status === StatusCodes.CONFLICT) {
+        setActionError(USER_DETAIL_PANEL.removeAccessConflict);
+        refetch();
+      } else {
+        setActionError(
+          err instanceof Error
+            ? err.message
+            : USER_DETAIL_PANEL.removeAccessError,
+        );
+      }
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
+  const visibleEstablishments = (user?.establishments ?? []).filter(
+    (est) => !removedIds.has(est.id),
+  );
 
   return (
     <Dialog.Root
@@ -62,6 +115,12 @@ export default function UserDetailPanel({
           {error && (
             <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
               {error}
+            </div>
+          )}
+
+          {actionError && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm mb-4">
+              {actionError}
             </div>
           )}
 
@@ -115,23 +174,33 @@ export default function UserDetailPanel({
                   value={user.description}
                 />
               )}
-              {user.establishments && user.establishments.length > 0 && (
+              {visibleEstablishments.length > 0 && (
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs text-muted-foreground">
                     {USER_DETAIL_PANEL.fields.establishments}
                   </span>
                   <div className="flex flex-col gap-2">
-                    {user.establishments.map((est) => (
+                    {visibleEstablishments.map((est) => (
                       <div
                         key={est.id}
-                        className="rounded-md border border-border px-3 py-2"
+                        className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
                       >
-                        <span className="text-sm font-medium">{est.name}</span>
-                        {est.formatted_address && (
-                          <span className="block text-xs text-muted-foreground">
-                            {est.formatted_address}
+                        <div>
+                          <span className="text-sm font-medium">
+                            {est.name}
                           </span>
-                        )}
+                          {est.formatted_address && (
+                            <span className="block text-xs text-muted-foreground">
+                              {est.formatted_address}
+                            </span>
+                          )}
+                        </div>
+                        <RevokeAccessMenu
+                          label={USER_DETAIL_PANEL.removeAccess}
+                          menuLabel={USER_DETAIL_PANEL.actionsMenuLabel}
+                          isSubmitting={revokingId === est.id}
+                          onRevoke={() => handleRemoveAccess(est.id)}
+                        />
                       </div>
                     ))}
                   </div>

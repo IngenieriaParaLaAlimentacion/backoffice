@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { StatusCodes } from "http-status-codes";
-import { Menu } from "@base-ui/react/menu";
 import { useAuth } from "@/context/AuthContext";
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
 import { revokeEstablishmentsAction } from "@/services/admin.service";
@@ -10,8 +9,8 @@ import { ApiError } from "@/lib/apiError";
 import { RelationStatus } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
+import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
   RELATION_STATUS_LABELS,
@@ -19,10 +18,7 @@ import {
   USER_STATUS_LABELS,
 } from "@/constants/establishments";
 import { EMPTY_VALUE, formatDateTime } from "@/lib/format";
-import { Loader2, MoreVertical, Search, UserMinus } from "lucide-react";
-
-const MENU_ITEM_CLASS =
-  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none cursor-pointer data-[highlighted]:bg-foreground/10 data-[disabled]:cursor-not-allowed data-[disabled]:text-muted-foreground data-[disabled]:data-[highlighted]:bg-transparent";
+import { Loader2, Search } from "lucide-react";
 
 const RELATION_STATUS_CLASS: Record<RelationStatus, string> = {
   approved: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
@@ -221,9 +217,11 @@ export default function EstablishmentFieldWorkersList({
                     </td>
                     <td className="w-12 px-4 py-3">
                       {worker.relation_status === "approved" && (
-                        <FieldWorkerActionsMenu
+                        <RevokeAccessMenu
+                          label={COPY.removeAccess}
+                          menuLabel={COPY.actionsMenuLabel}
                           isSubmitting={revokingId === worker.id}
-                          onRemoveAccess={() => handleRemoveAccess(worker.id)}
+                          onRevoke={() => handleRemoveAccess(worker.id)}
                         />
                       )}
                     </td>
@@ -249,9 +247,11 @@ export default function EstablishmentFieldWorkersList({
                     </span>
                   </div>
                   {worker.relation_status === "approved" && (
-                    <FieldWorkerActionsMenu
+                    <RevokeAccessMenu
+                      label={COPY.removeAccess}
+                      menuLabel={COPY.actionsMenuLabel}
                       isSubmitting={revokingId === worker.id}
-                      onRemoveAccess={() => handleRemoveAccess(worker.id)}
+                      onRevoke={() => handleRemoveAccess(worker.id)}
                     />
                   )}
                 </div>
@@ -287,43 +287,5 @@ export default function EstablishmentFieldWorkersList({
         </>
       )}
     </div>
-  );
-}
-
-/** Kebab menu, matching SurveyActionsMenu's pattern. */
-function FieldWorkerActionsMenu({
-  isSubmitting,
-  onRemoveAccess,
-}: {
-  isSubmitting: boolean;
-  onRemoveAccess: () => void;
-}) {
-  return (
-    <Menu.Root>
-      <Menu.Trigger
-        disabled={isSubmitting}
-        render={<Button variant="ghost" size="icon-sm" />}
-        title={COPY.actionsMenuLabel}
-      >
-        {isSubmitting ? (
-          <Loader2 className="animate-spin" size={14} />
-        ) : (
-          <MoreVertical size={14} />
-        )}
-      </Menu.Trigger>
-      <Menu.Portal>
-        <Menu.Positioner side="bottom" align="end" sideOffset={4}>
-          <Menu.Popup className="min-w-[180px] rounded-xl border bg-background p-1 shadow-xl">
-            <Menu.Item
-              className={`${MENU_ITEM_CLASS} text-destructive data-[highlighted]:bg-destructive/20`}
-              onClick={onRemoveAccess}
-            >
-              <UserMinus size={14} />
-              {COPY.removeAccess}
-            </Menu.Item>
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
   );
 }

@@ -1,7 +1,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { getUserAction } from "@/services/admin.service";
 import { AdminUserDetail } from "@/types/admin";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useUserDetail(userId: string | null) {
   const { makeAuthorizedRequest } = useAuth();
@@ -9,36 +9,37 @@ export function useUserDetail(userId: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchUser = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await getUserAction(makeAuthorizedRequest, id);
+        setUser(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Error al cargar el perfil",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [makeAuthorizedRequest],
+  );
+
   useEffect(() => {
     if (!userId) {
       setUser(null);
       setError(null);
       return;
     }
+    void fetchUser(userId);
+  }, [userId, fetchUser]);
 
-    let active = true;
-    setIsLoading(true);
-    setError(null);
+  /** Re-fetches the open user, e.g. after an action invalidates the panel. */
+  const refetch = useCallback(() => {
+    if (userId) void fetchUser(userId);
+  }, [userId, fetchUser]);
 
-    getUserAction(makeAuthorizedRequest, userId)
-      .then((data) => {
-        if (active) setUser(data);
-      })
-      .catch((err) => {
-        if (active) {
-          setError(
-            err instanceof Error ? err.message : "Error al cargar el perfil",
-          );
-        }
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [userId, makeAuthorizedRequest]);
-
-  return { user, isLoading, error };
+  return { user, isLoading, error, refetch };
 }

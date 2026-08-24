@@ -151,4 +151,11 @@ export const USER_DETAIL_PANEL = {
     description: "Descripción",
     establishments: "Establecimientos",
   },
+  actionsMenuLabel: "Más acciones",
+  removeAccess: "Quitar acceso",
+  removeAccessConfirmDialog:
+    "¿Quitar el acceso de este relevador a este comedor? Podrá volver a solicitarlo más adelante.",
+  removeAccessError: "No se pudo quitar el acceso",
+  removeAccessConflict:
+    "El acceso a este comedor ya no está aprobado; se actualizó la lista.",
 } as const;
