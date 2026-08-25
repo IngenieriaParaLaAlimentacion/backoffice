@@ -108,7 +108,8 @@ npm run typecheck
 
 ## Contributing
 
-See [`CLAUDE.md`](CLAUDE.md) and [`docs/`](docs/) for architecture and coding
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the development workflow, and
+[`CLAUDE.md`](CLAUDE.md) / [`docs/`](docs/) for architecture and coding
 conventions.
 
 ---

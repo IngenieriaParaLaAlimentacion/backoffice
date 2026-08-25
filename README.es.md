@@ -111,7 +111,8 @@ commit vía Husky.
 
 ## Contribuir
 
-Consultá [`CLAUDE.md`](CLAUDE.md) y [`docs/`](docs/) para conocer la
+Consultá [`CONTRIBUTING.md`](CONTRIBUTING.md) para el flujo de trabajo de
+desarrollo, y [`CLAUDE.md`](CLAUDE.md) / [`docs/`](docs/) para conocer la
 arquitectura y las convenciones de código.
 
 ---
