@@ -1,16 +1,23 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { listEstablishmentsAction } from "@/services/establishment.service";
+import {
+  EstablishmentFilters,
+  exportEstablishmentsAction,
+  listEstablishmentsAction,
+} from "@/services/establishment.service";
 import { EstablishmentResponse, EstablishmentSortOrder } from "@/types/admin";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
+import ExportButton from "@/components/listings/ExportButton";
+import { useCsvExport } from "@/hooks/useCsvExport";
+import { EXPORT_FILENAMES } from "@/constants/exports";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -22,6 +29,7 @@ import {
 } from "@/components/listings/RowAffordance";
 import { Loader2, Plus, Search } from "lucide-react";
 import {
+  ESTABLISHMENT_FORM_FIELDS,
   ESTABLISHMENT_SORT_OPTIONS,
   ESTABLISHMENTS_LIST_PAGE,
 } from "@/constants/establishments";
@@ -50,7 +58,7 @@ function parsePage(value: string | null) {
 }
 
 function EstablishmentsContent() {
-  const { makeAuthorizedRequest } = useAuth();
+  const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -58,6 +66,8 @@ function EstablishmentsContent() {
   // Filters live in the query string so that going back from an establishment
   // detail restores them (and the scroll position) for free.
   const search = searchParams.get("search") ?? "";
+  const cityFilter = searchParams.get("city") ?? "";
+  const provinceFilter = searchParams.get("province") ?? "";
   const sortOrder = parseSortOrder(searchParams.get("sort_order"));
   const page = parsePage(searchParams.get("page"));
 
@@ -68,16 +78,36 @@ function EstablishmentsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Local mirror so typing stays responsive; the debounce writes to the URL.
+  // Local mirrors so typing stays responsive; the debounce writes to the URL.
   const [searchInput, setSearchInput] = useState(search);
+  const [cityInput, setCityInput] = useState(cityFilter);
+  const [provinceInput, setProvinceInput] = useState(provinceFilter);
+
+  const { isExporting, error: exportError, runExport } = useCsvExport();
 
   const updateParams = useCallback(
-    (next: Partial<{ search: string; sort_order: string; page: number }>) => {
+    (
+      next: Partial<{
+        search: string;
+        city: string;
+        province: string;
+        sort_order: string;
+        page: number;
+      }>,
+    ) => {
       const params = new URLSearchParams(searchParams.toString());
 
       if (next.search !== undefined) {
         if (next.search) params.set("search", next.search);
         else params.delete("search");
+      }
+      if (next.city !== undefined) {
+        if (next.city) params.set("city", next.city);
+        else params.delete("city");
+      }
+      if (next.province !== undefined) {
+        if (next.province) params.set("province", next.province);
+        else params.delete("province");
       }
       if (next.sort_order !== undefined) {
         if (next.sort_order && next.sort_order !== DEFAULT_SORT_ORDER)
@@ -98,27 +128,40 @@ function EstablishmentsContent() {
   );
 
   useEffect(() => {
-    if (searchInput === search) return;
+    if (
+      searchInput === search &&
+      cityInput === cityFilter &&
+      provinceInput === provinceFilter
+    )
+      return;
     const timeout = setTimeout(() => {
-      updateParams({ search: searchInput, page: 1 });
+      updateParams({
+        search: searchInput,
+        city: cityInput,
+        province: provinceInput,
+        page: 1,
+      });
     }, FILTER_DEBOUNCE_MS);
     return () => clearTimeout(timeout);
-  }, [searchInput, search, updateParams]);
+  }, [
+    searchInput,
+    search,
+    cityInput,
+    cityFilter,
+    provinceInput,
+    provinceFilter,
+    updateParams,
+  ]);
 
   const fetchEstablishments = useCallback(
-    async (
-      currentPage: number,
-      currentSearch: string,
-      currentSortOrder: EstablishmentSortOrder,
-    ) => {
+    async (currentPage: number, currentFilters: EstablishmentFilters) => {
       setIsLoading(true);
       setError(null);
       try {
         const data = await listEstablishmentsAction(makeAuthorizedRequest, {
           page: currentPage,
           page_size: PAGE_SIZE,
-          search: currentSearch || undefined,
-          sort_order: currentSortOrder,
+          ...currentFilters,
         });
         setEstablishments(data.items);
         setTotalPages(data.total_pages);
@@ -135,9 +178,26 @@ function EstablishmentsContent() {
     [makeAuthorizedRequest],
   );
 
+  // The filters the listing is showing; the export sends the very same ones.
+  const filters: EstablishmentFilters = useMemo(
+    () => ({
+      search: search || undefined,
+      city: cityFilter || undefined,
+      province: provinceFilter || undefined,
+      sort_order: sortOrder,
+    }),
+    [search, cityFilter, provinceFilter, sortOrder],
+  );
+
   useEffect(() => {
-    fetchEstablishments(page, search, sortOrder);
-  }, [fetchEstablishments, page, search, sortOrder]);
+    fetchEstablishments(page, filters);
+  }, [fetchEstablishments, page, filters]);
+
+  const handleExport = () =>
+    runExport(
+      () => exportEstablishmentsAction(makeAuthorizedDownload, filters),
+      EXPORT_FILENAMES.establishments,
+    );
 
   const detailHref = (id: string) => `/dashboard/establishments/${id}`;
 
@@ -153,13 +213,21 @@ function EstablishmentsContent() {
               {ESTABLISHMENTS_LIST_PAGE.subtitle}
             </p>
           </div>
-          <Link
-            href="/dashboard/establishments/create"
-            className={buttonVariants({ size: "sm", className: "self-start" })}
-          >
-            <Plus size={14} />
-            {ESTABLISHMENTS_LIST_PAGE.createButton}
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 self-start">
+            <ExportButton
+              isExporting={isExporting}
+              onClick={handleExport}
+              disabled={establishments.length === 0}
+              className=""
+            />
+            <Link
+              href="/dashboard/establishments/create"
+              className={buttonVariants({ size: "sm" })}
+            >
+              <Plus size={14} />
+              {ESTABLISHMENTS_LIST_PAGE.createButton}
+            </Link>
+          </div>
         </div>
 
         <Separator />
@@ -185,6 +253,30 @@ function EstablishmentsContent() {
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENT_FORM_FIELDS.city.label}
+            </label>
+            <Input
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              placeholder={ESTABLISHMENT_FORM_FIELDS.city.placeholder}
+              className="w-full sm:w-40"
+            />
+          </div>
+
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">
+              {ESTABLISHMENT_FORM_FIELDS.province.label}
+            </label>
+            <Input
+              value={provinceInput}
+              onChange={(e) => setProvinceInput(e.target.value)}
+              placeholder={ESTABLISHMENT_FORM_FIELDS.province.placeholder}
+              className="w-full sm:w-40"
+            />
+          </div>
+
+          <div className="flex w-full flex-col gap-1 sm:w-auto">
+            <label className="text-xs text-muted-foreground">
               {ESTABLISHMENTS_LIST_PAGE.sortLabel}
             </label>
             <select
@@ -206,6 +298,12 @@ function EstablishmentsContent() {
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
             {error}
+          </div>
+        )}
+
+        {exportError && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+            {exportError}
           </div>
         )}
 
