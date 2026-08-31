@@ -76,6 +76,47 @@ shadcn (`components.json`, style `base-nova`, base color `neutral`) generates in
 Tailwind v4 (`app/globals.css`, no separate tailwind config file — `components.json`
 points `tailwind.config` at `""`).
 
+## Theme
+
+The palette is **"Raíz"**, the same one the mobile app ships (its `Palette.kt` /
+`KomoStyles.kt` are the upstream source). It has three layers and you should only ever
+touch the first two:
+
+1. **`app/globals.css`** — the literal colors. Every hex in the design lives in the
+   `:root` block and nowhere else, with its Spanish spec name in a comment. `@theme
+inline` above it maps each one to a Tailwind utility.
+2. **`constants/theme.ts`** — the _tone_ layer: `Tone` (`critical`/`danger`/`warning`/
+   `success`/`neutral`) and the pill/banner/row class maps it resolves to, plus the
+   shared dialog scrim and the mono `DATA_CLASS`. A feature decides _which tone_ a
+   status is (`RELATION_STATUS_TONE`, `SEVERITY_TONE`, …), never which color.
+3. **Components** — consume utilities only. A raw hex or a Tailwind palette color
+   (`emerald-500`, `amber-600`) in a component is a bug: the palette has no orange, no
+   emerald and no amber, so those colors are visibly off-brand and invisible to a
+   future re-theme.
+
+Three things worth knowing before changing values:
+
+- **The palette is light-only.** There is no theme provider and nothing adds `.dark`, so
+  `dark:` utilities never fire — but `@custom-variant dark (&:is(.dark *))` must stay
+  declared, or Tailwind falls back to its `prefers-color-scheme` default and the
+  leftover `dark:` classes in `components/ui/` would activate on a dark OS.
+- **Contrast constraints are load-bearing, not preferences.** White on mustard is 2.6:1,
+  which is why `--primary-foreground` is ink. Mustard as _text_ on paper fails, which is
+  why `--warning` points at mostaza oscura `#8A6614` and links use `--accent-foreground`
+  (salvia profunda). Ladrillo on tierra oscura is unreadable, which is why the sidebar
+  carries its own `--sidebar-destructive`.
+- **The sidebar is a dark surface with its own scale.** Anything inside it uses
+  `--sidebar-*`; `text-foreground`/`text-primary` there resolve to ink and mustard and
+  fail. The active item is tierra media with a mustard left rail
+  (`components/SideBarItem.tsx`).
+
+Typography is three families, mirroring mobile's type roles: **Fraunces** for
+display/titles (`font-heading`, applied to `h1`–`h4` in the base layer), **Work Sans**
+for body and UI (`font-sans`), **IBM Plex Mono** for numbers read as data
+(`font-mono` via `DATA_CLASS` — counters, measurements, stamped dates, but not numbers
+inside a sentence). The brand mark is `components/BrandMark.tsx` (inline SVG) and the
+mark + wordmark lockup is `components/BrandLockup.tsx`.
+
 ## Route groups
 
 `app/(auth)/` holds unauthenticated screens (signin, invite, forgot/reset password,

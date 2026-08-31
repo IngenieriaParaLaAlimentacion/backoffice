@@ -50,6 +50,12 @@ reasoning behind their shape and are easy to "fix" into something that quietly b
   (`constants/<domain>.ts`), storage keys, and API/schema types each have exactly one
   place to live — see `docs/conventions.md` for the full pattern and where to put new
   ones.
+- **Never write a color in a component.** The "Raíz" palette's literal hexes live in
+  `app/globals.css` and its status tones in `constants/theme.ts`; a raw hex or a
+  Tailwind palette class (`emerald-500`, `amber-600`) is off-brand by construction —
+  the palette has no orange, emerald or amber. See `docs/architecture.md` § Theme,
+  which also covers the light-only constraint, the contrast rules that pin
+  `--primary-foreground` to ink, and the sidebar's separate `--sidebar-*` scale.
 - Full Next.js-specific conventions (async `params`, co-location, routing/font/image
   APIs, env var prefixing, the loading/error-state pattern, metadata) are in
   `docs/conventions.md`.
