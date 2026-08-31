@@ -2,128 +2,160 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/*
+ * The palette is light-only (warm paper), the same call mobile made in
+ * `Palette.kt`. There is no theme provider and nothing ever adds `.dark`, so
+ * `dark:` utilities are inert — but the custom variant has to stay declared,
+ * otherwise Tailwind falls back to its built-in `prefers-color-scheme` dark
+ * variant and every leftover `dark:` class in `components/ui/` would fire for
+ * users on a dark OS.
+ */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  --font-heading: var(--font-heading);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-destructive: var(--sidebar-destructive);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-overlay: var(--overlay);
+  --color-destructive-container: var(--destructive-container);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-warning-container: var(--warning-container);
+  --color-warning: var(--warning);
+  --color-success-container: var(--success-container);
+  --color-success: var(--success);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * The "Raíz" palette, ported from the mobile app
+ * (`core/design_system/theme/Palette.kt` + `KomoStyles.kt`). Spanish names are
+ * the design spec's own. These are the only literal colors in the codebase —
+ * everything else consumes them through the utilities mapped above.
+ *
+ * Two values deliberately diverge from mobile: `--card` is white and `--muted`
+ * is `#F1EFE4`, per the web mockup. Mobile's `#FDFBF4` / `#EDEADD` are marked
+ * "derived" in its own source precisely because the spec omits surfaces mobile
+ * doesn't have; the web has the mockup, so the mockup wins.
+ */
 :root {
-    --background: #f6f4fb;
-    --foreground: oklch(0.145 0 0);
-    --card: #ffffff;
-    --card-foreground: oklch(0.145 0 0);
-    --popover: #ffffff;
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: #000000;
-    --primary-foreground: #ffffff;
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: #E2E8F0;
-    --input: #E2E8F0;
-    --ring: #000000;
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.75rem;
-    --sidebar: #ffffff;
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: #000000;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #f6f4fb;
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: #E2E8F0;
-    --sidebar-ring: #000000;
-}
+  /* Surfaces */
+  --background: #f6f4ec; /* papel cálido */
+  --foreground: #26251f; /* tinta */
+  --card: #ffffff;
+  --card-foreground: #26251f;
+  --popover: #ffffff;
+  --popover-foreground: #26251f;
+  --secondary: #f1efe4; /* banda de encabezado de tabla */
+  --secondary-foreground: #26251f;
+  --muted: #f1efe4;
+  --muted-foreground: #6b6759; /* tinta suave */
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+  /* Action. Ink on mustard is 6.0:1; white on mustard is 2.6:1 — never white. */
+  --primary: #c99a2e; /* mostaza */
+  --primary-foreground: #26251f;
+
+  /* `accent` is the hover surface, not the brand green. */
+  --accent: #e6ebdc; /* salvia pálida */
+  --accent-foreground: #4e6339; /* salvia profunda */
+
+  /* State. The text tones are the ones that pass AA on paper: mustard
+     * `#C99A2E` as text fails, so `--warning` points at mostaza oscura. */
+  --success: #4e6339; /* salvia profunda */
+  --success-container: #e6ebdc;
+  --warning: #8a6614; /* mostaza oscura */
+  --warning-container: #f7ead0;
+  --destructive: #a9432e; /* ladrillo */
+  --destructive-foreground: #f6f4ec;
+  --destructive-container: #f1e1da; /* ladrillo claro */
+
+  /* Lines */
+  --border: #ded9c8; /* línea papel */
+  --input: #ded9c8;
+  --ring: #4e6339;
+
+  /* Scrim base for every dialog/drawer backdrop — use as `bg-overlay/45`.
+     * Warm ink rather than black, so the veil matches the paper. */
+  --overlay: #26251f;
+
+  --chart-1: #7a8f5c; /* salvia */
+  --chart-2: #4e6339; /* salvia profunda */
+  --chart-3: #c99a2e; /* mostaza */
+  --chart-4: #8a6614; /* mostaza oscura */
+  --chart-5: #26362a; /* tierra oscura */
+
+  /* Sidebar — a dark-earth surface, so it carries its own foreground scale.
+     * Ink-on-earth is unreadable, hence dimmed paper for inactive items
+     * (~6.8:1) and a lightened brick for the destructive action. */
+  --sidebar: #26362a; /* tierra oscura */
+  --sidebar-foreground: #f6f4ec; /* papel cálido */
+  --sidebar-muted-foreground: #c7cbb8;
+  --sidebar-primary: #c99a2e; /* mostaza — the active-item rail */
+  --sidebar-primary-foreground: #26251f;
+  --sidebar-accent: #33452f; /* tierra media — active/hover fill */
+  --sidebar-accent-foreground: #f6f4ec;
+  --sidebar-border: #33452f;
+  --sidebar-ring: #7a8f5c; /* salvia */
+  --sidebar-destructive: #c88a75;
+
+  /* 10px. Maps onto mobile's 4/8/16dp corner scale: sm 6, md 8, lg 10, xl 14. */
+  --radius: 0.625rem;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
+  /* Mobile's `display`/`title` type roles are Fraunces; headings inherit it
+   * here so screens don't have to opt in one by one. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
 }
