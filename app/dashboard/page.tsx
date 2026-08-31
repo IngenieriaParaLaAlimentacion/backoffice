@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Building,
@@ -23,7 +22,10 @@ import { listEstablishmentRequestsAction } from "@/services/establishmentRequest
 import { ProfileResponse } from "@/types/user";
 import { DashboardIndicators } from "@/types/survey";
 import { navItems } from "@/components/SideBar";
+import BrandMark from "@/components/BrandMark";
 import { Card } from "@/components/ui/card";
+import { BRAND } from "@/constants/brand";
+import { DATA_CLASS } from "@/constants/theme";
 import { DASHBOARD_INDICATORS } from "@/constants/surveys";
 import { UserStatus } from "@/types/establishment";
 import { usePendingCount } from "@/hooks/usePendingCount";
@@ -65,15 +67,16 @@ function IndicatorCard({
       <span
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
           emphasize
-            ? "bg-destructive/15 text-destructive"
-            : "bg-primary/10 text-primary"
+            ? "bg-destructive-container text-destructive"
+            : "bg-accent text-accent-foreground"
         }`}
       >
         {icon}
       </span>
       <div className="flex flex-col">
+        {/* An indicator is a number read as data, so it takes the mono role. */}
         <span
-          className={`text-xl font-bold ${emphasize ? "text-destructive" : ""}`}
+          className={`${DATA_CLASS} text-xl font-medium ${emphasize ? "text-destructive" : ""}`}
         >
           {value}
         </span>
@@ -90,7 +93,7 @@ function IndicatorCard({
   if (href) {
     const hoverClass = emphasize
       ? "hover:border-destructive/50 hover:bg-destructive/10"
-      : "hover:border-primary/40 hover:bg-accent";
+      : "hover:border-accent-foreground/40 hover:bg-accent";
     return (
       <Link
         href={href}
@@ -205,28 +208,20 @@ export default function DashboardPage() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={120}
-              height={120}
-              priority
-              className="h-20 w-20 object-contain sm:h-28 sm:w-28"
+            <BrandMark
+              title={BRAND.logoAlt}
+              className="h-20 w-20 sm:h-24 sm:w-24"
             />
-            <span className="text-center text-xl font-bold leading-tight tracking-tight text-primary sm:text-left sm:text-2xl">
-              Ingeniería
-              <br />
-              Para La
-              <br />
-              Alimentación
+            <span className="font-heading text-center text-3xl font-semibold leading-none sm:text-left sm:text-4xl">
+              {BRAND.name}
             </span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">¡Bienvenido!</h1>
+          <h1 className="font-heading text-3xl font-semibold">¡Bienvenido!</h1>
         </div>
 
         {/* KPI Indicators (CA4) */}
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-sans text-sm font-medium text-muted-foreground">
             {DASHBOARD_INDICATORS.title}
           </h2>
           {indicatorsLoading ? (
@@ -330,7 +325,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-sans text-sm font-medium text-muted-foreground">
             Accesos disponibles
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -338,9 +333,9 @@ export default function DashboardPage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent"
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-accent-foreground/40 hover:bg-accent"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                   {item.icon}
                 </span>
                 <span className="text-sm font-medium">{item.label}</span>
