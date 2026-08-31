@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import MswProvider from "@/mocks/MswProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { Fraunces, IBM_Plex_Mono, Work_Sans } from "next/font/google";
+import { BRAND } from "@/constants/brand";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -26,8 +27,8 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ingeniería Para La Alimentación",
-  description: "Panel de administración.",
+  title: BRAND.name,
+  description: BRAND.description,
 };
 
 export default function RootLayout({
