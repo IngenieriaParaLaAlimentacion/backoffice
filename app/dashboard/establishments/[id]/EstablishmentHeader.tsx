@@ -43,9 +43,7 @@ export default function EstablishmentHeader({
       </Button>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {establishment.name}
-        </h1>
+        <h1 className="text-3xl font-semibold">{establishment.name}</h1>
         <p className="text-muted-foreground text-sm">
           {establishment.formatted_address}
         </p>

@@ -32,9 +32,7 @@ export default function VerifyEmailView({ token }: VerifyEmailViewProps) {
   if (status === "verifying") {
     return (
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Verificando tu email
-        </h1>
+        <h1 className="text-3xl font-semibold">Verificando tu email</h1>
         <p className="text-sm text-muted-foreground">
           Estamos confirmando tu dirección de correo. Aguardá un momento...
         </p>
@@ -46,9 +44,7 @@ export default function VerifyEmailView({ token }: VerifyEmailViewProps) {
     return (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            ¡Email verificado!
-          </h1>
+          <h1 className="text-3xl font-semibold">¡Email verificado!</h1>
           <p className="text-sm text-muted-foreground">
             Tu dirección de correo fue confirmada correctamente. Ya podés
             iniciar sesión.
@@ -64,7 +60,7 @@ export default function VerifyEmailView({ token }: VerifyEmailViewProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-3xl font-semibold">
           No pudimos verificar tu email
         </h1>
         <p className="text-sm text-muted-foreground">

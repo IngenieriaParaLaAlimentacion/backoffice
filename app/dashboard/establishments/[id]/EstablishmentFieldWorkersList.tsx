@@ -71,9 +71,7 @@ export default function EstablishmentFieldWorkersList({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-xl font-bold tracking-tight">
-          {COPY.fieldWorkersTitle}
-        </h2>
+        <h2 className="text-xl font-semibold">{COPY.fieldWorkersTitle}</h2>
         <p className="text-muted-foreground text-sm">
           {COPY.fieldWorkersSubtitle}
         </p>

@@ -20,7 +20,7 @@ function FullScreenMessage({ title, body }: { title: string; body: string }) {
   return (
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col items-center justify-center gap-3 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="text-2xl font-semibold">{title}</h1>
         <p className="text-muted-foreground text-sm">{body}</p>
         <Link href={PANEL_HREF} className={buttonVariants({ size: "sm" })}>
           {COPY.backToPanel}

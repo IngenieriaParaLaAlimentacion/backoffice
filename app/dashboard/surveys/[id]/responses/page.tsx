@@ -219,9 +219,7 @@ export default function ResponsesPage() {
               >
                 <ArrowLeft size={16} />
               </Button>
-              <h1 className="text-3xl font-bold tracking-tight">
-                {RESPONSES_PAGE.title}
-              </h1>
+              <h1 className="text-3xl font-semibold">{RESPONSES_PAGE.title}</h1>
             </div>
             <p className="text-muted-foreground text-sm ml-8">
               {survey ? survey.name : RESPONSES_PAGE.subtitle}

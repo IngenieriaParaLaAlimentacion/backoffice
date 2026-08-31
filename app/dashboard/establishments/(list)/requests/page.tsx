@@ -229,7 +229,7 @@ function EstablishmentRequestsContent() {
     <>
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-semibold">
             {ESTABLISHMENT_REQUESTS_PAGE.title}
           </h1>
           <p className="text-muted-foreground text-sm">

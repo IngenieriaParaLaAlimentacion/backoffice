@@ -58,9 +58,7 @@ export default function EstablishmentSubjectsList({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-xl font-bold tracking-tight">
-          {COPY.subjectsTitle}
-        </h2>
+        <h2 className="text-xl font-semibold">{COPY.subjectsTitle}</h2>
         <p className="text-muted-foreground text-sm">
           {COPY.subjectsSubtitle(total)}
         </p>
