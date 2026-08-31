@@ -61,7 +61,7 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
             {/* The drawer still needs an accessible name; the brand lockup is
                 the visible header, so the title is screen-reader only. */}
             <Dialog.Title className="sr-only">Menú</Dialog.Title>
-            <BrandLockup surface="dark" />
+            <BrandLockup surface="dark" markOnly />
             <Dialog.Close
               render={<button type="button" />}
               className="ml-auto rounded-md p-2 text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"

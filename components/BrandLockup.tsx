@@ -9,7 +9,10 @@ type BrandLockupProps = {
    * chip and only the wordmark inverts.
    */
   surface?: "paper" | "dark";
-  /** Hides the wordmark, e.g. the collapsed sidebar. */
+  /**
+   * Hides the wordmark and leaves the mark to stand alone — what the nav
+   * chrome uses, where the app name is already the browser tab's job.
+   */
   markOnly?: boolean;
   /** `lg` is for standalone use (the auth screen), `default` for chrome. */
   size?: "default" | "lg";

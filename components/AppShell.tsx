@@ -27,7 +27,7 @@ export default function AppShell({ children }: AppShellProps) {
           >
             <Menu size={20} />
           </button>
-          <BrandLockup surface="dark" />
+          <BrandLockup surface="dark" markOnly />
         </header>
 
         <main className="flex flex-col flex-1 overflow-y-auto">{children}</main>

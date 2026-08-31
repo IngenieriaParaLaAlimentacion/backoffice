@@ -133,7 +133,9 @@ export default function SideBar() {
         >
           <Menu size={20} />
         </button>
-        {isSidebarOpen && <BrandLockup surface="dark" className="ml-auto" />}
+        {isSidebarOpen && (
+          <BrandLockup surface="dark" markOnly className="ml-auto" />
+        )}
       </div>
 
       <Separator className="bg-sidebar-border" />
