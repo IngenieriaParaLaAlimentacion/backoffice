@@ -4,6 +4,8 @@ export const EXPORT = {
   label: "Exportar CSV",
   exporting: "Exportando…",
   error: "No se pudo exportar el listado",
+  interrupted: "La exportación se interrumpió. Volvé a intentar.",
+  empty: "No hay datos para exportar",
 };
 
 /**

@@ -18,7 +18,7 @@ import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
 import { useCsvExport } from "@/hooks/useCsvExport";
-import { EXPORT_FILENAMES } from "@/constants/exports";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import { formatDate, formatDateTime, EMPTY_VALUE } from "@/lib/format";
 import {
   CARD_HOVER_CLASS,
@@ -108,6 +108,7 @@ export default function SubjectsPage() {
 
   const [subjects, setSubjects] = useState<SubjectSummary[]>([]);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,6 +188,7 @@ export default function SubjectsPage() {
           ...toSubjectFilters(currentFilters, currentSortOrder),
         });
         setSubjects(data.items);
+        setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(err instanceof Error ? err.message : SUBJECTS_PAGE.loadError);
@@ -245,7 +247,8 @@ export default function SubjectsPage() {
             <ExportButton
               isExporting={isExporting}
               onClick={handleExport}
-              disabled={subjects.length === 0}
+              disabled={isLoading || total === 0}
+              emptyHint={total === 0 ? EXPORT.empty : undefined}
               className=""
             />
             <Button

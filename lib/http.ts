@@ -134,7 +134,19 @@ export async function apiRequest<TRequest = object, TResponse = undefined>(
 export type DownloadedFile = {
   blob: Blob;
   filename: string | null;
+  /**
+   * Data rows the server says it sent, off `X-Export-Row-Count`. Null when it
+   * declares none, as the xlsx export does — nothing to check against.
+   */
+  rowCount: number | null;
 };
+
+/** The declared row count, or null when the header is missing or malformed. */
+function parseRowCount(header: string | null) {
+  if (!header) return null;
+  const value = Number(header);
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
 
 /**
  * Downloads a file (CSV, xlsx) instead of parsing JSON. `apiRequest` can't do
@@ -156,10 +168,11 @@ export async function downloadRequest<TRequest = undefined>(
     );
   }
 
-  return {
-    blob: await response.blob(),
-    filename: parseContentDispositionFilename(
-      response.headers.get("content-disposition"),
-    ),
-  };
+  // Read the headers before the body: a cut stream rejects `blob()`.
+  const filename = parseContentDispositionFilename(
+    response.headers.get("content-disposition"),
+  );
+  const rowCount = parseRowCount(response.headers.get("x-export-row-count"));
+
+  return { blob: await response.blob(), filename, rowCount };
 }

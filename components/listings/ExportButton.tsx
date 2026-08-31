@@ -9,6 +9,8 @@ type ExportButtonProps = {
   onClick: () => void;
   /** Set while the listing has nothing to export. */
   disabled?: boolean;
+  /** Why the button is disabled, shown on hover. */
+  emptyHint?: string;
   label?: string;
   exportingLabel?: string;
   className?: string;
@@ -19,6 +21,7 @@ export default function ExportButton({
   isExporting,
   onClick,
   disabled = false,
+  emptyHint,
   label = EXPORT.label,
   exportingLabel = EXPORT.exporting,
   className = "self-start",
@@ -29,6 +32,7 @@ export default function ExportButton({
       variant="outline"
       className={className}
       disabled={isExporting || disabled}
+      title={emptyHint}
       onClick={onClick}
     >
       {isExporting ? (

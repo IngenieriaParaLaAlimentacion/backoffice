@@ -33,7 +33,7 @@ import { SurveyListItem } from "@/types/survey";
 import CreateSurveyDialog from "@/components/surveys/CreateSurveyDialog";
 import ExportButton from "@/components/listings/ExportButton";
 import { useCsvExport } from "@/hooks/useCsvExport";
-import { EXPORT_FILENAMES } from "@/constants/exports";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
 
 const PAGE_SIZE = 20;
@@ -53,6 +53,7 @@ export default function SurveysPage() {
   const {
     surveys,
     page,
+    total,
     totalPages,
     search,
     setSearch,
@@ -159,7 +160,8 @@ export default function SurveysPage() {
             <ExportButton
               isExporting={isExporting}
               onClick={handleExport}
-              disabled={surveys.length === 0}
+              disabled={isLoading || total === 0}
+              emptyHint={total === 0 ? EXPORT.empty : undefined}
               className=""
             />
             <CreateSurveyDialog />

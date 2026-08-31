@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
 import { useCsvExport } from "@/hooks/useCsvExport";
-import { EXPORT_FILENAMES } from "@/constants/exports";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -74,6 +74,7 @@ function EstablishmentsContent() {
   const [establishments, setEstablishments] = useState<EstablishmentResponse[]>(
     [],
   );
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -164,6 +165,7 @@ function EstablishmentsContent() {
           ...currentFilters,
         });
         setEstablishments(data.items);
+        setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
@@ -217,7 +219,8 @@ function EstablishmentsContent() {
             <ExportButton
               isExporting={isExporting}
               onClick={handleExport}
-              disabled={establishments.length === 0}
+              disabled={isLoading || total === 0}
+              emptyHint={total === 0 ? EXPORT.empty : undefined}
               className=""
             />
             <Link

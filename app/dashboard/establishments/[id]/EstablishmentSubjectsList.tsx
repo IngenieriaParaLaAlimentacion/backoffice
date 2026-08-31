@@ -6,7 +6,7 @@ import { useEstablishmentSubjects } from "@/hooks/useEstablishmentSubjects";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { exportEstablishmentSubjectsAction } from "@/services/establishment.service";
 import ExportButton from "@/components/listings/ExportButton";
-import { EXPORT_FILENAMES } from "@/constants/exports";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import { EstablishmentSubjectSortOrder } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import Pagination from "@/components/Pagination";
@@ -92,7 +92,8 @@ export default function EstablishmentSubjectsList({
         <ExportButton
           isExporting={isExporting}
           onClick={handleExport}
-          disabled={subjects.length === 0}
+          disabled={isLoading || total === 0}
+          emptyHint={total === 0 ? EXPORT.empty : undefined}
         />
       </div>
 
