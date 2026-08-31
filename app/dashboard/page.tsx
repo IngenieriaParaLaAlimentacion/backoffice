@@ -206,7 +206,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-8">
-        <div className="flex flex-col items-center gap-4 text-center">
+        <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
             <BrandMark
               title={BRAND.logoAlt}
