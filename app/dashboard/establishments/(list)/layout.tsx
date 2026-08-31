@@ -81,7 +81,7 @@ export default function EstablishmentsLayout({
               >
                 {tab.label}
                 {showBadge && (
-                  <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-semibold leading-none text-white">
+                  <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-semibold leading-none text-destructive-foreground">
                     {pendingCount}
                   </span>
                 )}

@@ -231,7 +231,7 @@ export default function ResponseDetailPanel({
                   label={RESPONSES_PAGE.score}
                   value={
                     detail.score_fies !== null ? (
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                      <span className="inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
                         {detail.score_fies}
                       </span>
                     ) : (

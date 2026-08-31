@@ -39,7 +39,7 @@ export default function CreateSurveyDialog() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:border-primary/40 hover:bg-accent"
             >
-              <FileText size={20} className="text-primary shrink-0" />
+              <FileText size={20} className="text-accent-foreground shrink-0" />
               <div className="flex flex-col">
                 <span className="text-sm font-medium">Desde cero</span>
                 <span className="text-xs text-muted-foreground">
@@ -53,7 +53,7 @@ export default function CreateSurveyDialog() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:border-primary/40 hover:bg-accent"
             >
-              <Sparkles size={20} className="text-primary shrink-0" />
+              <Sparkles size={20} className="text-accent-foreground shrink-0" />
               <div className="flex flex-col">
                 <span className="text-sm font-medium">Plantilla FIES</span>
                 <span className="text-xs text-muted-foreground">
