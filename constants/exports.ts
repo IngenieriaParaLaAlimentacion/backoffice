@@ -6,6 +6,7 @@ export const EXPORT = {
   error: "No se pudo exportar el listado",
   interrupted: "La exportación se interrumpió. Volvé a intentar.",
   empty: "No hay datos para exportar",
+  closeAria: "Cerrar mensaje",
 };
 
 /**

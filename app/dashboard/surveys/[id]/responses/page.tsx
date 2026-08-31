@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import {
   RESPONSE_SORT_LABELS,
@@ -82,7 +83,12 @@ export default function ResponsesPage() {
   const router = useRouter();
   const surveyId = params.id as string;
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const [survey, setSurvey] = useState<SurveyResponse | null>(null);
   const [responses, setResponses] = useState<SurveyResponseDashboardItem[]>([]);
@@ -317,9 +323,10 @@ export default function ResponsesPage() {
         {/* Kept separate from the listing error so a failed export neither
             replaces the table's own message nor is replaced by it (CA9). */}
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {RESPONSES_PAGE.exportError}: {exportError}
-          </div>
+          <ExportError
+            message={`${RESPONSES_PAGE.exportError}: ${exportError}`}
+            onDismiss={clearExportError}
+          />
         )}
 
         {isLoading ? (

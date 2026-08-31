@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import MeasurementEvolutionChart from "@/components/MeasurementEvolutionChart";
 import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import {
@@ -135,7 +136,12 @@ export default function AnthropometricMeasurementsPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
 
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = [
@@ -435,9 +441,7 @@ export default function AnthropometricMeasurementsPage() {
         )}
 
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {exportError}
-          </div>
+          <ExportError message={exportError} onDismiss={clearExportError} />
         )}
 
         {isLoading ? (

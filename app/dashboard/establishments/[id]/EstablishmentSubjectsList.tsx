@@ -6,6 +6,7 @@ import { useEstablishmentSubjects } from "@/hooks/useEstablishmentSubjects";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { exportEstablishmentSubjectsAction } from "@/services/establishment.service";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import { EstablishmentSubjectSortOrder } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,12 @@ export default function EstablishmentSubjectsList({
     setSortOrder,
   } = useEstablishmentSubjects(establishmentId);
 
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const handleExport = () =>
     runExport(
@@ -137,9 +143,7 @@ export default function EstablishmentSubjectsList({
       )}
 
       {exportError && (
-        <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-          {exportError}
-        </div>
+        <ExportError message={exportError} onDismiss={clearExportError} />
       )}
 
       {isLoading ? (

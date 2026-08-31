@@ -33,6 +33,7 @@ import {
 import { SurveyListItem } from "@/types/survey";
 import CreateSurveyDialog from "@/components/surveys/CreateSurveyDialog";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
@@ -69,7 +70,12 @@ export default function SurveysPage() {
 
   const router = useRouter();
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -211,9 +217,7 @@ export default function SurveysPage() {
         )}
 
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {exportError}
-          </div>
+          <ExportError message={exportError} onDismiss={clearExportError} />
         )}
 
         {actionError && (
