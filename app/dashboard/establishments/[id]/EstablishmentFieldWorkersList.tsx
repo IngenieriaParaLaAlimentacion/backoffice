@@ -3,7 +3,6 @@
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
 import { useRevokeAccess } from "@/hooks/useRevokeAccess";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { RelationStatus } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import Pagination from "@/components/Pagination";
@@ -12,19 +11,12 @@ import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
   RELATION_STATUS_LABELS,
   RELATION_STATUS_OPTIONS,
+  RELATION_STATUS_TONE,
   USER_STATUS_LABELS,
 } from "@/constants/establishments";
+import { PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
 import { EMPTY_VALUE, formatDateTime } from "@/lib/format";
 import { Loader2, Search } from "lucide-react";
-
-const RELATION_STATUS_CLASS: Record<RelationStatus, string> = {
-  approved: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
-  pending: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-  rejected: "bg-destructive/15 text-destructive border-destructive/30",
-  revoked: "bg-muted text-muted-foreground border-border",
-};
-
-const PILL_CLASS = "inline-block rounded-full border px-2 py-0.5 text-xs";
 
 /**
  * Enrollment-based, not activity-based: an approved user with no measurements
@@ -170,7 +162,7 @@ export default function EstablishmentFieldWorkersList({
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`${PILL_CLASS} ${RELATION_STATUS_CLASS[worker.relation_status]}`}
+                        className={`${PILL_CLASS} ${TONE_PILL_CLASS[RELATION_STATUS_TONE[worker.relation_status]]}`}
                       >
                         {RELATION_STATUS_LABELS[worker.relation_status] ??
                           worker.relation_status}
@@ -229,7 +221,7 @@ export default function EstablishmentFieldWorkersList({
 
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`${PILL_CLASS} ${RELATION_STATUS_CLASS[worker.relation_status]}`}
+                    className={`${PILL_CLASS} ${TONE_PILL_CLASS[RELATION_STATUS_TONE[worker.relation_status]]}`}
                   >
                     {RELATION_STATUS_LABELS[worker.relation_status] ??
                       worker.relation_status}

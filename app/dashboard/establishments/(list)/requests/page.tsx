@@ -28,6 +28,7 @@ import {
   ESTABLISHMENT_REQUEST_SORT_OPTIONS,
   ESTABLISHMENT_REQUESTS_PAGE,
 } from "@/constants/establishments";
+import { TONE_BANNER_CLASS } from "@/constants/theme";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -309,13 +310,15 @@ function EstablishmentRequestsContent() {
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-600 text-sm">
+          <div
+            className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${TONE_BANNER_CLASS.success}`}
+          >
             <CircleCheck size={18} className="mt-0.5 shrink-0" />
             <span className="flex-1">{successMessage}</span>
             <button
               type="button"
               onClick={() => setSuccessMessage(null)}
-              className="shrink-0 text-emerald-600/70 hover:text-emerald-600"
+              className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
               aria-label={ESTABLISHMENT_REQUESTS_PAGE.closeAria}
             >
               <X size={16} />

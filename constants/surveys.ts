@@ -3,6 +3,7 @@ import {
   SurveyResponseSortOrder,
   SurveyResponseTarget,
 } from "@/types/survey";
+import { Tone } from "@/constants/theme";
 
 export const RESPONSE_TARGET_LABELS: Record<SurveyResponseTarget, string> = {
   subject: "Sujeto",
@@ -159,3 +160,9 @@ export const DASHBOARD_INDICATORS = {
   pendingEstablishmentCreations: "Establecimientos faltantes",
   notAvailable: "—",
 } as const;
+
+/** A survey is either running or it is not — two tones, one place. */
+export const SURVEY_STATUS_TONE: Record<"active" | "inactive", Tone> = {
+  active: "success",
+  inactive: "neutral",
+};

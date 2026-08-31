@@ -4,6 +4,12 @@ import {
   MeasurementAlert,
   NutritionalStatus,
 } from "@/types/measurement";
+import {
+  PILL_CLASS,
+  Tone,
+  TONE_PILL_CLASS,
+  TONE_ROW_CLASS,
+} from "@/constants/theme";
 
 // Risk styling keyed off the highest-priority alert severity in a row.
 export const SEVERITY_RANK: Record<AlertSeverity, number> = {
@@ -26,28 +32,34 @@ export const NUTRITIONAL_STATUS_LABELS: Record<NutritionalStatus, string> = {
   normal: "Normal",
 };
 
-export const SEVERITY_BADGE_CLASS: Record<AlertSeverity, string> = {
-  critical: "bg-destructive/15 text-destructive border-destructive/30",
-  high: "bg-orange-500/15 text-orange-600 border-orange-500/30",
-  medium: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+/**
+ * The three severity tiers used to be red / orange / amber. The palette has no
+ * orange, so `high` shares the brick hue with `critical` and separates from it
+ * by weight (solid fill vs. tinted container) rather than by hue.
+ */
+export const SEVERITY_TONE: Record<AlertSeverity, Tone> = {
+  critical: "critical",
+  high: "danger",
+  medium: "warning",
 };
 
-export const SEVERITY_ROW_CLASS: Record<AlertSeverity, string> = {
-  critical: "bg-destructive/5",
-  high: "bg-orange-500/5",
-  medium: "bg-amber-500/5",
-};
+const bySeverity = (
+  byTone: Record<Tone, string>,
+): Record<AlertSeverity, string> => ({
+  critical: byTone[SEVERITY_TONE.critical],
+  high: byTone[SEVERITY_TONE.high],
+  medium: byTone[SEVERITY_TONE.medium],
+});
+
+export const SEVERITY_BADGE_CLASS = bySeverity(TONE_PILL_CLASS);
+
+export const SEVERITY_ROW_CLASS = bySeverity(TONE_ROW_CLASS);
 
 /** "Measured and healthy" — never used for a subject without measurements. */
-export const NORMAL_BADGE_CLASS =
-  "bg-emerald-500/15 text-emerald-600 border-emerald-500/30";
+export const NORMAL_BADGE_CLASS = TONE_PILL_CLASS.success;
 
 /** "Not measured" — visually distinct from `normal` on purpose. */
-export const NO_DATA_BADGE_CLASS =
-  "bg-muted text-muted-foreground border-border";
-
-const BADGE_CLASS =
-  "inline-block whitespace-nowrap rounded-full border px-2 py-0.5 text-xs text-center";
+export const NO_DATA_BADGE_CLASS = TONE_PILL_CLASS.neutral;
 
 export function topSeverity(alerts: MeasurementAlert[]): AlertSeverity | null {
   if (alerts.length === 0) return null;
@@ -68,7 +80,7 @@ export function AlertBadge({
   title?: string;
 }) {
   return (
-    <span className={`${BADGE_CLASS} ${className}`} title={title}>
+    <span className={`${PILL_CLASS} ${className}`} title={title}>
       {label}
     </span>
   );

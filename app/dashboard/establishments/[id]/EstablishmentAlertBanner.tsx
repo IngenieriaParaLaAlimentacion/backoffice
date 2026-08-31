@@ -1,23 +1,18 @@
 "use client";
 
 import { EstablishmentAlertStatus } from "@/types/establishment";
-import { AlertSeverity } from "@/types/measurement";
 import {
   AlertBadge,
   NORMAL_BADGE_CLASS,
   NUTRITIONAL_STATUS_LABELS,
   SEVERITY_BADGE_CLASS,
   SEVERITY_RANK,
+  SEVERITY_TONE,
 } from "@/components/AlertBadge";
+import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { ESTABLISHMENT_DASHBOARD_PAGE as COPY } from "@/constants/establishments";
 import { formatPercentage } from "@/lib/format";
 import { CircleCheck, TriangleAlert } from "lucide-react";
-
-const BANNER_CLASS: Record<AlertSeverity, string> = {
-  critical: "border-destructive/30 bg-destructive/10 text-destructive",
-  high: "border-orange-500/30 bg-orange-500/10 text-orange-600",
-  medium: "border-amber-500/30 bg-amber-500/10 text-amber-600",
-};
 
 /**
  * `severity` is the worst severity present among the subjects — not an average
@@ -48,7 +43,9 @@ export default function EstablishmentAlertBanner({
   // `severity: null` means every subject is normal -> neutral/OK banner.
   if (severity === null) {
     return (
-      <div className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-600">
+      <div
+        className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${TONE_BANNER_CLASS.success}`}
+      >
         <CircleCheck size={18} className="mt-0.5 shrink-0" />
         <div className="flex flex-col gap-1">
           <span className="text-sm font-medium">{COPY.noAlerts}</span>
@@ -63,7 +60,7 @@ export default function EstablishmentAlertBanner({
 
   return (
     <div
-      className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${BANNER_CLASS[severity]}`}
+      className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${TONE_BANNER_CLASS[SEVERITY_TONE[severity]]}`}
     >
       <TriangleAlert size={18} className="mt-0.5 shrink-0" />
       <div className="flex flex-col gap-2">
