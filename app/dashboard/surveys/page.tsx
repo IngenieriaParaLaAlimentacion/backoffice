@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   SURVEYS_PAGE,
   SURVEY_FORM,
+  SURVEY_STATUS_TONE,
   RESPONSE_TARGET_LABELS,
 } from "@/constants/surveys";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
@@ -32,9 +33,11 @@ import {
 import { SurveyListItem } from "@/types/survey";
 import CreateSurveyDialog from "@/components/surveys/CreateSurveyDialog";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
+import { TONE_PILL_CLASS } from "@/constants/theme";
 
 const PAGE_SIZE = 20;
 
@@ -67,7 +70,12 @@ export default function SurveysPage() {
 
   const router = useRouter();
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -149,9 +157,7 @@ export default function SurveysPage() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">
-              {SURVEYS_PAGE.title}
-            </h1>
+            <h1 className="text-3xl font-semibold">{SURVEYS_PAGE.title}</h1>
             <p className="text-muted-foreground text-sm">
               {SURVEYS_PAGE.subtitle}
             </p>
@@ -162,7 +168,6 @@ export default function SurveysPage() {
               onClick={handleExport}
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
-              className=""
             />
             <CreateSurveyDialog />
           </div>
@@ -211,9 +216,7 @@ export default function SurveysPage() {
         )}
 
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {exportError}
-          </div>
+          <ExportError message={exportError} onDismiss={clearExportError} />
         )}
 
         {actionError && (
@@ -277,9 +280,11 @@ export default function SurveysPage() {
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                            survey.is_active
-                              ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
-                              : "bg-muted text-muted-foreground border-transparent"
+                            TONE_PILL_CLASS[
+                              SURVEY_STATUS_TONE[
+                                survey.is_active ? "active" : "inactive"
+                              ]
+                            ]
                           }`}
                         >
                           {survey.is_active
@@ -344,9 +349,11 @@ export default function SurveysPage() {
                     </span>
                     <span
                       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                        survey.is_active
-                          ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
-                          : "bg-muted text-muted-foreground border-transparent"
+                        TONE_PILL_CLASS[
+                          SURVEY_STATUS_TONE[
+                            survey.is_active ? "active" : "inactive"
+                          ]
+                        ]
                       }`}
                     >
                       {survey.is_active

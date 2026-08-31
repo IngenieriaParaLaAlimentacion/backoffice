@@ -7,6 +7,7 @@ import {
   EstablishmentRequestSortOrder,
   EstablishmentSortOrder,
 } from "@/types/admin";
+import { Tone } from "@/constants/theme";
 
 export const PAGE_SIZE = 20;
 export const FILTER_DEBOUNCE_MS = 300;
@@ -43,6 +44,14 @@ export const RELATION_STATUS_LABELS: Record<RelationStatus, string> = {
   pending: "Pendiente",
   rejected: "Rechazado",
   revoked: "Revocado",
+};
+
+/** Which tone each enrollment status reads as; the colors are in `constants/theme.ts`. */
+export const RELATION_STATUS_TONE: Record<RelationStatus, Tone> = {
+  approved: "success",
+  pending: "warning",
+  rejected: "danger",
+  revoked: "neutral",
 };
 
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
@@ -165,6 +174,10 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   searchLabel: "Buscar",
   searchPlaceholder: "Nombre o dirección",
   sortLabel: "Ordenar por",
+  filters: {
+    city: "Ciudad",
+    province: "Provincia",
+  },
   noEstablishments: "No hay establecimientos",
   loadError: "Error al cargar establecimientos",
   columns: {

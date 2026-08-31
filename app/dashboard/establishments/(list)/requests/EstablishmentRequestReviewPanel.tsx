@@ -29,6 +29,8 @@ import {
   ESTABLISHMENT_FORM_FIELDS,
   ESTABLISHMENT_REQUEST_REVIEW_PANEL,
 } from "@/constants/establishments";
+import { OVERLAY_CLASS } from "@/constants/theme";
+import { cn } from "@/lib/utils";
 
 type PendingAction = "approve" | "reject" | null;
 
@@ -174,7 +176,7 @@ export default function EstablishmentRequestReviewPanel({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Backdrop className={cn("fixed inset-0 z-40", OVERLAY_CLASS)} />
         <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">

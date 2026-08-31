@@ -16,8 +16,13 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
+import {
+  FilterPanel,
+  FiltersToggle,
+} from "@/components/listings/FiltersToggle";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -29,7 +34,6 @@ import {
 } from "@/components/listings/RowAffordance";
 import { Loader2, Plus, Search } from "lucide-react";
 import {
-  ESTABLISHMENT_FORM_FIELDS,
   ESTABLISHMENT_SORT_OPTIONS,
   ESTABLISHMENTS_LIST_PAGE,
 } from "@/constants/establishments";
@@ -84,7 +88,21 @@ function EstablishmentsContent() {
   const [cityInput, setCityInput] = useState(cityFilter);
   const [provinceInput, setProvinceInput] = useState(provinceFilter);
 
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  // City and province live behind the same collapsible the other listings use.
+  // It starts open when the URL already carries one, so a filter restored by
+  // back-navigation is never hidden behind a closed panel.
+  const [filtersOpen, setFiltersOpen] = useState(
+    () => Boolean(cityFilter) || Boolean(provinceFilter),
+  );
+  const activeFilterCount = [cityInput, provinceInput].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0 || searchInput !== "";
+
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const updateParams = useCallback(
     (
@@ -201,6 +219,15 @@ function EstablishmentsContent() {
       EXPORT_FILENAMES.establishments,
     );
 
+  // Write through to the URL rather than waiting on the debounce: clearing is
+  // a click, and the effect above no-ops once the mirrors and the URL agree.
+  const clearFilters = () => {
+    setSearchInput("");
+    setCityInput("");
+    setProvinceInput("");
+    updateParams({ search: "", city: "", province: "", page: 1 });
+  };
+
   const detailHref = (id: string) => `/dashboard/establishments/${id}`;
 
   return (
@@ -208,7 +235,7 @@ function EstablishmentsContent() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-3xl font-semibold">
               {ESTABLISHMENTS_LIST_PAGE.title}
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -221,7 +248,6 @@ function EstablishmentsContent() {
               onClick={handleExport}
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
-              className=""
             />
             <Link
               href="/dashboard/establishments/create"
@@ -235,67 +261,79 @@ function EstablishmentsContent() {
 
         <Separator />
 
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {ESTABLISHMENTS_LIST_PAGE.searchLabel}
-            </label>
-            <div className="relative w-full sm:w-72">
-              <Search
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                size={16}
-              />
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                {ESTABLISHMENTS_LIST_PAGE.searchLabel}
+              </label>
+              <div className="relative w-full sm:w-72">
+                <Search
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                  size={16}
+                />
+                <Input
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder={ESTABLISHMENTS_LIST_PAGE.searchPlaceholder}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                {ESTABLISHMENTS_LIST_PAGE.sortLabel}
+              </label>
+              <select
+                value={sortOrder}
+                onChange={(e) =>
+                  updateParams({ sort_order: e.target.value, page: 1 })
+                }
+                className={`${SELECT_CLASS} w-full sm:w-56`}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <FiltersToggle
+              open={filtersOpen}
+              onToggle={() => setFiltersOpen((o) => !o)}
+              activeCount={activeFilterCount}
+              hasActiveFilters={hasActiveFilters}
+              onClear={clearFilters}
+            />
+          </div>
+
+          <FilterPanel open={filtersOpen}>
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                {ESTABLISHMENTS_LIST_PAGE.filters.city}
+              </label>
               <Input
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder={ESTABLISHMENTS_LIST_PAGE.searchPlaceholder}
-                className="pl-8"
+                value={cityInput}
+                onChange={(e) => setCityInput(e.target.value)}
+                placeholder={ESTABLISHMENTS_LIST_PAGE.filters.city}
+                className="w-full sm:w-40"
               />
             </div>
-          </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {ESTABLISHMENT_FORM_FIELDS.city.label}
-            </label>
-            <Input
-              value={cityInput}
-              onChange={(e) => setCityInput(e.target.value)}
-              placeholder={ESTABLISHMENT_FORM_FIELDS.city.placeholder}
-              className="w-full sm:w-40"
-            />
-          </div>
-
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {ESTABLISHMENT_FORM_FIELDS.province.label}
-            </label>
-            <Input
-              value={provinceInput}
-              onChange={(e) => setProvinceInput(e.target.value)}
-              placeholder={ESTABLISHMENT_FORM_FIELDS.province.placeholder}
-              className="w-full sm:w-40"
-            />
-          </div>
-
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {ESTABLISHMENTS_LIST_PAGE.sortLabel}
-            </label>
-            <select
-              value={sortOrder}
-              onChange={(e) =>
-                updateParams({ sort_order: e.target.value, page: 1 })
-              }
-              className={`${SELECT_CLASS} w-full sm:w-56`}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs text-muted-foreground">
+                {ESTABLISHMENTS_LIST_PAGE.filters.province}
+              </label>
+              <Input
+                value={provinceInput}
+                onChange={(e) => setProvinceInput(e.target.value)}
+                placeholder={ESTABLISHMENTS_LIST_PAGE.filters.province}
+                className="w-full sm:w-40"
+              />
+            </div>
+          </FilterPanel>
         </div>
 
         {error && (
@@ -305,9 +343,7 @@ function EstablishmentsContent() {
         )}
 
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {exportError}
-          </div>
+          <ExportError message={exportError} onDismiss={clearExportError} />
         )}
 
         {isLoading ? (

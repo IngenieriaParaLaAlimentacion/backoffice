@@ -19,6 +19,8 @@ import EstablishmentDecisionList, {
 } from "./EstablishmentDecisionList";
 import { Check, Loader2, X } from "lucide-react";
 import { PENDING_REQUESTS_PAGE } from "@/constants/users";
+import { OVERLAY_CLASS, PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
+import { cn } from "@/lib/utils";
 
 type PendingAction = "approve" | "reject" | null;
 
@@ -162,7 +164,7 @@ export default function UserRequestReviewPanel({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Backdrop className={cn("fixed inset-0 z-40", OVERLAY_CLASS)} />
         <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex min-w-0 flex-col gap-1">
@@ -175,7 +177,9 @@ export default function UserRequestReviewPanel({
                 {user?.email}
               </Dialog.Description>
               {user && !user.is_email_verified && (
-                <span className="inline-block self-start rounded-full border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-xs text-amber-600">
+                <span
+                  className={`self-start ${PILL_CLASS} ${TONE_PILL_CLASS.warning}`}
+                >
                   {PENDING_REQUESTS_PAGE.emailNotVerified}
                 </span>
               )}

@@ -27,7 +27,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">{label}</h2>
+        <h2 className="text-lg font-semibold">{label}</h2>
         <Button
           size="sm"
           variant="ghost"
@@ -158,10 +158,7 @@ export default function UsersPage() {
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {" "}
-            {USERS_PAGE.title}{" "}
-          </h1>
+          <h1 className="text-3xl font-semibold"> {USERS_PAGE.title} </h1>
           <p className="text-muted-foreground text-sm">
             {" "}
             {USERS_PAGE.subtitle}{" "}

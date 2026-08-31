@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
@@ -127,7 +128,12 @@ export default function SubjectsPage() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = [
@@ -236,9 +242,7 @@ export default function SubjectsPage() {
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">
-              {SUBJECTS_PAGE.title}
-            </h1>
+            <h1 className="text-3xl font-semibold">{SUBJECTS_PAGE.title}</h1>
             <p className="text-muted-foreground text-sm">
               {SUBJECTS_PAGE.subtitle}
             </p>
@@ -249,7 +253,6 @@ export default function SubjectsPage() {
               onClick={handleExport}
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
-              className=""
             />
             <Button
               size="sm"
@@ -441,9 +444,7 @@ export default function SubjectsPage() {
         )}
 
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {exportError}
-          </div>
+          <ExportError message={exportError} onDismiss={clearExportError} />
         )}
 
         {isLoading ? (

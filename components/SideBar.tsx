@@ -12,7 +12,7 @@ import {
   Ruler,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import BrandLockup from "@/components/BrandLockup";
 import SideBarItem from "./SideBarItem";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -23,6 +23,15 @@ const DRAWER_OPEN_WIDTH = 220;
 const DRAWER_CLOSED_WIDTH = 60;
 const DRAWER_MIN_WIDTH = 180;
 const DRAWER_MAX_WIDTH = 300;
+
+/**
+ * Logout sits on the dark-earth surface, where raw `--destructive` (ladrillo
+ * `#A9432E`) is effectively unreadable. `--sidebar-destructive` is the
+ * lightened brick the design uses there. Shared with `MobileNav`, whose drawer
+ * is the same surface.
+ */
+export const LOGOUT_BUTTON_CLASS =
+  "mx-2 mb-3 bg-transparent text-sidebar-destructive border-sidebar-destructive/60 hover:bg-sidebar-destructive/15 hover:text-sidebar-destructive";
 
 export const navItems = [
   {
@@ -110,7 +119,7 @@ export default function SideBar() {
 
   return (
     <aside
-      className={`relative hidden md:flex md:flex-col h-dvh bg-card border-r border-border overflow-hidden shrink-0 ${
+      className={`relative hidden md:flex md:flex-col h-dvh bg-sidebar text-sidebar-foreground border-r border-sidebar-border overflow-hidden shrink-0 ${
         isResizing ? "" : "transition-[width] duration-200 ease-in-out"
       }`}
       style={{ width: drawerWidth }}
@@ -118,23 +127,18 @@ export default function SideBar() {
       <div className="h-16 flex items-center gap-2 px-2">
         <button
           onClick={() => setIsSidebarOpen((prev) => !prev)}
-          className="p-2 rounded-md text-primary hover:bg-accent transition-colors"
+          aria-label={isSidebarOpen ? "Contraer menú" : "Expandir menú"}
+          aria-expanded={isSidebarOpen}
+          className="p-2 rounded-md text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
         >
           <Menu size={20} />
         </button>
         {isSidebarOpen && (
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={32}
-            height={32}
-            priority
-            className="ml-auto h-8 w-8 shrink-0 object-contain"
-          />
+          <BrandLockup surface="dark" markOnly className="ml-auto" />
         )}
       </div>
 
-      <Separator />
+      <Separator className="bg-sidebar-border" />
 
       <nav className="flex flex-col flex-1 gap-1 px-2 py-2">
         {navItems.map((item) => (
@@ -158,7 +162,7 @@ export default function SideBar() {
       {isSidebarOpen && (
         <Button
           variant="outline"
-          className="mx-2 mb-3 text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive"
+          className={LOGOUT_BUTTON_CLASS}
           onClick={handleLogout}
         >
           <LogOut size={16} />
@@ -169,7 +173,7 @@ export default function SideBar() {
       {isSidebarOpen && (
         <div
           onMouseDown={handleResizeStart}
-          className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/50"
+          className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-sidebar-primary/40 active:bg-sidebar-primary/60"
         />
       )}
     </aside>

@@ -6,6 +6,7 @@ import { useEstablishmentSubjects } from "@/hooks/useEstablishmentSubjects";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { exportEstablishmentSubjectsAction } from "@/services/establishment.service";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import { EstablishmentSubjectSortOrder } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,12 @@ export default function EstablishmentSubjectsList({
     setSortOrder,
   } = useEstablishmentSubjects(establishmentId);
 
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const handleExport = () =>
     runExport(
@@ -82,9 +88,7 @@ export default function EstablishmentSubjectsList({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-bold tracking-tight">
-            {COPY.subjectsTitle}
-          </h2>
+          <h2 className="text-xl font-semibold">{COPY.subjectsTitle}</h2>
           <p className="text-muted-foreground text-sm">
             {COPY.subjectsSubtitle(total)}
           </p>
@@ -139,9 +143,7 @@ export default function EstablishmentSubjectsList({
       )}
 
       {exportError && (
-        <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-          {exportError}
-        </div>
+        <ExportError message={exportError} onDismiss={clearExportError} />
       )}
 
       {isLoading ? (

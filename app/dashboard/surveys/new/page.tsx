@@ -72,9 +72,7 @@ function NewSurveyContent() {
         </Link>
 
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {SURVEY_FORM.createTitle}
-          </h1>
+          <h1 className="text-3xl font-semibold">{SURVEY_FORM.createTitle}</h1>
         </div>
 
         <Separator />

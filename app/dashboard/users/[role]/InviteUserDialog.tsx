@@ -15,6 +15,8 @@ import {
 import { useAuth, AuthDispatcher } from "@/context/AuthContext";
 import { resendInviteAction } from "@/services/admin.service";
 import { INVITE_USER_DIALOG } from "@/constants/users";
+import { OVERLAY_CLASS } from "@/constants/theme";
+import { cn } from "@/lib/utils";
 
 type InviteUserDialogProps = {
   label: string;
@@ -90,7 +92,7 @@ export default function InviteUserDialog({
         {label}
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Backdrop className={cn("fixed inset-0 z-40", OVERLAY_CLASS)} />
         <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-xl border bg-background p-6 shadow-xl">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex flex-col gap-1">

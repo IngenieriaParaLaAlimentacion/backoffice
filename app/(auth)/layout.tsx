@@ -1,12 +1,17 @@
+import BrandLockup from "@/components/BrandLockup";
+
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-center h-dvh bg-[#f8f9fb] relative overflow-y-auto px-4">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_#e0e7ff_0%,_transparent_50%),radial-gradient(ellipse_at_bottom_right,_#ede9fe_0%,_transparent_50%)] pointer-events-none" />
-      <div className="relative bg-white border border-gray-100 shadow-[0_4px_40px_rgba(0,0,0,0.08)] rounded-2xl px-6 py-10 sm:px-8 sm:py-16 flex flex-col gap-4 w-full max-w-[400px]">
+    <div className="relative flex h-dvh flex-col items-center justify-center gap-6 overflow-y-auto bg-background px-4 py-10">
+      {/* A warm wash in the palette's own greens rather than a tinted grey:
+          two very low-opacity radials, so the paper stays paper. */}
+      <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(ellipse_at_top_left,_var(--accent)_0%,_transparent_45%),radial-gradient(ellipse_at_bottom_right,_var(--warning-container)_0%,_transparent_45%)]" />
+      <BrandLockup size="lg" className="relative" />
+      <div className="relative flex w-full max-w-[400px] flex-col gap-4 rounded-2xl border border-border bg-card px-6 py-10 shadow-[0_4px_40px_rgb(38_37_31_/_0.06)] sm:px-8 sm:py-16">
         {children}
       </div>
     </div>

@@ -56,8 +56,9 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
 - **Fonts** load via `next/font/google` (`app/layout.tsx`), not a `<link>` tag or CSS
   `@import` — keep new fonts on that path for the same reason (no layout shift, no
   render-blocking request).
-- **Images** go through `next/image` (see `components/AppShell.tsx`, `SideBar.tsx`,
-  `MobileNav.tsx`), not a bare `<img>`.
+- **Images** go through `next/image`, not a bare `<img>`. Icons and the brand mark are
+  inline SVG components instead (`components/BrandMark.tsx`, `lucide-react`) — they
+  recolor from tokens and cost no request.
 - **Env vars**: only `NEXT_PUBLIC_*` names are exposed to the client (`API_BASE_URL`,
   `ENABLE_MSW`, the Google Maps key); anything server-only (e.g. `PORT` for
   docker-compose) stays unprefixed. Don't prefix a secret with `NEXT_PUBLIC_` to "make it
@@ -93,6 +94,15 @@ const` object in `constants/<domain>.ts` (e.g. `ESTABLISHMENT_DASHBOARD_PAGE`,
   constants, not literals re-typed at each call site.
 - **Storage keys** are named constants (`constants/tokenStorage.ts`), never a bare
   string literal passed to `localStorage`.
+- **Colors** come from the theme, never from a component. Literal hexes live only in
+  `app/globals.css`; a status's colors come from `constants/theme.ts` (`TONE_PILL_CLASS`,
+  `TONE_BANNER_CLASS`, `TONE_ROW_CLASS`, `OVERLAY_CLASS`). `constants/theme.ts` is the
+  one deliberate exception to the co-location rule above: a tone map is a design decision shared
+  by every screen, so it lives once. What stays per-domain is the _status → tone_
+  mapping and its Spanish label (`RELATION_STATUS_TONE` beside `RELATION_STATUS_LABELS`
+  in `constants/establishments.ts`) — see `docs/architecture.md` § Theme.
+- **Brand strings** (the product name "Raíz", the organization name) come from
+  `constants/brand.ts`, not retyped per screen.
 - **Sort/filter option lists** pair a `{ value, label }[]` array (for
   `<select>`/multi-select options) with a `Record<Value, string>` label map (for
   rendering a value elsewhere, e.g. `RELATION_STATUS_OPTIONS` +

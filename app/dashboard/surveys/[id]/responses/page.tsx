@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import {
   RESPONSE_SORT_LABELS,
@@ -82,7 +83,12 @@ export default function ResponsesPage() {
   const router = useRouter();
   const surveyId = params.id as string;
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const [survey, setSurvey] = useState<SurveyResponse | null>(null);
   const [responses, setResponses] = useState<SurveyResponseDashboardItem[]>([]);
@@ -201,9 +207,7 @@ export default function ResponsesPage() {
               >
                 <ArrowLeft size={16} />
               </Button>
-              <h1 className="text-3xl font-bold tracking-tight">
-                {RESPONSES_PAGE.title}
-              </h1>
+              <h1 className="text-3xl font-semibold">{RESPONSES_PAGE.title}</h1>
             </div>
             <p className="text-muted-foreground text-sm ml-8">
               {survey ? survey.name : RESPONSES_PAGE.subtitle}
@@ -228,6 +232,7 @@ export default function ResponsesPage() {
             disabled={responses.length === 0}
             label={RESPONSES_PAGE.export}
             exportingLabel={RESPONSES_PAGE.exporting}
+            className="self-start"
           />
         </div>
 
@@ -319,9 +324,10 @@ export default function ResponsesPage() {
         {/* Kept separate from the listing error so a failed export neither
             replaces the table's own message nor is replaced by it (CA9). */}
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {RESPONSES_PAGE.exportError}: {exportError}
-          </div>
+          <ExportError
+            message={`${RESPONSES_PAGE.exportError}: ${exportError}`}
+            onDismiss={clearExportError}
+          />
         )}
 
         {isLoading ? (
@@ -399,7 +405,7 @@ export default function ResponsesPage() {
                       </td>
                       <td className="px-4 py-3">
                         {item.score_fies !== null ? (
-                          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                          <span className="inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
                             {item.score_fies}
                           </span>
                         ) : (
@@ -434,7 +440,7 @@ export default function ResponsesPage() {
                       </span>
                     </RowLink>
                     {item.score_fies !== null && (
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      <span className="inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
                         FIES {item.score_fies}
                       </span>
                     )}

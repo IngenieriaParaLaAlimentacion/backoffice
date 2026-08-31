@@ -19,6 +19,7 @@ import EstablishmentAccessReviewPanel from "./EstablishmentAccessReviewPanel";
 import { useRefreshRequestCounts } from "../layout";
 import { CircleCheck, ClipboardCheck, Loader2, Search, X } from "lucide-react";
 import { ESTABLISHMENT_ACCESS_REQUESTS_PAGE } from "@/constants/users";
+import { TONE_BANNER_CLASS } from "@/constants/theme";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -134,7 +135,7 @@ function EstablishmentAccessRequestsContent() {
     <>
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-semibold">
             {ESTABLISHMENT_ACCESS_REQUESTS_PAGE.title}
           </h1>
           <p className="text-muted-foreground text-sm">
@@ -173,13 +174,15 @@ function EstablishmentAccessRequestsContent() {
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-600 text-sm">
+          <div
+            className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${TONE_BANNER_CLASS.success}`}
+          >
             <CircleCheck size={18} className="mt-0.5 shrink-0" />
             <span className="flex-1">{successMessage}</span>
             <button
               type="button"
               onClick={() => setSuccessMessage(null)}
-              className="shrink-0 text-emerald-600/70 hover:text-emerald-600"
+              className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
               aria-label={ESTABLISHMENT_ACCESS_REQUESTS_PAGE.closeAria}
             >
               <X size={16} />

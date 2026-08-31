@@ -12,6 +12,8 @@ import { RESPONSE_TYPE_LABELS, RESPONSES_PAGE } from "@/constants/surveys";
 import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
 import { EMPTY_VALUE, formatDate } from "@/lib/format";
 import { entityLabel } from "@/components/surveys/ResponseEntity";
+import { OVERLAY_CLASS } from "@/constants/theme";
+import { cn } from "@/lib/utils";
 
 const SEX_LABELS: Record<Sex, string> = {
   male: SUBJECT_DETAIL_PANEL.fields.male,
@@ -143,7 +145,7 @@ export default function ResponseDetailPanel({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Backdrop className={cn("fixed inset-0 z-40", OVERLAY_CLASS)} />
         <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
           <div className="flex items-start justify-between gap-2">
             <Dialog.Title className="text-xl font-bold tracking-tight">
@@ -229,7 +231,7 @@ export default function ResponseDetailPanel({
                   label={RESPONSES_PAGE.score}
                   value={
                     detail.score_fies !== null ? (
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                      <span className="inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
                         {detail.score_fies}
                       </span>
                     ) : (

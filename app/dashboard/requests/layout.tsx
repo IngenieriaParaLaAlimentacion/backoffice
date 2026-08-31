@@ -91,7 +91,7 @@ export default function RequestsLayout({
               >
                 {tab.label}
                 {!!tab.count && (
-                  <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-semibold leading-none text-white">
+                  <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-semibold leading-none text-destructive-foreground">
                     {tab.count}
                   </span>
                 )}

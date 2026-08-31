@@ -80,9 +80,7 @@ export default function EditSurveyPage({
           </div>
         ) : (
           <>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {SURVEY_FORM.editTitle}
-            </h1>
+            <h1 className="text-3xl font-semibold">{SURVEY_FORM.editTitle}</h1>
 
             <Separator />
 

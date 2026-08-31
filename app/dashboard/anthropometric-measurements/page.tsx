@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import MeasurementEvolutionChart from "@/components/MeasurementEvolutionChart";
 import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
+import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import {
@@ -46,6 +47,8 @@ import {
   MEASUREMENT_SORT_LABELS,
   MEASUREMENTS_PAGE,
 } from "@/constants/measurements";
+import { OVERLAY_CLASS } from "@/constants/theme";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -133,7 +136,12 @@ export default function AnthropometricMeasurementsPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
 
-  const { isExporting, error: exportError, runExport } = useCsvExport();
+  const {
+    isExporting,
+    error: exportError,
+    clearError: clearExportError,
+    runExport,
+  } = useCsvExport();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = [
@@ -269,7 +277,7 @@ export default function AnthropometricMeasurementsPage() {
       <Card className="flex-1 min-w-0 p-4 md:p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-3xl font-semibold">
               {MEASUREMENTS_PAGE.title}
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -282,7 +290,6 @@ export default function AnthropometricMeasurementsPage() {
               onClick={handleExport}
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
-              className=""
             />
             <Button
               size="sm"
@@ -433,9 +440,7 @@ export default function AnthropometricMeasurementsPage() {
         )}
 
         {exportError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {exportError}
-          </div>
+          <ExportError message={exportError} onDismiss={clearExportError} />
         )}
 
         {isLoading ? (
@@ -594,7 +599,9 @@ export default function AnthropometricMeasurementsPage() {
         }}
       >
         <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 bg-black/40 z-40" />
+          <Dialog.Backdrop
+            className={cn("fixed inset-0 z-40", OVERLAY_CLASS)}
+          />
           <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
             <div className="flex items-start justify-between gap-2">
               <Dialog.Title className="text-xl font-bold tracking-tight">
