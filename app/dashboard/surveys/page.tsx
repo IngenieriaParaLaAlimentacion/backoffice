@@ -26,10 +26,14 @@ import { useAuth } from "@/context/AuthContext";
 import {
   deleteSurveyAction,
   duplicateSurveyAction,
+  exportSurveysAction,
   setSurveyStatusAction,
 } from "@/services/survey.service";
 import { SurveyListItem } from "@/types/survey";
 import CreateSurveyDialog from "@/components/surveys/CreateSurveyDialog";
+import ExportButton from "@/components/listings/ExportButton";
+import { useCsvExport } from "@/hooks/useCsvExport";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
 
 const PAGE_SIZE = 20;
@@ -49,6 +53,7 @@ export default function SurveysPage() {
   const {
     surveys,
     page,
+    total,
     totalPages,
     search,
     setSearch,
@@ -61,7 +66,8 @@ export default function SurveysPage() {
   } = useSurveys(PAGE_SIZE);
 
   const router = useRouter();
-  const { makeAuthorizedRequest } = useAuth();
+  const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
+  const { isExporting, error: exportError, runExport } = useCsvExport();
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -126,6 +132,18 @@ export default function SurveysPage() {
     }
   }
 
+  // The page offers no is_active/created_by/sort filters, so the export
+  // mirrors the two the user can actually set.
+  const handleExport = () =>
+    runExport(
+      () =>
+        exportSurveysAction(makeAuthorizedDownload, {
+          search: search || undefined,
+          response_target: responseTarget || undefined,
+        }),
+      EXPORT_FILENAMES.surveys,
+    );
+
   return (
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
@@ -138,7 +156,14 @@ export default function SurveysPage() {
               {SURVEYS_PAGE.subtitle}
             </p>
           </div>
-          <div className="self-start">
+          <div className="flex flex-wrap items-center gap-2 self-start">
+            <ExportButton
+              isExporting={isExporting}
+              onClick={handleExport}
+              disabled={isLoading || total === 0}
+              emptyHint={total === 0 ? EXPORT.empty : undefined}
+              className=""
+            />
             <CreateSurveyDialog />
           </div>
         </div>
@@ -182,6 +207,12 @@ export default function SurveysPage() {
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
             {error}
+          </div>
+        )}
+
+        {exportError && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+            {exportError}
           </div>
         )}
 

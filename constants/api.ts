@@ -46,28 +46,35 @@ export const REJECT_ESTABLISHMENT_REQUEST_ENDPOINT = (requestId: string) =>
 // --- Establishments Endpoints ---
 
 export const ESTABLISHMENTS_ENDPOINT = "/api/v1/establishments";
+export const ESTABLISHMENTS_EXPORT_ENDPOINT = "/api/v1/establishments/export";
 export const ESTABLISHMENT_DASHBOARD_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/dashboard`;
 export const ESTABLISHMENT_SUBJECTS_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/subjects`;
+export const ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT = (
+  establishmentId: string,
+) => `/api/v1/establishments/${establishmentId}/subjects/export`;
 export const ESTABLISHMENT_FIELD_WORKERS_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/field-workers`;
 
 // --- Subjects Endpoints ---
 
 export const SUBJECTS_ENDPOINT = "/api/v1/subjects";
+export const SUBJECTS_EXPORT_ENDPOINT = "/api/v1/subjects/export";
 export const SUBJECT_ENDPOINT = (subjectId: string) =>
   `/api/v1/subjects/${subjectId}`;
 
 // --- Measurements Endpoints ---
 
 export const MEASUREMENTS_ENDPOINT = "/api/v1/measurements";
+export const MEASUREMENTS_EXPORT_ENDPOINT = "/api/v1/measurements/export";
 export const SUBJECT_EVOLUTION_ENDPOINT = (subjectId: string) =>
   `/api/v1/subjects/${subjectId}/measurements/evolution`;
 
 // --- Surveys Endpoints ---
 
 export const SURVEYS_ENDPOINT = "/api/v1/surveys";
+export const SURVEYS_EXPORT_ENDPOINT = "/api/v1/surveys/export";
 export const SURVEY_ENDPOINT = (surveyId: string) =>
   `/api/v1/surveys/${surveyId}`;
 export const FIES_TEMPLATE_ENDPOINT = "/api/v1/surveys/templates/fies";

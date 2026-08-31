@@ -1,6 +1,5 @@
-import { AuthDispatcher } from "@/context/AuthContext";
+import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
-  API_BASE_URL,
   DUPLICATE_SURVEY_ENDPOINT,
   FIES_TEMPLATE_ENDPOINT,
   SURVEY_ENDPOINT,
@@ -9,8 +8,8 @@ import {
   SURVEY_RESPONSES_EXPORT_ENDPOINT,
   SURVEY_STATUS_ENDPOINT,
   SURVEYS_ENDPOINT,
+  SURVEYS_EXPORT_ENDPOINT,
 } from "@/constants/api";
-import { getTokens } from "@/lib/tokenStorage";
 import {
   PaginatedSurveyResponses,
   PaginatedSurveysResponse,
@@ -34,28 +33,39 @@ const toApiError = (data: unknown, status: number) => {
   return new ApiError(error.detail, status, error.type);
 };
 
-type ListSurveysParams = {
-  page?: number;
-  page_size?: number;
+export type SurveyFilters = {
   search?: string;
+  created_by?: string;
   response_target?: SurveyResponseTarget;
   is_active?: boolean;
   sort_order?: SurveySortOrder;
+};
+
+type ListSurveysParams = SurveyFilters & {
+  page?: number;
+  page_size?: number;
+};
+
+/** The listing and its CSV export must ask for the same rows: one builder. */
+const surveyFilterQuery = (filters?: SurveyFilters) => {
+  const query = new URLSearchParams();
+  if (filters?.search) query.set("search", filters.search);
+  if (filters?.created_by) query.set("created_by", filters.created_by);
+  if (filters?.response_target)
+    query.set("response_target", filters.response_target);
+  if (filters?.is_active !== undefined)
+    query.set("is_active", String(filters.is_active));
+  if (filters?.sort_order) query.set("sort_order", filters.sort_order);
+  return query;
 };
 
 export const listSurveysAction = async (
   dispatcher: AuthDispatcher,
   params?: ListSurveysParams,
 ) => {
-  const query = new URLSearchParams();
+  const query = surveyFilterQuery(params);
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
-  if (params?.search) query.set("search", params.search);
-  if (params?.response_target)
-    query.set("response_target", params.response_target);
-  if (params?.is_active !== undefined)
-    query.set("is_active", String(params.is_active));
-  if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const path = query.size
     ? `${SURVEYS_ENDPOINT}?${query.toString()}`
@@ -66,6 +76,20 @@ export const listSurveysAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   return res.data as PaginatedSurveysResponse;
+};
+
+/** Downloads every survey matching the filters as a CSV file. */
+export const exportSurveysAction = async (
+  download: DownloadDispatcher,
+  filters?: SurveyFilters,
+) => {
+  const query = surveyFilterQuery(filters);
+
+  const path = query.size
+    ? `${SURVEYS_EXPORT_ENDPOINT}?${query.toString()}`
+    : SURVEYS_EXPORT_ENDPOINT;
+
+  return download(path);
 };
 
 export const getSurveyAction = async (
@@ -219,30 +243,19 @@ export const getSurveyResponseDashboardDetailAction = async (
 };
 
 /**
- * Exports every response to the survey. The endpoint accepts no date or
- * geographic filters, so the file is NOT the filtered view on screen — see
- * `.context/handoff-export-filters.md` for the gap reported to the backend.
+ * Exports every response to the survey as xlsx. The endpoint only narrows by
+ * `establishment_id`/`subject_id`, not by the date or geographic filters the
+ * responses page offers, so the file is NOT the filtered view on screen — the
+ * gap remains reported to the backend.
  */
-export const exportSurveyResponsesAction = async (params: {
-  survey_id: string;
-}): Promise<Blob> => {
+export const exportSurveyResponsesAction = async (
+  download: DownloadDispatcher,
+  params: { survey_id: string },
+) => {
   const query = new URLSearchParams();
   query.set("format", "xlsx");
 
-  const tokens = getTokens();
-  if (!tokens) throw new Error("Not authenticated");
-
-  const res = await fetch(
-    `${API_BASE_URL}${SURVEY_RESPONSES_EXPORT_ENDPOINT(params.survey_id)}?${query.toString()}`,
-    {
-      headers: { Authorization: `Bearer ${tokens.accessToken}` },
-    },
+  return download(
+    `${SURVEY_RESPONSES_EXPORT_ENDPOINT(params.survey_id)}?${query.toString()}`,
   );
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    throw new Error(body?.detail || "Export failed");
-  }
-
-  return res.blob();
 };

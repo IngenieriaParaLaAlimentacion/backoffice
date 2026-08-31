@@ -37,6 +37,7 @@ import {
   makeExportSurveyResponsesHandler,
   makeDashboardIndicatorsHandler,
 } from "@/mocks/handlers/surveyResponse";
+import { makeExportSubjectsHandler } from "@/mocks/handlers/csvExport";
 import { makeMeHandler } from "@/mocks/handlers/user";
 
 export const handlers = [
@@ -69,5 +70,6 @@ export const handlers = [
   makeSurveyResponseDetailHandler(),
   makeExportSurveyResponsesHandler(),
   makeDashboardIndicatorsHandler(),
+  makeExportSubjectsHandler(),
   makeMeHandler(),
 ];

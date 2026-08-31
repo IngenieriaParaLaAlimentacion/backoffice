@@ -82,6 +82,8 @@ export function useEstablishmentSubjects(establishmentId: string) {
     setPage,
     search,
     setSearch,
+    // The export must ask for the rows on screen, i.e. the debounced query.
+    debouncedSearch,
     sortOrder,
     setSortOrder: changeSortOrder,
   };

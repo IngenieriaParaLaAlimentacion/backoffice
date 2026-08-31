@@ -1,9 +1,11 @@
-import { AuthDispatcher } from "@/context/AuthContext";
+import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
   ESTABLISHMENT_SUBJECTS_ENDPOINT,
+  ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
+  ESTABLISHMENTS_EXPORT_ENDPOINT,
 } from "@/constants/api";
 import { EstablishmentResponse, EstablishmentSortOrder } from "@/types/admin";
 import {
@@ -17,13 +19,26 @@ import {
 import { ErrorResponse } from "@/lib/types";
 import { ApiError } from "@/lib/apiError";
 
-type ListEstablishmentsParams = {
-  page?: number;
-  page_size?: number;
+export type EstablishmentFilters = {
   search?: string;
   city?: string;
   province?: string;
   sort_order?: EstablishmentSortOrder;
+};
+
+type ListEstablishmentsParams = EstablishmentFilters & {
+  page?: number;
+  page_size?: number;
+};
+
+/** The listing and its CSV export must ask for the same rows: one builder. */
+const establishmentFilterQuery = (filters?: EstablishmentFilters) => {
+  const query = new URLSearchParams();
+  if (filters?.search) query.set("search", filters.search);
+  if (filters?.city) query.set("city", filters.city);
+  if (filters?.province) query.set("province", filters.province);
+  if (filters?.sort_order) query.set("sort_order", filters.sort_order);
+  return query;
 };
 
 export type CreateEstablishmentData = {
@@ -36,11 +51,23 @@ export type CreateEstablishmentData = {
   province: string;
 };
 
-type ListEstablishmentSubjectsParams = {
-  page?: number;
-  page_size?: number;
+export type EstablishmentSubjectFilters = {
   search?: string;
   sort_order?: EstablishmentSubjectSortOrder;
+};
+
+type ListEstablishmentSubjectsParams = EstablishmentSubjectFilters & {
+  page?: number;
+  page_size?: number;
+};
+
+const establishmentSubjectFilterQuery = (
+  filters?: EstablishmentSubjectFilters,
+) => {
+  const query = new URLSearchParams();
+  if (filters?.search) query.set("search", filters.search);
+  if (filters?.sort_order) query.set("sort_order", filters.sort_order);
+  return query;
 };
 
 type ListEstablishmentFieldWorkersParams = {
@@ -54,13 +81,9 @@ export const listEstablishmentsAction = async (
   dispatcher: AuthDispatcher,
   params?: ListEstablishmentsParams,
 ) => {
-  const query = new URLSearchParams();
+  const query = establishmentFilterQuery(params);
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
-  if (params?.search) query.set("search", params.search);
-  if (params?.city) query.set("city", params.city);
-  if (params?.province) query.set("province", params.province);
-  if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const path = query.size
     ? `${ESTABLISHMENTS_ENDPOINT}?${query.toString()}`
@@ -73,6 +96,20 @@ export const listEstablishmentsAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   return res.data as PaginatedEstablishmentsResponse;
+};
+
+/** Downloads every establishment matching the filters as a CSV file. */
+export const exportEstablishmentsAction = async (
+  download: DownloadDispatcher,
+  filters?: EstablishmentFilters,
+) => {
+  const query = establishmentFilterQuery(filters);
+
+  const path = query.size
+    ? `${ESTABLISHMENTS_EXPORT_ENDPOINT}?${query.toString()}`
+    : ESTABLISHMENTS_EXPORT_ENDPOINT;
+
+  return download(path);
 };
 
 export const createEstablishmentAction = async (
@@ -112,11 +149,9 @@ export const listEstablishmentSubjectsAction = async (
   establishmentId: string,
   params?: ListEstablishmentSubjectsParams,
 ) => {
-  const query = new URLSearchParams();
+  const query = establishmentSubjectFilterQuery(params);
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
-  if (params?.search) query.set("search", params.search);
-  if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const endpoint = ESTABLISHMENT_SUBJECTS_ENDPOINT(establishmentId);
   const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
@@ -130,6 +165,23 @@ export const listEstablishmentSubjectsAction = async (
     throw new ApiError((res.data as ErrorResponse).detail, res.status);
 
   return res.data as PaginatedEstablishmentSubjectsResponse;
+};
+
+/**
+ * Downloads the establishment's subjects as a CSV file. The server names the
+ * file after the establishment, so the caller's fallback rarely gets used.
+ */
+export const exportEstablishmentSubjectsAction = async (
+  download: DownloadDispatcher,
+  establishmentId: string,
+  filters?: EstablishmentSubjectFilters,
+) => {
+  const query = establishmentSubjectFilterQuery(filters);
+
+  const endpoint = ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT(establishmentId);
+  const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
+
+  return download(path);
 };
 
 export const listEstablishmentFieldWorkersAction = async (

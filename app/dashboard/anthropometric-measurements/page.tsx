@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { useAuth } from "@/context/AuthContext";
 import {
+  exportMeasurementsAction,
   getSubjectEvolutionAction,
   listMeasurementsAction,
+  MeasurementFilters,
 } from "@/services/measurement.service";
 import {
   MeasurementListItem,
@@ -18,6 +20,9 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import MeasurementEvolutionChart from "@/components/MeasurementEvolutionChart";
 import Pagination from "@/components/Pagination";
+import ExportButton from "@/components/listings/ExportButton";
+import { useCsvExport } from "@/hooks/useCsvExport";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import {
   AlertBadgeList,
   SEVERITY_ROW_CLASS,
@@ -70,6 +75,22 @@ const EMPTY_FILTERS: Filters = {
   maxAge: "",
 };
 
+/** Maps the page's text filters onto the API's query params. */
+function toMeasurementFilters(
+  filters: Filters,
+  sortOrder: MeasurementSortOrder,
+): MeasurementFilters {
+  return {
+    city: filters.city || undefined,
+    province: filters.province || undefined,
+    measured_from: filters.measuredFrom || undefined,
+    measured_to: filters.measuredTo || undefined,
+    min_age: filters.minAge !== "" ? Number(filters.minAge) : undefined,
+    max_age: filters.maxAge !== "" ? Number(filters.maxAge) : undefined,
+    sort_order: sortOrder,
+  };
+}
+
 function DetailField({
   label,
   value,
@@ -86,10 +107,11 @@ function DetailField({
 }
 
 export default function AnthropometricMeasurementsPage() {
-  const { makeAuthorizedRequest } = useAuth();
+  const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
 
   const [measurements, setMeasurements] = useState<MeasurementListItem[]>([]);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,6 +132,8 @@ export default function AnthropometricMeasurementsPage() {
   );
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  const { isExporting, error: exportError, runExport } = useCsvExport();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = [
@@ -139,14 +163,10 @@ export default function AnthropometricMeasurementsPage() {
       currentSortOrder: MeasurementSortOrder,
     ) => {
       // Guard inconsistent ranges client-side (backend returns 400 otherwise).
-      const minAge =
-        currentFilters.minAge !== ""
-          ? Number(currentFilters.minAge)
-          : undefined;
-      const maxAge =
-        currentFilters.maxAge !== ""
-          ? Number(currentFilters.maxAge)
-          : undefined;
+      const { min_age: minAge, max_age: maxAge } = toMeasurementFilters(
+        currentFilters,
+        currentSortOrder,
+      );
       if (minAge !== undefined && maxAge !== undefined && minAge > maxAge) {
         setMeasurements([]);
         setError(MEASUREMENTS_PAGE.minAgeGreaterThanMaxError);
@@ -170,18 +190,14 @@ export default function AnthropometricMeasurementsPage() {
         const data = await listMeasurementsAction(makeAuthorizedRequest, {
           page: currentPage,
           page_size: PAGE_SIZE,
-          city: currentFilters.city || undefined,
-          province: currentFilters.province || undefined,
-          measured_from: currentFilters.measuredFrom || undefined,
-          measured_to: currentFilters.measuredTo || undefined,
-          min_age: minAge,
-          max_age: maxAge,
-          sort_order: currentSortOrder,
+          ...toMeasurementFilters(currentFilters, currentSortOrder),
         });
         setMeasurements(data.items);
+        setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
         setMeasurements([]);
+        setTotal(0);
         setError(
           err instanceof Error ? err.message : MEASUREMENTS_PAGE.loadError,
         );
@@ -206,6 +222,18 @@ export default function AnthropometricMeasurementsPage() {
   const updateFilter = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
+
+  // The export asks for exactly the rows the listing is showing.
+  const exportFilters = useMemo(
+    () => toMeasurementFilters(debouncedFilters, sortOrder),
+    [debouncedFilters, sortOrder],
+  );
+
+  const handleExport = () =>
+    runExport(
+      () => exportMeasurementsAction(makeAuthorizedDownload, exportFilters),
+      EXPORT_FILENAMES.measurements,
+    );
 
   const openEvolution = useCallback(
     async (subjectId: string) => {
@@ -248,15 +276,23 @@ export default function AnthropometricMeasurementsPage() {
               {MEASUREMENTS_PAGE.subtitle}
             </p>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="self-start"
-            onClick={() => setReloadKey((k) => k + 1)}
-          >
-            <RefreshCw size={14} />
-            {MEASUREMENTS_PAGE.refresh}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2 self-start">
+            <ExportButton
+              isExporting={isExporting}
+              onClick={handleExport}
+              disabled={isLoading || total === 0}
+              emptyHint={total === 0 ? EXPORT.empty : undefined}
+              className=""
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setReloadKey((k) => k + 1)}
+            >
+              <RefreshCw size={14} />
+              {MEASUREMENTS_PAGE.refresh}
+            </Button>
+          </div>
         </div>
 
         <Separator />
@@ -393,6 +429,12 @@ export default function AnthropometricMeasurementsPage() {
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
             {error}
+          </div>
+        )}
+
+        {exportError && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+            {exportError}
           </div>
         )}
 

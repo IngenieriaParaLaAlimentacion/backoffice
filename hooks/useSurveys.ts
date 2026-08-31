@@ -10,6 +10,7 @@ export function useSurveys(pageSize: number) {
   const { makeAuthorizedRequest } = useAuth();
   const [surveys, setSurveys] = useState<SurveyListItem[]>([]);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearchValue] = useState("");
   const [responseTarget, setResponseTargetValue] =
@@ -33,6 +34,7 @@ export function useSurveys(pageSize: number) {
           response_target: currentTarget || undefined,
         });
         setSurveys(data.items);
+        setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
@@ -68,6 +70,7 @@ export function useSurveys(pageSize: number) {
   return {
     surveys,
     page,
+    total,
     totalPages,
     search,
     setSearch,

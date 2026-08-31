@@ -8,6 +8,8 @@ import {
 } from "@/lib/types";
 import { API_BASE_URL, REFRESH_ENDPOINT } from "@/constants/api";
 import { AuthTokens } from "@/types/auth";
+import { ApiError } from "@/lib/apiError";
+import { parseContentDispositionFilename } from "@/lib/download";
 
 export type ApiRequestOptions<TRequest = object> = {
   method?: ApiMethod;
@@ -83,37 +85,94 @@ export async function refreshAccessToken(
   return (await response.json()) as RefreshTokenResponse;
 }
 
+/**
+ * Sends the request and, on a 401 with credentials at hand, refreshes the
+ * tokens and replays it once. Shared by the JSON and the file-download paths.
+ */
+async function requestWithRefresh<TRequest>(
+  path: string,
+  options?: ApiRequestOptions<TRequest>,
+) {
+  const response = await makeRequest(path, options);
+
+  if (response.status !== StatusCodes.UNAUTHORIZED || !options?.auth)
+    return response;
+
+  const {
+    tokens: { refreshToken },
+    onRefresh,
+    deviceId,
+  } = options.auth;
+
+  const tokens = await refreshAccessToken(refreshToken, deviceId!);
+
+  if (!tokens) return response;
+
+  onRefresh?.(tokens);
+
+  return makeRequest<TRequest>(path, {
+    ...options,
+    auth: {
+      ...options.auth,
+      tokens: {
+        refreshToken: tokens.refresh_token,
+        tokenType: tokens.token_type,
+        accessToken: tokens.access_token,
+      },
+    },
+  });
+}
+
 export async function apiRequest<TRequest = object, TResponse = undefined>(
   path: string,
   options?: ApiRequestOptions<TRequest>,
 ): Promise<ApiResponse<TResponse>> {
-  let response = await makeRequest(path, options);
+  return parseResponse(await requestWithRefresh(path, options));
+}
 
-  if (response.status === StatusCodes.UNAUTHORIZED && options?.auth) {
-    const {
-      tokens: { refreshToken },
-      onRefresh,
-      deviceId,
-    } = options.auth;
+/** A file straight from the server, named by it whenever it says so. */
+export type DownloadedFile = {
+  blob: Blob;
+  filename: string | null;
+  /**
+   * Data rows the server says it sent, off `X-Export-Row-Count`. Null when it
+   * declares none, as the xlsx export does — nothing to check against.
+   */
+  rowCount: number | null;
+};
 
-    const tokens = await refreshAccessToken(refreshToken, deviceId!);
+/** The declared row count, or null when the header is missing or malformed. */
+function parseRowCount(header: string | null) {
+  if (!header) return null;
+  const value = Number(header);
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
 
-    if (!tokens) return parseResponse(response);
+/**
+ * Downloads a file (CSV, xlsx) instead of parsing JSON. `apiRequest` can't do
+ * this: it always consumes the body as JSON. Failures still carry a
+ * `application/problem+json` body, so they surface as `ApiError`.
+ */
+export async function downloadRequest<TRequest = undefined>(
+  path: string,
+  options?: ApiRequestOptions<TRequest>,
+): Promise<DownloadedFile> {
+  const response = await requestWithRefresh(path, options);
 
-    onRefresh?.(tokens);
-
-    response = await makeRequest<TRequest>(path, {
-      ...options,
-      auth: {
-        ...options.auth,
-        tokens: {
-          refreshToken: tokens.refresh_token,
-          tokenType: tokens.token_type,
-          accessToken: tokens.access_token,
-        },
-      },
-    });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(
+      body?.detail || response.statusText,
+      response.status,
+      body?.type,
+    );
   }
 
-  return parseResponse(response);
+  // Read the headers before the body: a cut stream rejects `blob()`.
+  const filename = parseContentDispositionFilename(
+    response.headers.get("content-disposition"),
+  );
+  const rowCount = parseRowCount(response.headers.get("x-export-row-count"));
+
+  return { blob: await response.blob(), filename, rowCount };
 }
