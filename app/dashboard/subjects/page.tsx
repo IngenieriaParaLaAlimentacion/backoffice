@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { listSubjectsAction } from "@/services/subject.service";
+import {
+  exportSubjectsAction,
+  listSubjectsAction,
+  SubjectFilters,
+} from "@/services/subject.service";
 import { listEstablishmentsAction } from "@/services/establishment.service";
 import { SubjectSortOrder, SubjectSummary } from "@/types/subject";
 import { EstablishmentResponse } from "@/types/admin";
@@ -11,7 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
+import ExportButton from "@/components/listings/ExportButton";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
+import { useCsvExport } from "@/hooks/useCsvExport";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import { formatDate, formatDateTime, EMPTY_VALUE } from "@/lib/format";
 import {
   CARD_HOVER_CLASS,
@@ -78,11 +85,30 @@ const EMPTY_FILTERS: Filters = {
   sex: "",
 };
 
+/** Maps the page's string-valued filters onto the API's query params. */
+function toSubjectFilters(
+  filters: Filters,
+  sortOrder: SubjectSortOrder,
+): SubjectFilters {
+  return {
+    search: filters.search || undefined,
+    birth_date_from: filters.birthDateFrom || undefined,
+    birth_date_to: filters.birthDateTo || undefined,
+    establishment_id: filters.establishmentId || undefined,
+    is_rural: filters.isRural === "" ? undefined : filters.isRural === "true",
+    is_indigenous:
+      filters.isIndigenous === "" ? undefined : filters.isIndigenous === "true",
+    sex: filters.sex || undefined,
+    sort_order: sortOrder,
+  };
+}
+
 export default function SubjectsPage() {
-  const { makeAuthorizedRequest } = useAuth();
+  const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
 
   const [subjects, setSubjects] = useState<SubjectSummary[]>([]);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +126,8 @@ export default function SubjectsPage() {
   const [reloadKey, setReloadKey] = useState(0);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const { isExporting, error: exportError, runExport } = useCsvExport();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = [
@@ -157,22 +185,10 @@ export default function SubjectsPage() {
         const data = await listSubjectsAction(makeAuthorizedRequest, {
           page: currentPage,
           page_size: PAGE_SIZE,
-          search: currentFilters.search || undefined,
-          birth_date_from: currentFilters.birthDateFrom || undefined,
-          birth_date_to: currentFilters.birthDateTo || undefined,
-          establishment_id: currentFilters.establishmentId || undefined,
-          is_rural:
-            currentFilters.isRural === ""
-              ? undefined
-              : currentFilters.isRural === "true",
-          is_indigenous:
-            currentFilters.isIndigenous === ""
-              ? undefined
-              : currentFilters.isIndigenous === "true",
-          sex: currentFilters.sex || undefined,
-          sort_order: currentSortOrder,
+          ...toSubjectFilters(currentFilters, currentSortOrder),
         });
         setSubjects(data.items);
+        setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(err instanceof Error ? err.message : SUBJECTS_PAGE.loadError);
@@ -198,6 +214,18 @@ export default function SubjectsPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  // The export asks for exactly the rows the listing is showing.
+  const exportFilters = useMemo(
+    () => toSubjectFilters(debouncedFilters, sortOrder),
+    [debouncedFilters, sortOrder],
+  );
+
+  const handleExport = () =>
+    runExport(
+      () => exportSubjectsAction(makeAuthorizedDownload, exportFilters),
+      EXPORT_FILENAMES.subjects,
+    );
+
   const closeDetail = () => {
     setSelectedId(null);
     setReloadKey((k) => k + 1);
@@ -213,15 +241,23 @@ export default function SubjectsPage() {
               {SUBJECTS_PAGE.subtitle}
             </p>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="self-start"
-            onClick={() => setReloadKey((k) => k + 1)}
-          >
-            <RefreshCw size={14} />
-            {SUBJECTS_PAGE.refresh}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2 self-start">
+            <ExportButton
+              isExporting={isExporting}
+              onClick={handleExport}
+              disabled={isLoading || total === 0}
+              emptyHint={total === 0 ? EXPORT.empty : undefined}
+              className=""
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setReloadKey((k) => k + 1)}
+            >
+              <RefreshCw size={14} />
+              {SUBJECTS_PAGE.refresh}
+            </Button>
+          </div>
         </div>
 
         <Separator />
@@ -399,6 +435,12 @@ export default function SubjectsPage() {
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
             {error}
+          </div>
+        )}
+
+        {exportError && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+            {exportError}
           </div>
         )}
 

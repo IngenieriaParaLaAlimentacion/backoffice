@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { useEstablishmentSubjects } from "@/hooks/useEstablishmentSubjects";
+import { useCsvExport } from "@/hooks/useCsvExport";
+import { exportEstablishmentSubjectsAction } from "@/services/establishment.service";
+import ExportButton from "@/components/listings/ExportButton";
+import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import { EstablishmentSubjectSortOrder } from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import Pagination from "@/components/Pagination";
@@ -29,9 +34,13 @@ import { Loader2, Search } from "lucide-react";
 
 export default function EstablishmentSubjectsList({
   establishmentId,
+  establishmentName,
 }: {
   establishmentId: string;
+  /** Only feeds the fallback filename; the server normally names the file. */
+  establishmentName?: string;
 }) {
+  const { makeAuthorizedDownload } = useAuth();
   const {
     subjects,
     total,
@@ -42,9 +51,23 @@ export default function EstablishmentSubjectsList({
     setPage,
     search,
     setSearch,
+    debouncedSearch,
     sortOrder,
     setSortOrder,
   } = useEstablishmentSubjects(establishmentId);
+
+  const { isExporting, error: exportError, runExport } = useCsvExport();
+
+  const handleExport = () =>
+    runExport(
+      () =>
+        exportEstablishmentSubjectsAction(
+          makeAuthorizedDownload,
+          establishmentId,
+          { search: debouncedSearch || undefined, sort_order: sortOrder },
+        ),
+      EXPORT_FILENAMES.establishmentSubjects(establishmentName),
+    );
 
   // The row's `id` is the SUBJECT id — `latest_measurement.id` is a different
   // id and is not what the detail panel navigates with.
@@ -57,11 +80,19 @@ export default function EstablishmentSubjectsList({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-xl font-semibold">{COPY.subjectsTitle}</h2>
-        <p className="text-muted-foreground text-sm">
-          {COPY.subjectsSubtitle(total)}
-        </p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold">{COPY.subjectsTitle}</h2>
+          <p className="text-muted-foreground text-sm">
+            {COPY.subjectsSubtitle(total)}
+          </p>
+        </div>
+        <ExportButton
+          isExporting={isExporting}
+          onClick={handleExport}
+          disabled={isLoading || total === 0}
+          emptyHint={total === 0 ? EXPORT.empty : undefined}
+        />
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
@@ -102,6 +133,12 @@ export default function EstablishmentSubjectsList({
       {error && (
         <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
           {error}
+        </div>
+      )}
+
+      {exportError && (
+        <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+          {exportError}
         </div>
       )}
 

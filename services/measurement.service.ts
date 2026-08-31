@@ -1,6 +1,7 @@
-import { AuthDispatcher } from "@/context/AuthContext";
+import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
   MEASUREMENTS_ENDPOINT,
+  MEASUREMENTS_EXPORT_ENDPOINT,
   SUBJECT_EVOLUTION_ENDPOINT,
 } from "@/constants/api";
 import {
@@ -10,9 +11,7 @@ import {
 } from "@/types/measurement";
 import { ErrorResponse } from "@/lib/types";
 
-type ListMeasurementsParams = {
-  page?: number;
-  page_size?: number;
+export type MeasurementFilters = {
   subject_id?: string;
   establishment_id?: string;
   city?: string;
@@ -25,27 +24,38 @@ type ListMeasurementsParams = {
   sort_order?: MeasurementSortOrder;
 };
 
+type ListMeasurementsParams = MeasurementFilters & {
+  page?: number;
+  page_size?: number;
+};
+
+/** The listing and its CSV export must ask for the same rows: one builder. */
+const measurementFilterQuery = (filters?: MeasurementFilters) => {
+  const query = new URLSearchParams();
+  if (filters?.subject_id) query.set("subject_id", filters.subject_id);
+  if (filters?.establishment_id)
+    query.set("establishment_id", filters.establishment_id);
+  if (filters?.city) query.set("city", filters.city);
+  if (filters?.province) query.set("province", filters.province);
+  if (filters?.responsible_id)
+    query.set("responsible_id", filters.responsible_id);
+  if (filters?.measured_from) query.set("measured_from", filters.measured_from);
+  if (filters?.measured_to) query.set("measured_to", filters.measured_to);
+  if (filters?.min_age !== undefined)
+    query.set("min_age", String(filters.min_age));
+  if (filters?.max_age !== undefined)
+    query.set("max_age", String(filters.max_age));
+  if (filters?.sort_order) query.set("sort_order", filters.sort_order);
+  return query;
+};
+
 export const listMeasurementsAction = async (
   dispatcher: AuthDispatcher,
   params?: ListMeasurementsParams,
 ) => {
-  const query = new URLSearchParams();
+  const query = measurementFilterQuery(params);
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
-  if (params?.subject_id) query.set("subject_id", params.subject_id);
-  if (params?.establishment_id)
-    query.set("establishment_id", params.establishment_id);
-  if (params?.city) query.set("city", params.city);
-  if (params?.province) query.set("province", params.province);
-  if (params?.responsible_id)
-    query.set("responsible_id", params.responsible_id);
-  if (params?.measured_from) query.set("measured_from", params.measured_from);
-  if (params?.measured_to) query.set("measured_to", params.measured_to);
-  if (params?.min_age !== undefined)
-    query.set("min_age", String(params.min_age));
-  if (params?.max_age !== undefined)
-    query.set("max_age", String(params.max_age));
-  if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const path = query.size
     ? `${MEASUREMENTS_ENDPOINT}?${query.toString()}`
@@ -56,6 +66,20 @@ export const listMeasurementsAction = async (
   if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
 
   return res.data as PaginatedMeasurementsResponse;
+};
+
+/** Downloads every measurement matching the filters as a CSV file. */
+export const exportMeasurementsAction = async (
+  download: DownloadDispatcher,
+  filters?: MeasurementFilters,
+) => {
+  const query = measurementFilterQuery(filters);
+
+  const path = query.size
+    ? `${MEASUREMENTS_EXPORT_ENDPOINT}?${query.toString()}`
+    : MEASUREMENTS_EXPORT_ENDPOINT;
+
+  return download(path);
 };
 
 export const getSubjectEvolutionAction = async (

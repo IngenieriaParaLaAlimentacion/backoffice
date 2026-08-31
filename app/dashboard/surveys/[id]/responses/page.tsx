@@ -17,13 +17,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
+import ExportButton from "@/components/listings/ExportButton";
+import { useCsvExport } from "@/hooks/useCsvExport";
 import {
   RESPONSE_SORT_LABELS,
   RESPONSE_TARGET_DESCRIPTIONS,
@@ -85,7 +81,8 @@ export default function ResponsesPage() {
   const params = useParams();
   const router = useRouter();
   const surveyId = params.id as string;
-  const { makeAuthorizedRequest } = useAuth();
+  const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
+  const { isExporting, error: exportError, runExport } = useCsvExport();
 
   const [survey, setSurvey] = useState<SurveyResponse | null>(null);
   const [responses, setResponses] = useState<SurveyResponseDashboardItem[]>([]);
@@ -105,8 +102,6 @@ export default function ResponsesPage() {
     null,
   );
 
-  const [exporting, setExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   // Fetch survey metadata
@@ -179,27 +174,14 @@ export default function ResponsesPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  async function handleExport() {
-    setExporting(true);
-    setExportError(null);
-    try {
-      const blob = await exportSurveyResponsesAction({ survey_id: surveyId });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `respuestas-${survey?.name ?? surveyId}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setExportError(
-        err instanceof Error ? err.message : RESPONSES_PAGE.exportError,
-      );
-    } finally {
-      setExporting(false);
-    }
-  }
+  const handleExport = () =>
+    runExport(
+      () =>
+        exportSurveyResponsesAction(makeAuthorizedDownload, {
+          survey_id: surveyId,
+        }),
+      `respuestas-${survey?.name ?? surveyId}.xlsx`,
+    );
 
   const closeDetail = () => {
     setSelectedResponseId(null);
@@ -238,20 +220,13 @@ export default function ResponsesPage() {
               </div>
             )}
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="self-start"
-            disabled={exporting || responses.length === 0}
+          <ExportButton
+            isExporting={isExporting}
             onClick={handleExport}
-          >
-            {exporting ? (
-              <Loader2 className="animate-spin" size={14} />
-            ) : (
-              <Download size={14} />
-            )}
-            {exporting ? RESPONSES_PAGE.exporting : RESPONSES_PAGE.export}
-          </Button>
+            disabled={responses.length === 0}
+            label={RESPONSES_PAGE.export}
+            exportingLabel={RESPONSES_PAGE.exporting}
+          />
         </div>
 
         <Separator />

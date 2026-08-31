@@ -99,7 +99,10 @@ export default function EstablishmentDashboardPage({
 
         <Separator />
 
-        <EstablishmentSubjectsList establishmentId={id} />
+        <EstablishmentSubjectsList
+          establishmentId={id}
+          establishmentName={dashboard?.establishment.name}
+        />
 
         <Separator />
 
