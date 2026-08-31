@@ -10,8 +10,8 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isAuthenticated, isInitializing } = useAuth();                                                                                                                 
-  const router = useRouter();     
+  const { isAuthenticated, isInitializing } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (isInitializing) return;
