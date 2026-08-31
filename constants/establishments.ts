@@ -174,6 +174,10 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   searchLabel: "Buscar",
   searchPlaceholder: "Nombre o dirección",
   sortLabel: "Ordenar por",
+  filters: {
+    city: "Ciudad",
+    province: "Provincia",
+  },
   noEstablishments: "No hay establecimientos",
   loadError: "Error al cargar establecimientos",
   columns: {
