@@ -290,7 +290,6 @@ export default function AnthropometricMeasurementsPage() {
               onClick={handleExport}
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
-              className=""
             />
             <Button
               size="sm"

@@ -227,7 +227,6 @@ function EstablishmentsContent() {
               onClick={handleExport}
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
-              className=""
             />
             <Link
               href="/dashboard/establishments/create"

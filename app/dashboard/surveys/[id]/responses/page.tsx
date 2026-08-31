@@ -232,6 +232,7 @@ export default function ResponsesPage() {
             disabled={responses.length === 0}
             label={RESPONSES_PAGE.export}
             exportingLabel={RESPONSES_PAGE.exporting}
+            className="self-start"
           />
         </div>
 

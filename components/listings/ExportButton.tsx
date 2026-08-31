@@ -13,6 +13,7 @@ type ExportButtonProps = {
   emptyHint?: string;
   label?: string;
   exportingLabel?: string;
+  /** Only for the one caller that is not already inside an action row. */
   className?: string;
 };
 
@@ -24,7 +25,7 @@ export default function ExportButton({
   emptyHint,
   label = EXPORT.label,
   exportingLabel = EXPORT.exporting,
-  className = "self-start",
+  className,
 }: ExportButtonProps) {
   return (
     <Button

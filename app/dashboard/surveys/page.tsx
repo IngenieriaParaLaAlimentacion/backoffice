@@ -168,7 +168,6 @@ export default function SurveysPage() {
               onClick={handleExport}
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
-              className=""
             />
             <CreateSurveyDialog />
           </div>
