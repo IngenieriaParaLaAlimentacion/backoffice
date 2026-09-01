@@ -13,6 +13,9 @@ import { UserRole } from "@/types/user";
 export type Permission =
   /** The "Solicitudes" screen and its two tabs (user + establishment access). */
   | "requests.view"
+  /** The "Usuarios" screen. The backend 403s non-admins on the listing
+   * endpoints, so the screen has nothing to show without this. */
+  | "users.view"
   /** Creating an establishment outright (button + `/establishments/create`). */
   | "establishments.create"
   /** The "Solicitudes" tab inside Establecimientos (approve/reject new ones). */
@@ -26,6 +29,7 @@ export type Permission =
 
 const ALL_PERMISSIONS = [
   "requests.view",
+  "users.view",
   "establishments.create",
   "establishments.requests.view",
   "users.invite",

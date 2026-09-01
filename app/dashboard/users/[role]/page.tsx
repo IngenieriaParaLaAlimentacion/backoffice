@@ -1,5 +1,6 @@
 "use client";
 
+import RequirePermission from "@/components/RequirePermission";
 import { use, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,11 +27,7 @@ import {
 
 const PAGE_SIZE = 20;
 
-export default function RoleUsersPage({
-  params,
-}: {
-  params: Promise<{ role: string }>;
-}) {
+function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
   // `role` is the route param — which list is being shown, not who is looking.
   const { role } = use(params);
   const section = ROLE_SECTIONS.find((s) => s.role === role);
@@ -217,5 +214,17 @@ export default function RoleUsersPage({
         onClose={() => setSelectedUserId(null)}
       />
     </div>
+  );
+}
+
+export default function RoleUsersPageRoute({
+  params,
+}: {
+  params: Promise<{ role: string }>;
+}) {
+  return (
+    <RequirePermission permission="users.view">
+      <RoleUsersPage params={params} />
+    </RequirePermission>
   );
 }

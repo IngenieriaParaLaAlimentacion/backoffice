@@ -32,7 +32,12 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: ClipboardList,
     permission: "requests.view",
   },
-  { label: "Usuarios", href: "/dashboard/users", icon: Users },
+  {
+    label: "Usuarios",
+    href: "/dashboard/users",
+    icon: Users,
+    permission: "users.view",
+  },
   {
     label: "Establecimientos",
     href: "/dashboard/establishments",

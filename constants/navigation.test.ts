@@ -10,13 +10,15 @@ describe("visibleNavItems", () => {
     expect(labelsFor("admin")).toContain("Solicitudes");
   });
 
-  it("hides Solicitudes from an analyst but keeps every other screen", () => {
+  // Solicitudes grants access, and the backend 403s analysts on the user
+  // listing endpoints — neither screen has anything to offer them.
+  it("hides Solicitudes and Usuarios from an analyst", () => {
     const labels = labelsFor("analyst");
 
     expect(labels).not.toContain("Solicitudes");
+    expect(labels).not.toContain("Usuarios");
     expect(labels).toEqual([
       "Inicio",
-      "Usuarios",
       "Establecimientos",
       "Sujetos",
       "Mediciones",
@@ -25,6 +27,12 @@ describe("visibleNavItems", () => {
   });
 
   it("hides permission-gated items while the role is unknown", () => {
-    expect(labelsFor(null)).not.toContain("Solicitudes");
+    expect(labelsFor(null)).toEqual([
+      "Inicio",
+      "Establecimientos",
+      "Sujetos",
+      "Mediciones",
+      "Encuestas",
+    ]);
   });
 });

@@ -4,6 +4,7 @@ import { ROLE_LABELS, UserRole } from "@/types/user";
 
 const ADMIN_ONLY: Permission[] = [
   "requests.view",
+  "users.view",
   "establishments.create",
   "establishments.requests.view",
   "users.invite",
