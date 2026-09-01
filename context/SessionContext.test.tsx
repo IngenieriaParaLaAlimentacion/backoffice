@@ -65,8 +65,11 @@ describe("SessionProvider", () => {
   });
 
   it("refetches on demand after a failure", async () => {
+    // The success role is stated rather than inherited from the handler
+    // default, which flips to whatever role is being QA'd manually.
     server.use(
       makeMeHandler({ status: 500, error: { detail: "boom" }, once: true }),
+      makeMeHandler({ data: { role: "admin" } }),
     );
 
     function ErrorProbe() {
@@ -84,6 +87,6 @@ describe("SessionProvider", () => {
     await renderWithProviders(<ErrorProbe />);
     await userEvent.click(screen.getByRole("button", { name: SESSION.retry }));
 
-    expect(await screen.findByText("role:superadmin")).toBeInTheDocument();
+    expect(await screen.findByText("role:admin")).toBeInTheDocument();
   });
 });
