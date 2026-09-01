@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useSession } from "@/context/SessionContext";
 import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
 import { ESTABLISHMENT_TABS } from "@/constants/establishments";
 
@@ -40,11 +40,12 @@ export default function EstablishmentsLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const { makeAuthorizedRequest } = useAuth();
-  const isAdmin = useIsAdmin();
+  const { can } = useSession();
+  const canViewRequests = can("establishments.requests.view");
   const [pendingCount, setPendingCount] = useState<number | null>(null);
 
   const refreshPendingCount = useCallback(() => {
-    if (!isAdmin) return;
+    if (!canViewRequests) return;
 
     listEstablishmentRequestsAction(makeAuthorizedRequest, {
       page: 1,
@@ -52,7 +53,7 @@ export default function EstablishmentsLayout({
     })
       .then((data) => setPendingCount(data.total))
       .catch(() => setPendingCount(null));
-  }, [isAdmin, makeAuthorizedRequest]);
+  }, [canViewRequests, makeAuthorizedRequest]);
 
   useEffect(() => {
     // Re-check whenever the requests tab becomes active so navigating back
@@ -60,7 +61,7 @@ export default function EstablishmentsLayout({
     refreshPendingCount();
   }, [refreshPendingCount, pathname]);
 
-  const tabs = isAdmin ? [...BASE_TABS, REQUESTS_TAB] : BASE_TABS;
+  const tabs = canViewRequests ? [...BASE_TABS, REQUESTS_TAB] : BASE_TABS;
 
   return (
     <RefreshPendingCountContext.Provider value={refreshPendingCount}>

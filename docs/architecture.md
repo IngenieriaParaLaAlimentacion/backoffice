@@ -22,6 +22,43 @@ Screens call authenticated endpoints through `useAuth().makeAuthorizedRequest` (
 `apiRequest` in `lib/http.ts`). `app/dashboard/layout.tsx` is the auth gate: it redirects
 to `/signin` once `isInitializing` is false and `isAuthenticated` is false.
 
+## Authorization (roles & permissions)
+
+Authentication says _whether_ you're in; this layer says _what you see_. Four roles
+exist (`types/user.ts` `UserRole`): `superadmin`, `admin`, `analyst`, `field_worker`.
+
+Three pieces, in dependency order:
+
+1. **`lib/permissions.ts`** — a pure `can(role, permission)` over a
+   `Record<UserRole, Permission[]>` table. `Permission` is a named capability
+   (`"requests.view"`, `"surveys.delete"`, …), never a role check at the call site.
+   Only capabilities _some_ role loses get an entry: anything absent from the union is
+   available to every authenticated user, which keeps the table short and makes "who
+   can do this?" answerable by reading one file.
+2. **`context/SessionContext.tsx`** — `SessionProvider` resolves `GET /users/me` **once**
+   per session and exposes `{ profile, role, isLoading, error, refetch, can }`. It is
+   deliberately separate from `AuthContext`, which owns tokens and knows nothing about
+   who the user is. Its effect is keyed on `isAuthenticated`, not on
+   `makeAuthorizedRequest` — that reference changes on every silent token refresh and
+   would re-fetch the profile each time, so the dispatcher is read from a ref.
+3. **`components/RequirePermission.tsx`** — wraps a route's content and renders a 403
+   screen (`components/FullScreenMessage.tsx` + `constants/permissions.ts`) when the
+   role lacks the permission, so typing a hidden URL by hand doesn't reach the screen.
+
+`app/dashboard/layout.tsx` mounts `SessionProvider` inside the auth gate and holds the
+shell back while `isLoading` — every role check starts out denying, so rendering first
+would flash admin-only nav items and cards at analysts on each load. If `/users/me`
+fails it shows a retry screen rather than degrading to "no permissions", which would
+read as a broken app.
+
+Navigation is declarative in `constants/navigation.ts`: each `NavItem` may carry a
+`permission`, and `visibleNavItems(role)` feeds the sidebar, the mobile drawer and the
+home screen's "Accesos disponibles" grid — so gating an item removes it from all three.
+
+**This is a UX guard, not a security boundary.** It hides what a role can't act on so
+screens don't offer dead buttons; the backend still answers 403 and remains the real
+authorization boundary. See `docs/adr/0002-client-side-permission-model.md`.
+
 ## Service functions & error handling
 
 `services/*.service.ts` functions take `dispatcher: AuthDispatcher` as their first

@@ -1,3 +1,10 @@
+/**
+ * The roles the backend assigns. `superadmin` and `admin` differ in backend
+ * capabilities but not in what the backoffice shows, so `lib/permissions.ts`
+ * grants them the same set.
+ */
+export type UserRole = "superadmin" | "admin" | "analyst" | "field_worker";
+
 export type ProfileEstablishment = {
   id: string;
   name: string;
@@ -10,11 +17,11 @@ export type ProfileResponse = {
   email: string;
   name: string;
   last_name: string;
-  role: string;
+  role: UserRole;
   establishments?: ProfileEstablishment[] | null;
 };
 
-export const ROLE_LABELS: Record<string, string> = {
+export const ROLE_LABELS: Record<UserRole, string> = {
   superadmin: "Superadministrador",
   admin: "Administrador",
   analyst: "Analista",

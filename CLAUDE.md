@@ -21,9 +21,10 @@ npm run test:watch     # vitest --watch
 npm run test:ci        # vitest run --coverage
 ```
 
-Run a single test file: `npx vitest run path/to/file.test.ts`. There are currently no
-test files in the repo yet, but the test infra (vitest + jsdom + Testing Library + MSW)
-is fully wired.
+Run a single test file: `npx vitest run path/to/file.test.ts`. Tests are co-located
+next to their subject (`lib/permissions.test.ts`, `context/SessionContext.test.tsx`);
+`test-utils.tsx` exports `renderWithProviders(ui, { role })` for anything that reads the
+auth or session context.
 
 Husky runs `lint-staged` on commit (eslint --fix + prettier for JS/TS, prettier for
 css/md/json) — don't bypass with `--no-verify`.
@@ -46,6 +47,12 @@ reasoning behind their shape and are easy to "fix" into something that quietly b
   localStorage token, not cookies/middleware) — don't convert a page to a Server
   Component fetching with a bare `fetch`, it would bypass the auth/refresh logic in
   `lib/http.ts`.
+- **Roles are permissions, not `isAdmin` checks.** Ask `useSession().can("surveys.delete")`
+  for a named capability from `lib/permissions.ts`; never branch on a role literal in a
+  component, and never fetch `GET /users/me` for a role — `SessionProvider` already has
+  it. Gate a whole route with `<RequirePermission>` and a nav item with the `permission`
+  field in `constants/navigation.ts`. See `docs/architecture.md` § Authorization — and
+  remember it's a UX guard, the backend is the real boundary.
 - Centralize, don't repeat: endpoint paths (`constants/api.ts`), user-facing copy
   (`constants/<domain>.ts`), storage keys, and API/schema types each have exactly one
   place to live — see `docs/conventions.md` for the full pattern and where to put new
@@ -66,4 +73,5 @@ reasoning behind their shape and are easy to "fix" into something that quietly b
   the geo-provider adapter, forms, UI components, testing setup.
 - `docs/conventions.md` — Next.js conventions and how this repo avoids duplication/magic
   values.
-- `docs/adr/` — architecture decision records (e.g. the geo-provider adapter choice).
+- `docs/adr/` — architecture decision records (the geo-provider adapter choice; the
+  client-side permission model).
