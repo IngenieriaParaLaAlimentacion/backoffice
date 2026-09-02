@@ -10,6 +10,7 @@ import {
 } from "@/services/admin.service";
 import { usePendingCount } from "@/hooks/usePendingCount";
 import { REQUEST_TABS } from "@/constants/users";
+import RequirePermission from "@/components/RequirePermission";
 
 const USERS_TAB_HREF = "/dashboard/requests";
 const ESTABLISHMENTS_TAB_HREF = "/dashboard/requests/establishments";
@@ -27,6 +28,19 @@ export const useRefreshRequestCounts = () =>
 export default function RequestsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <RequirePermission permission="requests.view">
+      <RequestsTabs>{children}</RequestsTabs>
+    </RequirePermission>
+  );
+}
+
+/**
+ * Split out so the admin-only pending-count fetches below never run for a
+ * role that can't see this screen — `RequirePermission` renders nothing for
+ * them, so this component never mounts.
+ */
+function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const { makeAuthorizedRequest } = useAuth();
 

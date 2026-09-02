@@ -1,5 +1,6 @@
 "use client";
 
+import RequirePermission from "@/components/RequirePermission";
 import { use, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
+import { useSession } from "@/context/SessionContext";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
 import InviteUserDialog from "./InviteUserDialog";
@@ -25,14 +27,12 @@ import {
 
 const PAGE_SIZE = 20;
 
-export default function RoleUsersPage({
-  params,
-}: {
-  params: Promise<{ role: string }>;
-}) {
+function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
+  // `role` is the route param — which list is being shown, not who is looking.
   const { role } = use(params);
   const section = ROLE_SECTIONS.find((s) => s.role === role);
   const label = section?.label ?? role;
+  const canInvite = useSession().can("users.invite");
 
   const { users, page, totalPages, isLoading, error, setPage } = useUsers(
     role,
@@ -60,13 +60,13 @@ export default function RoleUsersPage({
             </p>
           </div>
           <div className="self-start">
-            {role === "admin" && (
+            {canInvite && role === "admin" && (
               <InviteUserDialog
                 label="Invitar administrador"
                 inviteAction={inviteAdminAction}
               />
             )}
-            {role === "analyst" && (
+            {canInvite && role === "analyst" && (
               <InviteUserDialog
                 label="Invitar analista"
                 inviteAction={inviteAnalystAction}
@@ -214,5 +214,17 @@ export default function RoleUsersPage({
         onClose={() => setSelectedUserId(null)}
       />
     </div>
+  );
+}
+
+export default function RoleUsersPageRoute({
+  params,
+}: {
+  params: Promise<{ role: string }>;
+}) {
+  return (
+    <RequirePermission permission="users.view">
+      <RoleUsersPage params={params} />
+    </RequirePermission>
   );
 }

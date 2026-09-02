@@ -11,7 +11,9 @@ import BrandLockup from "@/components/BrandLockup";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
 import SideBarItem from "./SideBarItem";
-import { LOGOUT_BUTTON_CLASS, navItems } from "./SideBar";
+import { LOGOUT_BUTTON_CLASS } from "./SideBar";
+import { useSession } from "@/context/SessionContext";
+import { PROFILE_NAV_ITEM, visibleNavItems } from "@/constants/navigation";
 
 type MobileNavProps = {
   open: boolean;
@@ -20,6 +22,8 @@ type MobileNavProps = {
 
 export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
   const { logout } = useAuth();
+  const { role } = useSession();
+  const navItems = visibleNavItems(role);
   const { replace } = useRouter();
   const pathname = usePathname();
 
@@ -73,15 +77,19 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
           <Separator className="bg-sidebar-border" />
 
           <nav className="flex flex-1 flex-col gap-1 px-2 py-2">
-            {navItems.map((item) => (
-              <SideBarItem {...item} key={item.href} isSidebarOpen />
+            {navItems.map(({ icon: Icon, ...item }) => (
+              <SideBarItem
+                {...item}
+                key={item.href}
+                icon={<Icon size={20} />}
+                isSidebarOpen
+              />
             ))}
           </nav>
 
           <div className="px-2 pb-2">
             <SideBarItem
-              href="/dashboard/profile"
-              label="Perfil"
+              {...PROFILE_NAV_ITEM}
               icon={<User size={20} />}
               isSidebarOpen
             />

@@ -2,7 +2,7 @@
 
 import { useEstablishmentFieldWorkers } from "@/hooks/useEstablishmentFieldWorkers";
 import { useRevokeAccess } from "@/hooks/useRevokeAccess";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useSession } from "@/context/SessionContext";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import Pagination from "@/components/Pagination";
@@ -46,7 +46,7 @@ export default function EstablishmentFieldWorkersList({
   } = useEstablishmentFieldWorkers(establishmentId);
 
   const columns = COPY.fieldWorkerColumns;
-  const isAdmin = useIsAdmin();
+  const canRevokeAccess = useSession().can("users.revokeAccess");
 
   const { revokingId, actionError, revoke } = useRevokeAccess(
     {
@@ -179,14 +179,15 @@ export default function EstablishmentFieldWorkersList({
                       )}
                     </td>
                     <td className="w-12 px-4 py-3">
-                      {worker.relation_status === "approved" && isAdmin && (
-                        <RevokeAccessMenu
-                          label={COPY.removeAccess}
-                          menuLabel={COPY.actionsMenuLabel}
-                          isSubmitting={revokingId === worker.id}
-                          onRevoke={() => handleRemoveAccess(worker.id)}
-                        />
-                      )}
+                      {worker.relation_status === "approved" &&
+                        canRevokeAccess && (
+                          <RevokeAccessMenu
+                            label={COPY.removeAccess}
+                            menuLabel={COPY.actionsMenuLabel}
+                            isSubmitting={revokingId === worker.id}
+                            onRevoke={() => handleRemoveAccess(worker.id)}
+                          />
+                        )}
                     </td>
                   </tr>
                 ))}
@@ -209,7 +210,7 @@ export default function EstablishmentFieldWorkersList({
                       {worker.email}
                     </span>
                   </div>
-                  {worker.relation_status === "approved" && isAdmin && (
+                  {worker.relation_status === "approved" && canRevokeAccess && (
                     <RevokeAccessMenu
                       label={COPY.removeAccess}
                       menuLabel={COPY.actionsMenuLabel}

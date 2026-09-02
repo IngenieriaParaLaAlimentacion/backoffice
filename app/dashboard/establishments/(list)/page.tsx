@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useSession } from "@/context/SessionContext";
 import {
   EstablishmentFilters,
   exportEstablishmentsAction,
@@ -63,6 +64,7 @@ function parsePage(value: string | null) {
 
 function EstablishmentsContent() {
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
+  const { can } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -249,13 +251,15 @@ function EstablishmentsContent() {
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
             />
-            <Link
-              href="/dashboard/establishments/create"
-              className={buttonVariants({ size: "sm" })}
-            >
-              <Plus size={14} />
-              {ESTABLISHMENTS_LIST_PAGE.createButton}
-            </Link>
+            {can("establishments.create") && (
+              <Link
+                href="/dashboard/establishments/create"
+                className={buttonVariants({ size: "sm" })}
+              >
+                <Plus size={14} />
+                {ESTABLISHMENTS_LIST_PAGE.createButton}
+              </Link>
+            )}
           </div>
         </div>
 

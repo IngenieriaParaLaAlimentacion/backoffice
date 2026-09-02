@@ -1,8 +1,15 @@
-export const ROLE_SECTIONS = [
+import { UserRole } from "@/types/user";
+
+/**
+ * The role listings the Usuarios screen renders, in display order. Plural
+ * labels because they title a section; the singular ones are `ROLE_LABELS`.
+ * `superadmin` is deliberately absent — it isn't a section of its own.
+ */
+export const ROLE_SECTIONS: readonly { role: UserRole; label: string }[] = [
   { role: "admin", label: "Administradores" },
   { role: "field_worker", label: "Relevadores" },
   { role: "analyst", label: "Analistas" },
-] as const;
+];
 
 export const USERS_PAGE = {
   title: "Usuarios",

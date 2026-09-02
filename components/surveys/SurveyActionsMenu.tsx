@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { MENU_ITEM_CLASS } from "@/components/ui/menu";
 import { SurveyListItem } from "@/types/survey";
 import { SURVEY_FORM, SURVEYS_PAGE } from "@/constants/surveys";
+import { useSession } from "@/context/SessionContext";
 
 export default function SurveyActionsMenu({
   survey,
@@ -29,6 +30,7 @@ export default function SurveyActionsMenu({
   busy: boolean;
 }) {
   const router = useRouter();
+  const canDelete = useSession().can("surveys.delete");
   const editLocked = survey.response_count > 0;
 
   return (
@@ -72,13 +74,15 @@ export default function SurveyActionsMenu({
                   ? SURVEY_FORM.deactivate
                   : SURVEY_FORM.activate}
               </Menu.Item>
-              <Menu.Item
-                className={`${MENU_ITEM_CLASS} text-destructive data-[highlighted]:bg-destructive/20`}
-                onClick={onDelete}
-              >
-                <Trash2 size={14} />
-                {SURVEY_FORM.delete}
-              </Menu.Item>
+              {canDelete && (
+                <Menu.Item
+                  className={`${MENU_ITEM_CLASS} text-destructive data-[highlighted]:bg-destructive/20`}
+                  onClick={onDelete}
+                >
+                  <Trash2 size={14} />
+                  {SURVEY_FORM.delete}
+                </Menu.Item>
+              )}
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>

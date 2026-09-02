@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  Menu,
-  LogOut,
-  LayoutDashboard,
-  ClipboardList,
-  ListChecks,
-  Users,
-  User,
-  Building2,
-  Ruler,
-} from "lucide-react";
+import { Menu, LogOut, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import BrandLockup from "@/components/BrandLockup";
 import SideBarItem from "./SideBarItem";
@@ -18,6 +8,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useSession } from "@/context/SessionContext";
+import { PROFILE_NAV_ITEM, visibleNavItems } from "@/constants/navigation";
 
 const DRAWER_OPEN_WIDTH = 220;
 const DRAWER_CLOSED_WIDTH = 60;
@@ -33,46 +25,10 @@ const DRAWER_MAX_WIDTH = 300;
 export const LOGOUT_BUTTON_CLASS =
   "mx-2 mb-3 bg-transparent text-sidebar-destructive border-sidebar-destructive/60 hover:bg-sidebar-destructive/15 hover:text-sidebar-destructive";
 
-export const navItems = [
-  {
-    label: "Inicio",
-    href: "/dashboard",
-    icon: <LayoutDashboard size={20} />,
-  },
-  {
-    label: "Solicitudes",
-    href: "/dashboard/requests",
-    icon: <ClipboardList size={20} />,
-  },
-  {
-    label: "Usuarios",
-    href: "/dashboard/users",
-    icon: <Users size={20} />,
-  },
-  {
-    label: "Establecimientos",
-    href: "/dashboard/establishments",
-    icon: <Building2 size={20} />,
-  },
-  {
-    label: "Sujetos",
-    href: "/dashboard/subjects",
-    icon: <Users size={20} />,
-  },
-  {
-    label: "Mediciones",
-    href: "/dashboard/anthropometric-measurements",
-    icon: <Ruler size={20} />,
-  },
-  {
-    label: "Encuestas",
-    href: "/dashboard/surveys",
-    icon: <ListChecks size={20} />,
-  },
-];
-
 export default function SideBar() {
   const { logout } = useAuth();
+  const { role } = useSession();
+  const navItems = visibleNavItems(role);
   const { replace } = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openWidth, setOpenWidth] = useState(DRAWER_OPEN_WIDTH);
@@ -141,10 +97,11 @@ export default function SideBar() {
       <Separator className="bg-sidebar-border" />
 
       <nav className="flex flex-col flex-1 gap-1 px-2 py-2">
-        {navItems.map((item) => (
+        {navItems.map(({ icon: Icon, ...item }) => (
           <SideBarItem
             {...item}
             key={item.href}
+            icon={<Icon size={20} />}
             isSidebarOpen={isSidebarOpen}
           />
         ))}
@@ -152,8 +109,7 @@ export default function SideBar() {
 
       <div className="px-2 pb-2">
         <SideBarItem
-          href="/dashboard/profile"
-          label="Perfil"
+          {...PROFILE_NAV_ITEM}
           icon={<User size={20} />}
           isSidebarOpen={isSidebarOpen}
         />

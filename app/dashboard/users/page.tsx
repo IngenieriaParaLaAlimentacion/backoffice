@@ -1,5 +1,6 @@
 "use client";
 
+import RequirePermission from "@/components/RequirePermission";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -153,7 +154,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
   );
 }
 
-export default function UsersPage() {
+function UsersPage() {
   return (
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
@@ -172,5 +173,13 @@ export default function UsersPage() {
         ))}
       </Card>
     </div>
+  );
+}
+
+export default function UsersPageRoute() {
+  return (
+    <RequirePermission permission="users.view">
+      <UsersPage />
+    </RequirePermission>
   );
 }

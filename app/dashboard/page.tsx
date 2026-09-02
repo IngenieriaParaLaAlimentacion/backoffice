@@ -12,16 +12,14 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { getMeAction } from "@/services/user.service";
 import { getDashboardIndicatorsAction } from "@/services/dashboard.service";
 import {
   listPendingEstablishmentAccessAction,
   listUsersAction,
 } from "@/services/admin.service";
 import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
-import { ProfileResponse } from "@/types/user";
 import { DashboardIndicators } from "@/types/survey";
-import { navItems } from "@/components/SideBar";
+import { visibleNavItems } from "@/constants/navigation";
 import BrandMark from "@/components/BrandMark";
 import { Card } from "@/components/ui/card";
 import { BRAND } from "@/constants/brand";
@@ -29,10 +27,7 @@ import { DATA_CLASS } from "@/constants/theme";
 import { DASHBOARD_INDICATORS } from "@/constants/surveys";
 import { UserStatus } from "@/types/establishment";
 import { usePendingCount } from "@/hooks/usePendingCount";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
-
-// Quick-access cards mirror the sidebar, minus the dashboard self-link.
-const accessItems = navItems.filter((item) => item.href !== "/dashboard");
+import { useSession } from "@/context/SessionContext";
 
 const PENDING_VALIDATION_STATUS: UserStatus = "pending_validation";
 const FIELD_WORKER_ROLE = "field_worker";
@@ -109,8 +104,13 @@ function IndicatorCard({
 
 export default function DashboardPage() {
   const { makeAuthorizedRequest } = useAuth();
-  const isAdmin = useIsAdmin();
-  const [, setProfile] = useState<ProfileResponse | null>(null);
+  const { role, can } = useSession();
+  const canViewRequests = can("requests.view");
+  const canViewEstablishmentRequests = can("establishments.requests.view");
+  // Quick-access cards mirror the sidebar, minus the dashboard self-link.
+  const accessItems = visibleNavItems(role).filter(
+    (item) => item.href !== "/dashboard",
+  );
   const [indicators, setIndicators] = useState<DashboardIndicators | null>(
     null,
   );
@@ -160,15 +160,6 @@ export default function DashboardPage() {
     }, [makeAuthorizedRequest]),
   );
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      const data = await getMeAction(makeAuthorizedRequest);
-      setProfile(data);
-    } catch {
-      // Silently ignore: the greeting falls back to a generic message.
-    }
-  }, [makeAuthorizedRequest]);
-
   const fetchIndicators = useCallback(async () => {
     setIndicatorsLoading(true);
     setIndicatorsError(null);
@@ -185,19 +176,22 @@ export default function DashboardPage() {
   }, [makeAuthorizedRequest]);
 
   useEffect(() => {
-    fetchProfile();
     fetchIndicators();
-  }, [fetchProfile, fetchIndicators]);
+  }, [fetchIndicators]);
 
   // Approve/reject on every request type is admin-only, so analysts never
   // hit these admin-scoped counts — no point fetching what they can't act on.
   useEffect(() => {
-    if (!isAdmin) return;
-    fetchPendingUserRegistrations();
-    fetchPendingEstablishmentCreations();
-    fetchPendingEstablishmentAccess();
+    if (canViewRequests) {
+      fetchPendingUserRegistrations();
+      fetchPendingEstablishmentAccess();
+    }
+    if (canViewEstablishmentRequests) {
+      fetchPendingEstablishmentCreations();
+    }
   }, [
-    isAdmin,
+    canViewRequests,
+    canViewEstablishmentRequests,
     fetchPendingUserRegistrations,
     fetchPendingEstablishmentCreations,
     fetchPendingEstablishmentAccess,
@@ -256,7 +250,7 @@ export default function DashboardPage() {
                 }
                 label={DASHBOARD_INDICATORS.lastEvent}
               />
-              {isAdmin && (
+              {canViewRequests && (
                 <>
                   <IndicatorCard
                     icon={<UserPlus size={18} />}
@@ -298,27 +292,29 @@ export default function DashboardPage() {
                       !!pendingEstablishmentAccess
                     }
                   />
-                  <IndicatorCard
-                    icon={<Building size={18} />}
-                    value={
-                      pendingEstablishmentCreationsLoading ? (
-                        <Loader2
-                          className="animate-spin text-muted-foreground"
-                          size={18}
-                        />
-                      ) : (
-                        (pendingEstablishmentCreations ??
-                        DASHBOARD_INDICATORS.notAvailable)
-                      )
-                    }
-                    label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
-                    href="/dashboard/establishments/requests"
-                    emphasize={
-                      !pendingEstablishmentCreationsLoading &&
-                      !!pendingEstablishmentCreations
-                    }
-                  />
                 </>
+              )}
+              {canViewEstablishmentRequests && (
+                <IndicatorCard
+                  icon={<Building size={18} />}
+                  value={
+                    pendingEstablishmentCreationsLoading ? (
+                      <Loader2
+                        className="animate-spin text-muted-foreground"
+                        size={18}
+                      />
+                    ) : (
+                      (pendingEstablishmentCreations ??
+                      DASHBOARD_INDICATORS.notAvailable)
+                    )
+                  }
+                  label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
+                  href="/dashboard/establishments/requests"
+                  emphasize={
+                    !pendingEstablishmentCreationsLoading &&
+                    !!pendingEstablishmentCreations
+                  }
+                />
               )}
             </div>
           ) : null}
@@ -329,14 +325,14 @@ export default function DashboardPage() {
             Accesos disponibles
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {accessItems.map((item) => (
+            {accessItems.map(({ icon: Icon, ...item }) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-accent-foreground/40 hover:bg-accent"
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-                  {item.icon}
+                  <Icon size={20} />
                 </span>
                 <span className="text-sm font-medium">{item.label}</span>
               </Link>

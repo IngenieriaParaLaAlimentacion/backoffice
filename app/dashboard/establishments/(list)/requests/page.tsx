@@ -1,5 +1,6 @@
 "use client";
 
+import RequirePermission from "@/components/RequirePermission";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -466,7 +467,7 @@ function EstablishmentRequestsContent() {
   );
 }
 
-export default function EstablishmentRequestsPage() {
+function EstablishmentRequestsPage() {
   // useSearchParams needs a Suspense boundary during prerender.
   return (
     <Suspense
@@ -478,5 +479,13 @@ export default function EstablishmentRequestsPage() {
     >
       <EstablishmentRequestsContent />
     </Suspense>
+  );
+}
+
+export default function EstablishmentRequestsRoute() {
+  return (
+    <RequirePermission permission="establishments.requests.view">
+      <EstablishmentRequestsPage />
+    </RequirePermission>
   );
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import { use } from "react";
-import Link from "next/link";
 import { useEstablishmentDashboard } from "@/hooks/useEstablishmentDashboard";
 import { Card } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import FullScreenMessage from "@/components/FullScreenMessage";
 import EstablishmentHeader from "./EstablishmentHeader";
 import EstablishmentMetrics from "./EstablishmentMetrics";
 import EstablishmentAlertBanner from "./EstablishmentAlertBanner";
@@ -15,20 +14,6 @@ import { ESTABLISHMENT_DASHBOARD_PAGE as COPY } from "@/constants/establishments
 import { Loader2 } from "lucide-react";
 
 const PANEL_HREF = "/dashboard/establishments";
-
-function FullScreenMessage({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="flex flex-1 p-4">
-      <Card className="flex-1 p-4 md:p-8 flex flex-col items-center justify-center gap-3 text-center">
-        <h1 className="text-2xl font-semibold">{title}</h1>
-        <p className="text-muted-foreground text-sm">{body}</p>
-        <Link href={PANEL_HREF} className={buttonVariants({ size: "sm" })}>
-          {COPY.backToPanel}
-        </Link>
-      </Card>
-    </div>
-  );
-}
 
 export default function EstablishmentDashboardPage({
   params,
@@ -46,7 +31,12 @@ export default function EstablishmentDashboardPage({
   // state (it exists but has no measurements) and renders differently.
   if (notFound) {
     return (
-      <FullScreenMessage title={COPY.notFoundTitle} body={COPY.notFoundBody} />
+      <FullScreenMessage
+        title={COPY.notFoundTitle}
+        body={COPY.notFoundBody}
+        actionHref={PANEL_HREF}
+        actionLabel={COPY.backToPanel}
+      />
     );
   }
 
@@ -55,6 +45,8 @@ export default function EstablishmentDashboardPage({
       <FullScreenMessage
         title={COPY.forbiddenTitle}
         body={COPY.forbiddenBody}
+        actionHref={PANEL_HREF}
+        actionLabel={COPY.backToPanel}
       />
     );
   }

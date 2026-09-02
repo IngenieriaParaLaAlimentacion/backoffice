@@ -1,3 +1,5 @@
+import { UserRole } from "@/types/user";
+
 export type EstablishmentResponse = {
   id: string;
   name: string;
@@ -24,7 +26,7 @@ export type UserAdminView = {
   email: string;
   name: string;
   last_name: string;
-  role: string;
+  role: UserRole;
   status: string;
   is_email_verified: boolean;
   establishments: EstablishmentResponse[];
@@ -35,7 +37,7 @@ export type AdminUserDetail = {
   name: string;
   email: string;
   last_name?: string;
-  role?: string;
+  role?: UserRole;
   status?: string;
   establishments?: EstablishmentResponse[];
   locality?: string;

@@ -5,7 +5,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, X } from "lucide-react";
 import { useUserDetail } from "@/hooks/useUserDetail";
 import { useRevokeAccess } from "@/hooks/useRevokeAccess";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useSession } from "@/context/SessionContext";
 import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
 import { USER_DETAIL_PANEL } from "@/constants/users";
 import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
@@ -37,7 +37,7 @@ export default function UserDetailPanel({
   onClose,
 }: UserDetailPanelProps) {
   const { user, isLoading, error, refetch } = useUserDetail(userId);
-  const isAdmin = useIsAdmin();
+  const canRevokeAccess = useSession().can("users.revokeAccess");
 
   const { revokingId, actionError, revoke, reset } = useRevokeAccess(
     {
@@ -167,7 +167,7 @@ export default function UserDetailPanel({
                             </span>
                           )}
                         </div>
-                        {isAdmin && (
+                        {canRevokeAccess && (
                           <RevokeAccessMenu
                             label={USER_DETAIL_PANEL.removeAccess}
                             menuLabel={USER_DETAIL_PANEL.actionsMenuLabel}

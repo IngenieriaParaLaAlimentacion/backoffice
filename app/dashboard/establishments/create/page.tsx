@@ -22,8 +22,9 @@ import {
   CREATE_ESTABLISHMENT_PAGE,
   ESTABLISHMENT_FORM_FIELDS,
 } from "@/constants/establishments";
+import RequirePermission from "@/components/RequirePermission";
 
-export default function CreateEstablishmentPage() {
+function CreateEstablishmentForm() {
   const router = useRouter();
   const { makeAuthorizedRequest } = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
@@ -161,5 +162,13 @@ export default function CreateEstablishmentPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function CreateEstablishmentPage() {
+  return (
+    <RequirePermission permission="establishments.create">
+      <CreateEstablishmentForm />
+    </RequirePermission>
   );
 }
