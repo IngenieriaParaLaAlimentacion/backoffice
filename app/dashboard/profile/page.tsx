@@ -10,6 +10,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, SquarePen } from "lucide-react";
 import { PROFILE_PAGE } from "@/constants/users";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 function ProfileField({
   label,
@@ -40,7 +41,7 @@ export default function ProfilePage() {
       const data = await getMeAction(makeAuthorizedRequest);
       setProfile(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : PROFILE_PAGE.loadError);
+      setError(getErrorMessage(err, { fallback: PROFILE_PAGE.loadError }));
     } finally {
       setIsLoading(false);
     }

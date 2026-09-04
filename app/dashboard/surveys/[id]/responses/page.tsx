@@ -41,6 +41,7 @@ import {
   rowStateClass,
 } from "@/components/listings/RowAffordance";
 import ResponseDetailPanel from "./ResponseDetailPanel";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -154,7 +155,7 @@ export default function ResponsesPage() {
       } catch (err) {
         setResponses([]);
         setError(
-          err instanceof Error ? err.message : "Error al cargar las respuestas",
+          getErrorMessage(err, { fallback: "Error al cargar las respuestas" }),
         );
       } finally {
         setIsLoading(false);

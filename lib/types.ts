@@ -13,6 +13,11 @@ export type ApiResponse<TData> = Pick<
 
 // --- Error Response API ---
 
+/**
+ * `detail` is always a string; it used to be an array of objects on 422s,
+ * which rendered here as "[object Object]". Only `type` is contractual —
+ * `title` and `detail` are English prose the backend may reword at any time.
+ */
 export type ErrorResponse = {
   type: string;
   title: string;

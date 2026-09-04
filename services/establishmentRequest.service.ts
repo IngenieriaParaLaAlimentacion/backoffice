@@ -11,8 +11,7 @@ import {
   PaginatedEstablishmentRequestsResponse,
 } from "@/types/admin";
 import { CreateEstablishmentData } from "@/services/establishment.service";
-import { ApiError } from "@/lib/apiError";
-import { ErrorResponse } from "@/lib/types";
+import { toApiError } from "@/lib/apiError";
 
 const PENDING_STATUS: EstablishmentRequestStatus = "pending";
 
@@ -43,8 +42,7 @@ export const listEstablishmentRequestsAction = async (
     PaginatedEstablishmentRequestsResponse
   >(`${LIST_ESTABLISHMENT_REQUESTS_ENDPOINT}?${query.toString()}`);
 
-  if (!res.ok)
-    throw new ApiError((res.data as ErrorResponse).detail, res.status);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedEstablishmentRequestsResponse;
 };
@@ -62,8 +60,7 @@ export const approveEstablishmentRequestAction = async (
     body: data,
   });
 
-  if (!res.ok)
-    throw new ApiError((res.data as ErrorResponse).detail, res.status);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as EstablishmentApprovalResponse;
 };
@@ -82,6 +79,5 @@ export const rejectEstablishmentRequestAction = async (
     { method: "PATCH", body },
   );
 
-  if (!res.ok)
-    throw new ApiError((res.data as ErrorResponse).detail, res.status);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };

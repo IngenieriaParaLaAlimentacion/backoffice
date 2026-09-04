@@ -14,6 +14,7 @@ import { formToRequest, surveyToForm } from "@/lib/surveyForm";
 import { SurveyFormInput } from "@/schemas/survey.schema";
 import { SurveyResponse } from "@/types/survey";
 import { SURVEY_FORM } from "@/constants/surveys";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 export default function EditSurveyPage({
   params,
@@ -36,7 +37,7 @@ export default function EditSurveyPage({
       setSurvey(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error al cargar la encuesta",
+        getErrorMessage(err, { fallback: "Error al cargar la encuesta" }),
       );
     } finally {
       setIsLoading(false);

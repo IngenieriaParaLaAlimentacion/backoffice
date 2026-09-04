@@ -1,4 +1,5 @@
 import { UserRole } from "@/types/user";
+import { ERROR_TYPES } from "@/lib/apiError";
 
 /**
  * The role listings the Usuarios screen renders, in display order. Plural
@@ -133,8 +134,20 @@ export const PROFILE_EDIT_PAGE = {
 
 export const INVITE_USER_DIALOG = {
   description: "Se enviará un correo con el enlace de invitación.",
-  errorPrefix: "Hubo un problema al enviar la invitación a",
-  errorSuffix: ". Podés reintentar.",
+  // Rendered after the address, so every message here is a sentence fragment:
+  // "<email> ya tiene una cuenta...".
+  sendError:
+    "no recibió la invitación: hubo un problema al enviarla. Podés reintentar.",
+  errors: {
+    [ERROR_TYPES.INVITE_ALREADY_PENDING]:
+      "ya tiene una invitación pendiente: recibió el enlace pero todavía no creó su contraseña. Podés reenviárselo.",
+    [ERROR_TYPES.USER_ALREADY_EXISTS]:
+      "ya tiene una cuenta en el sistema, así que no necesita una invitación.",
+    [ERROR_TYPES.USER_IS_NOT_PENDING]:
+      "ya completó su alta, así que no se le puede reenviar la invitación.",
+    [ERROR_TYPES.EMAIL_DELIVERY_FAILED]:
+      "no recibió el correo: falló la entrega. Revisá que la dirección sea correcta e intentá de nuevo.",
+  },
   successPrefix: "Invitación enviada a",
   successSuffix: ".",
   resend: "Reenviar invitación",

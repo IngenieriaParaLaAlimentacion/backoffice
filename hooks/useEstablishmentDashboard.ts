@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getEstablishmentDashboardAction } from "@/services/establishment.service";
 import { EstablishmentDashboardResponse } from "@/types/establishment";
 import { ApiError } from "@/lib/apiError";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 /**
  * Gates the screen: a 404 (the establishment does not exist) and the empty
@@ -31,7 +32,7 @@ export function useEstablishmentDashboard(establishmentId: string) {
     } catch (err) {
       if (err instanceof ApiError) setStatus(err.status);
       setError(
-        err instanceof Error ? err.message : "Error al cargar el comedor",
+        getErrorMessage(err, { fallback: "Error al cargar el comedor" }),
       );
     } finally {
       setIsLoading(false);

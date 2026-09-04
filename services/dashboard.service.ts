@@ -1,7 +1,7 @@
 import { AuthDispatcher } from "@/context/AuthContext";
 import { DASHBOARD_INDICATORS_ENDPOINT } from "@/constants/api";
 import { DashboardIndicators } from "@/types/survey";
-import { ErrorResponse } from "@/lib/types";
+import { toApiError } from "@/lib/apiError";
 
 type DashboardIndicatorsParams = {
   survey_id?: string;
@@ -31,7 +31,7 @@ export const getDashboardIndicatorsAction = async (
 
   const res = await dispatcher<undefined, DashboardIndicators>(path);
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as DashboardIndicators;
 };

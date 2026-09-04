@@ -30,6 +30,7 @@ import {
   ESTABLISHMENT_REQUESTS_PAGE,
 } from "@/constants/establishments";
 import { TONE_BANNER_CLASS } from "@/constants/theme";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -175,9 +176,9 @@ function EstablishmentRequestsContent() {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : ESTABLISHMENT_REQUESTS_PAGE.loadError,
+          getErrorMessage(err, {
+            fallback: ESTABLISHMENT_REQUESTS_PAGE.loadError,
+          }),
         );
       } finally {
         setIsLoading(false);

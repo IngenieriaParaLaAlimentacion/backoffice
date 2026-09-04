@@ -22,16 +22,7 @@ import {
   SurveyTemplateResponse,
   SurveyUpdateRequest,
 } from "@/types/survey";
-import { ErrorResponse } from "@/lib/types";
-import { ApiError } from "@/lib/apiError";
-
-export { ApiError };
-
-/** Wraps an error body in an ApiError, keeping status + RFC 7807 type. */
-const toApiError = (data: unknown, status: number) => {
-  const error = data as ErrorResponse;
-  return new ApiError(error.detail, status, error.type);
-};
+import { toApiError } from "@/lib/apiError";
 
 export type SurveyFilters = {
   search?: string;
@@ -73,7 +64,7 @@ export const listSurveysAction = async (
 
   const res = await dispatcher<undefined, PaginatedSurveysResponse>(path);
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedSurveysResponse;
 };
@@ -223,7 +214,7 @@ export const listSurveyResponsesAction = async (
     `${SURVEY_RESPONSES_ENDPOINT(params.survey_id)}?${query.toString()}`,
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedSurveyResponses;
 };
@@ -237,7 +228,7 @@ export const getSurveyResponseDashboardDetailAction = async (
     SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT(surveyId, responseId),
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as SurveyResponseDetail;
 };

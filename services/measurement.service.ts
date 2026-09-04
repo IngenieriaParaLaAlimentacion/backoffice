@@ -9,7 +9,7 @@ import {
   PaginatedMeasurementsResponse,
   SubjectEvolutionResponse,
 } from "@/types/measurement";
-import { ErrorResponse } from "@/lib/types";
+import { toApiError } from "@/lib/apiError";
 
 export type MeasurementFilters = {
   subject_id?: string;
@@ -63,7 +63,7 @@ export const listMeasurementsAction = async (
 
   const res = await dispatcher<undefined, PaginatedMeasurementsResponse>(path);
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedMeasurementsResponse;
 };
@@ -90,7 +90,7 @@ export const getSubjectEvolutionAction = async (
     SUBJECT_EVOLUTION_ENDPOINT(subjectId),
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as SubjectEvolutionResponse;
 };

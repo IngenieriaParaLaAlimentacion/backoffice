@@ -14,6 +14,7 @@ import { EMPTY_VALUE, formatDate } from "@/lib/format";
 import { entityLabel } from "@/components/surveys/ResponseEntity";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const SEX_LABELS: Record<Sex, string> = {
   male: SUBJECT_DETAIL_PANEL.fields.male,
@@ -76,9 +77,9 @@ export default function ResponseDetailPanel({
         setDetail(data);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Error al cargar el detalle de la respuesta",
+          getErrorMessage(err, {
+            fallback: "Error al cargar el detalle de la respuesta",
+          }),
         );
       } finally {
         setLoading(false);

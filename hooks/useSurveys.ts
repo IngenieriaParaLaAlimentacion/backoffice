@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { listSurveysAction } from "@/services/survey.service";
 import { SurveyListItem, SurveyResponseTarget } from "@/types/survey";
 import { useCallback, useEffect, useState } from "react";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 /** Empty string is the "Todos" option: no response_target sent at all. */
 export type ResponseTargetFilter = SurveyResponseTarget | "";
@@ -38,7 +39,7 @@ export function useSurveys(pageSize: number) {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error al cargar encuestas",
+          getErrorMessage(err, { fallback: "Error al cargar encuestas" }),
         );
       } finally {
         setIsLoading(false);

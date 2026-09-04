@@ -44,11 +44,15 @@ import {
 } from "@/components/listings/FiltersToggle";
 import { Loader2, RefreshCw, X } from "lucide-react";
 import {
+  MAX_AGE,
   MEASUREMENT_SORT_LABELS,
   MEASUREMENTS_PAGE,
+  MIN_AGE,
 } from "@/constants/measurements";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { parseAgeFilter } from "@/lib/ageFilter";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -170,11 +174,16 @@ export default function AnthropometricMeasurementsPage() {
       currentFilters: Filters,
       currentSortOrder: MeasurementSortOrder,
     ) => {
-      // Guard inconsistent ranges client-side (backend returns 400 otherwise).
-      const { min_age: minAge, max_age: maxAge } = toMeasurementFilters(
-        currentFilters,
-        currentSortOrder,
-      );
+      // Guard invalid and inconsistent ranges client-side: the backend answers
+      // with a 422 and a 400 respectively, neither of which names a filter.
+      const minAge = parseAgeFilter(currentFilters.minAge);
+      const maxAge = parseAgeFilter(currentFilters.maxAge);
+      if (minAge === null || maxAge === null) {
+        setMeasurements([]);
+        setError(MEASUREMENTS_PAGE.invalidAgeError);
+        setIsLoading(false);
+        return;
+      }
       if (minAge !== undefined && maxAge !== undefined && minAge > maxAge) {
         setMeasurements([]);
         setError(MEASUREMENTS_PAGE.minAgeGreaterThanMaxError);
@@ -207,7 +216,7 @@ export default function AnthropometricMeasurementsPage() {
         setMeasurements([]);
         setTotal(0);
         setError(
-          err instanceof Error ? err.message : MEASUREMENTS_PAGE.loadError,
+          getErrorMessage(err, { fallback: MEASUREMENTS_PAGE.loadError }),
         );
       } finally {
         setIsLoading(false);
@@ -257,7 +266,7 @@ export default function AnthropometricMeasurementsPage() {
         setEvolution(data);
       } catch (err) {
         setDetailError(
-          err instanceof Error ? err.message : MEASUREMENTS_PAGE.evolutionError,
+          getErrorMessage(err, { fallback: MEASUREMENTS_PAGE.evolutionError }),
         );
       } finally {
         setDetailLoading(false);
@@ -405,11 +414,12 @@ export default function AnthropometricMeasurementsPage() {
                   </span>
                   <Input
                     type="number"
-                    min={0}
-                    max={150}
+                    min={MIN_AGE}
+                    max={MAX_AGE}
+                    step={1}
                     value={filters.minAge}
                     onChange={(e) => updateFilter("minAge", e.target.value)}
-                    placeholder="0"
+                    placeholder={String(MIN_AGE)}
                     className="w-full sm:w-20"
                   />
                 </div>
@@ -420,11 +430,12 @@ export default function AnthropometricMeasurementsPage() {
                   </span>
                   <Input
                     type="number"
-                    min={0}
-                    max={150}
+                    min={MIN_AGE}
+                    max={MAX_AGE}
+                    step={1}
                     value={filters.maxAge}
                     onChange={(e) => updateFilter("maxAge", e.target.value)}
-                    placeholder="150"
+                    placeholder={String(MAX_AGE)}
                     className="w-full sm:w-20"
                   />
                 </div>

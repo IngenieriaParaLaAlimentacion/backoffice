@@ -23,6 +23,7 @@ import {
 } from "@/constants/users";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 type EstablishmentAccessReviewPanelProps = {
   user: UserAdminView | null;
@@ -96,9 +97,9 @@ export default function EstablishmentAccessReviewPanel({
       onApplied(user.id, undecidedCount);
     } catch (err) {
       setPanelError(
-        err instanceof Error
-          ? err.message
-          : ESTABLISHMENT_ACCESS_REQUESTS_PAGE.applyError,
+        getErrorMessage(err, {
+          fallback: ESTABLISHMENT_ACCESS_REQUESTS_PAGE.applyError,
+        }),
       );
     } finally {
       setIsApplying(false);

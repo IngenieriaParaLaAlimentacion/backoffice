@@ -17,6 +17,40 @@ import { resendInviteAction } from "@/services/admin.service";
 import { INVITE_USER_DIALOG } from "@/constants/users";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { ApiError, ERROR_TYPES } from "@/lib/apiError";
+import { getErrorMessage } from "@/lib/errorMessages";
+
+type SendError = {
+  message: string;
+  canResend: boolean;
+};
+
+function toSendError(error: unknown): SendError {
+  const type = error instanceof ApiError ? error.type : undefined;
+  return {
+    message: getErrorMessage(error, {
+      overrides: INVITE_USER_DIALOG.errors,
+      fallback: INVITE_USER_DIALOG.sendError,
+    }),
+    // Retrying can never turn an existing or already-active account into a
+    // pending invitation, so the dialog offers no resend for those.
+    canResend:
+      type !== ERROR_TYPES.USER_ALREADY_EXISTS &&
+      type !== ERROR_TYPES.USER_IS_NOT_PENDING,
+  };
+}
+
+/**
+ * The id of the already-invited user, carried as an RFC 7807 extension member.
+ * It is the only way to reach the resend-invite endpoint for an address this
+ * dialog did not just create.
+ */
+function pendingUserIdFrom(error: unknown): string | null {
+  if (!(error instanceof ApiError)) return null;
+  if (error.type !== ERROR_TYPES.INVITE_ALREADY_PENDING) return null;
+  const userId = error.extensions.user_id;
+  return typeof userId === "string" ? userId : null;
+}
 
 type InviteUserDialogProps = {
   label: string;
@@ -30,7 +64,7 @@ export default function InviteUserDialog({
   const [open, setOpen] = useState(false);
   const [sentEmail, setSentEmail] = useState<string | null>(null);
   const [invitedUserId, setInvitedUserId] = useState<string | null>(null);
-  const [sendError, setSendError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<SendError | null>(null);
   const [isResending, setIsResending] = useState(false);
   const { makeAuthorizedRequest } = useAuth();
 
@@ -63,8 +97,8 @@ export default function InviteUserDialog({
       setInvitedUserId(userId);
     } catch (err) {
       setSentEmail(email);
-      setInvitedUserId(null);
-      setSendError((err as Error).message);
+      setInvitedUserId(pendingUserIdFrom(err));
+      setSendError(toSendError(err));
     }
   }
 
@@ -79,7 +113,7 @@ export default function InviteUserDialog({
       }
       setSendError(null);
     } catch (err) {
-      setSendError((err as Error).message);
+      setSendError(toSendError(err));
     } finally {
       setIsResending(false);
     }
@@ -116,9 +150,8 @@ export default function InviteUserDialog({
               {sendError ? (
                 <Alert variant="destructive">
                   <AlertDescription>
-                    {INVITE_USER_DIALOG.errorPrefix}{" "}
-                    <span className="font-medium">{sentEmail}</span>
-                    {INVITE_USER_DIALOG.errorSuffix}
+                    <span className="font-medium">{sentEmail}</span>{" "}
+                    {sendError.message}
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -130,18 +163,20 @@ export default function InviteUserDialog({
                   </AlertDescription>
                 </Alert>
               )}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                size="lg"
-                disabled={isResending}
-                onClick={handleResend}
-              >
-                {isResending
-                  ? INVITE_USER_DIALOG.resending
-                  : INVITE_USER_DIALOG.resend}
-              </Button>
+              {(!sendError || sendError.canResend) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                  disabled={isResending}
+                  onClick={handleResend}
+                >
+                  {isResending
+                    ? INVITE_USER_DIALOG.resending
+                    : INVITE_USER_DIALOG.resend}
+                </Button>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit(handleInvite)}>

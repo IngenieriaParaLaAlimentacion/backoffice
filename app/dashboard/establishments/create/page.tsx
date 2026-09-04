@@ -23,6 +23,7 @@ import {
   ESTABLISHMENT_FORM_FIELDS,
 } from "@/constants/establishments";
 import RequirePermission from "@/components/RequirePermission";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 function CreateEstablishmentForm() {
   const router = useRouter();
@@ -63,9 +64,9 @@ function CreateEstablishmentForm() {
       router.push("/dashboard/establishments");
     } catch (err) {
       setApiError(
-        err instanceof Error
-          ? err.message
-          : CREATE_ESTABLISHMENT_PAGE.submitError,
+        getErrorMessage(err, {
+          fallback: CREATE_ESTABLISHMENT_PAGE.submitError,
+        }),
       );
     }
   };

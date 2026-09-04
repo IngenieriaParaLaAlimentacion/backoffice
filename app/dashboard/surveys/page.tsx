@@ -38,6 +38,7 @@ import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
 import { TONE_PILL_CLASS } from "@/constants/theme";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 
@@ -89,7 +90,7 @@ export default function SurveysPage() {
       router.push(`/dashboard/surveys/${copy.id}`);
     } catch (err) {
       setActionError(
-        err instanceof Error ? err.message : SURVEYS_PAGE.duplicateError,
+        getErrorMessage(err, { fallback: SURVEYS_PAGE.duplicateError }),
       );
       setDuplicatingId(null);
     }
@@ -111,7 +112,7 @@ export default function SurveysPage() {
       await refetch();
     } catch (err) {
       setActionError(
-        err instanceof Error ? err.message : SURVEYS_PAGE.statusError,
+        getErrorMessage(err, { fallback: SURVEYS_PAGE.statusError }),
       );
     } finally {
       setTogglingId(null);
@@ -133,7 +134,7 @@ export default function SurveysPage() {
       }
     } catch (err) {
       setActionError(
-        err instanceof Error ? err.message : SURVEYS_PAGE.deleteError,
+        getErrorMessage(err, { fallback: SURVEYS_PAGE.deleteError }),
       );
     } finally {
       setDeletingId(null);

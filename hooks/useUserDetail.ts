@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getUserAction } from "@/services/admin.service";
 import { AdminUserDetail } from "@/types/admin";
 import { useCallback, useEffect, useState } from "react";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 export function useUserDetail(userId: string | null) {
   const { makeAuthorizedRequest } = useAuth();
@@ -18,7 +19,7 @@ export function useUserDetail(userId: string | null) {
         setUser(data);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error al cargar el perfil",
+          getErrorMessage(err, { fallback: "Error al cargar el perfil" }),
         );
       } finally {
         setIsLoading(false);

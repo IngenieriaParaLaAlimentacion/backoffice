@@ -19,8 +19,9 @@ import {
   SURVEY_FORM,
   MAX_QUESTIONS,
 } from "@/constants/surveys";
-import { ApiError, SURVEY_LOCKED_ERROR_TYPE } from "@/lib/apiError";
+import { ApiError, ERROR_TYPES } from "@/lib/apiError";
 import QuestionEditor from "./QuestionEditor";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 type SurveyFormProps = {
   defaultValues: SurveyFormInput;
@@ -71,14 +72,22 @@ export default function SurveyForm({
       if (err instanceof ApiError && err.status === 409) {
         // Two different 409s share the status: the survey got locked while the
         // form was open, or the name is taken. Only `type` tells them apart.
-        if (err.type === SURVEY_LOCKED_ERROR_TYPE) {
+        if (err.type === ERROR_TYPES.SURVEY_LOCKED) {
           setFormError(SURVEY_FORM.lockedConflict);
           return;
         }
         setError("name", { message: SURVEY_FORM.nameConflict });
         return;
       }
-      setFormError(err instanceof Error ? err.message : "Error al guardar");
+      setFormError(
+        getErrorMessage(err, {
+          overrides: {
+            [ERROR_TYPES.INVALID_SURVEY_STRUCTURE]:
+              SURVEY_FORM.invalidStructure,
+          },
+          fallback: SURVEY_FORM.saveError,
+        }),
+      );
     }
   }
 

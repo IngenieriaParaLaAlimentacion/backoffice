@@ -38,6 +38,7 @@ import {
   ESTABLISHMENT_SORT_OPTIONS,
   ESTABLISHMENTS_LIST_PAGE,
 } from "@/constants/establishments";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -189,9 +190,9 @@ function EstablishmentsContent() {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : ESTABLISHMENTS_LIST_PAGE.loadError,
+          getErrorMessage(err, {
+            fallback: ESTABLISHMENTS_LIST_PAGE.loadError,
+          }),
         );
       } finally {
         setIsLoading(false);

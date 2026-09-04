@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { revokeEstablishmentsAction } from "@/services/admin.service";
 import { ApiError } from "@/lib/apiError";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 type RevokeAccessCopy = {
   confirmDialog: string;
@@ -48,7 +49,7 @@ export function useRevokeAccess(copy: RevokeAccessCopy, refetch: () => void) {
         setActionError(copy.conflict);
         refetch();
       } else {
-        setActionError(err instanceof Error ? err.message : copy.genericError);
+        setActionError(getErrorMessage(err, { fallback: copy.genericError }));
       }
     } finally {
       setRevokingId(null);

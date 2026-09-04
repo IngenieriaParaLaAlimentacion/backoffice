@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { listUsersAction } from "@/services/admin.service";
 import { UserAdminView } from "@/types/admin";
 import { useCallback, useEffect, useState } from "react";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 export function useUsers(role: string, pageSize: number) {
   const { makeAuthorizedRequest } = useAuth();
@@ -26,7 +27,7 @@ export function useUsers(role: string, pageSize: number) {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error al cargar usuarios",
+          getErrorMessage(err, { fallback: "Error al cargar usuarios" }),
         );
       } finally {
         setIsLoading(false);

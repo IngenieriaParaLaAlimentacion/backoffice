@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { verifyEmailAction } from "@/services/auth.service";
+import { getErrorMessage } from "@/lib/errorMessages";
+import { VERIFY_EMAIL_ERRORS } from "@/constants/auth";
 
 type VerifyEmailViewProps = {
   token: string;
@@ -23,8 +25,13 @@ export default function VerifyEmailView({ token }: VerifyEmailViewProps) {
 
     verifyEmailAction(token)
       .then(() => setStatus("success"))
-      .catch((err: Error) => {
-        setErrorMessage(err.message);
+      .catch((err: unknown) => {
+        setErrorMessage(
+          getErrorMessage(err, {
+            overrides: VERIFY_EMAIL_ERRORS,
+            fallback: "",
+          }),
+        );
         setStatus("error");
       });
   }, [token]);

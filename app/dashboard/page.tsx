@@ -28,6 +28,7 @@ import { DASHBOARD_INDICATORS } from "@/constants/surveys";
 import { UserStatus } from "@/types/establishment";
 import { usePendingCount } from "@/hooks/usePendingCount";
 import { useSession } from "@/context/SessionContext";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PENDING_VALIDATION_STATUS: UserStatus = "pending_validation";
 const FIELD_WORKER_ROLE = "field_worker";
@@ -168,7 +169,7 @@ export default function DashboardPage() {
       setIndicators(data);
     } catch (err) {
       setIndicatorsError(
-        err instanceof Error ? err.message : "Error al cargar los indicadores",
+        getErrorMessage(err, { fallback: "Error al cargar los indicadores" }),
       );
     } finally {
       setIndicatorsLoading(false);
