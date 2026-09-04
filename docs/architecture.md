@@ -62,12 +62,29 @@ authorization boundary. See `docs/adr/0002-client-side-permission-model.md`.
 ## Service functions & error handling
 
 `services/*.service.ts` functions take `dispatcher: AuthDispatcher` as their first
-argument (not a hook — so they're plain, testable functions) and throw on `!res.ok`. Two
-error styles exist side by side: plain `Error(detail)` for cases callers don't need to
-branch on, and `ApiError` (`lib/apiError.ts`, carries `status` and RFC 7807 `type`) where
-callers need to distinguish e.g. 404 vs 403 vs a specific 409 — see
-`getEstablishmentDashboardAction` / `useEstablishmentDashboard` for the pattern (a 404
-"doesn't exist" is rendered differently from the empty-data state).
+argument (not a hook — so they're plain, testable functions) and throw on `!res.ok`.
+They all throw the same thing: `toApiError(res.data, res.status)` (`lib/apiError.ts`),
+which preserves the backend's RFC 7807 envelope — `status`, the machine-readable `type`,
+and any extension members. Callers branch on `status` where one status has one meaning
+(`getEstablishmentDashboardAction` / `useEstablishmentDashboard` render a 404 "doesn't
+exist" differently from the empty-data state) and on `type` where it doesn't (a 409 on
+saving a survey is either a name clash or a locked survey).
+
+**Never render a caught error's `message` to the user.** It holds the backend's `detail`,
+which is English, and which the backend documents as prose it may reword at any time —
+only `type` is contractual. Screens call `getErrorMessage(err, { overrides, fallback })`
+(`lib/errorMessages.ts`), which maps `type` to Spanish copy and degrades an unrecognised
+error to `fallback` rather than leaking English. Shared copy lives in `constants/errors.ts`;
+screen-specific wording goes in that screen's `constants/<domain>.ts` and is passed as
+`overrides`. The slugs themselves are mirrored in `ERROR_TYPES` (`lib/apiError.ts`) from
+the backend's generated catalog (`docs/errors.json` there), which is additive-only.
+
+One consequence worth knowing: the backend's 422 names no field on purpose (it used to
+echo submitted values, including passwords), so a validation failure can only ever
+produce a vague message. Any form or filter that can trigger one should validate in the
+browser first — see `parseAgeFilter` in the measurements page, and the option-count rule
+in `schemas/survey.schema.ts`, both of which mirror a backend bound so the user is told
+which field is wrong.
 
 ## Mock backend (MSW)
 
