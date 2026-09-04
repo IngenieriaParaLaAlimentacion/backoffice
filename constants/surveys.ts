@@ -67,6 +67,8 @@ export const SURVEY_FORM = {
   invalidStructure:
     "Revisá las preguntas: alguna no cumple con el formato esperado.",
   saveError: "No se pudo guardar la encuesta.",
+  loadError: "Error al cargar la encuesta",
+  fiesTemplateError: "Error al cargar la plantilla FIES",
   // Race condition: someone answered the survey while the form was open, so the
   // API rejects a change the disabled-field rule assumed could not be sent.
   lockedConflict:
@@ -105,6 +107,7 @@ export const SURVEYS_PAGE = {
   edit: "Editar",
   editDisabledReason: "No se puede editar: ya tiene respuestas registradas.",
   duplicate: "Duplicar",
+  loadError: "Error al cargar encuestas",
   duplicateError: "No se pudo duplicar la encuesta",
   statusError: "No se pudo cambiar el estado de la encuesta",
   deleteError: "No se pudo eliminar la encuesta",
@@ -157,12 +160,15 @@ export const RESPONSES_PAGE = {
     province: "Provincia",
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
+  loadError: "Error al cargar las respuestas",
+  detailLoadError: "Error al cargar el detalle de la respuesta",
   detailTitle: "Detalle de respuesta",
   questionAnswers: "Respuestas",
 } as const;
 
 export const DASHBOARD_INDICATORS = {
   title: "Panel de indicadores",
+  loadError: "Error al cargar los indicadores",
   responseCount: "Respuestas totales",
   establishmentsCount: "Comedores participantes",
   lastEvent: "Último relevamiento",

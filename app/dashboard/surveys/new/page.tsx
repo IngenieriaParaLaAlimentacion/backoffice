@@ -37,7 +37,7 @@ function NewSurveyContent() {
       setDefaults(templateToForm(template));
     } catch (err) {
       setError(
-        getErrorMessage(err, { fallback: "Error al cargar la plantilla FIES" }),
+        getErrorMessage(err, { fallback: SURVEY_FORM.fiesTemplateError }),
       );
       setDefaults(emptySurveyForm());
     }

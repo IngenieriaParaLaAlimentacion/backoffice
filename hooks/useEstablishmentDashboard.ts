@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getEstablishmentDashboardAction } from "@/services/establishment.service";
 import { EstablishmentDashboardResponse } from "@/types/establishment";
 import { ApiError } from "@/lib/apiError";
+import { ESTABLISHMENT_DASHBOARD_PAGE } from "@/constants/establishments";
 import { getErrorMessage } from "@/lib/errorMessages";
 
 /**
@@ -32,7 +33,9 @@ export function useEstablishmentDashboard(establishmentId: string) {
     } catch (err) {
       if (err instanceof ApiError) setStatus(err.status);
       setError(
-        getErrorMessage(err, { fallback: "Error al cargar el comedor" }),
+        getErrorMessage(err, {
+          fallback: ESTABLISHMENT_DASHBOARD_PAGE.loadError,
+        }),
       );
     } finally {
       setIsLoading(false);

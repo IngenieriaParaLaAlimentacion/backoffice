@@ -76,7 +76,8 @@ only `type` is contractual. Screens call `getErrorMessage(err, { overrides, fall
 (`lib/errorMessages.ts`), which maps `type` to Spanish copy and degrades an unrecognised
 error to `fallback` rather than leaking English. Shared copy lives in `constants/errors.ts`;
 screen-specific wording goes in that screen's `constants/<domain>.ts` and is passed as
-`overrides`. The slugs themselves are mirrored in `ERROR_TYPES` (`lib/apiError.ts`) from
+`overrides`. The `fallback` comes from there too — no user-facing string is written
+inline at the call site, so the copy for a screen stays readable in one file. The slugs themselves are mirrored in `ERROR_TYPES` (`lib/apiError.ts`) from
 the backend's generated catalog (`docs/errors.json` there), which is additive-only.
 
 One consequence worth knowing: the backend's 422 names no field on purpose (it used to

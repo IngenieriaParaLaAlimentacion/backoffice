@@ -35,6 +35,9 @@ export const ACCEPT_INVITE_FORM = {
 export const RESET_PASSWORD_FORM = {
   submitError:
     "No pudimos cambiar tu contraseña. Volvé a intentar en unos minutos.",
+  // The link carries the token: reaching the form without one means it was
+  // truncated or hand-typed, so there is nothing to submit.
+  missingToken: "Token inválido o inexistente.",
   errors: RECOVERY_LINK_ERRORS,
 } as const;
 

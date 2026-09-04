@@ -17,6 +17,7 @@ export const USERS_PAGE = {
   subtitle: "Usuarios aceptados",
   viewAll: "Ver Todos",
   noUsers: "No hay usuarios",
+  loadError: "Error al cargar usuarios",
   columns: {
     name: "Nombre",
     email: "Email",
@@ -161,6 +162,7 @@ export const INVITE_USER_DIALOG = {
 export const USER_DETAIL_PANEL = {
   title: "Perfil",
   description: "Información del usuario",
+  loadError: "Error al cargar el perfil",
   fields: {
     name: "Nombre",
     email: "Email",

@@ -169,7 +169,7 @@ export default function DashboardPage() {
       setIndicators(data);
     } catch (err) {
       setIndicatorsError(
-        getErrorMessage(err, { fallback: "Error al cargar los indicadores" }),
+        getErrorMessage(err, { fallback: DASHBOARD_INDICATORS.loadError }),
       );
     } finally {
       setIndicatorsLoading(false);

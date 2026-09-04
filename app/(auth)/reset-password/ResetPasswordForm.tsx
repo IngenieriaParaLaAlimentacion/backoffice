@@ -40,7 +40,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   async function handleResetPassword({ password }: ResetPasswordInput) {
     if (!token) {
-      setError("form", { message: "Token inválido o inexistente." });
+      setError("form", { message: RESET_PASSWORD_FORM.missingToken });
       return;
     }
 

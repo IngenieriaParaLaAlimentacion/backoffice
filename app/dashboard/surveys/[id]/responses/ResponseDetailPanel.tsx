@@ -77,9 +77,7 @@ export default function ResponseDetailPanel({
         setDetail(data);
       } catch (err) {
         setError(
-          getErrorMessage(err, {
-            fallback: "Error al cargar el detalle de la respuesta",
-          }),
+          getErrorMessage(err, { fallback: RESPONSES_PAGE.detailLoadError }),
         );
       } finally {
         setLoading(false);

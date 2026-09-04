@@ -36,9 +36,7 @@ export default function EditSurveyPage({
       const data = await getSurveyAction(makeAuthorizedRequest, id);
       setSurvey(data);
     } catch (err) {
-      setError(
-        getErrorMessage(err, { fallback: "Error al cargar la encuesta" }),
-      );
+      setError(getErrorMessage(err, { fallback: SURVEY_FORM.loadError }));
     } finally {
       setIsLoading(false);
     }

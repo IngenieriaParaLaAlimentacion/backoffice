@@ -154,9 +154,7 @@ export default function ResponsesPage() {
         setTotalPages(data.total_pages);
       } catch (err) {
         setResponses([]);
-        setError(
-          getErrorMessage(err, { fallback: "Error al cargar las respuestas" }),
-        );
+        setError(getErrorMessage(err, { fallback: RESPONSES_PAGE.loadError }));
       } finally {
         setIsLoading(false);
       }
