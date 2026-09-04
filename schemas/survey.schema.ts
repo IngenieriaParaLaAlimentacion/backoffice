@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  MAX_OPTIONS,
+  MIN_OPTIONS,
+  SURVEY_OPTION_COUNT_MESSAGE,
+} from "@/constants/surveys";
 
 export const RESPONSE_TYPES = [
   "text",
@@ -38,18 +43,37 @@ const questionSchema = z
     options: z.array(optionSchema),
   })
   .superRefine((question, ctx) => {
-    // Choice questions must define at least one option (CA5/CA9).
+    const isChoice = CHOICE_TYPES.includes(
+      question.response_type as (typeof CHOICE_TYPES)[number],
+    );
+    if (!isChoice) return;
+
+    // CA5/CA9.
     if (
-      CHOICE_TYPES.includes(
-        question.response_type as (typeof CHOICE_TYPES)[number],
-      ) &&
-      question.options.length === 0
+      question.options.length < MIN_OPTIONS ||
+      question.options.length > MAX_OPTIONS
     ) {
       ctx.addIssue({
         code: "custom",
         path: ["options"],
-        message: "Agregá al menos una opción",
+        message: SURVEY_OPTION_COUNT_MESSAGE,
       });
+      return;
+    }
+
+    // The backend rejects duplicates case-insensitively; match that rule so
+    // the author isn't told about it only after pressing Guardar.
+    const seen = new Set<string>();
+    for (const [index, option] of question.options.entries()) {
+      const key = option.text.trim().toLowerCase();
+      if (seen.has(key)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["options", index, "text"],
+          message: "Esta opción está repetida",
+        });
+      }
+      seen.add(key);
     }
   });
 

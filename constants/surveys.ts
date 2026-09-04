@@ -32,6 +32,14 @@ export const RESPONSE_TYPE_LABELS: Record<ResponseType, string> = {
 
 export const MAX_QUESTIONS = 30;
 
+// Mirrored from the backend's `app/domain/survey.py`: it rejects a choice
+// question outside these bounds with a 400 that names no field, so the form
+// has to check them first.
+export const MIN_OPTIONS = 2;
+export const MAX_OPTIONS = 20;
+
+export const SURVEY_OPTION_COUNT_MESSAGE = `Agregá entre ${MIN_OPTIONS} y ${MAX_OPTIONS} opciones`;
+
 export const SURVEY_FORM = {
   createTitle: "Nueva encuesta",
   editTitle: "Editar encuesta",
@@ -54,6 +62,11 @@ export const SURVEY_FORM = {
   lockedNotice:
     "Esta encuesta ya tiene respuestas registradas: no se pueden modificar las preguntas ni el destino.",
   nameConflict: "Ya existe una encuesta con ese nombre",
+  // The backend's structural 400 names no field, and the zod schema mirrors
+  // those same rules — reaching this means the form and the API disagree.
+  invalidStructure:
+    "Revisá las preguntas: alguna no cumple con el formato esperado.",
+  saveError: "No se pudo guardar la encuesta.",
   // Race condition: someone answered the survey while the form was open, so the
   // API rejects a change the disabled-field rule assumed could not be sent.
   lockedConflict:

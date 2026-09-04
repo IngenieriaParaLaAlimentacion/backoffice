@@ -36,28 +36,37 @@ export default function OptionsEditor({
 
   return (
     <div className="flex flex-col gap-2 pl-4 border-l-2 border-border">
-      {fields.map((field, optionIndex) => (
-        <div key={field.id} className="flex items-center gap-2">
-          <Input
-            {...register(
-              `questions.${questionIndex}.options.${optionIndex}.text`,
+      {fields.map((field, optionIndex) => {
+        const optionError = optionsError?.[optionIndex]?.text?.message;
+        return (
+          <div key={field.id} className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Input
+                {...register(
+                  `questions.${questionIndex}.options.${optionIndex}.text`,
+                )}
+                placeholder={SURVEY_FORM.optionPlaceholder}
+                disabled={readOnly}
+                aria-invalid={!!optionError}
+                className="max-w-sm"
+              />
+              {!readOnly && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => remove(optionIndex)}
+                >
+                  <X size={14} />
+                </Button>
+              )}
+            </div>
+            {optionError && (
+              <p className="text-xs text-destructive">{optionError}</p>
             )}
-            placeholder={SURVEY_FORM.optionPlaceholder}
-            disabled={readOnly}
-            className="max-w-sm"
-          />
-          {!readOnly && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => remove(optionIndex)}
-            >
-              <X size={14} />
-            </Button>
-          )}
-        </div>
-      ))}
+          </div>
+        );
+      })}
 
       {typeof optionsError?.message === "string" && (
         <p className="text-xs text-destructive">{optionsError.message}</p>
