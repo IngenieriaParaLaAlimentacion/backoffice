@@ -23,4 +23,6 @@ export const createEstablishmentSchema = z.object({
     .trim(),
 });
 
-export type CreateEstablishmentInput = z.infer<typeof createEstablishmentSchema>;
+export type CreateEstablishmentInput = z.infer<
+  typeof createEstablishmentSchema
+>;
