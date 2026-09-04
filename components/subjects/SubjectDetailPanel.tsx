@@ -8,7 +8,7 @@ import { SubjectDetail } from "@/types/subject";
 import { MeasurementAlert } from "@/types/measurement";
 import { AlertBadgeList } from "@/components/AlertBadge";
 import { Separator } from "@/components/ui/separator";
-import { EMPTY_VALUE, formatDate, formatDateTime } from "@/lib/format";
+import { EMPTY_VALUE, formatDate, formatTimestampDate } from "@/lib/format";
 import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
 import { Loader2, X } from "lucide-react";
 import { OVERLAY_CLASS } from "@/constants/theme";
@@ -201,7 +201,7 @@ export default function SubjectDetailPanel({
                             {SUBJECT_DETAIL_PANEL.latestMeasurement.date}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
-                            {formatDateTime(
+                            {formatTimestampDate(
                               detail.latest_measurement.measured_at,
                             )}
                           </td>

@@ -30,7 +30,12 @@ import {
 import ResponseEntity, {
   entityLabel,
 } from "@/components/surveys/ResponseEntity";
-import { EMPTY_VALUE } from "@/lib/format";
+import {
+  argentineDayEndUtc,
+  argentineDayStartUtc,
+  EMPTY_VALUE,
+  formatTimestampDate,
+} from "@/lib/format";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -68,15 +73,6 @@ const EMPTY_FILTERS: Filters = {
   city: "",
   province: "",
 };
-
-function formatDateTime(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
-  return `${day}/${month}/${year}`;
-}
 
 export default function ResponsesPage() {
   const params = useParams();
@@ -139,12 +135,11 @@ export default function ResponsesPage() {
           survey_id: surveyId,
           page: currentPage,
           page_size: PAGE_SIZE,
-          event_at_from: currentFilters.dateFrom
-            ? `${currentFilters.dateFrom}T00:00:00Z`
-            : undefined,
-          event_at_to: currentFilters.dateTo
-            ? `${currentFilters.dateTo}T23:59:59Z`
-            : undefined,
+          // The filter inputs name Argentine calendar days; the API compares
+          // UTC instants. Converting here keeps a row dated 03/09 inside a
+          // 03/09 filter instead of falling out of it after 21:00 local.
+          event_at_from: argentineDayStartUtc(currentFilters.dateFrom),
+          event_at_to: argentineDayEndUtc(currentFilters.dateTo),
           city: currentFilters.city || undefined,
           province: currentFilters.province || undefined,
           sort_order: currentSort,
@@ -401,7 +396,7 @@ export default function ResponsesPage() {
                         </>
                       )}
                       <td className="px-4 py-3 text-muted-foreground">
-                        {formatDateTime(item.event_at)}
+                        {formatTimestampDate(item.event_at)}
                       </td>
                       <td className="px-4 py-3">
                         {item.score_fies !== null ? (
@@ -452,7 +447,7 @@ export default function ResponsesPage() {
                   </span>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs text-muted-foreground">
-                      {formatDateTime(item.event_at)}
+                      {formatTimestampDate(item.event_at)}
                     </span>
                     <RowChevron />
                   </div>

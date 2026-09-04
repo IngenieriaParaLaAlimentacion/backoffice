@@ -20,7 +20,7 @@ import ExportError from "@/components/listings/ExportError";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
-import { formatDate, formatDateTime, EMPTY_VALUE } from "@/lib/format";
+import { formatDate, formatTimestampDate, EMPTY_VALUE } from "@/lib/format";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -496,7 +496,9 @@ export default function SubjectsPage() {
                       </td>
                       <td className="px-4 py-3">
                         {subject.latest_measurement?.measured_at ? (
-                          formatDateTime(subject.latest_measurement.measured_at)
+                          formatTimestampDate(
+                            subject.latest_measurement.measured_at,
+                          )
                         ) : (
                           <span className="text-muted-foreground">
                             {EMPTY_VALUE}
