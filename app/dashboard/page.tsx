@@ -29,20 +29,12 @@ import { UserStatus } from "@/types/establishment";
 import { usePendingCount } from "@/hooks/usePendingCount";
 import { useSession } from "@/context/SessionContext";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { formatTimestampDate } from "@/lib/format";
 
 const PENDING_VALIDATION_STATUS: UserStatus = "pending_validation";
 const FIELD_WORKER_ROLE = "field_worker";
 // "Just fetch the total" — smallest page that still returns the count.
 const COUNT_ONLY_QUERY = { page: 1, page_size: 1 } as const;
-
-function formatDate(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
-  return `${day}/${month}/${year}`;
-}
 
 function IndicatorCard({
   icon,
@@ -246,7 +238,7 @@ export default function DashboardPage() {
                 icon={<Calendar size={18} />}
                 value={
                   indicators.last_event_at
-                    ? formatDate(indicators.last_event_at)
+                    ? formatTimestampDate(indicators.last_event_at)
                     : DASHBOARD_INDICATORS.noDate
                 }
                 label={DASHBOARD_INDICATORS.lastEvent}

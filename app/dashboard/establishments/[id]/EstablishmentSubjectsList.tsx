@@ -22,7 +22,7 @@ import {
   SELECT_CLASS,
   SUBJECT_SORT_OPTIONS,
 } from "@/constants/establishments";
-import { formatAgeMonths, formatDateTime } from "@/lib/format";
+import { formatAgeMonths, formatTimestampDate } from "@/lib/format";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -195,7 +195,9 @@ export default function EstablishmentSubjectsList({
                         {formatAgeMonths(subject.age_months)}
                       </td>
                       <td className="px-4 py-3">
-                        {formatDateTime(subject.latest_measurement.measured_at)}
+                        {formatTimestampDate(
+                          subject.latest_measurement.measured_at,
+                        )}
                         {subject.measurement_count > 1 && (
                           <span className="text-muted-foreground">
                             {" "}
@@ -246,7 +248,9 @@ export default function EstablishmentSubjectsList({
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
-                      {formatDateTime(subject.latest_measurement.measured_at)}
+                      {formatTimestampDate(
+                        subject.latest_measurement.measured_at,
+                      )}
                       <RowChevron />
                     </span>
                   </div>

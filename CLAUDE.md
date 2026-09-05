@@ -57,6 +57,11 @@ reasoning behind their shape and are easy to "fix" into something that quietly b
   (`constants/<domain>.ts`), storage keys, and API/schema types each have exactly one
   place to live — see `docs/conventions.md` for the full pattern and where to put new
   ones.
+- **Never format a date in a component.** API timestamps are UTC instants and are
+  displayed in Argentine local time via `formatTimestamp*` from `lib/format.ts`;
+  `formatDate` is for `"YYYY-MM-DD"` calendar dates only. Reading `getUTCDate()` or
+  calling `toLocaleDateString` inline reintroduces a 3-hour shift that dates an evening
+  survey to the next day. See `docs/architecture.md` § Dates & times.
 - **Never write a color in a component.** The "Raíz" palette's literal hexes live in
   `app/globals.css` and its status tones in `constants/theme.ts`; a raw hex or a
   Tailwind palette class (`emerald-500`, `amber-600`) is off-brand by construction —

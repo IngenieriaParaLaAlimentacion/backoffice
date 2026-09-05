@@ -39,19 +39,12 @@ import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
 import { TONE_PILL_CLASS } from "@/constants/theme";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { formatTimestampDate } from "@/lib/format";
 
 const PAGE_SIZE = 20;
 
 const SELECT_CLASS =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
 
 export default function SurveysPage() {
   const {
@@ -297,7 +290,7 @@ export default function SurveysPage() {
                         {survey.question_count}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {formatDate(survey.created_at)}
+                        {formatTimestampDate(survey.created_at)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end">

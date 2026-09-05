@@ -10,7 +10,7 @@ import {
   EstablishmentRequestAdminView,
   EstablishmentRequestSortOrder,
 } from "@/types/admin";
-import { formatDateTime, EMPTY_VALUE } from "@/lib/format";
+import { formatTimestampDate, EMPTY_VALUE } from "@/lib/format";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -388,7 +388,7 @@ function EstablishmentRequestsContent() {
                             : EMPTY_VALUE}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
-                          {formatDateTime(request.created_at)}
+                          {formatTimestampDate(request.created_at)}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2 justify-end">
@@ -432,7 +432,7 @@ function EstablishmentRequestsContent() {
                           : EMPTY_VALUE}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {formatDateTime(request.created_at)}
+                        {formatTimestampDate(request.created_at)}
                       </span>
                     </div>
                     <Button

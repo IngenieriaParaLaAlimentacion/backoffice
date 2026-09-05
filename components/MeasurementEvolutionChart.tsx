@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { EvolutionPoint } from "@/types/measurement";
+import { formatTimestampShortDate } from "@/lib/format";
 
 /**
  * Recharts wants concrete SVG paint values, so the series read the chart
@@ -31,16 +32,6 @@ type ChartDatum = {
   bmi: number;
 };
 
-// "2026-03-01T10:00:00Z" -> "01/03/26"
-function formatTick(measuredAt: string) {
-  const d = new Date(measuredAt);
-  if (Number.isNaN(d.getTime())) return measuredAt;
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = String(d.getUTCFullYear()).slice(-2);
-  return `${day}/${month}/${year}`;
-}
-
 export default function MeasurementEvolutionChart({
   points,
 }: {
@@ -55,7 +46,7 @@ export default function MeasurementEvolutionChart({
   }
 
   const data: ChartDatum[] = points.map((p) => ({
-    date: formatTick(p.measured_at),
+    date: formatTimestampShortDate(p.measured_at),
     weight_kg: p.weight_kg,
     height_cm: p.height_cm,
     bmi: p.bmi,

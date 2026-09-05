@@ -10,7 +10,7 @@ import { Sex } from "@/types/subject";
 import { Separator } from "@/components/ui/separator";
 import { RESPONSE_TYPE_LABELS, RESPONSES_PAGE } from "@/constants/surveys";
 import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
-import { EMPTY_VALUE, formatDate } from "@/lib/format";
+import { EMPTY_VALUE, formatDate, formatTimestamp } from "@/lib/format";
 import { entityLabel } from "@/components/surveys/ResponseEntity";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
@@ -26,17 +26,6 @@ type ResponseDetailPanelProps = {
   responseId: string | null;
   onClose: () => void;
 };
-
-function formatDateTime(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
-  const hours = String(d.getUTCHours()).padStart(2, "0");
-  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
 
 function DetailField({
   label,
@@ -224,7 +213,7 @@ export default function ResponseDetailPanel({
                 />
                 <DetailField
                   label={RESPONSES_PAGE.date}
-                  value={formatDateTime(detail.event_at)}
+                  value={formatTimestamp(detail.event_at)}
                 />
                 <DetailField
                   label={RESPONSES_PAGE.score}
