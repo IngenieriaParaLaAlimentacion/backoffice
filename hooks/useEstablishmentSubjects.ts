@@ -5,7 +5,12 @@ import {
   EstablishmentSubjectListItem,
   EstablishmentSubjectSortOrder,
 } from "@/types/establishment";
-import { FILTER_DEBOUNCE_MS, PAGE_SIZE } from "@/constants/establishments";
+import {
+  ESTABLISHMENT_DASHBOARD_PAGE,
+  FILTER_DEBOUNCE_MS,
+  PAGE_SIZE,
+} from "@/constants/establishments";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 export function useEstablishmentSubjects(establishmentId: string) {
   const { makeAuthorizedRequest } = useAuth();
@@ -54,7 +59,9 @@ export function useEstablishmentSubjects(establishmentId: string) {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error al cargar los sujetos",
+          getErrorMessage(err, {
+            fallback: ESTABLISHMENT_DASHBOARD_PAGE.subjectsError,
+          }),
         );
       } finally {
         setIsLoading(false);

@@ -11,6 +11,8 @@ import {
   forgotPasswordSchema,
 } from "@/schemas/forgotPassword.schema";
 import AppTextField from "@/components/AppTextField";
+import { getErrorMessage } from "@/lib/errorMessages";
+import { FORGOT_PASSWORD_FORM } from "@/constants/auth";
 
 export default function ForgotPasswordForm() {
   const {
@@ -32,7 +34,11 @@ export default function ForgotPasswordForm() {
       await forgotPasswordAction(email);
       setIsSuccess(true);
     } catch (err) {
-      setError("form", { message: (err as Error).message });
+      setError("form", {
+        message: getErrorMessage(err, {
+          fallback: FORGOT_PASSWORD_FORM.submitError,
+        }),
+      });
     }
   }
 

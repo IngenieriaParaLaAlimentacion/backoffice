@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { PROFILE_EDIT_PAGE } from "@/constants/users";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
@@ -61,7 +62,7 @@ export default function EditProfilePage() {
       });
     } catch (err) {
       setApiError(
-        err instanceof Error ? err.message : PROFILE_EDIT_PAGE.loadError,
+        getErrorMessage(err, { fallback: PROFILE_EDIT_PAGE.loadError }),
       );
     } finally {
       setIsLoadingProfile(false);
@@ -79,7 +80,7 @@ export default function EditProfilePage() {
       router.push("/dashboard/profile");
     } catch (err) {
       setApiError(
-        err instanceof Error ? err.message : PROFILE_EDIT_PAGE.saveError,
+        getErrorMessage(err, { fallback: PROFILE_EDIT_PAGE.saveError }),
       );
     }
   };

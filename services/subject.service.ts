@@ -10,7 +10,7 @@ import {
   SubjectDetail,
   SubjectSortOrder,
 } from "@/types/subject";
-import { ErrorResponse } from "@/lib/types";
+import { toApiError } from "@/lib/apiError";
 
 export type SubjectFilters = {
   search?: string;
@@ -60,7 +60,7 @@ export const listSubjectsAction = async (
 
   const res = await dispatcher<undefined, PaginatedSubjectsResponse>(path);
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedSubjectsResponse;
 };
@@ -87,7 +87,7 @@ export const getSubjectAction = async (
     SUBJECT_ENDPOINT(subjectId),
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as SubjectDetail;
 };

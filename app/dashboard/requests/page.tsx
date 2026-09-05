@@ -17,6 +17,7 @@ import UserRequestReviewPanel from "./UserRequestReviewPanel";
 import { useRefreshRequestCounts } from "./layout";
 import { ClipboardCheck, Loader2 } from "lucide-react";
 import { PENDING_REQUESTS_PAGE } from "@/constants/users";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 
@@ -47,7 +48,7 @@ export default function RequestsPage() {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : PENDING_REQUESTS_PAGE.loadError,
+          getErrorMessage(err, { fallback: PENDING_REQUESTS_PAGE.loadError }),
         );
       } finally {
         setIsLoading(false);

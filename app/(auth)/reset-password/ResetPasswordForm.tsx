@@ -12,6 +12,8 @@ import {
 import AppTextField from "@/components/AppTextField";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { getErrorMessage } from "@/lib/errorMessages";
+import { RESET_PASSWORD_FORM } from "@/constants/auth";
 
 type ResetPasswordFormProps = {
   token?: string;
@@ -38,7 +40,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   async function handleResetPassword({ password }: ResetPasswordInput) {
     if (!token) {
-      setError("form", { message: "Token inválido o inexistente." });
+      setError("form", { message: RESET_PASSWORD_FORM.missingToken });
       return;
     }
 
@@ -47,7 +49,12 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       setIsSuccess(true);
       setTimeout(() => router.replace("/signin"), 3000);
     } catch (err) {
-      setError("form", { message: (err as Error).message });
+      setError("form", {
+        message: getErrorMessage(err, {
+          overrides: RESET_PASSWORD_FORM.errors,
+          fallback: RESET_PASSWORD_FORM.submitError,
+        }),
+      });
     }
   }
 

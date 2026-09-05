@@ -21,8 +21,7 @@ import {
   UserAccessRequest,
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
-import { ErrorResponse } from "@/lib/types";
-import { ApiError } from "@/lib/apiError";
+import { toApiError } from "@/lib/apiError";
 
 type ListUsersParams = {
   page?: number;
@@ -49,7 +48,7 @@ export const listUsersAction = async (
 
   const res = await dispatcher<undefined, PaginatedUsersResponse>(path);
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedUsersResponse;
 };
@@ -80,7 +79,7 @@ export const listPendingEstablishmentAccessAction = async (
     path,
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PendingEstablishmentAccessResponse;
 };
@@ -93,7 +92,7 @@ export const getUserAction = async (
     GET_USER_ENDPOINT(userId),
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as AdminUserDetail;
 };
@@ -117,7 +116,7 @@ export const approveFieldWorkerAction = async (
     { method: "PATCH", body },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };
 
 export const approveEstablishmentsAction = async (
@@ -134,7 +133,7 @@ export const approveEstablishmentsAction = async (
     { method: "PATCH", body },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };
 
 export const inviteAdminAction = async (
@@ -148,7 +147,7 @@ export const inviteAdminAction = async (
     { method: "POST", body },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return (res.data as InviteAdminResponse).user_id;
 };
@@ -164,7 +163,7 @@ export const inviteAnalystAction = async (
     { method: "POST", body },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return (res.data as InviteAdminResponse).user_id;
 };
@@ -178,7 +177,7 @@ export const resendInviteAction = async (
     { method: "PATCH" },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };
 
 /**
@@ -194,7 +193,7 @@ export const rejectFieldWorkerAction = async (
     { method: "PATCH" },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };
 
 export const rejectEstablishmentsAction = async (
@@ -211,7 +210,7 @@ export const rejectEstablishmentsAction = async (
     { method: "PATCH", body },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };
 
 /**
@@ -234,6 +233,5 @@ export const revokeEstablishmentsAction = async (
     { method: "PATCH", body },
   );
 
-  if (!res.ok)
-    throw new ApiError((res.data as ErrorResponse).detail, res.status);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };

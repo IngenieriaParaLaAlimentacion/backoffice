@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { DownloadedFile } from "@/lib/http";
 import { assertCsvRowCount, saveBlob } from "@/lib/download";
 import { ApiError } from "@/lib/apiError";
+import { getErrorMessage } from "@/lib/errorMessages";
 import { EXPORT } from "@/constants/exports";
 
 /**
@@ -30,9 +31,11 @@ export function useCsvExport() {
         if (rowCount !== null) await assertCsvRowCount(blob, rowCount);
         saveBlob(blob, filename ?? fallbackFilename);
       } catch (err) {
-        // 400/403/404 arrive before the first byte, with a problem+json the
-        // user can act on. Anything else means the download broke mid-stream.
-        if (err instanceof ApiError) setError(err.message || EXPORT.error);
+        // 400/403/404 arrive before the first byte, with a problem+json whose
+        // `type` we can translate. Anything else means the download broke
+        // mid-stream.
+        if (err instanceof ApiError)
+          setError(getErrorMessage(err, { fallback: EXPORT.error }));
         else setError(EXPORT.interrupted);
       } finally {
         setIsExporting(false);

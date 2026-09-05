@@ -31,6 +31,7 @@ import {
 } from "@/constants/establishments";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 type PendingAction = "approve" | "reject" | null;
 
@@ -119,9 +120,9 @@ export default function EstablishmentRequestReviewPanel({
         return;
       }
       setPanelError(
-        err instanceof Error
-          ? err.message
-          : ESTABLISHMENT_REQUEST_REVIEW_PANEL.approveError,
+        getErrorMessage(err, {
+          fallback: ESTABLISHMENT_REQUEST_REVIEW_PANEL.approveError,
+        }),
       );
     }
   };
@@ -143,9 +144,9 @@ export default function EstablishmentRequestReviewPanel({
         return;
       }
       setPanelError(
-        err instanceof Error
-          ? err.message
-          : ESTABLISHMENT_REQUEST_REVIEW_PANEL.rejectError,
+        getErrorMessage(err, {
+          fallback: ESTABLISHMENT_REQUEST_REVIEW_PANEL.rejectError,
+        }),
       );
     } finally {
       setIsRejecting(false);

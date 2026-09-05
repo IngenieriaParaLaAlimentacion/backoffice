@@ -12,6 +12,8 @@ import {
   ResetPasswordInput,
 } from "@/schemas/resetPassword.schema";
 import { acceptInviteAction } from "@/services/auth.service";
+import { getErrorMessage } from "@/lib/errorMessages";
+import { ACCEPT_INVITE_FORM } from "@/constants/auth";
 
 type AcceptInviteFormProps = {
   token: string;
@@ -57,7 +59,12 @@ export default function AcceptInviteForm({
       await acceptInviteAction(password, token);
       setIsSuccess(true);
     } catch (err) {
-      setError("form" as never, { message: (err as Error).message });
+      setError("form" as never, {
+        message: getErrorMessage(err, {
+          overrides: ACCEPT_INVITE_FORM.errors,
+          fallback: ACCEPT_INVITE_FORM.submitError,
+        }),
+      });
     }
   }
 

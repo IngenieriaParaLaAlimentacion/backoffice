@@ -12,7 +12,9 @@ export const resetPasswordSchema = z
         /[^a-zA-Z0-9]/,
         "La contraseña debe contener al menos un carácter especial",
       ),
-    confirmPassword: z.string().nonempty("La confirmación de contraseña es requerida"),
+    confirmPassword: z
+      .string()
+      .nonempty("La confirmación de contraseña es requerida"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contraseñas no coinciden",

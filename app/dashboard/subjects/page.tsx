@@ -42,6 +42,7 @@ import {
   SUBJECT_SORT_LABELS,
   SUBJECTS_PAGE,
 } from "@/constants/subjects";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -197,7 +198,7 @@ export default function SubjectsPage() {
         setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : SUBJECTS_PAGE.loadError);
+        setError(getErrorMessage(err, { fallback: SUBJECTS_PAGE.loadError }));
       } finally {
         setIsLoading(false);
       }

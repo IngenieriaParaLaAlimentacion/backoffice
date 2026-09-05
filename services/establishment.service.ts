@@ -16,8 +16,7 @@ import {
   PaginatedEstablishmentSubjectsResponse,
   RelationStatus,
 } from "@/types/establishment";
-import { ErrorResponse } from "@/lib/types";
-import { ApiError } from "@/lib/apiError";
+import { toApiError } from "@/lib/apiError";
 
 export type EstablishmentFilters = {
   search?: string;
@@ -93,7 +92,7 @@ export const listEstablishmentsAction = async (
     path,
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedEstablishmentsResponse;
 };
@@ -121,7 +120,7 @@ export const createEstablishmentAction = async (
     { method: "POST", body: data },
   );
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as EstablishmentResponse;
 };
@@ -138,8 +137,7 @@ export const getEstablishmentDashboardAction = async (
     ESTABLISHMENT_DASHBOARD_ENDPOINT(establishmentId),
   );
 
-  if (!res.ok)
-    throw new ApiError((res.data as ErrorResponse).detail, res.status);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as EstablishmentDashboardResponse;
 };
@@ -161,8 +159,7 @@ export const listEstablishmentSubjectsAction = async (
     PaginatedEstablishmentSubjectsResponse
   >(path);
 
-  if (!res.ok)
-    throw new ApiError((res.data as ErrorResponse).detail, res.status);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedEstablishmentSubjectsResponse;
 };
@@ -205,8 +202,7 @@ export const listEstablishmentFieldWorkersAction = async (
     PaginatedEstablishmentFieldWorkersResponse
   >(path);
 
-  if (!res.ok)
-    throw new ApiError((res.data as ErrorResponse).detail, res.status);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedEstablishmentFieldWorkersResponse;
 };

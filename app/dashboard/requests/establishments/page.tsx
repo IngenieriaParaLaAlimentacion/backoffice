@@ -20,6 +20,7 @@ import { useRefreshRequestCounts } from "../layout";
 import { CircleCheck, ClipboardCheck, Loader2, Search, X } from "lucide-react";
 import { ESTABLISHMENT_ACCESS_REQUESTS_PAGE } from "@/constants/users";
 import { TONE_BANNER_CLASS } from "@/constants/theme";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
@@ -98,9 +99,9 @@ function EstablishmentAccessRequestsContent() {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : ESTABLISHMENT_ACCESS_REQUESTS_PAGE.loadError,
+          getErrorMessage(err, {
+            fallback: ESTABLISHMENT_ACCESS_REQUESTS_PAGE.loadError,
+          }),
         );
       } finally {
         setIsLoading(false);

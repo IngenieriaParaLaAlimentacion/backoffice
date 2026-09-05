@@ -21,6 +21,7 @@ import { Check, Loader2, X } from "lucide-react";
 import { PENDING_REQUESTS_PAGE } from "@/constants/users";
 import { OVERLAY_CLASS, PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 type PendingAction = "approve" | "reject" | null;
 
@@ -108,11 +109,13 @@ export default function UserRequestReviewPanel({
       }
       onResolved(user.id);
     } catch (err) {
-      const detail = err instanceof Error ? err.message : null;
+      const detail = getErrorMessage(err, {
+        fallback: PENDING_REQUESTS_PAGE.applyError,
+      });
       setPanelError(
         activated
-          ? `${PENDING_REQUESTS_PAGE.partialApplyError}${detail ? ` (${detail})` : ""}`
-          : (detail ?? PENDING_REQUESTS_PAGE.applyError),
+          ? `${PENDING_REQUESTS_PAGE.partialApplyError} (${detail})`
+          : detail,
       );
     } finally {
       setIsApplying(false);
@@ -131,7 +134,7 @@ export default function UserRequestReviewPanel({
       onResolved(user.id);
     } catch (err) {
       setPanelError(
-        err instanceof Error ? err.message : PENDING_REQUESTS_PAGE.rejectError,
+        getErrorMessage(err, { fallback: PENDING_REQUESTS_PAGE.rejectError }),
       );
     } finally {
       setIsRejecting(false);

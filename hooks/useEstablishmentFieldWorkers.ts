@@ -6,10 +6,12 @@ import {
   RelationStatus,
 } from "@/types/establishment";
 import {
+  ESTABLISHMENT_DASHBOARD_PAGE,
   FILTER_DEBOUNCE_MS,
   PAGE_SIZE,
   RELATION_STATUS_OPTIONS,
 } from "@/constants/establishments";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 export function useEstablishmentFieldWorkers(establishmentId: string) {
   const { makeAuthorizedRequest } = useAuth();
@@ -61,9 +63,9 @@ export function useEstablishmentFieldWorkers(establishmentId: string) {
         setTotalPages(data.total_pages);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Error al cargar los relevadores",
+          getErrorMessage(err, {
+            fallback: ESTABLISHMENT_DASHBOARD_PAGE.fieldWorkersError,
+          }),
         );
       } finally {
         setIsLoading(false);

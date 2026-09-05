@@ -19,6 +19,7 @@ import {
 } from "@/lib/surveyForm";
 import { SurveyFormInput } from "@/schemas/survey.schema";
 import { SURVEY_FORM } from "@/constants/surveys";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 function NewSurveyContent() {
   const { makeAuthorizedRequest } = useAuth();
@@ -36,9 +37,7 @@ function NewSurveyContent() {
       setDefaults(templateToForm(template));
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Error al cargar la plantilla FIES",
+        getErrorMessage(err, { fallback: SURVEY_FORM.fiesTemplateError }),
       );
       setDefaults(emptySurveyForm());
     }

@@ -4,7 +4,7 @@ export type BaseHandlerOptions<T> = {
   method: "get" | "post" | "put" | "delete" | "patch";
   status?: 400 | 401 | 403 | 407 | 500 | 200 | 201;
   data?: Partial<T>;
-  error?: { title?: string; detail: string };
+  error?: { type?: string; title?: string; detail: string };
   onRequest?: (request: Request) => void | Promise<void>;
   once?: boolean;
 };
@@ -24,7 +24,7 @@ export function baseHandler<T, TPath extends PathParams<keyof TPath>>(
       if (status !== 200 && status !== 201) {
         return HttpResponse.json(
           {
-            type: "about:blank",
+            type: options.error?.type || "about:blank",
             status,
             detail: options.error?.detail || "An error occurred",
             title: options.error?.title || "Unknown error",

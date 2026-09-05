@@ -13,6 +13,7 @@ import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
 import { Loader2, X } from "lucide-react";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/errorMessages";
 
 export function DetailField({
   label,
@@ -68,7 +69,7 @@ export default function SubjectDetailPanel({
         setDetail(data);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : SUBJECT_DETAIL_PANEL.loadError,
+          getErrorMessage(err, { fallback: SUBJECT_DETAIL_PANEL.loadError }),
         );
       } finally {
         setIsLoading(false);

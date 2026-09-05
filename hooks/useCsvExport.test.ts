@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { downloadRequest } from "@/lib/http";
 import { EXPORT } from "@/constants/exports";
+import { ERROR_TYPES } from "@/lib/apiError";
+import { SHARED_ERROR_MESSAGES } from "@/constants/errors";
 import { SUBJECTS_EXPORT_ENDPOINT } from "@/constants/api";
 import { server } from "@/mocks/server";
 import { makeExportSubjectsHandler } from "@/mocks/handlers/csvExport";
@@ -84,12 +86,15 @@ describe("useCsvExport", () => {
     expect(result.current.isExporting).toBe(false);
   });
 
-  it("shows the server's message on an error that precedes the stream", async () => {
+  it("translates an error that precedes the stream", async () => {
     server.use(
       baseHandler(SUBJECTS_EXPORT_ENDPOINT, {
         method: "get",
         status: 400,
-        error: { detail: "birth_date_from no puede ser mayor a birth_date_to" },
+        error: {
+          type: ERROR_TYPES.INVALID_DATE_RANGE,
+          detail: "birth_date_from must not be after birth_date_to",
+        },
       }),
     );
     const { result } = renderHook(() => useCsvExport());
@@ -99,7 +104,7 @@ describe("useCsvExport", () => {
     });
 
     expect(result.current.error).toBe(
-      "birth_date_from no puede ser mayor a birth_date_to",
+      SHARED_ERROR_MESSAGES[ERROR_TYPES.INVALID_DATE_RANGE],
     );
     expect(click).not.toHaveBeenCalled();
   });

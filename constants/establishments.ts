@@ -62,6 +62,7 @@ export const USER_STATUS_LABELS: Record<UserStatus, string> = {
 
 export const ESTABLISHMENT_DASHBOARD_PAGE = {
   back: "Volver",
+  loadError: "Error al cargar el comedor",
   notFoundTitle: "Comedor no encontrado",
   notFoundBody: "El comedor que buscás no existe o fue eliminado del sistema.",
   forbiddenTitle: "No tenés permisos",
@@ -99,6 +100,7 @@ export const ESTABLISHMENT_DASHBOARD_PAGE = {
   subjectsSubtitle: (total: number) =>
     `${total} ${total === 1 ? "sujeto asiste" : "sujetos asisten"} a este comedor`,
   noSubjects: "No hay sujetos con mediciones en este comedor",
+  subjectsError: "Error al cargar los sujetos",
   subjectsSearchPlaceholder: "Nombre, apellido o documento",
   subjectScopeLabel: "Último relevamiento en este comedor",
   subjectColumns: {
@@ -116,6 +118,7 @@ export const ESTABLISHMENT_DASHBOARD_PAGE = {
   fieldWorkersTitle: "Relevadores",
   fieldWorkersSubtitle: "Relevadores inscriptos en este comedor",
   noFieldWorkers: "No hay relevadores inscriptos",
+  fieldWorkersError: "Error al cargar los relevadores",
   fieldWorkersSearchPlaceholder: "Nombre, apellido o email",
   fieldWorkerColumns: {
     name: "Nombre",

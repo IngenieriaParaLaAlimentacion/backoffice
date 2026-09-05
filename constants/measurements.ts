@@ -9,6 +9,10 @@ export const MEASUREMENT_SORT_LABELS: Record<MeasurementSortOrder, string> = {
   height_asc: "Talla (menor)",
 };
 
+/** Age bounds accepted by the measurements listing (backend: `ge=0, le=150`). */
+export const MIN_AGE = 0;
+export const MAX_AGE = 150;
+
 export const MEASUREMENTS_PAGE = {
   title: "Mediciones antropométricas",
   subtitle: "Peso, talla y fecha de relevamiento de los sujetos",
@@ -16,6 +20,7 @@ export const MEASUREMENTS_PAGE = {
   sortLabel: "Ordenar por",
   noMeasurements: "No hay mediciones",
   minAgeGreaterThanMaxError: "La edad mínima no puede ser mayor que la máxima.",
+  invalidAgeError: `La edad debe ser un número entero entre ${MIN_AGE} y ${MAX_AGE}.`,
   measuredFromAfterToError:
     "La fecha desde no puede ser posterior a la fecha hasta.",
   loadError: "Error al cargar mediciones",
