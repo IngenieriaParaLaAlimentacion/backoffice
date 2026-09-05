@@ -154,6 +154,35 @@ for body and UI (`font-sans`), **IBM Plex Mono** for numbers read as data
 inside a sentence). The brand mark is `components/BrandMark.tsx` (inline SVG) and the
 mark + wordmark lockup is `components/BrandLockup.tsx`.
 
+## Dates & times (`lib/format.ts`)
+
+Two different kinds of value arrive from the API and they must not be formatted the
+same way.
+
+**Calendar dates** (`birth_date`) come as `"YYYY-MM-DD"` and mean a day, not a moment.
+`formatDate` splits the string. Never route one through `Date` — it parses as UTC
+midnight and renders a day earlier anywhere west of Greenwich, which is everywhere in
+Argentina.
+
+**Timestamps** (`event_at`, `measured_at`, `created_at`) are UTC instants: the mobile
+app sends `Instant...toString()`, the backend stores `DateTime(timezone=True)` and
+serialises with a `Z`. `formatTimestampDate` / `formatTimestamp` /
+`formatTimestampShortDate` convert them to **Argentine local time**, pinned to
+`America/Argentina/Buenos_Aires` rather than the viewer's device zone. The zone is
+pinned on purpose: it matches the backend's CSV export byte-for-byte
+(`app/services/exporters/csv/formatters.py` formats with the same rule), so the table
+and the spreadsheet downloaded from it agree, and it keeps the output stable across
+machines in tests. Reading the UTC components back out (`getUTCDate()`) is _not_
+formatting — it re-prints the instant three hours ahead, which dates a survey answered
+at 22:30 to the following day.
+
+The same conversion applies to range filters. A `<input type="date">` names an
+Argentine calendar day, so `argentineDayStartUtc` / `argentineDayEndUtc` widen it to
+the UTC instants that day spans before it goes to the API — otherwise a row displayed
+as 03/09 falls outside a 03/09 filter. Both derive the offset from the zone at that
+date instead of hardcoding `-03:00`, since Argentina has adopted and dropped DST
+before.
+
 ## Route groups
 
 `app/(auth)/` holds unauthenticated screens (signin, invite, forgot/reset password,

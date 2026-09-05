@@ -15,7 +15,7 @@ import {
   USER_STATUS_LABELS,
 } from "@/constants/establishments";
 import { PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
-import { EMPTY_VALUE, formatDateTime } from "@/lib/format";
+import { EMPTY_VALUE, formatTimestampDate } from "@/lib/format";
 import { Loader2, Search } from "lucide-react";
 
 /**
@@ -171,7 +171,7 @@ export default function EstablishmentFieldWorkersList({
                     <td className="px-4 py-3">{worker.measurement_count}</td>
                     <td className="px-4 py-3">
                       {worker.last_measured_at ? (
-                        formatDateTime(worker.last_measured_at)
+                        formatTimestampDate(worker.last_measured_at)
                       ) : (
                         <span className="text-muted-foreground">
                           {EMPTY_VALUE}
@@ -236,7 +236,7 @@ export default function EstablishmentFieldWorkersList({
                 <div className="text-xs text-muted-foreground">
                   {worker.measurement_count} mediciones ·{" "}
                   {worker.last_measured_at
-                    ? formatDateTime(worker.last_measured_at)
+                    ? formatTimestampDate(worker.last_measured_at)
                     : EMPTY_VALUE}
                 </div>
               </div>

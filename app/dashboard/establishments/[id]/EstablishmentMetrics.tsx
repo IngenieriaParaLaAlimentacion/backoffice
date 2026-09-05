@@ -2,7 +2,11 @@
 
 import { EstablishmentMetrics as Metrics } from "@/types/establishment";
 import { ESTABLISHMENT_DASHBOARD_PAGE as COPY } from "@/constants/establishments";
-import { formatAgeMonths, formatDateTime, formatMetric } from "@/lib/format";
+import {
+  formatAgeMonths,
+  formatTimestampDate,
+  formatMetric,
+} from "@/lib/format";
 
 function MetricTile({ label, value }: { label: string; value: string }) {
   return (
@@ -65,7 +69,7 @@ export default function EstablishmentMetrics({
       <p className="text-xs text-muted-foreground">
         {COPY.measurementsSummary(metrics.measurement_count)}
         {metrics.last_measured_at &&
-          ` · ${COPY.lastMeasuredAt}: ${formatDateTime(metrics.last_measured_at)}`}
+          ` · ${COPY.lastMeasuredAt}: ${formatTimestampDate(metrics.last_measured_at)}`}
       </p>
     </div>
   );

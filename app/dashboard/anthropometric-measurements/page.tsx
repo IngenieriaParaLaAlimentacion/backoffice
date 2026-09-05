@@ -29,7 +29,7 @@ import {
   SEVERITY_ROW_CLASS,
   topSeverity,
 } from "@/components/AlertBadge";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatTimestampDate } from "@/lib/format";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -500,7 +500,7 @@ export default function AnthropometricMeasurementsPage() {
                           {m.bmi}
                         </td>
                         <td className="px-4 py-3">
-                          {formatDateTime(m.measured_at)}
+                          {formatTimestampDate(m.measured_at)}
                         </td>
                         <td className="px-4 py-3">
                           {m.subject.name} {m.subject.last_name}
@@ -543,7 +543,7 @@ export default function AnthropometricMeasurementsPage() {
                         </span>
                       </span>
                       <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
-                        {formatDateTime(m.measured_at)}
+                        {formatTimestampDate(m.measured_at)}
                         <RowChevron />
                       </span>
                     </div>
