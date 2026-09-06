@@ -28,6 +28,10 @@ export type ResetPasswordRequest = {
   token: string;
 };
 
+export type VerifyEmailRequest = {
+  token: string;
+};
+
 export type ForgotPasswordRequest = {
   email: string;
 };

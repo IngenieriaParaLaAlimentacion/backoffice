@@ -24,7 +24,14 @@ type AppTextFieldProps<
 export default function AppTextField<
   T extends FieldValues,
   TName extends FieldPath<T>,
->({ control, name, type, label, onChange: onChangeProp, ...props }: AppTextFieldProps<T, TName>) {
+>({
+  control,
+  name,
+  type,
+  label,
+  onChange: onChangeProp,
+  ...props
+}: AppTextFieldProps<T, TName>) {
   const [showPassword, setShowPassword] = useState(false);
   const { field, fieldState } = useController({ control, name });
   const isSecure = type === "password";
@@ -47,7 +54,9 @@ export default function AppTextField<
             onChangeProp?.(e);
           }}
           type={isSecure ? (showPassword ? "text" : "password") : type}
-          className={hasError ? "border-destructive focus-visible:ring-destructive" : ""}
+          className={
+            hasError ? "border-destructive focus-visible:ring-destructive" : ""
+          }
         />
         {isSecure && (
           <button

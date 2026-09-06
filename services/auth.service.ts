@@ -5,9 +5,9 @@ import {
   LoginRequest,
   LogoutRequest,
   ResetPasswordRequest,
+  VerifyEmailRequest,
 } from "@/types/auth";
 import { apiRequest } from "@/lib/http";
-import { ErrorResponse } from "@/lib/types";
 import { clearTokens, saveTokens } from "@/lib/tokenStorage";
 import {
   ACCEPT_INVITE_ENDPOINT,
@@ -15,8 +15,10 @@ import {
   FORGOT_PASSWORD_ENDPOINT,
   LOGOUT_ENDPOINT,
   RESET_PASSWORD_ENDPOINT,
+  VERIFY_EMAIL_ENDPOINT,
 } from "@/constants/api";
 import { AuthDispatcher } from "@/context/AuthContext";
+import { toApiError } from "@/lib/apiError";
 
 export const loginAction = async (
   credentials: SigninInput,
@@ -35,7 +37,7 @@ export const loginAction = async (
     },
   );
 
-  if (!response.ok) throw new Error((response.data as ErrorResponse).detail);
+  if (!response.ok) throw toApiError(response.data, response.status);
 
   const data = response.data as AuthTokensResponse;
 
@@ -56,7 +58,7 @@ export const forgotPasswordAction = async (email: string) => {
     body,
   });
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };
 
 export const resetPasswordAction = async (
@@ -73,7 +75,7 @@ export const resetPasswordAction = async (
     body: payload,
   });
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 
   clearTokens();
 };
@@ -92,7 +94,18 @@ export const acceptInviteAction = async (
     body: payload,
   });
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
+};
+
+export const verifyEmailAction = async (token: string) => {
+  const payload: VerifyEmailRequest = { token };
+
+  const res = await apiRequest(VERIFY_EMAIL_ENDPOINT, {
+    method: "POST",
+    body: payload,
+  });
+
+  if (!res.ok) throw toApiError(res.data, res.status);
 };
 
 export const logoutAction = async (
@@ -112,5 +125,5 @@ export const logoutAction = async (
 
   clearTokens();
 
-  if (!res.ok) throw new Error((res.data as ErrorResponse).detail);
+  if (!res.ok) throw toApiError(res.data, res.status);
 };

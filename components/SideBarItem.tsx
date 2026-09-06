@@ -19,25 +19,36 @@ export default function SideBarItem({
   isSidebarOpen,
 }: SideBarItemProps) {
   const pathname = usePathname();
-  const isSelected = pathname === href;
+  // "/dashboard" (Inicio) is a prefix of every dashboard route, so it only
+  // highlights on an exact match; other items also highlight on sub-routes
+  // (e.g. "/dashboard/establishments/requests" under "Establecimientos").
+  const isSelected =
+    pathname === href ||
+    (href !== "/dashboard" && pathname.startsWith(`${href}/`));
 
   return (
     <Link
       href={href}
+      aria-current={isSelected ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors",
+        // The sidebar is a dark-earth surface, so every color here comes from
+        // the `--sidebar-*` scale. `text-foreground` / `text-primary` would
+        // resolve to ink and mustard on earth, which is unreadable and
+        // off-brand respectively.
+        "relative flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors",
+        // The mustard rail marking the active item. Rendered as a border so it
+        // occupies no layout width and stays put while the drawer resizes.
+        "border-l-2 border-transparent",
         isSelected
-          ? "bg-primary/10 text-primary"
-          : "text-foreground hover:bg-accent hover:text-accent-foreground"
+          ? "border-sidebar-primary bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-sidebar-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
       )}
     >
       <span className="shrink-0">{icon}</span>
       <span
-        className="overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-200 ease-in-out"
-        style={{
-          opacity: isSidebarOpen ? 1 : 0,
-          maxWidth: isSidebarOpen ? 160 : 0,
-        }}
+        className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap transition-opacity duration-200 ease-in-out"
+        style={{ opacity: isSidebarOpen ? 1 : 0 }}
+        title={label}
       >
         {label}
       </span>

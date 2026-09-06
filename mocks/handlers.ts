@@ -6,12 +6,21 @@ import {
   makeResetPasswordHandler,
 } from "@/mocks/handlers/auth";
 import {
+  makeApproveEstablishmentRequestHandler,
   makeApproveEstablishmentsHandler,
+  makeListEstablishmentRequestsHandler,
+  makeApproveFieldWorkerHandler,
+  makeListPendingEstablishmentAccessHandler,
   makeListUsersHandler,
+  makeRejectEstablishmentRequestHandler,
   makeRejectEstablishmentsHandler,
+  makeRejectFieldWorkerHandler,
 } from "@/mocks/handlers/admin";
 import {
   makeCreateEstablishmentHandler,
+  makeEstablishmentDashboardHandler,
+  makeEstablishmentFieldWorkersHandler,
+  makeEstablishmentSubjectsHandler,
   makeListEstablishmentsHandler,
 } from "@/mocks/handlers/establishment";
 import {
@@ -22,6 +31,14 @@ import {
   makeListSurveysHandler,
   makeUpdateSurveyHandler,
 } from "@/mocks/handlers/survey";
+import {
+  makeListSurveyResponsesHandler,
+  makeSurveyResponseDetailHandler,
+  makeExportSurveyResponsesHandler,
+  makeDashboardIndicatorsHandler,
+} from "@/mocks/handlers/surveyResponse";
+import { makeExportSubjectsHandler } from "@/mocks/handlers/csvExport";
+import { makeMeHandler } from "@/mocks/handlers/user";
 
 export const handlers = [
   makeLoginHandler(),
@@ -30,8 +47,17 @@ export const handlers = [
   makeForgotPasswordHandler(),
   makeLogoutHandler(),
   makeListUsersHandler(),
+  makeListPendingEstablishmentAccessHandler(),
+  makeApproveFieldWorkerHandler(),
+  makeRejectFieldWorkerHandler(),
   makeApproveEstablishmentsHandler(),
   makeRejectEstablishmentsHandler(),
+  makeListEstablishmentRequestsHandler(),
+  makeApproveEstablishmentRequestHandler(),
+  makeRejectEstablishmentRequestHandler(),
+  makeEstablishmentDashboardHandler(),
+  makeEstablishmentSubjectsHandler(),
+  makeEstablishmentFieldWorkersHandler(),
   makeListEstablishmentsHandler(),
   makeCreateEstablishmentHandler(),
   makeFiesTemplateHandler(),
@@ -40,4 +66,10 @@ export const handlers = [
   makeCreateSurveyHandler(),
   makeListSurveysHandler(),
   makeGetSurveyHandler(),
+  makeListSurveyResponsesHandler(),
+  makeSurveyResponseDetailHandler(),
+  makeExportSurveyResponsesHandler(),
+  makeDashboardIndicatorsHandler(),
+  makeExportSubjectsHandler(),
+  makeMeHandler(),
 ];

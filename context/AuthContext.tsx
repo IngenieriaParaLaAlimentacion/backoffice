@@ -14,7 +14,13 @@ import {
   useEffect,
   useState,
 } from "react";
-import { apiRequest, ApiRequestOptions, refreshAccessToken } from "@/lib/http";
+import {
+  apiRequest,
+  ApiRequestOptions,
+  downloadRequest,
+  DownloadedFile,
+  refreshAccessToken,
+} from "@/lib/http";
 import { AuthTokens } from "@/types/auth";
 import { ApiResponse, RefreshTokenResponse } from "@/lib/types";
 import { clearTokens, getTokens, saveTokens } from "@/lib/tokenStorage";
@@ -25,6 +31,12 @@ export type AuthDispatcher = <TRequest, TResponse>(
   options?: Omit<ApiRequestOptions<TRequest>, "auth">,
 ) => Promise<ApiResponse<TResponse>>;
 
+/** Same credentials as `AuthDispatcher`, but the body comes back as a file. */
+export type DownloadDispatcher = (
+  path: string,
+  options?: Omit<ApiRequestOptions<undefined>, "auth">,
+) => Promise<DownloadedFile>;
+
 type AuthContextValues = {
   isInitializing: boolean;
   isAuthenticated: boolean;
@@ -34,6 +46,7 @@ type AuthContextValues = {
   logout: () => Promise<void>;
   resetPassword: (password: string, token: string) => Promise<void>;
   makeAuthorizedRequest: AuthDispatcher;
+  makeAuthorizedDownload: DownloadDispatcher;
 };
 
 export const AuthContext = createContext<AuthContextValues | undefined>(
@@ -102,6 +115,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [deviceId, handleRefresh, tokens],
   );
 
+  const makeAuthorizedDownload = useCallback(
+    async (
+      path: string,
+      options?: Omit<ApiRequestOptions<undefined>, "auth">,
+    ) => {
+      return downloadRequest<undefined>(path, {
+        ...options,
+        ...(tokens &&
+          deviceId && {
+            auth: { tokens, onRefresh: handleRefresh, deviceId },
+          }),
+      });
+    },
+    [deviceId, handleRefresh, tokens],
+  );
+
   const clearAuthNotice = useCallback(() => {
     setAuthNotice(null);
   }, []);
@@ -149,6 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         resetPassword,
         makeAuthorizedRequest,
+        makeAuthorizedDownload,
       }}
     >
       {children}

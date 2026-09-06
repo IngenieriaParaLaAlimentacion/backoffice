@@ -12,6 +12,8 @@ import {
   ResetPasswordInput,
 } from "@/schemas/resetPassword.schema";
 import { acceptInviteAction } from "@/services/auth.service";
+import { getErrorMessage } from "@/lib/errorMessages";
+import { ACCEPT_INVITE_FORM } from "@/constants/auth";
 
 type AcceptInviteFormProps = {
   token: string;
@@ -57,7 +59,12 @@ export default function AcceptInviteForm({
       await acceptInviteAction(password, token);
       setIsSuccess(true);
     } catch (err) {
-      setError("form" as never, { message: (err as Error).message });
+      setError("form" as never, {
+        message: getErrorMessage(err, {
+          overrides: ACCEPT_INVITE_FORM.errors,
+          fallback: ACCEPT_INVITE_FORM.submitError,
+        }),
+      });
     }
   }
 
@@ -75,7 +82,7 @@ export default function AcceptInviteForm({
     return (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-semibold">
             Te invitaron a ser {roleLabel}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -92,9 +99,7 @@ export default function AcceptInviteForm({
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Creá tu contraseña
-        </h1>
+        <h1 className="text-3xl font-semibold">Creá tu contraseña</h1>
         <p className="text-sm text-muted-foreground">
           Elegí una contraseña segura para tu cuenta de {roleLabel}.
         </p>
@@ -122,10 +127,7 @@ export default function AcceptInviteForm({
           {(errors as Record<string, { message?: string }>).form && (
             <Alert variant="destructive">
               <AlertDescription>
-                {
-                  (errors as Record<string, { message?: string }>).form
-                    ?.message
-                }
+                {(errors as Record<string, { message?: string }>).form?.message}
               </AlertDescription>
             </Alert>
           )}

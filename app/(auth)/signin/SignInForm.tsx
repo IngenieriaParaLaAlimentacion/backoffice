@@ -9,6 +9,8 @@ import { useForm } from "react-hook-form";
 import { SigninInput, signinSchema } from "@/schemas/signin.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import AppTextField from "@/components/AppTextField";
+import { getErrorMessage } from "@/lib/errorMessages";
+import { SIGN_IN_FORM } from "@/constants/auth";
 
 export default function SignInForm() {
   const {
@@ -39,7 +41,12 @@ export default function SignInForm() {
       await login(credentials);
       router.replace("/dashboard");
     } catch (err) {
-      setError("form", { message: (err as Error).message });
+      setError("form", {
+        message: getErrorMessage(err, {
+          overrides: SIGN_IN_FORM.errors,
+          fallback: SIGN_IN_FORM.submitError,
+        }),
+      });
     }
   }
 
