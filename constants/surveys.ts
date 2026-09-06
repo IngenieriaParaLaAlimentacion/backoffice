@@ -132,6 +132,7 @@ export const RESPONSES_PAGE = {
   establishment: "Establecimiento",
   subject: "Sujeto",
   targetPrefix: "Destino:",
+  responseNumber: "N.º de respuesta",
   date: "Fecha de relevamiento",
   score: "Score FIES",
   export: "Exportar",
@@ -143,10 +144,14 @@ export const RESPONSES_PAGE = {
     city: "Ciudad",
     province: "Provincia",
     sort: "Ordenar por",
+    responseNumber: "N.º exacto",
+    responseNumberFrom: "N.º desde",
+    responseNumberTo: "N.º hasta",
   },
   columns: {
     entity: "Entidad",
     respondent: "Completado por",
+    responseNumber: "N.º",
     city: "Ciudad",
     province: "Provincia",
     date: "Fecha",
@@ -161,6 +166,10 @@ export const RESPONSES_PAGE = {
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
   loadError: "Error al cargar las respuestas",
+  errors: {
+    invertedNumberRange:
+      "El número desde no puede ser mayor que el número hasta.",
+  },
   detailLoadError: "Error al cargar el detalle de la respuesta",
   detailTitle: "Detalle de respuesta",
   questionAnswers: "Respuestas",

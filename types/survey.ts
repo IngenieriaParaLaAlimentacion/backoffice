@@ -148,6 +148,7 @@ export type SurveyResponseSortOrder =
  */
 export type SurveyResponseDashboardItem = {
   id: string;
+  response_number: number;
   event_at: string;
   survey: SurveyRef;
   establishment: EstablishmentRef | null;
@@ -174,6 +175,7 @@ export type QuestionAnswer = {
 
 export type SurveyResponseDetail = {
   id: string;
+  response_number: number;
   event_at: string;
   survey: SurveyRef;
   establishment: EstablishmentRef | null;
