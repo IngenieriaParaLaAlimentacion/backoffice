@@ -59,20 +59,24 @@ export default function OptionsEditor({
                 aria-invalid={!!optionError}
                 className="max-w-sm"
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                disabled={removeLocked}
+              <span
+                className="inline-flex"
                 title={
                   removeLocked
                     ? SURVEY_FORM.optionDeleteLockedReason
                     : undefined
                 }
-                onClick={() => remove(optionIndex)}
               >
-                <X size={14} />
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={removeLocked}
+                  onClick={() => remove(optionIndex)}
+                >
+                  <X size={14} />
+                </Button>
+              </span>
             </div>
             {optionError && (
               <p className="text-xs text-destructive">{optionError}</p>

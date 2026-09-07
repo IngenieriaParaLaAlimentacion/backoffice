@@ -104,21 +104,25 @@ export default function QuestionEditor({
           >
             <ArrowDown size={14} />
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            disabled={!canRemove || questionLocked}
-            onClick={onRemove}
+          <span
+            className="inline-flex"
             title={
               questionLocked
                 ? SURVEY_FORM.questionDeleteLockedReason
-                : "Eliminar"
+                : SURVEY_FORM.deleteQuestionLabel
             }
-            className="text-destructive"
           >
-            <Trash2 size={14} />
-          </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              disabled={!canRemove || questionLocked}
+              onClick={onRemove}
+              className="text-destructive"
+            >
+              <Trash2 size={14} />
+            </Button>
+          </span>
         </div>
       </div>
 

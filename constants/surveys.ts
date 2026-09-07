@@ -59,6 +59,7 @@ export const SURVEY_FORM = {
   save: "Guardar",
   saving: "Guardando...",
   cancel: "Cancelar",
+  deleteQuestionLabel: "Eliminar",
   lockedNotice:
     "Esta encuesta ya tiene respuestas registradas: no se puede cambiar el destino, eliminar preguntas u opciones existentes, cambiar el tipo de una pregunta o volverla obligatoria, ni agregar preguntas nuevas obligatorias.",
   targetLockedReason:
