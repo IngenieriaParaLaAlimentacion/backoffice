@@ -83,6 +83,28 @@ const EMPTY_FILTERS: Filters = {
   responseNumberTo: "",
 };
 
+const RESPONSE_NUMBER_FILTERS = [
+  {
+    key: "responseNumber",
+    label: RESPONSES_PAGE.filters.responseNumber,
+    placeholder: RESPONSES_PAGE.columns.responseNumber,
+  },
+  {
+    key: "responseNumberFrom",
+    label: RESPONSES_PAGE.filters.responseNumberFrom,
+    placeholder: String(RESPONSE_NUMBER_MIN),
+  },
+  {
+    key: "responseNumberTo",
+    label: RESPONSES_PAGE.filters.responseNumberTo,
+    placeholder: String(RESPONSE_NUMBER_MAX),
+  },
+] as const satisfies ReadonlyArray<{
+  key: keyof Filters;
+  label: string;
+  placeholder: string;
+}>;
+
 function toOptionalNumber(value: string): number | undefined {
   if (value === "") return undefined;
   const parsed = Number(value);
@@ -360,60 +382,21 @@ export default function ResponsesPage() {
             </>
           )}
 
-          {showsResponseNumbers && (
-            <>
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">
-                  {RESPONSES_PAGE.filters.responseNumber}
-                </label>
+          {showsResponseNumbers &&
+            RESPONSE_NUMBER_FILTERS.map(({ key, label, placeholder }) => (
+              <div key={key} className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">{label}</label>
                 <Input
                   type="number"
                   min={RESPONSE_NUMBER_MIN}
                   max={RESPONSE_NUMBER_MAX}
-                  value={filters.responseNumber}
-                  onChange={(e) =>
-                    updateFilter("responseNumber", e.target.value)
-                  }
-                  placeholder={RESPONSES_PAGE.columns.responseNumber}
+                  value={filters[key]}
+                  onChange={(e) => updateFilter(key, e.target.value)}
+                  placeholder={placeholder}
                   className="w-full sm:w-28"
                 />
               </div>
-
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">
-                  {RESPONSES_PAGE.filters.responseNumberFrom}
-                </label>
-                <Input
-                  type="number"
-                  min={RESPONSE_NUMBER_MIN}
-                  max={RESPONSE_NUMBER_MAX}
-                  value={filters.responseNumberFrom}
-                  onChange={(e) =>
-                    updateFilter("responseNumberFrom", e.target.value)
-                  }
-                  placeholder={String(RESPONSE_NUMBER_MIN)}
-                  className="w-full sm:w-28"
-                />
-              </div>
-
-              <div className="flex w-full flex-col gap-1 sm:w-auto">
-                <label className="text-xs text-muted-foreground">
-                  {RESPONSES_PAGE.filters.responseNumberTo}
-                </label>
-                <Input
-                  type="number"
-                  min={RESPONSE_NUMBER_MIN}
-                  max={RESPONSE_NUMBER_MAX}
-                  value={filters.responseNumberTo}
-                  onChange={(e) =>
-                    updateFilter("responseNumberTo", e.target.value)
-                  }
-                  placeholder={String(RESPONSE_NUMBER_MAX)}
-                  className="w-full sm:w-28"
-                />
-              </div>
-            </>
-          )}
+            ))}
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
