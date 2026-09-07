@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { RESPONSE_TYPE_LABELS, RESPONSES_PAGE } from "@/constants/surveys";
 import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
 import { EMPTY_VALUE, formatDate, formatTimestamp } from "@/lib/format";
-import { entityLabel } from "@/components/surveys/ResponseEntity";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/errorMessages";
@@ -24,6 +23,7 @@ const SEX_LABELS: Record<Sex, string> = {
 type ResponseDetailPanelProps = {
   surveyId: string;
   responseId: string | null;
+  showResponseNumber: boolean;
   onClose: () => void;
 };
 
@@ -45,6 +45,7 @@ function DetailField({
 export default function ResponseDetailPanel({
   surveyId,
   responseId,
+  showResponseNumber,
   onClose,
 }: ResponseDetailPanelProps) {
   const { makeAuthorizedRequest } = useAuth();
@@ -137,11 +138,10 @@ export default function ResponseDetailPanel({
         <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
           <div className="flex items-start justify-between gap-2">
             <Dialog.Title className="text-xl font-bold tracking-tight">
-              {detail && (detail.subject || detail.establishment)
-                ? entityLabel({
-                    subject: detail.subject,
-                    establishment: detail.establishment,
-                  })
+              {detail
+                ? showResponseNumber
+                  ? `${RESPONSES_PAGE.columns.responseNumber} ${detail.response_number ?? EMPTY_VALUE} — ${detail.submitted_by.name}`
+                  : `${RESPONSES_PAGE.detailTitle} — ${detail.submitted_by.name}`
                 : RESPONSES_PAGE.detailTitle}
             </Dialog.Title>
             <Dialog.Close
@@ -168,6 +168,16 @@ export default function ResponseDetailPanel({
           ) : detail ? (
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {showResponseNumber && (
+                  <DetailField
+                    label={RESPONSES_PAGE.responseNumber}
+                    value={
+                      <span className="tabular-nums font-medium">
+                        {detail.response_number ?? EMPTY_VALUE}
+                      </span>
+                    }
+                  />
+                )}
                 {/* The entity block follows the survey's target: a subject, an
                     establishment, or nothing at all on anonymous surveys —
                     omitted rather than rendered as empty fields (CA7). */}

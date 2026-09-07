@@ -17,6 +17,7 @@ const survey: SurveyListItem = {
   id: "survey-1",
   name: "Encuesta FIES",
   response_target: "subject",
+  requires_response_number: true,
   is_active: true,
   created_by_id: "user-9",
   question_count: 8,

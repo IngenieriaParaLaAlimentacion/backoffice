@@ -11,6 +11,7 @@ export function emptySurveyForm(): SurveyFormInput {
     name: "",
     description: "",
     response_target: "",
+    requires_response_number: false,
     questions: [
       { text: "", response_type: "text", is_required: false, options: [] },
     ],
@@ -29,6 +30,7 @@ export function templateToForm(
     name: template.name,
     description: template.description ?? "",
     response_target: template.response_target,
+    requires_response_number: template.requires_response_number,
     questions: template.questions
       .slice()
       .sort((a, b) => a.position - b.position)
@@ -50,6 +52,7 @@ export function surveyToForm(survey: SurveyResponse): SurveyFormInput {
     name: survey.name,
     description: survey.description ?? "",
     response_target: survey.response_target,
+    requires_response_number: survey.requires_response_number === true,
     questions: survey.questions
       .slice()
       .sort((a, b) => a.position - b.position)
@@ -81,6 +84,7 @@ export function formToRequest(values: SurveyFormInput): SurveyCreateRequest {
     name: values.name,
     description: values.description || null,
     response_target: values.response_target,
+    requires_response_number: values.requires_response_number,
     questions: values.questions.map((q) => ({
       ...(q.id ? { id: q.id } : {}),
       text: q.text,

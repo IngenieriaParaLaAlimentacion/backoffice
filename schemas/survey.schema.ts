@@ -93,6 +93,7 @@ export const surveySchema = z
     // the choice is effectively irreversible (it locks on the first response), so
     // a create-from-scratch draft starts blank rather than guessing (CA1).
     response_target: z.enum(["", ...RESPONSE_TARGETS]),
+    requires_response_number: z.boolean(),
     // Between 1 and 30 questions (CA9).
     questions: z
       .array(questionSchema)

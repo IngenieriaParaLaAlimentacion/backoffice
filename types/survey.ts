@@ -13,6 +13,7 @@ export type SurveyListItem = {
   id: string;
   name: string;
   response_target: SurveyResponseTarget;
+  requires_response_number: boolean | null;
   is_active: boolean;
   created_by_id: string;
   question_count: number;
@@ -72,6 +73,7 @@ export type SurveyResponse = {
   name: string;
   description: string | null;
   response_target: SurveyResponseTarget;
+  requires_response_number: boolean | null;
   is_active: boolean;
   created_by_id: string;
   response_count: number;
@@ -84,6 +86,7 @@ export type SurveyCreateRequest = {
   name: string;
   description?: string | null;
   response_target: SurveyResponseTarget;
+  requires_response_number: boolean;
   questions: QuestionInput[];
 };
 
@@ -112,6 +115,7 @@ export type SurveyTemplateResponse = {
   name: string;
   description: string | null;
   response_target: SurveyResponseTarget;
+  requires_response_number: boolean;
   questions: TemplateQuestion[];
 };
 
@@ -148,6 +152,7 @@ export type SurveyResponseSortOrder =
  */
 export type SurveyResponseDashboardItem = {
   id: string;
+  response_number: number | null;
   event_at: string;
   survey: SurveyRef;
   establishment: EstablishmentRef | null;
@@ -174,6 +179,7 @@ export type QuestionAnswer = {
 
 export type SurveyResponseDetail = {
   id: string;
+  response_number: number | null;
   event_at: string;
   survey: SurveyRef;
   establishment: EstablishmentRef | null;

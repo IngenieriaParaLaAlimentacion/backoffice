@@ -50,6 +50,8 @@ import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
+const RESPONSE_NUMBER_MIN = 1;
+const RESPONSE_NUMBER_MAX = 999_999;
 
 const SELECT_CLASS =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -66,6 +68,9 @@ type Filters = {
   dateTo: string;
   city: string;
   province: string;
+  responseNumber: string;
+  responseNumberFrom: string;
+  responseNumberTo: string;
 };
 
 const EMPTY_FILTERS: Filters = {
@@ -73,7 +78,46 @@ const EMPTY_FILTERS: Filters = {
   dateTo: "",
   city: "",
   province: "",
+  responseNumber: "",
+  responseNumberFrom: "",
+  responseNumberTo: "",
 };
+
+const RESPONSE_NUMBER_FILTERS = [
+  {
+    key: "responseNumber",
+    label: RESPONSES_PAGE.filters.responseNumber,
+    placeholder: RESPONSES_PAGE.columns.responseNumber,
+  },
+  {
+    key: "responseNumberFrom",
+    label: RESPONSES_PAGE.filters.responseNumberFrom,
+    placeholder: String(RESPONSE_NUMBER_MIN),
+  },
+  {
+    key: "responseNumberTo",
+    label: RESPONSES_PAGE.filters.responseNumberTo,
+    placeholder: String(RESPONSE_NUMBER_MAX),
+  },
+] as const satisfies ReadonlyArray<{
+  key: keyof Filters;
+  label: string;
+  placeholder: string;
+}>;
+
+function toOptionalNumber(value: string): number | undefined {
+  if (value === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function toNumberFilters(filters: Filters) {
+  return {
+    responseNumber: toOptionalNumber(filters.responseNumber),
+    responseNumberFrom: toOptionalNumber(filters.responseNumberFrom),
+    responseNumberTo: toOptionalNumber(filters.responseNumberTo),
+  };
+}
 
 export default function ResponsesPage() {
   const params = useParams();
@@ -88,6 +132,7 @@ export default function ResponsesPage() {
   } = useCsvExport();
 
   const [survey, setSurvey] = useState<SurveyResponse | null>(null);
+  const showsResponseNumbers = survey?.requires_response_number === true;
   const [responses, setResponses] = useState<SurveyResponseDashboardItem[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -114,6 +159,17 @@ export default function ResponsesPage() {
       .catch(() => {});
   }, [makeAuthorizedRequest, surveyId]);
 
+  useEffect(() => {
+    if (survey && !showsResponseNumbers) {
+      setFilters((current) => ({
+        ...current,
+        responseNumber: "",
+        responseNumberFrom: "",
+        responseNumberTo: "",
+      }));
+    }
+  }, [survey, showsResponseNumbers]);
+
   // Debounce filter changes
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -129,6 +185,21 @@ export default function ResponsesPage() {
       currentFilters: Filters,
       currentSort: SurveyResponseSortOrder,
     ) => {
+      const { responseNumber, responseNumberFrom, responseNumberTo } =
+        toNumberFilters(currentFilters);
+
+      if (
+        showsResponseNumbers &&
+        responseNumberFrom !== undefined &&
+        responseNumberTo !== undefined &&
+        responseNumberFrom > responseNumberTo
+      ) {
+        setResponses([]);
+        setError(RESPONSES_PAGE.errors.invertedNumberRange);
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
       try {
@@ -143,6 +214,13 @@ export default function ResponsesPage() {
           event_at_to: argentineDayEndUtc(currentFilters.dateTo),
           city: currentFilters.city || undefined,
           province: currentFilters.province || undefined,
+          ...(showsResponseNumbers
+            ? {
+                response_number: responseNumber,
+                response_number_from: responseNumberFrom,
+                response_number_to: responseNumberTo,
+              }
+            : {}),
           sort_order: currentSort,
         });
         setResponses(data.items);
@@ -154,7 +232,7 @@ export default function ResponsesPage() {
         setIsLoading(false);
       }
     },
-    [makeAuthorizedRequest, surveyId],
+    [makeAuthorizedRequest, showsResponseNumbers, surveyId],
   );
 
   useEffect(() => {
@@ -174,14 +252,29 @@ export default function ResponsesPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleExport = () =>
+  const handleExport = () => {
+    const { responseNumber, responseNumberFrom, responseNumberTo } =
+      toNumberFilters(debouncedFilters);
+
     runExport(
       () =>
         exportSurveyResponsesAction(makeAuthorizedDownload, {
           survey_id: surveyId,
+          event_at_from: argentineDayStartUtc(debouncedFilters.dateFrom),
+          event_at_to: argentineDayEndUtc(debouncedFilters.dateTo),
+          city: debouncedFilters.city || undefined,
+          province: debouncedFilters.province || undefined,
+          ...(showsResponseNumbers
+            ? {
+                response_number: responseNumber,
+                response_number_from: responseNumberFrom,
+                response_number_to: responseNumberTo,
+              }
+            : {}),
         }),
       `respuestas-${survey?.name ?? surveyId}.xlsx`,
     );
+  };
 
   const closeDetail = () => {
     setSelectedResponseId(null);
@@ -289,6 +382,22 @@ export default function ResponsesPage() {
             </>
           )}
 
+          {showsResponseNumbers &&
+            RESPONSE_NUMBER_FILTERS.map(({ key, label, placeholder }) => (
+              <div key={key} className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">{label}</label>
+                <Input
+                  type="number"
+                  min={RESPONSE_NUMBER_MIN}
+                  max={RESPONSE_NUMBER_MAX}
+                  value={filters[key]}
+                  onChange={(e) => updateFilter(key, e.target.value)}
+                  placeholder={placeholder}
+                  className="w-full sm:w-28"
+                />
+              </div>
+            ))}
+
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
               {RESPONSES_PAGE.filters.sort}
@@ -345,6 +454,11 @@ export default function ResponsesPage() {
                     <th className="px-4 py-3 font-medium">
                       {RESPONSES_PAGE.columns.respondent}
                     </th>
+                    {showsResponseNumbers && (
+                      <th className="px-4 py-3 font-medium">
+                        {RESPONSES_PAGE.columns.responseNumber}
+                      </th>
+                    )}
                     {isEstablishmentTargeted && (
                       <>
                         <th className="px-4 py-3 font-medium">
@@ -384,6 +498,11 @@ export default function ResponsesPage() {
                       <td className="px-4 py-3">
                         {item.submitted_by.name} {item.submitted_by.last_name}
                       </td>
+                      {showsResponseNumbers && (
+                        <td className="px-4 py-3 tabular-nums font-medium">
+                          {item.response_number ?? EMPTY_VALUE}
+                        </td>
+                      )}
                       {isEstablishmentTargeted && (
                         <>
                           <td className="px-4 py-3 text-muted-foreground">
@@ -426,11 +545,16 @@ export default function ResponsesPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <RowLink>
-                      <span className="text-sm font-medium">
-                        {entityLabel({
-                          subject: item.subject,
-                          establishment: item.establishment,
-                        })}
+                      <span className="flex items-baseline gap-2 text-sm font-medium">
+                        <span>
+                          {item.submitted_by.name} {item.submitted_by.last_name}
+                        </span>
+                        {showsResponseNumbers && (
+                          <span className="tabular-nums text-muted-foreground">
+                            {RESPONSES_PAGE.columns.responseNumber}{" "}
+                            {item.response_number ?? EMPTY_VALUE}
+                          </span>
+                        )}
                       </span>
                     </RowLink>
                     {item.score_fies !== null && (
@@ -440,9 +564,16 @@ export default function ResponsesPage() {
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {item.establishment
-                      ? `${item.establishment.name} · ${item.establishment.city}, ${item.establishment.province}`
-                      : `${item.submitted_by.name} ${item.submitted_by.last_name}`}
+                    {entityLabel({
+                      subject: item.subject,
+                      establishment: item.establishment,
+                    })}
+                    {item.establishment?.city
+                      ? ` · ${item.establishment.city}`
+                      : ""}
+                    {item.establishment?.province
+                      ? `, ${item.establishment.province}`
+                      : ""}
                   </span>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs text-muted-foreground">
@@ -482,6 +613,7 @@ export default function ResponsesPage() {
       <ResponseDetailPanel
         surveyId={surveyId}
         responseId={selectedResponseId}
+        showResponseNumber={showsResponseNumbers}
         onClose={closeDetail}
       />
     </div>

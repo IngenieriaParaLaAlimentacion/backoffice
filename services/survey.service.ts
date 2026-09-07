@@ -186,16 +186,39 @@ export const getFiesTemplateAction = async (
  * single-row lookups, not filters. `city` / `province` are rejected with a 400
  * unless the survey is establishment-targeted.
  */
-type ListSurveyResponsesParams = {
-  survey_id: string;
-  page?: number;
-  page_size?: number;
+export type SurveyResponseFilterParams = {
   event_at_from?: string;
   event_at_to?: string;
   city?: string;
   province?: string;
+  response_number?: number;
+  response_number_from?: number;
+  response_number_to?: number;
+};
+
+type ListSurveyResponsesParams = SurveyResponseFilterParams & {
+  survey_id: string;
+  page?: number;
+  page_size?: number;
   sort_order?: SurveyResponseSortOrder;
 };
+
+/** Serializes filters shared by the listing and XLSX download endpoints. */
+function appendResponseFilters(
+  query: URLSearchParams,
+  params: SurveyResponseFilterParams,
+) {
+  if (params.event_at_from) query.set("event_at_from", params.event_at_from);
+  if (params.event_at_to) query.set("event_at_to", params.event_at_to);
+  if (params.city) query.set("city", params.city);
+  if (params.province) query.set("province", params.province);
+  if (params.response_number !== undefined)
+    query.set("response_number", String(params.response_number));
+  if (params.response_number_from !== undefined)
+    query.set("response_number_from", String(params.response_number_from));
+  if (params.response_number_to !== undefined)
+    query.set("response_number_to", String(params.response_number_to));
+}
 
 export const listSurveyResponsesAction = async (
   dispatcher: AuthDispatcher,
@@ -204,10 +227,7 @@ export const listSurveyResponsesAction = async (
   const query = new URLSearchParams();
   if (params.page) query.set("page", String(params.page));
   if (params.page_size) query.set("page_size", String(params.page_size));
-  if (params.event_at_from) query.set("event_at_from", params.event_at_from);
-  if (params.event_at_to) query.set("event_at_to", params.event_at_to);
-  if (params.city) query.set("city", params.city);
-  if (params.province) query.set("province", params.province);
+  appendResponseFilters(query, params);
   if (params.sort_order) query.set("sort_order", params.sort_order);
 
   const res = await dispatcher<undefined, PaginatedSurveyResponses>(
@@ -233,17 +253,13 @@ export const getSurveyResponseDashboardDetailAction = async (
   return res.data as SurveyResponseDetail;
 };
 
-/**
- * Exports every response to the survey as xlsx. The endpoint only narrows by
- * `establishment_id`/`subject_id`, not by the date or geographic filters the
- * responses page offers, so the file is NOT the filtered view on screen — the
- * gap remains reported to the backend.
- */
+/** Exports the responses matching the listing filters as an XLSX file. */
 export const exportSurveyResponsesAction = async (
   download: DownloadDispatcher,
-  params: { survey_id: string },
+  params: SurveyResponseFilterParams & { survey_id: string },
 ) => {
   const query = new URLSearchParams();
+  appendResponseFilters(query, params);
   query.set("format", "xlsx");
 
   return download(

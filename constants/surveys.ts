@@ -49,6 +49,9 @@ export const SURVEY_FORM = {
   descriptionLabel: "Descripción",
   descriptionPlaceholder: "Descripción (opcional)",
   targetLabel: "Destino de las respuestas",
+  responseNumberRequiredLabel: "Requerir número de respuesta",
+  responseNumberRequiredDescription:
+    "Si se desactiva, el campo seguirá disponible como opcional en la aplicación móvil.",
   questionsLabel: "Preguntas",
   addQuestion: "Agregar pregunta",
   addOption: "Agregar opción",
@@ -61,9 +64,11 @@ export const SURVEY_FORM = {
   cancel: "Cancelar",
   deleteQuestionLabel: "Eliminar",
   lockedNotice:
-    "Esta encuesta ya tiene respuestas registradas: no se puede cambiar el destino, eliminar preguntas u opciones existentes, cambiar el tipo de una pregunta o volverla obligatoria, ni agregar preguntas nuevas obligatorias.",
+    "Esta encuesta ya tiene respuestas registradas: no se puede cambiar el destino ni la obligatoriedad del número de respuesta, eliminar preguntas u opciones existentes, cambiar el tipo de una pregunta o volverla obligatoria, ni agregar preguntas nuevas obligatorias.",
   targetLockedReason:
     "El destino no se puede cambiar: la encuesta ya tiene respuestas registradas.",
+  responseNumberRequiredLockedReason:
+    "La obligatoriedad del número de respuesta no se puede cambiar: la encuesta ya tiene respuestas registradas.",
   questionDeleteLockedReason:
     "No se puede eliminar: la encuesta ya tiene respuestas registradas.",
   questionTypeLockedReason:
@@ -146,6 +151,7 @@ export const RESPONSES_PAGE = {
   establishment: "Establecimiento",
   subject: "Sujeto",
   targetPrefix: "Destino:",
+  responseNumber: "N.º de respuesta",
   date: "Fecha de relevamiento",
   score: "Score FIES",
   export: "Exportar",
@@ -157,10 +163,14 @@ export const RESPONSES_PAGE = {
     city: "Ciudad",
     province: "Provincia",
     sort: "Ordenar por",
+    responseNumber: "N.º exacto",
+    responseNumberFrom: "N.º desde",
+    responseNumberTo: "N.º hasta",
   },
   columns: {
     entity: "Entidad",
     respondent: "Completado por",
+    responseNumber: "N.º",
     city: "Ciudad",
     province: "Provincia",
     date: "Fecha",
@@ -175,6 +185,10 @@ export const RESPONSES_PAGE = {
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
   loadError: "Error al cargar las respuestas",
+  errors: {
+    invertedNumberRange:
+      "El número desde no puede ser mayor que el número hasta.",
+  },
   detailLoadError: "Error al cargar el detalle de la respuesta",
   detailTitle: "Detalle de respuesta",
   questionAnswers: "Respuestas",
