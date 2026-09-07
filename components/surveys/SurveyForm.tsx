@@ -28,8 +28,8 @@ type SurveyFormProps = {
   onSubmit: (values: SurveyFormInput) => Promise<void>;
   onCancel?: () => void;
   submitLabel?: string;
-  /** The survey already has recorded responses: response_target is locked,
-   * and each question carries its own narrower edit-lock (see QuestionEditor). */
+  /** The survey already has recorded responses: target and response-number
+   * requiredness are locked, and questions keep their narrower edit rules. */
   hasResponses?: boolean;
 };
 
@@ -171,6 +171,28 @@ export default function SurveyForm({
           </p>
         )}
       </div>
+
+      <label
+        className="flex items-start gap-2 text-sm has-disabled:opacity-50"
+        title={
+          hasResponses
+            ? SURVEY_FORM.responseNumberRequiredLockedReason
+            : undefined
+        }
+      >
+        <input
+          type="checkbox"
+          {...register("requires_response_number")}
+          disabled={hasResponses}
+          className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+        />
+        <span className="flex flex-col">
+          <span>{SURVEY_FORM.responseNumberRequiredLabel}</span>
+          <span className="text-xs text-muted-foreground">
+            {SURVEY_FORM.responseNumberRequiredDescription}
+          </span>
+        </span>
+      </label>
 
       <Separator />
 

@@ -23,6 +23,7 @@ const SEX_LABELS: Record<Sex, string> = {
 type ResponseDetailPanelProps = {
   surveyId: string;
   responseId: string | null;
+  showResponseNumber: boolean;
   onClose: () => void;
 };
 
@@ -44,6 +45,7 @@ function DetailField({
 export default function ResponseDetailPanel({
   surveyId,
   responseId,
+  showResponseNumber,
   onClose,
 }: ResponseDetailPanelProps) {
   const { makeAuthorizedRequest } = useAuth();
@@ -137,7 +139,9 @@ export default function ResponseDetailPanel({
           <div className="flex items-start justify-between gap-2">
             <Dialog.Title className="text-xl font-bold tracking-tight">
               {detail
-                ? `${RESPONSES_PAGE.columns.responseNumber} ${detail.response_number} — ${detail.submitted_by.name}`
+                ? showResponseNumber
+                  ? `${RESPONSES_PAGE.columns.responseNumber} ${detail.response_number ?? EMPTY_VALUE} — ${detail.submitted_by.name}`
+                  : `${RESPONSES_PAGE.detailTitle} — ${detail.submitted_by.name}`
                 : RESPONSES_PAGE.detailTitle}
             </Dialog.Title>
             <Dialog.Close
@@ -164,14 +168,16 @@ export default function ResponseDetailPanel({
           ) : detail ? (
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <DetailField
-                  label={RESPONSES_PAGE.responseNumber}
-                  value={
-                    <span className="tabular-nums font-medium">
-                      {detail.response_number}
-                    </span>
-                  }
-                />
+                {showResponseNumber && (
+                  <DetailField
+                    label={RESPONSES_PAGE.responseNumber}
+                    value={
+                      <span className="tabular-nums font-medium">
+                        {detail.response_number ?? EMPTY_VALUE}
+                      </span>
+                    }
+                  />
+                )}
                 {/* The entity block follows the survey's target: a subject, an
                     establishment, or nothing at all on anonymous surveys —
                     omitted rather than rendered as empty fields (CA7). */}

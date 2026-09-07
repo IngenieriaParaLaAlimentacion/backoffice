@@ -102,7 +102,7 @@ export const SUBJECT_SURVEY_RESPONSES: PaginatedSurveyResponses = {
   items: [
     {
       id: "r1a2b3c4-0000-0000-0000-000000000011",
-      response_number: 12,
+      response_number: null,
       event_at: "2026-06-20T11:00:00Z",
       survey: SUBJECT_SURVEY_REF,
       establishment: null,
@@ -119,7 +119,7 @@ export const SUBJECT_SURVEY_RESPONSES: PaginatedSurveyResponses = {
     },
     {
       id: "r1a2b3c4-0000-0000-0000-000000000012",
-      response_number: 27,
+      response_number: null,
       event_at: "2026-06-21T09:45:00Z",
       survey: SUBJECT_SURVEY_REF,
       establishment: null,

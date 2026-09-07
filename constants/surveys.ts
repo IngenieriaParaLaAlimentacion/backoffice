@@ -49,6 +49,9 @@ export const SURVEY_FORM = {
   descriptionLabel: "Descripción",
   descriptionPlaceholder: "Descripción (opcional)",
   targetLabel: "Destino de las respuestas",
+  responseNumberRequiredLabel: "Requerir número de respuesta",
+  responseNumberRequiredDescription:
+    "Si se desactiva, el campo seguirá disponible como opcional en la aplicación móvil.",
   questionsLabel: "Preguntas",
   addQuestion: "Agregar pregunta",
   addOption: "Agregar opción",
@@ -61,9 +64,11 @@ export const SURVEY_FORM = {
   cancel: "Cancelar",
   deleteQuestionLabel: "Eliminar",
   lockedNotice:
-    "Esta encuesta ya tiene respuestas registradas: no se puede cambiar el destino, eliminar preguntas u opciones existentes, cambiar el tipo de una pregunta o volverla obligatoria, ni agregar preguntas nuevas obligatorias.",
+    "Esta encuesta ya tiene respuestas registradas: no se puede cambiar el destino ni la obligatoriedad del número de respuesta, eliminar preguntas u opciones existentes, cambiar el tipo de una pregunta o volverla obligatoria, ni agregar preguntas nuevas obligatorias.",
   targetLockedReason:
     "El destino no se puede cambiar: la encuesta ya tiene respuestas registradas.",
+  responseNumberRequiredLockedReason:
+    "La obligatoriedad del número de respuesta no se puede cambiar: la encuesta ya tiene respuestas registradas.",
   questionDeleteLockedReason:
     "No se puede eliminar: la encuesta ya tiene respuestas registradas.",
   questionTypeLockedReason:

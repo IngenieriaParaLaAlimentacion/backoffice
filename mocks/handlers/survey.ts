@@ -57,6 +57,7 @@ function payloadToResponse(
     name: body.name,
     description: body.description ?? null,
     response_target: body.response_target,
+    requires_response_number: body.requires_response_number,
     is_active: base.is_active ?? true,
     created_by_id: base.created_by_id ?? "b1c2d3e4-0000-0000-0000-000000000001",
     response_count: base.response_count ?? 0,
@@ -89,7 +90,11 @@ export function makeGetSurveyHandler(override?: Partial<SurveyResponse>) {
       ...DEFAULT_SURVEY_DETAIL,
       id: surveyId,
       ...(listed
-        ? { name: listed.name, response_target: listed.response_target }
+        ? {
+            name: listed.name,
+            response_target: listed.response_target,
+            requires_response_number: listed.requires_response_number,
+          }
         : {}),
       ...override,
     });
@@ -119,14 +124,25 @@ export function makeUpdateSurveyHandler() {
 }
 
 export function makeDuplicateSurveyHandler() {
-  return http.post<PathParams>(DUPLICATE_SURVEY_ENDPOINT(":surveyId"), () =>
-    HttpResponse.json(
-      {
-        ...DEFAULT_SURVEY_DETAIL,
-        id: crypto.randomUUID(),
-        name: `${DEFAULT_SURVEY_DETAIL.name} (copy)`,
-      },
-      { status: 201 },
-    ),
+  return http.post<PathParams>(
+    DUPLICATE_SURVEY_ENDPOINT(":surveyId"),
+    ({ params }) => {
+      const source = DEFAULT_SURVEYS_RESPONSE.items.find(
+        (survey) => survey.id === params.surveyId,
+      );
+      return HttpResponse.json(
+        {
+          ...DEFAULT_SURVEY_DETAIL,
+          id: crypto.randomUUID(),
+          name: `${source?.name ?? DEFAULT_SURVEY_DETAIL.name} (copy)`,
+          response_target:
+            source?.response_target ?? DEFAULT_SURVEY_DETAIL.response_target,
+          requires_response_number: source
+            ? source.requires_response_number
+            : DEFAULT_SURVEY_DETAIL.requires_response_number,
+        },
+        { status: 201 },
+      );
+    },
   );
 }

@@ -110,6 +110,7 @@ export default function ResponsesPage() {
   } = useCsvExport();
 
   const [survey, setSurvey] = useState<SurveyResponse | null>(null);
+  const showsResponseNumbers = survey?.requires_response_number === true;
   const [responses, setResponses] = useState<SurveyResponseDashboardItem[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -136,6 +137,17 @@ export default function ResponsesPage() {
       .catch(() => {});
   }, [makeAuthorizedRequest, surveyId]);
 
+  useEffect(() => {
+    if (survey && !showsResponseNumbers) {
+      setFilters((current) => ({
+        ...current,
+        responseNumber: "",
+        responseNumberFrom: "",
+        responseNumberTo: "",
+      }));
+    }
+  }, [survey, showsResponseNumbers]);
+
   // Debounce filter changes
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -155,6 +167,7 @@ export default function ResponsesPage() {
         toNumberFilters(currentFilters);
 
       if (
+        showsResponseNumbers &&
         responseNumberFrom !== undefined &&
         responseNumberTo !== undefined &&
         responseNumberFrom > responseNumberTo
@@ -179,9 +192,13 @@ export default function ResponsesPage() {
           event_at_to: argentineDayEndUtc(currentFilters.dateTo),
           city: currentFilters.city || undefined,
           province: currentFilters.province || undefined,
-          response_number: responseNumber,
-          response_number_from: responseNumberFrom,
-          response_number_to: responseNumberTo,
+          ...(showsResponseNumbers
+            ? {
+                response_number: responseNumber,
+                response_number_from: responseNumberFrom,
+                response_number_to: responseNumberTo,
+              }
+            : {}),
           sort_order: currentSort,
         });
         setResponses(data.items);
@@ -193,7 +210,7 @@ export default function ResponsesPage() {
         setIsLoading(false);
       }
     },
-    [makeAuthorizedRequest, surveyId],
+    [makeAuthorizedRequest, showsResponseNumbers, surveyId],
   );
 
   useEffect(() => {
@@ -225,9 +242,13 @@ export default function ResponsesPage() {
           event_at_to: argentineDayEndUtc(debouncedFilters.dateTo),
           city: debouncedFilters.city || undefined,
           province: debouncedFilters.province || undefined,
-          response_number: responseNumber,
-          response_number_from: responseNumberFrom,
-          response_number_to: responseNumberTo,
+          ...(showsResponseNumbers
+            ? {
+                response_number: responseNumber,
+                response_number_from: responseNumberFrom,
+                response_number_to: responseNumberTo,
+              }
+            : {}),
         }),
       `respuestas-${survey?.name ?? surveyId}.xlsx`,
     );
@@ -339,52 +360,60 @@ export default function ResponsesPage() {
             </>
           )}
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {RESPONSES_PAGE.filters.responseNumber}
-            </label>
-            <Input
-              type="number"
-              min={RESPONSE_NUMBER_MIN}
-              max={RESPONSE_NUMBER_MAX}
-              value={filters.responseNumber}
-              onChange={(e) => updateFilter("responseNumber", e.target.value)}
-              placeholder={RESPONSES_PAGE.columns.responseNumber}
-              className="w-full sm:w-28"
-            />
-          </div>
+          {showsResponseNumbers && (
+            <>
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  {RESPONSES_PAGE.filters.responseNumber}
+                </label>
+                <Input
+                  type="number"
+                  min={RESPONSE_NUMBER_MIN}
+                  max={RESPONSE_NUMBER_MAX}
+                  value={filters.responseNumber}
+                  onChange={(e) =>
+                    updateFilter("responseNumber", e.target.value)
+                  }
+                  placeholder={RESPONSES_PAGE.columns.responseNumber}
+                  className="w-full sm:w-28"
+                />
+              </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {RESPONSES_PAGE.filters.responseNumberFrom}
-            </label>
-            <Input
-              type="number"
-              min={RESPONSE_NUMBER_MIN}
-              max={RESPONSE_NUMBER_MAX}
-              value={filters.responseNumberFrom}
-              onChange={(e) =>
-                updateFilter("responseNumberFrom", e.target.value)
-              }
-              placeholder={String(RESPONSE_NUMBER_MIN)}
-              className="w-full sm:w-28"
-            />
-          </div>
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  {RESPONSES_PAGE.filters.responseNumberFrom}
+                </label>
+                <Input
+                  type="number"
+                  min={RESPONSE_NUMBER_MIN}
+                  max={RESPONSE_NUMBER_MAX}
+                  value={filters.responseNumberFrom}
+                  onChange={(e) =>
+                    updateFilter("responseNumberFrom", e.target.value)
+                  }
+                  placeholder={String(RESPONSE_NUMBER_MIN)}
+                  className="w-full sm:w-28"
+                />
+              </div>
 
-          <div className="flex w-full flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">
-              {RESPONSES_PAGE.filters.responseNumberTo}
-            </label>
-            <Input
-              type="number"
-              min={RESPONSE_NUMBER_MIN}
-              max={RESPONSE_NUMBER_MAX}
-              value={filters.responseNumberTo}
-              onChange={(e) => updateFilter("responseNumberTo", e.target.value)}
-              placeholder={String(RESPONSE_NUMBER_MAX)}
-              className="w-full sm:w-28"
-            />
-          </div>
+              <div className="flex w-full flex-col gap-1 sm:w-auto">
+                <label className="text-xs text-muted-foreground">
+                  {RESPONSES_PAGE.filters.responseNumberTo}
+                </label>
+                <Input
+                  type="number"
+                  min={RESPONSE_NUMBER_MIN}
+                  max={RESPONSE_NUMBER_MAX}
+                  value={filters.responseNumberTo}
+                  onChange={(e) =>
+                    updateFilter("responseNumberTo", e.target.value)
+                  }
+                  placeholder={String(RESPONSE_NUMBER_MAX)}
+                  className="w-full sm:w-28"
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex w-full flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">
@@ -442,9 +471,11 @@ export default function ResponsesPage() {
                     <th className="px-4 py-3 font-medium">
                       {RESPONSES_PAGE.columns.respondent}
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      {RESPONSES_PAGE.columns.responseNumber}
-                    </th>
+                    {showsResponseNumbers && (
+                      <th className="px-4 py-3 font-medium">
+                        {RESPONSES_PAGE.columns.responseNumber}
+                      </th>
+                    )}
                     {isEstablishmentTargeted && (
                       <>
                         <th className="px-4 py-3 font-medium">
@@ -484,9 +515,11 @@ export default function ResponsesPage() {
                       <td className="px-4 py-3">
                         {item.submitted_by.name} {item.submitted_by.last_name}
                       </td>
-                      <td className="px-4 py-3 tabular-nums font-medium">
-                        {item.response_number}
-                      </td>
+                      {showsResponseNumbers && (
+                        <td className="px-4 py-3 tabular-nums font-medium">
+                          {item.response_number ?? EMPTY_VALUE}
+                        </td>
+                      )}
                       {isEstablishmentTargeted && (
                         <>
                           <td className="px-4 py-3 text-muted-foreground">
@@ -533,10 +566,12 @@ export default function ResponsesPage() {
                         <span>
                           {item.submitted_by.name} {item.submitted_by.last_name}
                         </span>
-                        <span className="tabular-nums text-muted-foreground">
-                          {RESPONSES_PAGE.columns.responseNumber}{" "}
-                          {item.response_number}
-                        </span>
+                        {showsResponseNumbers && (
+                          <span className="tabular-nums text-muted-foreground">
+                            {RESPONSES_PAGE.columns.responseNumber}{" "}
+                            {item.response_number ?? EMPTY_VALUE}
+                          </span>
+                        )}
                       </span>
                     </RowLink>
                     {item.score_fies !== null && (
@@ -595,6 +630,7 @@ export default function ResponsesPage() {
       <ResponseDetailPanel
         surveyId={surveyId}
         responseId={selectedResponseId}
+        showResponseNumber={showsResponseNumbers}
         onClose={closeDetail}
       />
     </div>
