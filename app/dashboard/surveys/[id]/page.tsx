@@ -46,7 +46,7 @@ export default function EditSurveyPage({
     fetchSurvey();
   }, [fetchSurvey]);
 
-  const locked = (survey?.response_count ?? 0) > 0;
+  const hasResponses = (survey?.response_count ?? 0) > 0;
 
   const handleSubmit = async (values: SurveyFormInput) => {
     const updated = await updateSurveyAction(
@@ -83,7 +83,7 @@ export default function EditSurveyPage({
 
             <Separator />
 
-            {locked && (
+            {hasResponses && (
               <Alert>
                 <AlertDescription>{SURVEY_FORM.lockedNotice}</AlertDescription>
               </Alert>
@@ -93,7 +93,7 @@ export default function EditSurveyPage({
               defaultValues={surveyToForm(survey)}
               onSubmit={handleSubmit}
               onCancel={() => router.push("/dashboard/surveys")}
-              readOnly={locked}
+              hasResponses={hasResponses}
             />
           </>
         )}
