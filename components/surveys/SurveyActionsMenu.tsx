@@ -31,7 +31,6 @@ export default function SurveyActionsMenu({
 }) {
   const router = useRouter();
   const canDelete = useSession().can("surveys.delete");
-  const editLocked = survey.response_count > 0;
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -52,13 +51,7 @@ export default function SurveyActionsMenu({
             <Menu.Popup className="min-w-[180px] rounded-xl border bg-background p-1 shadow-xl">
               <Menu.Item
                 className={MENU_ITEM_CLASS}
-                disabled={editLocked}
-                title={editLocked ? SURVEYS_PAGE.editDisabledReason : undefined}
-                onClick={
-                  editLocked
-                    ? undefined
-                    : () => router.push(`/dashboard/surveys/${survey.id}`)
-                }
+                onClick={() => router.push(`/dashboard/surveys/${survey.id}`)}
               >
                 <Pencil size={14} />
                 {SURVEYS_PAGE.edit}

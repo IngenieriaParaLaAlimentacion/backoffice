@@ -25,7 +25,11 @@ type QuestionEditorProps = {
   onMoveUp: () => void;
   onMoveDown: () => void;
   onRemove: () => void;
-  readOnly?: boolean;
+  /** The survey already has recorded responses. */
+  hasResponses?: boolean;
+  /** This question's `is_required` when the form loaded (survey.py:
+   * `_assert_editable` only forbids optional -> required, not the reverse). */
+  originalIsRequired: boolean;
 };
 
 const CHOICE_TYPES = ["single_choice", "multiple_choice"];
@@ -42,11 +46,25 @@ export default function QuestionEditor({
   onMoveUp,
   onMoveDown,
   onRemove,
-  readOnly,
+  hasResponses,
+  originalIsRequired,
 }: QuestionEditorProps) {
   const responseType = watch(`questions.${index}.response_type`);
   const showOptions = CHOICE_TYPES.includes(responseType);
   const questionError = errors.questions?.[index];
+
+  // A question with an `id` already exists on the saved survey; one added via
+  // "Agregar pregunta" in this session has none (see lib/surveyForm.ts).
+  const isExistingQuestion = Boolean(watch(`questions.${index}.id`));
+  const questionLocked = Boolean(hasResponses) && isExistingQuestion;
+  // A new question can't be required at all; an existing one can only go
+  // from required to optional, never the other way, once locked.
+  const requiredLocked = isExistingQuestion
+    ? questionLocked && !originalIsRequired
+    : Boolean(hasResponses);
+  const requiredLockedReason = isExistingQuestion
+    ? SURVEY_FORM.questionRequiredLockedReason
+    : SURVEY_FORM.newQuestionRequiredLockedReason;
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
@@ -58,7 +76,6 @@ export default function QuestionEditor({
           <Input
             {...register(`questions.${index}.text`)}
             placeholder={SURVEY_FORM.questionPlaceholder}
-            disabled={readOnly}
           />
           {typeof questionError?.text?.message === "string" && (
             <p className="text-xs text-destructive">
@@ -66,51 +83,58 @@ export default function QuestionEditor({
             </p>
           )}
         </div>
-        {!readOnly && (
-          <div className="flex items-center gap-0.5">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled={isFirst}
-              onClick={onMoveUp}
-              title="Subir"
-            >
-              <ArrowUp size={14} />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled={isLast}
-              onClick={onMoveDown}
-              title="Bajar"
-            >
-              <ArrowDown size={14} />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled={!canRemove}
-              onClick={onRemove}
-              title="Eliminar"
-              className="text-destructive"
-            >
-              <Trash2 size={14} />
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center gap-0.5">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            disabled={isFirst}
+            onClick={onMoveUp}
+            title="Subir"
+          >
+            <ArrowUp size={14} />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            disabled={isLast}
+            onClick={onMoveDown}
+            title="Bajar"
+          >
+            <ArrowDown size={14} />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            disabled={!canRemove || questionLocked}
+            onClick={onRemove}
+            title={
+              questionLocked
+                ? SURVEY_FORM.questionDeleteLockedReason
+                : "Eliminar"
+            }
+            className="text-destructive"
+          >
+            <Trash2 size={14} />
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-4 pl-0 sm:pl-8">
-        <label className="flex items-center gap-2 text-sm">
+        <label
+          className="flex items-center gap-2 text-sm"
+          title={
+            questionLocked ? SURVEY_FORM.questionTypeLockedReason : undefined
+          }
+        >
           <span className="text-muted-foreground">
             {SURVEY_FORM.responseTypeLabel}
           </span>
           <select
             {...register(`questions.${index}.response_type`)}
-            disabled={readOnly}
+            disabled={questionLocked}
             className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
           >
             {RESPONSE_TYPES.map((type) => (
@@ -121,11 +145,14 @@ export default function QuestionEditor({
           </select>
         </label>
 
-        <label className="flex items-center gap-2 text-sm">
+        <label
+          className="flex items-center gap-2 text-sm"
+          title={requiredLocked ? requiredLockedReason : undefined}
+        >
           <input
             type="checkbox"
             {...register(`questions.${index}.is_required`)}
-            disabled={readOnly}
+            disabled={requiredLocked}
             className="h-4 w-4 accent-primary"
           />
           <span className="text-muted-foreground">
@@ -139,9 +166,10 @@ export default function QuestionEditor({
           <OptionsEditor
             control={control}
             register={register}
+            watch={watch}
             errors={errors}
             questionIndex={index}
-            readOnly={readOnly}
+            locked={questionLocked}
           />
         </div>
       )}
