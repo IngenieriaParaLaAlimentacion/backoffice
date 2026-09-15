@@ -21,7 +21,6 @@ export function useEstablishmentStock(establishmentId: string) {
   const [error, setError] = useState<string | null>(null);
 
   const [categoryId, setCategoryId] = useState("");
-  const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [sortOrder, setSortOrderState] =
     useState<FoodStockSortOrder>(DEFAULT_SORT_ORDER);
 
@@ -29,7 +28,6 @@ export function useEstablishmentStock(establishmentId: string) {
     async (
       currentPage: number,
       currentCategoryId: string,
-      currentOnlyAvailable: boolean,
       currentSortOrder: FoodStockSortOrder,
     ) => {
       setIsLoading(true);
@@ -42,7 +40,9 @@ export function useEstablishmentStock(establishmentId: string) {
             page: currentPage,
             page_size: PAGE_SIZE,
             category_id: currentCategoryId || undefined,
-            only_available: currentOnlyAvailable || undefined,
+            // Always on: this screen is about what's actually available, not
+            // a full inventory audit — zero-quantity rows are never shown.
+            only_available: true,
             sort_order: currentSortOrder,
           },
         );
@@ -63,16 +63,11 @@ export function useEstablishmentStock(establishmentId: string) {
   );
 
   useEffect(() => {
-    fetchStock(page, categoryId, onlyAvailable, sortOrder);
-  }, [fetchStock, page, categoryId, onlyAvailable, sortOrder]);
+    fetchStock(page, categoryId, sortOrder);
+  }, [fetchStock, page, categoryId, sortOrder]);
 
   const changeCategoryId = (next: string) => {
     setCategoryId(next);
-    setPage(1);
-  };
-
-  const changeOnlyAvailable = (next: boolean) => {
-    setOnlyAvailable(next);
     setPage(1);
   };
 
@@ -91,8 +86,6 @@ export function useEstablishmentStock(establishmentId: string) {
     setPage,
     categoryId,
     setCategoryId: changeCategoryId,
-    onlyAvailable,
-    setOnlyAvailable: changeOnlyAvailable,
     sortOrder,
     setSortOrder: changeSortOrder,
   };

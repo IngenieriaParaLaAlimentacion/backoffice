@@ -39,8 +39,6 @@ export default function EstablishmentStockList({
     setPage,
     categoryId,
     setCategoryId,
-    onlyAvailable,
-    setOnlyAvailable,
     sortOrder,
     setSortOrder,
   } = useEstablishmentStock(establishmentId);
@@ -60,7 +58,7 @@ export default function EstablishmentStockList({
           establishmentId,
           {
             category_id: categoryId || undefined,
-            only_available: onlyAvailable || undefined,
+            only_available: true,
             sort_order: sortOrder,
           },
         ),
@@ -70,7 +68,7 @@ export default function EstablishmentStockList({
   // No filter active but still nothing back means the establishment has no
   // stock loaded at all — a different message than "your filters matched
   // nothing", per CA4.
-  const hasActiveFilters = Boolean(categoryId) || onlyAvailable;
+  const hasActiveFilters = Boolean(categoryId);
   const emptyMessage = hasActiveFilters ? COPY.noResults : COPY.noStock;
 
   const columns = COPY.columns;
@@ -126,16 +124,6 @@ export default function EstablishmentStockList({
             ))}
           </select>
         </div>
-
-        <label className="flex h-8 items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={onlyAvailable}
-            onChange={(e) => setOnlyAvailable(e.target.checked)}
-            className="h-4 w-4 rounded border-input accent-primary"
-          />
-          {COPY.onlyAvailableLabel}
-        </label>
       </div>
 
       {error && (

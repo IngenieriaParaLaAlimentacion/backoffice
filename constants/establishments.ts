@@ -223,7 +223,6 @@ export const ESTABLISHMENT_STOCK_PAGE = {
     `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
   categoryLabel: "Categoría",
   allCategories: "Todas las categorías",
-  onlyAvailableLabel: "Solo con stock disponible",
   sortLabel: "Ordenar por",
   noStock: "Este establecimiento todavía no tiene alimentos cargados en stock",
   noResults: "Ningún alimento coincide con los filtros aplicados",
