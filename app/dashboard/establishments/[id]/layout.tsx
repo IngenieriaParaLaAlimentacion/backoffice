@@ -119,6 +119,11 @@ export default function EstablishmentLayout({
                   <Link
                     key={tab.href}
                     href={tab.href}
+                    // Switching tabs must not grow browser history — otherwise
+                    // "Volver" (router.back() in EstablishmentHeader) steps
+                    // through Sujetos/Relevadores/Stock instead of leaving the
+                    // ficha straight back to the establishments list.
+                    replace
                     className={`-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
                       isActive
                         ? "border-primary text-foreground"
