@@ -206,6 +206,34 @@ before.
 `app/(auth)/` holds unauthenticated screens (signin, invite, forgot/reset password,
 verify-email); `app/dashboard/` is everything behind the auth gate.
 
+## Tabs inside a resource's detail page
+
+`app/dashboard/establishments/[id]/` is the first (and reference) place this repo
+splits a resource's detail page into tabs instead of stacking every section on one
+page — introduced when Sujetos/Relevadores outgrew a single scroll and Stock was
+about to join them, with stock movements (#111) already on deck behind it.
+
+- `[id]/layout.tsx` owns the one fetch that gates the whole ficha
+  (`useEstablishmentDashboard`: 404/403/loading), renders the always-visible
+  header/metrics/alert banner above the tab bar, and renders `children` below it —
+  whichever tab's `page.tsx` matches the current route.
+- Each tab is a real route (`[id]/page.tsx` = Sujetos, `[id]/field-workers/page.tsx`,
+  `[id]/stock/page.tsx`), not a client-side toggle over one always-mounted tree: a
+  tab's data only loads once that tab is actually visited, and deep-linking straight
+  to one works.
+- The dashboard payload the layout already fetched is handed down to whichever tab
+  is active via `useEstablishmentDashboardContext()` (exported from `layout.tsx`)
+  instead of every tab re-fetching it.
+- The tab `<Link>`s pass `replace`, not the default push. Switching tabs must not
+  grow browser history, or "Volver" (`router.back()` in `EstablishmentHeader`) would
+  step back through Sujetos → Relevadores → Stock one click at a time instead of
+  leaving the ficha in one click — back to the establishments list, with its filters
+  and scroll position restored (see the comment on `router.back()` there).
+
+Follow this same shape for the next tab this ficha gains — e.g. a
+`[id]/stock/movements/page.tsx` for #111 needs no new layout, just a route under the
+existing one.
+
 ## Testing
 
 Vitest + jsdom + `@testing-library/react` + MSW (`vitest.setup.ts` starts the shared MSW
