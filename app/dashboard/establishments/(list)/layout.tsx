@@ -61,7 +61,7 @@ export default function EstablishmentsLayout({
     refreshPendingCount();
   }, [refreshPendingCount, pathname]);
 
-  const tabs = canViewRequests ? [...BASE_TABS, REQUESTS_TAB] : BASE_TABS;
+  const tabs = [...BASE_TABS, ...(canViewRequests ? [REQUESTS_TAB] : [])];
 
   return (
     <RefreshPendingCountContext.Provider value={refreshPendingCount}>

@@ -146,6 +146,14 @@ export const ESTABLISHMENT_TABS = {
   requests: "Solicitudes",
 } as const;
 
+// Tabs inside a single establishment's ficha (app/dashboard/establishments/[id]/),
+// not to be confused with ESTABLISHMENT_TABS above (the establishments-wide nav).
+export const ESTABLISHMENT_DETAIL_TABS = {
+  subjects: "Sujetos",
+  fieldWorkers: "Relevadores",
+  stock: "Stock",
+} as const;
+
 // Shared by the create-establishment form and the request review form —
 // address/city/province are identical in both contexts, only the "name"
 // placeholder differs (see CREATE_ESTABLISHMENT_PAGE / ESTABLISHMENT_REQUEST_REVIEW_PANEL).
@@ -189,6 +197,10 @@ export const ESTABLISHMENTS_LIST_PAGE = {
     city: "Ciudad",
     province: "Provincia",
   },
+} as const;
+
+export const ESTABLISHMENT_STOCK_PAGE = {
+  empty: "Este establecimiento todavía no tiene alimentos cargados en stock",
 } as const;
 
 export const ESTABLISHMENT_REQUEST_SORT_OPTIONS: {
