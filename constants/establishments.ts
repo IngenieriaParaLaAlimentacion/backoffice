@@ -1,5 +1,7 @@
 import {
   EstablishmentSubjectSortOrder,
+  FoodStockSortOrder,
+  FoodStockUnit,
   RelationStatus,
   UserStatus,
 } from "@/types/establishment";
@@ -199,8 +201,40 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   },
 } as const;
 
+export const STOCK_SORT_OPTIONS: {
+  value: FoodStockSortOrder;
+  label: string;
+}[] = [
+  { value: "name_asc", label: "Nombre A → Z" },
+  { value: "name_desc", label: "Nombre Z → A" },
+  { value: "quantity_desc", label: "Cantidad (mayor a menor)" },
+  { value: "quantity_asc", label: "Cantidad (menor a mayor)" },
+  { value: "updated_at_desc", label: "Última actualización" },
+];
+
+export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
+  unidades: "Unidades",
+  kilogramos: "Kilogramos",
+  litros: "Litros",
+};
+
 export const ESTABLISHMENT_STOCK_PAGE = {
-  empty: "Este establecimiento todavía no tiene alimentos cargados en stock",
+  subtitle: (total: number) =>
+    `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
+  categoryLabel: "Categoría",
+  allCategories: "Todas las categorías",
+  onlyAvailableLabel: "Solo con stock disponible",
+  sortLabel: "Ordenar por",
+  noStock: "Este establecimiento todavía no tiene alimentos cargados en stock",
+  noResults: "Ningún alimento coincide con los filtros aplicados",
+  loadError: "Error al cargar el stock",
+  columns: {
+    food: "Alimento",
+    category: "Categoría",
+    unit: "Unidad",
+    quantity: "Cantidad",
+    updatedAt: "Última actualización",
+  },
 } as const;
 
 export const ESTABLISHMENT_REQUEST_SORT_OPTIONS: {

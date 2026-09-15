@@ -170,3 +170,16 @@ export function formatPercentage(value: number | null | undefined) {
   if (value === null || value === undefined) return EMPTY_VALUE;
   return `${new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 }).format(value)}%`;
 }
+
+/**
+ * A Decimal quantity as the API sends it ("12.500") -> "12,5". Only for
+ * display: parsing through `Number` here is fine, doing arithmetic on the
+ * result would not be (that's the whole reason it travels as a string).
+ */
+export function formatQuantity(value: string) {
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) return value;
+  return new Intl.NumberFormat("es-AR", { maximumFractionDigits: 3 }).format(
+    parsed,
+  );
+}

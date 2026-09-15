@@ -56,6 +56,14 @@ export const ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT = (
 ) => `/api/v1/establishments/${establishmentId}/subjects/export`;
 export const ESTABLISHMENT_FIELD_WORKERS_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/field-workers`;
+export const ESTABLISHMENT_STOCK_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}/stock`;
+export const ESTABLISHMENT_STOCK_EXPORT_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}/stock/export`;
+
+// --- Food Catalog Endpoints ---
+
+export const FOOD_CATEGORIES_ENDPOINT = "/api/v1/food-catalog/categories";
 
 // --- Subjects Endpoints ---
 

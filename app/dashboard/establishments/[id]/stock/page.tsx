@@ -1,11 +1,21 @@
 "use client";
 
-import { ESTABLISHMENT_STOCK_PAGE as COPY } from "@/constants/establishments";
+import { use } from "react";
+import EstablishmentStockList from "../EstablishmentStockList";
+import { useEstablishmentDashboardContext } from "../layout";
 
-export default function EstablishmentStockPage() {
+export default function EstablishmentStockPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const dashboard = useEstablishmentDashboardContext();
+
   return (
-    <div className="flex flex-1 items-center justify-center py-8 text-muted-foreground text-sm">
-      {COPY.empty}
-    </div>
+    <EstablishmentStockList
+      establishmentId={id}
+      establishmentName={dashboard?.establishment.name}
+    />
   );
 }
