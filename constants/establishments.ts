@@ -224,7 +224,7 @@ export const ESTABLISHMENT_STOCK_PAGE = {
   categoryLabel: "Categoría",
   allCategories: "Todas las categorías",
   sortLabel: "Ordenar por",
-  noStock: "Este establecimiento todavía no tiene alimentos cargados en stock",
+  noStock: "No hay alimentos con stock disponible en este establecimiento",
   noResults: "Ningún alimento coincide con los filtros aplicados",
   loadError: "Error al cargar el stock",
   columns: {

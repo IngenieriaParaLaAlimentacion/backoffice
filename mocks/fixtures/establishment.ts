@@ -4,7 +4,9 @@ import {
   PaginatedEstablishmentFieldWorkersResponse,
   PaginatedEstablishmentsResponse,
   PaginatedEstablishmentSubjectsResponse,
+  PaginatedFoodStockResponse,
 } from "@/types/establishment";
+import { MOCK_FOOD_CATEGORIES } from "@/mocks/fixtures/foodCatalog";
 
 export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
   {
@@ -199,6 +201,52 @@ export const DEFAULT_ESTABLISHMENT_SUBJECTS_RESPONSE: PaginatedEstablishmentSubj
 
 export const EMPTY_ESTABLISHMENT_SUBJECTS_RESPONSE: PaginatedEstablishmentSubjectsResponse =
   { items: [], total: 0, page: 1, page_size: 20, total_pages: 0 };
+
+// --- Establishment stock ---
+
+export const DEFAULT_ESTABLISHMENT_STOCK_RESPONSE: PaginatedFoodStockResponse =
+  {
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        category: MOCK_FOOD_CATEGORIES[0],
+        unit: "kilogramos",
+        quantity: "25.500",
+        updated_at: "2026-09-10T14:00:00Z",
+      },
+      {
+        food: {
+          id: "d1000000-0000-0000-0000-000000000002",
+          name: "Leche en polvo",
+        },
+        category: MOCK_FOOD_CATEGORIES[2],
+        unit: "kilogramos",
+        quantity: "8.000",
+        updated_at: "2026-09-12T09:30:00Z",
+      },
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000003", name: "Aceite" },
+        category: MOCK_FOOD_CATEGORIES[3],
+        unit: "litros",
+        quantity: "12.000",
+        updated_at: "2026-09-08T11:15:00Z",
+      },
+    ],
+    total: 3,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+  };
+
+/** `only_available` is always sent as `true` by the frontend, so a comedor
+ * whose stock is fully zeroed out looks identical to one with none loaded. */
+export const EMPTY_ESTABLISHMENT_STOCK_RESPONSE: PaginatedFoodStockResponse = {
+  items: [],
+  total: 0,
+  page: 1,
+  page_size: 20,
+  total_pages: 0,
+};
 
 export const DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE: PaginatedEstablishmentFieldWorkersResponse =
   {

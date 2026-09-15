@@ -20,9 +20,12 @@ import {
   makeCreateEstablishmentHandler,
   makeEstablishmentDashboardHandler,
   makeEstablishmentFieldWorkersHandler,
+  makeEstablishmentStockHandler,
   makeEstablishmentSubjectsHandler,
+  makeExportEstablishmentStockHandler,
   makeListEstablishmentsHandler,
 } from "@/mocks/handlers/establishment";
+import { makeListFoodCategoriesHandler } from "@/mocks/handlers/foodCatalog";
 import {
   makeCreateSurveyHandler,
   makeDuplicateSurveyHandler,
@@ -58,6 +61,9 @@ export const handlers = [
   makeEstablishmentDashboardHandler(),
   makeEstablishmentSubjectsHandler(),
   makeEstablishmentFieldWorkersHandler(),
+  makeEstablishmentStockHandler(),
+  makeExportEstablishmentStockHandler(),
+  makeListFoodCategoriesHandler(),
   makeListEstablishmentsHandler(),
   makeCreateEstablishmentHandler(),
   makeFiesTemplateHandler(),

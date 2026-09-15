@@ -3,15 +3,19 @@ import { baseHandler, HandlerOptions } from "@/mocks/handlers/base";
 import {
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
+  ESTABLISHMENT_STOCK_ENDPOINT,
+  ESTABLISHMENT_STOCK_EXPORT_ENDPOINT,
   ESTABLISHMENT_SUBJECTS_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
 } from "@/constants/api";
 import {
   DEFAULT_ESTABLISHMENT_DASHBOARD,
   DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE,
+  DEFAULT_ESTABLISHMENT_STOCK_RESPONSE,
   DEFAULT_ESTABLISHMENT_SUBJECTS_RESPONSE,
   DEFAULT_ESTABLISHMENTS_RESPONSE,
   EMPTY_ESTABLISHMENT_DASHBOARD,
+  EMPTY_ESTABLISHMENT_STOCK_RESPONSE,
   EMPTY_ESTABLISHMENT_SUBJECTS_RESPONSE,
   MOCK_ESTABLISHMENTS,
 } from "@/mocks/fixtures/establishment";
@@ -97,6 +101,65 @@ export function makeEstablishmentFieldWorkersHandler() {
         });
 
       return HttpResponse.json(DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE);
+    },
+  );
+}
+
+export function makeEstablishmentStockHandler() {
+  return http.get<{ id: string }>(
+    ESTABLISHMENT_STOCK_ENDPOINT(":id"),
+    ({ params, request }) => {
+      const url = new URL(request.url);
+      if (params.id !== WITH_DATA_ID && params.id !== WITHOUT_DATA_ID)
+        return notFound(url.pathname);
+
+      if (params.id === WITHOUT_DATA_ID)
+        return HttpResponse.json(EMPTY_ESTABLISHMENT_STOCK_RESPONSE);
+
+      const categoryId = url.searchParams.get("category_id");
+      const items = categoryId
+        ? DEFAULT_ESTABLISHMENT_STOCK_RESPONSE.items.filter(
+            (item) => item.category.id === categoryId,
+          )
+        : DEFAULT_ESTABLISHMENT_STOCK_RESPONSE.items;
+
+      return HttpResponse.json({
+        ...DEFAULT_ESTABLISHMENT_STOCK_RESPONSE,
+        items,
+        total: items.length,
+      });
+    },
+  );
+}
+
+const STOCK_EXPORT_HEADER_LINE =
+  "Alimento;Categoría;Unidad;Cantidad;Última actualización";
+
+export function makeExportEstablishmentStockHandler() {
+  return http.get<{ id: string }>(
+    ESTABLISHMENT_STOCK_EXPORT_ENDPOINT(":id"),
+    ({ params, request }) => {
+      if (params.id !== WITH_DATA_ID && params.id !== WITHOUT_DATA_ID)
+        return notFound(new URL(request.url).pathname);
+
+      const rows =
+        params.id === WITH_DATA_ID
+          ? [
+              "Arroz;Cereales y derivados;kilogramos;25,5;10/09/2026",
+              "Leche en polvo;Lácteos;kilogramos;8;12/09/2026",
+              "Aceite;Carnes y huevos;litros;12;08/09/2026",
+            ]
+          : [];
+
+      const body = `﻿${[STOCK_EXPORT_HEADER_LINE, ...rows].join("\r\n")}\r\n`;
+      return new HttpResponse(body, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": 'attachment; filename="stock.csv"',
+          "X-Export-Row-Count": String(rows.length),
+        },
+      });
     },
   );
 }
