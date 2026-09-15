@@ -7,4 +7,5 @@ export const MOCK_FOOD_CATEGORIES: FoodCategory[] = [
   { id: "c1000000-0000-0000-0000-000000000002", name: "Verduras y frutas" },
   { id: "c1000000-0000-0000-0000-000000000003", name: "Lácteos" },
   { id: "c1000000-0000-0000-0000-000000000004", name: "Carnes y huevos" },
+  { id: "c1000000-0000-0000-0000-000000000005", name: "Aceites y grasas" },
 ];

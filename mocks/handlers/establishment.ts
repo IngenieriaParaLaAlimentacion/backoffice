@@ -147,7 +147,7 @@ export function makeExportEstablishmentStockHandler() {
           ? [
               "Arroz;Cereales y derivados;kilogramos;25,5;10/09/2026",
               "Leche en polvo;Lácteos;kilogramos;8;12/09/2026",
-              "Aceite;Carnes y huevos;litros;12;08/09/2026",
+              "Aceite;Aceites y grasas;litros;12;08/09/2026",
             ]
           : [];
 

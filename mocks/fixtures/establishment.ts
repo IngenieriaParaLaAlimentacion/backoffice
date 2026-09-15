@@ -226,7 +226,7 @@ export const DEFAULT_ESTABLISHMENT_STOCK_RESPONSE: PaginatedFoodStockResponse =
       },
       {
         food: { id: "d1000000-0000-0000-0000-000000000003", name: "Aceite" },
-        category: MOCK_FOOD_CATEGORIES[3],
+        category: MOCK_FOOD_CATEGORIES[4],
         unit: "litros",
         quantity: "12.000",
         updated_at: "2026-09-08T11:15:00Z",
