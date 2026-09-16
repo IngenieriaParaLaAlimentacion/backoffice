@@ -22,6 +22,10 @@ export const EXPORT_FILENAMES = {
     establishmentName
       ? `comedor-${slugify(establishmentName)}-sujetos.csv`
       : "sujetos.csv",
+  establishmentStock: (establishmentName?: string) =>
+    establishmentName
+      ? `comedor-${slugify(establishmentName)}-stock.csv`
+      : "stock.csv",
 };
 
 function slugify(value: string) {

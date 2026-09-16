@@ -2,6 +2,8 @@ import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
+  ESTABLISHMENT_STOCK_ENDPOINT,
+  ESTABLISHMENT_STOCK_EXPORT_ENDPOINT,
   ESTABLISHMENT_SUBJECTS_ENDPOINT,
   ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
@@ -11,9 +13,11 @@ import { EstablishmentResponse, EstablishmentSortOrder } from "@/types/admin";
 import {
   EstablishmentDashboardResponse,
   EstablishmentSubjectSortOrder,
+  FoodStockSortOrder,
   PaginatedEstablishmentFieldWorkersResponse,
   PaginatedEstablishmentsResponse,
   PaginatedEstablishmentSubjectsResponse,
+  PaginatedFoodStockResponse,
   RelationStatus,
 } from "@/types/establishment";
 import { toApiError } from "@/lib/apiError";
@@ -74,6 +78,26 @@ type ListEstablishmentFieldWorkersParams = {
   page_size?: number;
   search?: string;
   relation_status?: RelationStatus[];
+};
+
+export type EstablishmentStockFilters = {
+  category_id?: string;
+  only_available?: boolean;
+  sort_order?: FoodStockSortOrder;
+};
+
+type ListEstablishmentStockParams = EstablishmentStockFilters & {
+  page?: number;
+  page_size?: number;
+};
+
+/** The listing and its CSV export must ask for the same rows: one builder. */
+const establishmentStockFilterQuery = (filters?: EstablishmentStockFilters) => {
+  const query = new URLSearchParams();
+  if (filters?.category_id) query.set("category_id", filters.category_id);
+  if (filters?.only_available) query.set("only_available", "true");
+  if (filters?.sort_order) query.set("sort_order", filters.sort_order);
+  return query;
 };
 
 export const listEstablishmentsAction = async (
@@ -205,4 +229,40 @@ export const listEstablishmentFieldWorkersAction = async (
   if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedEstablishmentFieldWorkersResponse;
+};
+
+export const listEstablishmentStockAction = async (
+  dispatcher: AuthDispatcher,
+  establishmentId: string,
+  params?: ListEstablishmentStockParams,
+) => {
+  const query = establishmentStockFilterQuery(params);
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.page_size) query.set("page_size", String(params.page_size));
+
+  const endpoint = ESTABLISHMENT_STOCK_ENDPOINT(establishmentId);
+  const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
+
+  const res = await dispatcher<undefined, PaginatedFoodStockResponse>(path);
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as PaginatedFoodStockResponse;
+};
+
+/**
+ * Downloads the establishment's stock as a CSV file, matching the filters but
+ * not the current page — the server streams every matching row.
+ */
+export const exportEstablishmentStockAction = async (
+  download: DownloadDispatcher,
+  establishmentId: string,
+  filters?: EstablishmentStockFilters,
+) => {
+  const query = establishmentStockFilterQuery(filters);
+
+  const endpoint = ESTABLISHMENT_STOCK_EXPORT_ENDPOINT(establishmentId);
+  const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
+
+  return download(path);
 };

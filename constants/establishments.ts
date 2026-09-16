@@ -1,5 +1,7 @@
 import {
   EstablishmentSubjectSortOrder,
+  FoodStockSortOrder,
+  FoodStockUnit,
   RelationStatus,
   UserStatus,
 } from "@/types/establishment";
@@ -146,6 +148,14 @@ export const ESTABLISHMENT_TABS = {
   requests: "Solicitudes",
 } as const;
 
+// Tabs inside a single establishment's ficha (app/dashboard/establishments/[id]/),
+// not to be confused with ESTABLISHMENT_TABS above (the establishments-wide nav).
+export const ESTABLISHMENT_DETAIL_TABS = {
+  subjects: "Sujetos",
+  fieldWorkers: "Relevadores",
+  stock: "Stock",
+} as const;
+
 // Shared by the create-establishment form and the request review form —
 // address/city/province are identical in both contexts, only the "name"
 // placeholder differs (see CREATE_ESTABLISHMENT_PAGE / ESTABLISHMENT_REQUEST_REVIEW_PANEL).
@@ -188,6 +198,41 @@ export const ESTABLISHMENTS_LIST_PAGE = {
     address: "Dirección",
     city: "Ciudad",
     province: "Provincia",
+  },
+} as const;
+
+export const STOCK_SORT_OPTIONS: {
+  value: FoodStockSortOrder;
+  label: string;
+}[] = [
+  { value: "name_asc", label: "Nombre A → Z" },
+  { value: "name_desc", label: "Nombre Z → A" },
+  { value: "quantity_desc", label: "Cantidad (mayor a menor)" },
+  { value: "quantity_asc", label: "Cantidad (menor a mayor)" },
+  { value: "updated_at_desc", label: "Última actualización" },
+];
+
+export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
+  unidades: "Unidades",
+  kilogramos: "Kilogramos",
+  litros: "Litros",
+};
+
+export const ESTABLISHMENT_STOCK_PAGE = {
+  subtitle: (total: number) =>
+    `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
+  categoryLabel: "Categoría",
+  allCategories: "Todas las categorías",
+  sortLabel: "Ordenar por",
+  noStock: "No hay alimentos con stock disponible en este establecimiento",
+  noResults: "Ningún alimento coincide con los filtros aplicados",
+  loadError: "Error al cargar el stock",
+  columns: {
+    food: "Alimento",
+    category: "Categoría",
+    unit: "Unidad",
+    quantity: "Cantidad",
+    updatedAt: "Última actualización",
   },
 } as const;
 

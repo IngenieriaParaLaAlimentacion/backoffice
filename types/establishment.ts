@@ -5,6 +5,7 @@ import {
   NutritionalStatus,
 } from "@/types/measurement";
 import { Sex } from "@/types/subject";
+import { FoodCategory } from "@/types/foodCatalog";
 
 export type PaginatedEstablishmentsResponse = {
   items: EstablishmentResponse[];
@@ -135,3 +136,34 @@ export type PaginatedEstablishmentFieldWorkersResponse = {
   page_size: number;
   total_pages: number;
 };
+
+// --- Stock ---
+
+export type FoodStockUnit = "unidades" | "kilogramos" | "litros";
+
+/**
+ * `quantity` is a Decimal on the wire (a numeric string like "12.500"), never
+ * a float — parse it only for display, never for arithmetic.
+ */
+export type FoodStockItem = {
+  food: { id: string; name: string };
+  category: FoodCategory;
+  unit: FoodStockUnit;
+  quantity: string;
+  updated_at: string;
+};
+
+export type PaginatedFoodStockResponse = {
+  items: FoodStockItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+};
+
+export type FoodStockSortOrder =
+  | "name_asc"
+  | "name_desc"
+  | "quantity_asc"
+  | "quantity_desc"
+  | "updated_at_desc";
