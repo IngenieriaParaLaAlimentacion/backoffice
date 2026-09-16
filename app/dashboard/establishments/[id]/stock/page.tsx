@@ -4,7 +4,7 @@ import { use } from "react";
 import EstablishmentStockList from "../EstablishmentStockList";
 import { useEstablishmentDashboardContext } from "../layout";
 
-export default function EstablishmentStockPage({
+export default function EstablishmentStockTabPanel({
   params,
 }: {
   params: Promise<{ id: string }>;

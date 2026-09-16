@@ -3,7 +3,7 @@
 import { use } from "react";
 import EstablishmentFieldWorkersList from "../EstablishmentFieldWorkersList";
 
-export default function EstablishmentFieldWorkersPage({
+export default function EstablishmentFieldWorkersTabPanel({
   params,
 }: {
   params: Promise<{ id: string }>;

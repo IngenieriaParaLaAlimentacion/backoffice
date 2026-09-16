@@ -4,7 +4,7 @@ import { use } from "react";
 import EstablishmentSubjectsList from "./EstablishmentSubjectsList";
 import { useEstablishmentDashboardContext } from "./layout";
 
-export default function EstablishmentSubjectsPage({
+export default function EstablishmentSubjectsTabPanel({
   params,
 }: {
   params: Promise<{ id: string }>;
