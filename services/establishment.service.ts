@@ -9,8 +9,9 @@ import {
   ESTABLISHMENTS_ENDPOINT,
   ESTABLISHMENTS_EXPORT_ENDPOINT,
 } from "@/constants/api";
-import { EstablishmentResponse, EstablishmentSortOrder } from "@/types/admin";
 import {
+  EstablishmentResponse,
+  EstablishmentSortOrder,
   EstablishmentDashboardResponse,
   EstablishmentSubjectSortOrder,
   FoodStockSortOrder,

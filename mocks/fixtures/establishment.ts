@@ -1,5 +1,5 @@
-import { EstablishmentResponse } from "@/types/admin";
 import {
+  EstablishmentResponse,
   EstablishmentDashboardResponse,
   PaginatedEstablishmentFieldWorkersResponse,
   PaginatedEstablishmentsResponse,

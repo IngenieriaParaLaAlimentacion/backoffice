@@ -1,19 +1,57 @@
 import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENT_REQUEST_ENDPOINT,
+  CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
   LIST_ESTABLISHMENT_REQUESTS_ENDPOINT,
   REJECT_ESTABLISHMENT_REQUEST_ENDPOINT,
 } from "@/constants/api";
 import {
   EstablishmentApprovalResponse,
-  EstablishmentRequestSortOrder,
-  EstablishmentRequestStatus,
   PaginatedEstablishmentRequestsResponse,
 } from "@/types/admin";
+import {
+  EstablishmentRequestCreationResponse,
+  EstablishmentRequestSortOrder,
+  EstablishmentRequestStatus,
+} from "@/types/establishment";
 import { CreateEstablishmentData } from "@/services/establishment.service";
 import { toApiError } from "@/lib/apiError";
 
 const PENDING_STATUS: EstablishmentRequestStatus = "pending";
+
+export type CreateEstablishmentRequestData = {
+  name: string;
+  formatted_address: string;
+  city?: string;
+  province?: string;
+};
+
+/**
+ * The backend rejects "" for optional fields (min_length=1 still applies when
+ * present) — it only accepts a populated string or the key missing entirely.
+ * The form always has a string here (possibly ""), so this is where that gets
+ * turned into "omit the key", not in the zod schema (which only validates).
+ */
+export const createEstablishmentRequestAction = async (
+  dispatcher: AuthDispatcher,
+  data: CreateEstablishmentRequestData,
+) => {
+  const body: CreateEstablishmentRequestData = {
+    name: data.name,
+    formatted_address: data.formatted_address,
+    city: data.city || undefined,
+    province: data.province || undefined,
+  };
+
+  const res = await dispatcher<
+    CreateEstablishmentRequestData,
+    EstablishmentRequestCreationResponse
+  >(CREATE_ESTABLISHMENT_REQUEST_ENDPOINT, { method: "POST", body });
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as EstablishmentRequestCreationResponse;
+};
 
 type ListEstablishmentRequestsParams = {
   page?: number;

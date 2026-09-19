@@ -10,7 +10,10 @@ import {
   exportEstablishmentsAction,
   listEstablishmentsAction,
 } from "@/services/establishment.service";
-import { EstablishmentResponse, EstablishmentSortOrder } from "@/types/admin";
+import {
+  EstablishmentResponse,
+  EstablishmentSortOrder,
+} from "@/types/establishment";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

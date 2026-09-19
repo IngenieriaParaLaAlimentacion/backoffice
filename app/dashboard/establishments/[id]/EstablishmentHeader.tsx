@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { EstablishmentResponse } from "@/types/admin";
+import { EstablishmentResponse } from "@/types/establishment";
 import { Button } from "@/components/ui/button";
 import { ESTABLISHMENT_DASHBOARD_PAGE as COPY } from "@/constants/establishments";
 import { ArrowLeft } from "lucide-react";

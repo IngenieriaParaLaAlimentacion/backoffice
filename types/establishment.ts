@@ -1,4 +1,3 @@
-import { EstablishmentResponse } from "@/types/admin";
 import {
   AlertSeverity,
   MeasurementAlert,
@@ -6,6 +5,45 @@ import {
 } from "@/types/measurement";
 import { Sex } from "@/types/subject";
 import { FoodCategory } from "@/types/foodCatalog";
+
+export type EstablishmentResponse = {
+  id: string;
+  name: string;
+  formatted_address: string;
+  latitude: number;
+  longitude: number;
+  place_id: string;
+  city: string;
+  province: string;
+};
+
+export type EstablishmentSortOrder =
+  | "newest"
+  | "oldest"
+  | "name_asc"
+  | "name_desc"
+  | "city_asc"
+  | "city_desc"
+  | "province_asc"
+  | "province_desc";
+
+export type EstablishmentRequestStatus = "pending" | "approved" | "rejected";
+
+export type EstablishmentRequestSortOrder = "newest" | "oldest";
+
+/** What the requester (analyst or field worker) gets back after proposing a
+ * missing establishment — contrast with `EstablishmentRequestAdminView` in
+ * `types/admin.ts`, the richer shape the admin sees while reviewing it. */
+export type EstablishmentRequestCreationResponse = {
+  id: string;
+  user_id: string;
+  name: string;
+  formatted_address: string;
+  city: string | null;
+  province: string | null;
+  status: EstablishmentRequestStatus;
+  created_at: string;
+};
 
 export type PaginatedEstablishmentsResponse = {
   items: EstablishmentResponse[];
