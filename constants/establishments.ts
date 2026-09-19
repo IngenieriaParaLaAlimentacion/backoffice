@@ -299,7 +299,7 @@ export const CREATE_ESTABLISHMENT_PAGE = {
 export const PROPOSE_ESTABLISHMENT_PAGE = {
   title: "Proponer establecimiento",
   subtitle:
-    "Notificá los datos que tengas — un administrador lo revisará luego",
+    "Como analista no tenés los permisos para crear establecimientos directamente. Completá los datos que tengas y un administrador revisará tu propuesta.",
   back: "Volver",
   namePlaceholder: "Ej: Comedor Central Norte",
   submitError: "Error al enviar la propuesta",
