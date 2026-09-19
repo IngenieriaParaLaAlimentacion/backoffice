@@ -1,6 +1,6 @@
 "use client";
 
-import { EstablishmentResponse } from "@/types/admin";
+import { EstablishmentResponse } from "@/types/establishment";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { PENDING_REQUESTS_PAGE } from "@/constants/users";

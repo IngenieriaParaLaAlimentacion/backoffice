@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
 import { baseHandler, HandlerOptions } from "@/mocks/handlers/base";
 import {
+  CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
   ESTABLISHMENT_STOCK_ENDPOINT,
@@ -180,4 +181,26 @@ export function makeCreateEstablishmentHandler() {
     };
     return HttpResponse.json(newEstablishment, { status: 201 });
   });
+}
+
+/** city/province are absent from the body whenever the requester left them
+ * blank — see the "" -> undefined conversion in createEstablishmentRequestAction. */
+export function makeCreateEstablishmentRequestHandler() {
+  return http.post(
+    CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
+    async ({ request }) => {
+      const body = (await request.json()) as Record<string, unknown>;
+      const newRequest = {
+        id: crypto.randomUUID(),
+        user_id: "user-1",
+        name: String(body.name ?? ""),
+        formatted_address: String(body.formatted_address ?? ""),
+        city: (body.city as string | undefined) ?? null,
+        province: (body.province as string | undefined) ?? null,
+        status: "pending",
+        created_at: new Date().toISOString(),
+      };
+      return HttpResponse.json(newRequest, { status: 201 });
+    },
+  );
 }

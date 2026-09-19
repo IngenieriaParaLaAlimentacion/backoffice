@@ -18,6 +18,7 @@ import {
 } from "@/mocks/handlers/admin";
 import {
   makeCreateEstablishmentHandler,
+  makeCreateEstablishmentRequestHandler,
   makeEstablishmentDashboardHandler,
   makeEstablishmentFieldWorkersHandler,
   makeEstablishmentStockHandler,
@@ -66,6 +67,7 @@ export const handlers = [
   makeListFoodCategoriesHandler(),
   makeListEstablishmentsHandler(),
   makeCreateEstablishmentHandler(),
+  makeCreateEstablishmentRequestHandler(),
   makeFiesTemplateHandler(),
   makeDuplicateSurveyHandler(),
   makeUpdateSurveyHandler(),

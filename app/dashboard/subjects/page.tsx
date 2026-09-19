@@ -9,7 +9,7 @@ import {
 } from "@/services/subject.service";
 import { listEstablishmentsAction } from "@/services/establishment.service";
 import { SubjectSortOrder, SubjectSummary } from "@/types/subject";
-import { EstablishmentResponse } from "@/types/admin";
+import { EstablishmentResponse } from "@/types/establishment";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

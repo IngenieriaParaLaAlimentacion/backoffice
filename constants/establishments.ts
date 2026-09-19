@@ -1,14 +1,12 @@
 import {
+  EstablishmentRequestSortOrder,
+  EstablishmentSortOrder,
   EstablishmentSubjectSortOrder,
   FoodStockSortOrder,
   FoodStockUnit,
   RelationStatus,
   UserStatus,
 } from "@/types/establishment";
-import {
-  EstablishmentRequestSortOrder,
-  EstablishmentSortOrder,
-} from "@/types/admin";
 import { Tone } from "@/constants/theme";
 
 export const PAGE_SIZE = 20;
@@ -156,9 +154,11 @@ export const ESTABLISHMENT_DETAIL_TABS = {
   stock: "Stock",
 } as const;
 
-// Shared by the create-establishment form and the request review form —
-// address/city/province are identical in both contexts, only the "name"
-// placeholder differs (see CREATE_ESTABLISHMENT_PAGE / ESTABLISHMENT_REQUEST_REVIEW_PANEL).
+// Shared by the create-establishment form, the request review form and the
+// propose-establishment form — address/city/province are identical in all
+// three contexts, only the "name" placeholder differs (see
+// CREATE_ESTABLISHMENT_PAGE / ESTABLISHMENT_REQUEST_REVIEW_PANEL /
+// PROPOSE_ESTABLISHMENT_PAGE).
 export const ESTABLISHMENT_FORM_FIELDS = {
   name: { label: "Nombre" },
   address: { label: "Dirección", placeholder: "Ej: Av. Corrientes 1234, CABA" },
@@ -184,6 +184,7 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   title: "Establecimientos",
   subtitle: "Establecimientos registrados en el sistema",
   createButton: "Nuevo establecimiento",
+  proposeButton: "Proponer establecimiento",
   searchLabel: "Buscar",
   searchPlaceholder: "Nombre o dirección",
   sortLabel: "Ordenar por",
@@ -193,6 +194,8 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   },
   noEstablishments: "No hay establecimientos",
   loadError: "Error al cargar establecimientos",
+  proposeSuccess: "Propuesta enviada — un administrador la revisará.",
+  closeAria: "Cerrar",
   columns: {
     name: "Nombre",
     address: "Dirección",
@@ -291,4 +294,14 @@ export const CREATE_ESTABLISHMENT_PAGE = {
   namePlaceholder: "Ej: Comedor Central Norte",
   submitError: "Error al crear el establecimiento",
   submitButton: "Crear establecimiento",
+} as const;
+
+export const PROPOSE_ESTABLISHMENT_PAGE = {
+  title: "Proponer establecimiento",
+  subtitle:
+    "Como analista no tenés los permisos para crear establecimientos directamente. Completá los datos que tengas y un administrador revisará tu propuesta.",
+  back: "Volver",
+  namePlaceholder: "Ej: Comedor Central Norte",
+  submitError: "Error al enviar la propuesta",
+  submitButton: "Enviar propuesta",
 } as const;
