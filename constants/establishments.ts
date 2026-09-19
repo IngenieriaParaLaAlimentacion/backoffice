@@ -194,6 +194,8 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   },
   noEstablishments: "No hay establecimientos",
   loadError: "Error al cargar establecimientos",
+  proposeSuccess: "Propuesta enviada — un administrador la revisará.",
+  closeAria: "Cerrar",
   columns: {
     name: "Nombre",
     address: "Dirección",
@@ -297,13 +299,9 @@ export const CREATE_ESTABLISHMENT_PAGE = {
 export const PROPOSE_ESTABLISHMENT_PAGE = {
   title: "Proponer establecimiento",
   subtitle:
-    "Notificá los datos que tengas — un administrador la revisa y la da de alta",
+    "Notificá los datos que tengas — un administrador lo revisará luego",
   back: "Volver",
   namePlaceholder: "Ej: Comedor Central Norte",
   submitError: "Error al enviar la propuesta",
   submitButton: "Enviar propuesta",
-  successTitle: "Propuesta enviada",
-  successBody:
-    "Un administrador va a revisar los datos y dar de alta el establecimiento.",
-  backToList: "Volver a Establecimientos",
 } as const;

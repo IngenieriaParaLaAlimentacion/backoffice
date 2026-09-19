@@ -36,15 +36,17 @@ import {
   RowLink,
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
-import { Loader2, Plus, Search } from "lucide-react";
+import { CircleCheck, Loader2, Plus, Search, X } from "lucide-react";
 import {
   ESTABLISHMENT_SORT_OPTIONS,
   ESTABLISHMENTS_LIST_PAGE,
 } from "@/constants/establishments";
+import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
+const PROPOSED_BANNER_MS = 5000;
 
 const SELECT_CLASS =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -88,6 +90,9 @@ function EstablishmentsContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showProposedBanner, setShowProposedBanner] = useState(
+    () => searchParams.get("proposed") === "1",
+  );
 
   // Local mirrors so typing stays responsive; the debounce writes to the URL.
   const [searchInput, setSearchInput] = useState(search);
@@ -151,6 +156,28 @@ function EstablishmentsContent() {
     },
     [router, pathname, searchParams],
   );
+
+  // Strip the flag right away so a refresh or back-navigation doesn't
+  // resurrect the banner — its visibility from here on lives in
+  // showProposedBanner (below), not in the URL.
+  useEffect(() => {
+    if (searchParams.get("proposed") !== "1") return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("proposed");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }, [searchParams, pathname, router]);
+
+  useEffect(() => {
+    if (!showProposedBanner) return;
+    const timeout = setTimeout(
+      () => setShowProposedBanner(false),
+      PROPOSED_BANNER_MS,
+    );
+    return () => clearTimeout(timeout);
+  }, [showProposedBanner]);
 
   useEffect(() => {
     if (
@@ -255,13 +282,24 @@ function EstablishmentsContent() {
               disabled={isLoading || total === 0}
               emptyHint={total === 0 ? EXPORT.empty : undefined}
             />
-            {can("establishments.create") && (
+            {can("establishments.create") ? (
               <Link
                 href="/dashboard/establishments/create"
                 className={buttonVariants({ size: "sm" })}
               >
                 <Plus size={14} />
                 {ESTABLISHMENTS_LIST_PAGE.createButton}
+              </Link>
+            ) : (
+              // Roles without establishments.create (analyst today) can't
+              // create outright, but can still propose one for an admin to
+              // review — see PROPOSE_ESTABLISHMENT_PAGE.
+              <Link
+                href="/dashboard/establishments/propose"
+                className={buttonVariants({ size: "sm" })}
+              >
+                <Plus size={14} />
+                {ESTABLISHMENTS_LIST_PAGE.proposeButton}
               </Link>
             )}
           </div>
@@ -343,6 +381,25 @@ function EstablishmentsContent() {
             </div>
           </FilterPanel>
         </div>
+
+        {showProposedBanner && (
+          <div
+            className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${TONE_BANNER_CLASS.success}`}
+          >
+            <CircleCheck size={18} className="mt-0.5 shrink-0" />
+            <span className="flex-1">
+              {ESTABLISHMENTS_LIST_PAGE.proposeSuccess}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowProposedBanner(false)}
+              className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
+              aria-label={ESTABLISHMENTS_LIST_PAGE.closeAria}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
