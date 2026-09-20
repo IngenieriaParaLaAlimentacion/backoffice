@@ -224,6 +224,7 @@ export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
 export const ESTABLISHMENT_STOCK_PAGE = {
   subtitle: (total: number) =>
     `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
+  viewHistory: "Historial de Movimientos",
   categoryLabel: "Categoría",
   allCategories: "Todas las categorías",
   sortLabel: "Ordenar por",
