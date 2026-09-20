@@ -21,6 +21,7 @@ import {
   EMPTY_ESTABLISHMENT_DASHBOARD,
   EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
   MOCK_FOOD_MOVEMENT_DETAILS,
+  PAGED_FOOD_MOVEMENTS,
   EMPTY_ESTABLISHMENT_STOCK_RESPONSE,
   EMPTY_ESTABLISHMENT_SUBJECTS_RESPONSE,
   MOCK_ESTABLISHMENTS,
@@ -47,6 +48,8 @@ export function makeListEstablishmentsHandler(
  */
 const WITH_DATA_ID = MOCK_ESTABLISHMENTS[0].id;
 const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
+/** Only the movements listing answers for this one: it exists to overflow a page. */
+const PAGED_ID = MOCK_ESTABLISHMENTS[2].id;
 
 function notFound(instance: string) {
   return HttpResponse.json(
@@ -220,7 +223,11 @@ export function makeEstablishmentFoodMovementsHandler() {
     ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT(":id"),
     ({ params, request }) => {
       const url = new URL(request.url);
-      if (params.id !== WITH_DATA_ID && params.id !== WITHOUT_DATA_ID)
+      if (
+        params.id !== WITH_DATA_ID &&
+        params.id !== WITHOUT_DATA_ID &&
+        params.id !== PAGED_ID
+      )
         return notFound(url.pathname);
       if (params.id === WITHOUT_DATA_ID)
         return HttpResponse.json(EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE);
@@ -229,6 +236,8 @@ export function makeEstablishmentFoodMovementsHandler() {
       const occurredFrom = url.searchParams.get("occurred_from");
       const occurredTo = url.searchParams.get("occurred_to");
       const foodId = url.searchParams.get("food_id");
+      const page = Number(url.searchParams.get("page") ?? 1);
+      const pageSize = Number(url.searchParams.get("page_size") ?? 20);
 
       // "Movements carrying this food on at least one line" — the rows have no
       // lines, so the answer comes from the detail fixture, the same way the
@@ -239,17 +248,29 @@ export function makeEstablishmentFoodMovementsHandler() {
           (line) => line.food.id === foodId,
         );
 
-      const items = DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items
+      const source =
+        params.id === PAGED_ID
+          ? PAGED_FOOD_MOVEMENTS
+          : DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items;
+
+      const matches = source
         .filter((item) => !direction || item.direction === direction)
         .filter((item) => !occurredFrom || item.occurred_at >= occurredFrom)
         .filter((item) => !occurredTo || item.occurred_at <= occurredTo)
         .filter((item) => carriesFood(item.id))
         .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
 
+      // Slices for real: a handler that returned everything and a fixed
+      // `total_pages: 1` would hide the paginator from every test and from
+      // the dev preview, i.e. from everyone who could notice it broke.
+      const start = (page - 1) * pageSize;
+
       return HttpResponse.json({
-        ...DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
-        items,
-        total: items.length,
+        items: matches.slice(start, start + pageSize),
+        total: matches.length,
+        page,
+        page_size: pageSize,
+        total_pages: Math.max(1, Math.ceil(matches.length / pageSize)),
       });
     },
   );
@@ -262,7 +283,11 @@ export function makeEstablishmentFoodMovementDetailHandler() {
     ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT(":id", ":movementId"),
     ({ params, request }) => {
       const url = new URL(request.url);
-      if (params.id !== WITH_DATA_ID && params.id !== WITHOUT_DATA_ID)
+      if (
+        params.id !== WITH_DATA_ID &&
+        params.id !== WITHOUT_DATA_ID &&
+        params.id !== PAGED_ID
+      )
         return notFound(url.pathname);
 
       const detail = MOCK_FOOD_MOVEMENT_DETAILS[params.movementId];

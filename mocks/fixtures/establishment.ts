@@ -5,6 +5,7 @@ import {
   PaginatedEstablishmentsResponse,
   PaginatedEstablishmentSubjectsResponse,
   FoodMovementDetail,
+  FoodMovementListItem,
   PaginatedFoodMovementsResponse,
   PaginatedFoodStockResponse,
 } from "@/types/establishment";
@@ -307,6 +308,26 @@ export const EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovements
  * The outflow carries two lines of the SAME food against `food_count: 1`,
  * which is exactly the case where labelling `food_count` as "items" lies.
  */
+/**
+ * A third comedor whose only job is to overflow one page: `PAGE_SIZE` is 20,
+ * so 25 movements make the paginator appear and give page 2 five rows. Dated
+ * across August, all older than the three handcrafted September ones, and
+ * none of them carries the foods those use — keeping them out of every other
+ * fixture's way.
+ */
+const PAGED_MOVEMENT_COUNT = 25;
+
+export const PAGED_FOOD_MOVEMENTS: FoodMovementListItem[] = Array.from(
+  { length: PAGED_MOVEMENT_COUNT },
+  (_, index) => ({
+    id: `a2000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
+    direction: index % 2 === 0 ? "in" : "out",
+    occurred_at: `2026-08-${String(index + 1).padStart(2, "0")}T12:00:00Z`,
+    responsible: RESPONSIBLE,
+    food_count: 1,
+  }),
+);
+
 export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
   [MOVEMENT_IDS.intake]: {
     id: MOVEMENT_IDS.intake,
@@ -398,3 +419,20 @@ export const DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE: PaginatedEstablishmen
     page_size: 20,
     total_pages: 1,
   };
+
+/** Every paged movement resolves to a one-line detail, so the comedor that
+ *  exists to test paging is still clickable in the dev preview. */
+for (const movement of PAGED_FOOD_MOVEMENTS) {
+  MOCK_FOOD_MOVEMENT_DETAILS[movement.id] = {
+    ...movement,
+    source: "manual",
+    comments: null,
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000004", name: "Arvejas" },
+        unit: "kilogramos",
+        quantity: "3.000",
+      },
+    ],
+  };
+}

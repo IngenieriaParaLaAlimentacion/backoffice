@@ -8,6 +8,8 @@ import { ESTABLISHMENT_MOVEMENTS_PAGE as COPY } from "@/constants/establishments
 
 const WITH_DATA_ID = MOCK_ESTABLISHMENTS[0].id;
 const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
+/** 25 movements against a PAGE_SIZE of 20 — two pages. */
+const PAGED_ID = MOCK_ESTABLISHMENTS[2].id;
 
 const renderPage = (id: string) =>
   renderWithProviders(
@@ -218,5 +220,62 @@ describe("EstablishmentMovementsHistoryPage", () => {
     await userEvent.click(screen.getByRole("button", { name: COPY.clearFood }));
 
     await waitFor(async () => expect(await findRows()).toHaveLength(3));
+  });
+
+  it("pages a listing that does not fit on one screen", async () => {
+    await renderPage(PAGED_ID);
+
+    expect(await findRows()).toHaveLength(20);
+    expect(screen.getByText("Página 1 de 2")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Página anterior" }),
+    ).toBeDisabled();
+  });
+
+  it("loads the next page's rows", async () => {
+    await renderPage(PAGED_ID);
+    const firstPage = await findRows();
+    const firstRowText = firstPage[0].textContent;
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Página siguiente" }),
+    );
+
+    // 25 movements, 20 per page: the tail is five rows, none of them the ones
+    // just shown.
+    await waitFor(async () => expect(await findRows()).toHaveLength(5));
+    expect(screen.getByText("Página 2 de 2")).toBeInTheDocument();
+    expect((await findRows())[0].textContent).not.toBe(firstRowText);
+    expect(
+      screen.getByRole("button", { name: "Página siguiente" }),
+    ).toBeDisabled();
+  });
+
+  it("returns to the first page when a filter changes", async () => {
+    await renderPage(PAGED_ID);
+    await findRows();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Página siguiente" }),
+    );
+    await screen.findByText("Página 2 de 2");
+
+    await userEvent.selectOptions(
+      screen.getByLabelText(COPY.directionLabel),
+      "Solo entradas",
+    );
+
+    // Staying on page 2 of a narrower result set would strand the user on an
+    // empty page — 13 intakes make a single page.
+    await waitFor(() =>
+      expect(screen.queryByText(/Página \d+ de/)).not.toBeInTheDocument(),
+    );
+    expect(await findRows()).toHaveLength(13);
+  });
+
+  it("hides the paginator when everything fits on one page", async () => {
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+
+    expect(screen.queryByText(/Página \d+ de/)).not.toBeInTheDocument();
   });
 });
