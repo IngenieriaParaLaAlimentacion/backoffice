@@ -205,3 +205,58 @@ export type FoodStockSortOrder =
   | "quantity_asc"
   | "quantity_desc"
   | "updated_at_desc";
+
+// --- Food movements (entradas y salidas) ---
+
+export type FoodMovementDirection = "in" | "out";
+
+/** How an intake was loaded. Outflows are always `manual`. */
+export type FoodMovementSource = "manual" | "photo";
+
+export type FoodMovementResponsible = {
+  id: string;
+  name: string;
+  last_name: string;
+};
+
+/**
+ * A light row: no lines at all, that is what the detail call is for.
+ *
+ * `food_count` counts DISTINCT foods, not lines — a movement with two lines of
+ * rice reports `food_count: 1` while its detail returns two items. Labelling
+ * it "2 items" would be a lie.
+ */
+export type FoodMovementListItem = {
+  id: string;
+  direction: FoodMovementDirection;
+  /** When the movement happened, not when it was loaded: a backdated entry
+   *  belongs to its own period, and the date filter reads this column too. */
+  occurred_at: string;
+  responsible: FoodMovementResponsible;
+  food_count: number;
+};
+
+export type PaginatedFoodMovementsResponse = {
+  items: FoodMovementListItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+};
+
+/** `quantity` is a Decimal on the wire ("2.500") — display only, never math. */
+export type FoodMovementItem = {
+  food: { id: string; name: string };
+  unit: FoodStockUnit;
+  quantity: string;
+};
+
+export type FoodMovementDetail = {
+  id: string;
+  direction: FoodMovementDirection;
+  occurred_at: string;
+  source: FoodMovementSource;
+  comments: string | null;
+  responsible: FoodMovementResponsible;
+  items: FoodMovementItem[];
+};

@@ -2,6 +2,8 @@ import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
+  ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT,
+  ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT,
   ESTABLISHMENT_STOCK_ENDPOINT,
   ESTABLISHMENT_STOCK_EXPORT_ENDPOINT,
   ESTABLISHMENT_SUBJECTS_ENDPOINT,
@@ -14,10 +16,13 @@ import {
   EstablishmentSortOrder,
   EstablishmentDashboardResponse,
   EstablishmentSubjectSortOrder,
+  FoodMovementDetail,
+  FoodMovementDirection,
   FoodStockSortOrder,
   PaginatedEstablishmentFieldWorkersResponse,
   PaginatedEstablishmentsResponse,
   PaginatedEstablishmentSubjectsResponse,
+  PaginatedFoodMovementsResponse,
   PaginatedFoodStockResponse,
   RelationStatus,
 } from "@/types/establishment";
@@ -266,4 +271,72 @@ export const exportEstablishmentStockAction = async (
   const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
 
   return download(path);
+};
+
+export type EstablishmentFoodMovementFilters = {
+  direction?: FoodMovementDirection;
+  /** UTC instants, not calendar days — see `argentineDayStartUtc`. */
+  occurred_from?: string;
+  occurred_to?: string;
+  food_id?: string;
+};
+
+type ListEstablishmentFoodMovementsParams = EstablishmentFoodMovementFilters & {
+  page?: number;
+  page_size?: number;
+};
+
+/** One builder, so a future CSV export asks for exactly the rows on screen. */
+const establishmentFoodMovementsFilterQuery = (
+  filters?: EstablishmentFoodMovementFilters,
+) => {
+  const query = new URLSearchParams();
+  if (filters?.direction) query.set("direction", filters.direction);
+  if (filters?.occurred_from) query.set("occurred_from", filters.occurred_from);
+  if (filters?.occurred_to) query.set("occurred_to", filters.occurred_to);
+  if (filters?.food_id) query.set("food_id", filters.food_id);
+  return query;
+};
+
+/**
+ * Entradas and salidas in one sequence, newest event first. The rows carry no
+ * lines at all — `getEstablishmentFoodMovementAction` is the second call that
+ * fetches them, which is what keeps paging cheap.
+ */
+export const listEstablishmentFoodMovementsAction = async (
+  dispatcher: AuthDispatcher,
+  establishmentId: string,
+  params?: ListEstablishmentFoodMovementsParams,
+) => {
+  const query = establishmentFoodMovementsFilterQuery(params);
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.page_size) query.set("page_size", String(params.page_size));
+
+  const endpoint = ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT(establishmentId);
+  const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
+
+  const res = await dispatcher<undefined, PaginatedFoodMovementsResponse>(path);
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as PaginatedFoodMovementsResponse;
+};
+
+/**
+ * A movement belonging to another comedor answers 404, not 403 — deliberately,
+ * so the ids of other comedores can't be probed. Render it as "no existe",
+ * never as "no tenés permiso".
+ */
+export const getEstablishmentFoodMovementAction = async (
+  dispatcher: AuthDispatcher,
+  establishmentId: string,
+  movementId: string,
+) => {
+  const res = await dispatcher<undefined, FoodMovementDetail>(
+    ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT(establishmentId, movementId),
+  );
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as FoodMovementDetail;
 };

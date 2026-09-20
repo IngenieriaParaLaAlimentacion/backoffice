@@ -94,7 +94,7 @@ export default function EstablishmentStockList({
             size="sm"
             render={
               <Link
-                href={`/dashboard/establishments/${establishmentId}/food-movements`}
+                href={`/dashboard/establishments/${establishmentId}/stock/movements`}
               />
             }
           >

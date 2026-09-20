@@ -60,6 +60,13 @@ export const ESTABLISHMENT_STOCK_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/stock`;
 export const ESTABLISHMENT_STOCK_EXPORT_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/stock/export`;
+export const ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT = (
+  establishmentId: string,
+) => `/api/v1/establishments/${establishmentId}/food-movements`;
+export const ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT = (
+  establishmentId: string,
+  movementId: string,
+) => `/api/v1/establishments/${establishmentId}/food-movements/${movementId}`;
 export const CREATE_ESTABLISHMENT_REQUEST_ENDPOINT =
   "/api/v1/establishments/requests";
 

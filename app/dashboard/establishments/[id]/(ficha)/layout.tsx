@@ -7,9 +7,9 @@ import { useEstablishmentDashboard } from "@/hooks/useEstablishmentDashboard";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import FullScreenMessage from "@/components/FullScreenMessage";
-import EstablishmentHeader from "./EstablishmentHeader";
-import EstablishmentMetrics from "./EstablishmentMetrics";
-import EstablishmentAlertBanner from "./EstablishmentAlertBanner";
+import EstablishmentHeader from "../EstablishmentHeader";
+import EstablishmentMetrics from "../EstablishmentMetrics";
+import EstablishmentAlertBanner from "../EstablishmentAlertBanner";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
   ESTABLISHMENT_DETAIL_TABS,
