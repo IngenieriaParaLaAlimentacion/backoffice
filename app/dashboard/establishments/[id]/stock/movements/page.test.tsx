@@ -8,6 +8,9 @@ import { ESTABLISHMENT_MOVEMENTS_PAGE as COPY } from "@/constants/establishments
 
 const WITH_DATA_ID = MOCK_ESTABLISHMENTS[0].id;
 const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
+const LONG_COMMENT =
+  "Donación del municipio, entregada en dos camionetas por la mañana; falta confirmar el remito del segundo envío";
+
 /** 25 movements against a PAGE_SIZE of 20 — two pages. */
 const PAGED_ID = MOCK_ESTABLISHMENTS[2].id;
 
@@ -82,12 +85,10 @@ describe("EstablishmentMovementsHistoryPage", () => {
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText(COPY.detail.source)).toBeInTheDocument();
     expect(within(dialog).getByText("Foto")).toBeInTheDocument();
-    expect(
-      within(dialog).getByText("Donación del municipio"),
-    ).toBeInTheDocument();
+    expect(within(dialog).getByText(LONG_COMMENT)).toBeInTheDocument();
   });
 
-  it("hides origen and comentarios on a salida", async () => {
+  it("hides origen on a salida but still shows its comentarios", async () => {
     await renderPage(WITH_DATA_ID);
 
     const rows = await findRows();
@@ -95,11 +96,23 @@ describe("EstablishmentMovementsHistoryPage", () => {
 
     const dialog = await screen.findByRole("dialog");
     await within(dialog).findByText(COPY.detail.linesTitle);
+    // An outflow is always loaded by hand, so naming the source says nothing.
     expect(
       within(dialog).queryByText(COPY.detail.source),
     ).not.toBeInTheDocument();
-    // "Almuerzo" is on the fixture, but an outflow never renders comments.
-    expect(within(dialog).queryByText("Almuerzo")).not.toBeInTheDocument();
+    // Its comment, on the other hand, is the only field explaining why the
+    // stock left.
+    expect(within(dialog).getByText("Almuerzo")).toBeInTheDocument();
+  });
+
+  it("shows a long comment whole, never clipped", async () => {
+    await renderPage(WITH_DATA_ID);
+
+    const rows = await findRows();
+    await userEvent.click(rows[0]);
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(LONG_COMMENT)).toBeInTheDocument();
   });
 
   it("filters the listing by direction", async () => {
@@ -142,6 +155,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     expect(await screen.findByText(COPY.invalidRange)).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
+
   it("suggests foods from the catalog as you type", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();

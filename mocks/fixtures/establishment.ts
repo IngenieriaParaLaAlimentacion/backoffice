@@ -334,7 +334,8 @@ export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
     direction: "in",
     occurred_at: "2026-09-14T10:00:00Z",
     source: "photo",
-    comments: "Donación del municipio",
+    comments:
+      "Donación del municipio, entregada en dos camionetas por la mañana; falta confirmar el remito del segundo envío",
     responsible: RESPONSIBLE,
     items: [
       {

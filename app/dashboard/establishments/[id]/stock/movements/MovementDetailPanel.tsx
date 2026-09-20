@@ -143,8 +143,6 @@ export default function MovementDetailPanel({
                   label={COPY.detail.responsible}
                   value={`${detail.responsible.name} ${detail.responsible.last_name}`}
                 />
-                {/* Origen and comentarios only exist on an intake (CA2); an
-                    outflow is always loaded by hand and carries neither. */}
                 {detail.direction === "in" && (
                   <DetailField
                     label={COPY.detail.source}
@@ -152,11 +150,14 @@ export default function MovementDetailPanel({
                   />
                 )}
               </div>
-
-              {detail.direction === "in" && detail.comments && (
+              {detail.comments && (
                 <DetailField
                   label={COPY.detail.comments}
-                  value={detail.comments}
+                  value={
+                    <span className="block whitespace-pre-line break-words">
+                      {detail.comments}
+                    </span>
+                  }
                 />
               )}
 
