@@ -92,6 +92,9 @@ export default function EstablishmentStockList({
           />
           <Button
             size="sm"
+            // The render target is a next/link <a>, not a <button>; without
+            // this Base UI keeps native button semantics it cannot deliver.
+            nativeButton={false}
             render={
               <Link
                 href={`/dashboard/establishments/${establishmentId}/stock/movements`}

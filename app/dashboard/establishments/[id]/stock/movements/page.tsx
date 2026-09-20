@@ -26,6 +26,8 @@ import {
 } from "@/constants/establishments";
 import { formatTimestamp } from "@/lib/format";
 import { MovementDirectionFilter } from "@/hooks/useEstablishmentMovementsHistory";
+import { FoodListItem } from "@/types/foodCatalog";
+import FoodFilter from "./FoodFilter";
 import MovementDetailPanel from "./MovementDetailPanel";
 
 const PANEL_HREF = "/dashboard/establishments";
@@ -62,6 +64,14 @@ export default function EstablishmentMovementsHistoryPage({
   const [selectedMovementId, setSelectedMovementId] = useState<string | null>(
     null,
   );
+  // The picker holds the whole food so the input can show its name; only the
+  // id reaches the query.
+  const [selectedFood, setSelectedFood] = useState<FoodListItem | null>(null);
+
+  const selectFood = (food: FoodListItem | null) => {
+    setSelectedFood(food);
+    updateFilter("foodId", food?.id ?? "");
+  };
 
   const stockHref = `/dashboard/establishments/${id}/stock`;
   const columns = COPY.columns;
@@ -100,6 +110,9 @@ export default function EstablishmentMovementsHistoryPage({
             size="sm"
             variant="ghost"
             className="self-start -ml-2"
+            // Rendering a next/link <a>, not a <button> — see the same note in
+            // EstablishmentStockList.
+            nativeButton={false}
             render={<Link href={stockHref} />}
           >
             <ArrowLeft size={16} />
@@ -176,6 +189,8 @@ export default function EstablishmentMovementsHistoryPage({
               />
             </div>
           </div>
+
+          <FoodFilter selectedFood={selectedFood} onSelectFood={selectFood} />
 
           {error && (
             <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">

@@ -276,6 +276,17 @@ export const ESTABLISHMENT_MOVEMENTS_PAGE = {
   directionLabel: "Dirección",
   dateFrom: "Fecha desde",
   dateTo: "Fecha hasta",
+  // The category scopes the search; only the chosen food filters the listing,
+  // because the endpoint takes `food_id` and no `category_id`. The labels say
+  // "Buscar alimento" rather than "Filtros" so that reads as intended.
+  foodSearchTitle: "Buscar alimento",
+  foodCategoryLabel: "Categoría",
+  allCategories: "Todas las categorías",
+  foodLabel: "Alimento",
+  foodPlaceholder: "Ej: Arroz",
+  noFoodResults: "Ningún alimento coincide con la búsqueda",
+  moreFoodResults: "Seguí escribiendo para afinar la búsqueda",
+  clearFood: "Quitar el filtro de alimento",
   noMovements: "Este comedor todavía no tiene movimientos registrados",
   noResults: "Ningún movimiento coincide con los filtros aplicados",
   loadError: "Error al cargar el historial de movimientos",

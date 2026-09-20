@@ -23,12 +23,15 @@ export type MovementFilters = {
   /** "YYYY-MM-DD" as typed into a date input, an Argentine calendar day. */
   dateFrom: string;
   dateTo: string;
+  /** `""` is no filter. Keeps movements carrying this food on any line. */
+  foodId: string;
 };
 
 const EMPTY_FILTERS: MovementFilters = {
   direction: "",
   dateFrom: "",
   dateTo: "",
+  foodId: "",
 };
 
 export function useEstablishmentMovementsHistory(establishmentId: string) {
@@ -90,6 +93,7 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
             // 03/09 filter instead of dropping out of it after 21:00 local.
             occurred_from: argentineDayStartUtc(currentFilters.dateFrom),
             occurred_to: argentineDayEndUtc(currentFilters.dateTo),
+            food_id: currentFilters.foodId || undefined,
           },
         );
         setMovements(data.items);
@@ -122,7 +126,8 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
   const hasActiveFilters =
     debouncedFilters.direction !== "" ||
     debouncedFilters.dateFrom !== "" ||
-    debouncedFilters.dateTo !== "";
+    debouncedFilters.dateTo !== "" ||
+    debouncedFilters.foodId !== "";
 
   return {
     movements,

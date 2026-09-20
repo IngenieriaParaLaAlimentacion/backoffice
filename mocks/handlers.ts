@@ -28,7 +28,10 @@ import {
   makeExportEstablishmentStockHandler,
   makeListEstablishmentsHandler,
 } from "@/mocks/handlers/establishment";
-import { makeListFoodCategoriesHandler } from "@/mocks/handlers/foodCatalog";
+import {
+  makeListFoodCategoriesHandler,
+  makeListFoodsHandler,
+} from "@/mocks/handlers/foodCatalog";
 import {
   makeCreateSurveyHandler,
   makeDuplicateSurveyHandler,
@@ -69,6 +72,7 @@ export const handlers = [
   makeEstablishmentStockHandler(),
   makeExportEstablishmentStockHandler(),
   makeListFoodCategoriesHandler(),
+  makeListFoodsHandler(),
   makeListEstablishmentsHandler(),
   makeCreateEstablishmentHandler(),
   makeCreateEstablishmentRequestHandler(),

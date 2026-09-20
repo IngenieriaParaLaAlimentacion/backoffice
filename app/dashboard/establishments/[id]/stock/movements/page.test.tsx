@@ -140,4 +140,83 @@ describe("EstablishmentMovementsHistoryPage", () => {
     expect(await screen.findByText(COPY.invalidRange)).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
+  it("suggests foods from the catalog as you type", async () => {
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+
+    await userEvent.type(screen.getByLabelText(COPY.foodLabel), "ar");
+
+    const listbox = await screen.findByRole("listbox");
+    // "Arroz" and "Arvejas" both match "ar"; "Leche en polvo" does not.
+    expect(await within(listbox).findByText("Arroz")).toBeInTheDocument();
+    expect(within(listbox).getByText("Arvejas")).toBeInTheDocument();
+    expect(
+      within(listbox).queryByText("Leche en polvo"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("filters the listing to the movements carrying the chosen food", async () => {
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+
+    await userEvent.type(screen.getByLabelText(COPY.foodLabel), "arroz");
+    const listbox = await screen.findByRole("listbox");
+    await userEvent.click(await within(listbox).findByText("Arroz"));
+
+    // The 14/09 entrada and the 12/09 salida carry Arroz; the 08/09 entrada
+    // only carries Leche en polvo.
+    await waitFor(async () => expect(await findRows()).toHaveLength(2));
+    const rows = await findRows();
+    expect(within(rows[0]).getByText("14/09/2026 07:00")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("12/09/2026 10:00")).toBeInTheDocument();
+  });
+
+  it("scopes the food search to the selected category", async () => {
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+
+    await userEvent.selectOptions(
+      screen.getByLabelText(COPY.foodCategoryLabel),
+      "Lácteos",
+    );
+    await userEvent.type(screen.getByLabelText(COPY.foodLabel), "a");
+
+    const listbox = await screen.findByRole("listbox");
+    // "a" matches Arroz, Arvejas, Aceite and Leche fluida across four
+    // categories; scoped to Lácteos only the last one may survive.
+    expect(
+      await within(listbox).findByText("Leche fluida"),
+    ).toBeInTheDocument();
+    expect(within(listbox).queryByText("Arroz")).not.toBeInTheDocument();
+    expect(within(listbox).queryByText("Arvejas")).not.toBeInTheDocument();
+    expect(within(listbox).queryByText("Aceite")).not.toBeInTheDocument();
+  });
+
+  it("leaves the listing untouched until a food is actually chosen", async () => {
+    await renderPage(WITH_DATA_ID);
+    expect(await findRows()).toHaveLength(3);
+
+    // The endpoint takes `food_id` and no `category_id`: a category on its own
+    // narrows the search and nothing else. Whoever "fixes" this breaks here.
+    await userEvent.selectOptions(
+      screen.getByLabelText(COPY.foodCategoryLabel),
+      "Lácteos",
+    );
+
+    await waitFor(async () => expect(await findRows()).toHaveLength(3));
+  });
+
+  it("restores the full listing when the food filter is cleared", async () => {
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+
+    await userEvent.type(screen.getByLabelText(COPY.foodLabel), "arroz");
+    const listbox = await screen.findByRole("listbox");
+    await userEvent.click(await within(listbox).findByText("Arroz"));
+    await waitFor(async () => expect(await findRows()).toHaveLength(2));
+
+    await userEvent.click(screen.getByRole("button", { name: COPY.clearFood }));
+
+    await waitFor(async () => expect(await findRows()).toHaveLength(3));
+  });
 });

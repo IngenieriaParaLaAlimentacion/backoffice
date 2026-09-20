@@ -247,6 +247,15 @@ instead of inheriting the layout's. Route groups don't affect the URL, so `/stoc
 and `/stock/movements` still resolve as siblings even though one is inside the group
 and the other isn't.
 
+Its food filter is shaped by a backend constraint worth knowing before touching it:
+`GET /establishments/{id}/food-movements` takes `food_id` and **no** `category_id`.
+So the category select in `FoodFilter.tsx` narrows what the food combobox searches in
+the catalog (`GET /food-catalog/foods` does take both) and leaves the listing alone
+until a food is actually picked. That is why both controls live in one component
+labelled "Buscar alimento" instead of sitting in the filter row next to Dirección and
+the dates — a category that looked like a listing filter would be a filter that does
+nothing. A test pins the behaviour.
+
 ## Testing
 
 Vitest + jsdom + `@testing-library/react` + MSW (`vitest.setup.ts` starts the shared MSW

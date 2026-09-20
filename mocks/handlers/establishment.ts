@@ -228,11 +228,22 @@ export function makeEstablishmentFoodMovementsHandler() {
       const direction = url.searchParams.get("direction");
       const occurredFrom = url.searchParams.get("occurred_from");
       const occurredTo = url.searchParams.get("occurred_to");
+      const foodId = url.searchParams.get("food_id");
+
+      // "Movements carrying this food on at least one line" — the rows have no
+      // lines, so the answer comes from the detail fixture, the same way the
+      // backend joins onto the lines table.
+      const carriesFood = (movementId: string) =>
+        !foodId ||
+        (MOCK_FOOD_MOVEMENT_DETAILS[movementId]?.items ?? []).some(
+          (line) => line.food.id === foodId,
+        );
 
       const items = DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items
         .filter((item) => !direction || item.direction === direction)
         .filter((item) => !occurredFrom || item.occurred_at >= occurredFrom)
         .filter((item) => !occurredTo || item.occurred_at <= occurredTo)
+        .filter((item) => carriesFood(item.id))
         .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
 
       return HttpResponse.json({

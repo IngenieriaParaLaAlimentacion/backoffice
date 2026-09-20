@@ -73,6 +73,7 @@ export const CREATE_ESTABLISHMENT_REQUEST_ENDPOINT =
 // --- Food Catalog Endpoints ---
 
 export const FOOD_CATEGORIES_ENDPOINT = "/api/v1/food-catalog/categories";
+export const FOODS_ENDPOINT = "/api/v1/food-catalog/foods";
 
 // --- Subjects Endpoints ---
 
