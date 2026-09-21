@@ -299,7 +299,7 @@ const establishmentFoodMovementsFilterQuery = (
 };
 
 /**
- * Entradas and salidas in one sequence, newest event first. The rows carry no
+ * Ingresos and egresos in one sequence, newest event first. The rows carry no
  * lines at all — `getEstablishmentFoodMovementAction` is the second call that
  * fetches them, which is what keeps paging cheap.
  */

@@ -206,7 +206,7 @@ export type FoodStockSortOrder =
   | "quantity_desc"
   | "updated_at_desc";
 
-// --- Food movements (entradas y salidas) ---
+// --- Food movements (ingresos y egresos) ---
 
 export type FoodMovementDirection = "in" | "out";
 

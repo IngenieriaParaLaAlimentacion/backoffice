@@ -28,18 +28,18 @@ describe("EstablishmentMovementsHistoryPage", () => {
       .getAllByRole("row")
       .slice(1);
 
-  it("lists entradas and salidas in one sequence, newest first", async () => {
+  it("lists ingresos and egresos in one sequence, newest first", async () => {
     await renderPage(WITH_DATA_ID);
 
     const rows = await findRows();
     expect(rows).toHaveLength(3);
 
-    // 14/09 entrada, 12/09 salida, 08/09 entrada — mixed directions, ordered
+    // 14/09 ingreso, 12/09 egreso, 08/09 ingreso — mixed directions, ordered
     // by the event date descending.
     expect(within(rows[0]).getByText("14/09/2026 07:00")).toBeInTheDocument();
-    expect(within(rows[0]).getByText("Entrada")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("Ingreso")).toBeInTheDocument();
     expect(within(rows[1]).getByText("12/09/2026 10:00")).toBeInTheDocument();
-    expect(within(rows[1]).getByText("Salida")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("Egreso")).toBeInTheDocument();
     expect(within(rows[2]).getByText("08/09/2026 06:00")).toBeInTheDocument();
   });
 
@@ -49,7 +49,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     const rows = await findRows();
     expect(within(rows[0]).getByText("Juan Gomez")).toBeInTheDocument();
     expect(within(rows[0]).getByText("2 alimentos")).toBeInTheDocument();
-    // The salida has two lines of the same food but `food_count: 1`; the row
+    // The egreso has two lines of the same food but `food_count: 1`; the row
     // must report the food count, not a line count.
     expect(within(rows[1]).getByText("1 alimento")).toBeInTheDocument();
   });
@@ -76,7 +76,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     expect(within(dialog).getAllByText("Kilogramos")).toHaveLength(2);
   });
 
-  it("shows origen and comentarios on an entrada only", async () => {
+  it("shows origen and comentarios on an ingreso only", async () => {
     await renderPage(WITH_DATA_ID);
 
     const rows = await findRows();
@@ -88,7 +88,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     expect(within(dialog).getByText(LONG_COMMENT)).toBeInTheDocument();
   });
 
-  it("hides origen on a salida but still shows its comentarios", async () => {
+  it("hides origen on an egreso but still shows its comentarios", async () => {
     await renderPage(WITH_DATA_ID);
 
     const rows = await findRows();
@@ -121,13 +121,13 @@ describe("EstablishmentMovementsHistoryPage", () => {
 
     await userEvent.selectOptions(
       screen.getByLabelText(COPY.directionLabel),
-      "Solo entradas",
+      "Solo ingresos",
     );
 
     await waitFor(async () => expect(await findRows()).toHaveLength(2));
     const rows = await findRows();
     rows.forEach((row) =>
-      expect(within(row).getByText("Entrada")).toBeInTheDocument(),
+      expect(within(row).getByText("Ingreso")).toBeInTheDocument(),
     );
   });
 
@@ -135,14 +135,14 @@ describe("EstablishmentMovementsHistoryPage", () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
 
-    // 12/09 local covers the 12/09 13:00Z salida and nothing else: the day
+    // 12/09 local covers the 12/09 13:00Z egreso and nothing else: the day
     // bounds are widened to UTC instants, not compared as raw strings.
     await userEvent.type(screen.getByLabelText(COPY.dateFrom), "2026-09-12");
     await userEvent.type(screen.getByLabelText(COPY.dateTo), "2026-09-12");
 
     await waitFor(async () => expect(await findRows()).toHaveLength(1));
     const rows = await findRows();
-    expect(within(rows[0]).getByText("Salida")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("Egreso")).toBeInTheDocument();
   });
 
   it("rejects an inverted date range without calling the backend", async () => {
@@ -179,7 +179,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     const listbox = await screen.findByRole("listbox");
     await userEvent.click(await within(listbox).findByText("Arroz"));
 
-    // The 14/09 entrada and the 12/09 salida carry Arroz; the 08/09 entrada
+    // The 14/09 ingreso and the 12/09 egreso carry Arroz; the 08/09 ingreso
     // only carries Leche en polvo.
     await waitFor(async () => expect(await findRows()).toHaveLength(2));
     const rows = await findRows();
@@ -275,7 +275,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
 
     await userEvent.selectOptions(
       screen.getByLabelText(COPY.directionLabel),
-      "Solo entradas",
+      "Solo ingresos",
     );
 
     // Staying on page 2 of a narrower result set would strand the user on an

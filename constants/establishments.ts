@@ -244,8 +244,8 @@ export const ESTABLISHMENT_STOCK_PAGE = {
 
 export const MOVEMENT_DIRECTION_LABELS: Record<FoodMovementDirection, string> =
   {
-    in: "Entrada",
-    out: "Salida",
+    in: "Ingreso",
+    out: "Egreso",
   };
 
 /** Only intakes carry a source; outflows are always loaded by hand. */
@@ -259,9 +259,9 @@ export const MOVEMENT_DIRECTION_OPTIONS: {
   value: "" | FoodMovementDirection;
   label: string;
 }[] = [
-  { value: "", label: "Entradas y salidas" },
-  { value: "in", label: "Solo entradas" },
-  { value: "out", label: "Solo salidas" },
+  { value: "", label: "Ingresos y egresos" },
+  { value: "in", label: "Solo ingresos" },
+  { value: "out", label: "Solo egresos" },
 ];
 
 export const ESTABLISHMENT_MOVEMENTS_PAGE = {
