@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -56,19 +56,24 @@ export default function MovementDetailPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDetail = useCallback(
-    async (id: string) => {
-      setDetail(null);
-      setError(null);
-      setIsLoading(true);
-      try {
-        const data = await getEstablishmentFoodMovementAction(
-          makeAuthorizedRequest,
-          establishmentId,
-          id,
-        );
-        setDetail(data);
-      } catch (err) {
+  useEffect(() => {
+    if (!movementId) return;
+    let cancelled = false;
+
+    setDetail(null);
+    setError(null);
+    setIsLoading(true);
+
+    getEstablishmentFoodMovementAction(
+      makeAuthorizedRequest,
+      establishmentId,
+      movementId,
+    )
+      .then((data) => {
+        if (!cancelled) setDetail(data);
+      })
+      .catch((err) => {
+        if (cancelled) return;
         setError(
           getErrorMessage(err, {
             // A movement of another comedor answers 404 on purpose, so that
@@ -79,17 +84,15 @@ export default function MovementDetailPanel({
             fallback: COPY.detail.loadError,
           }),
         );
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [makeAuthorizedRequest, establishmentId],
-  );
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
 
-  useEffect(() => {
-    if (!movementId) return;
-    fetchDetail(movementId);
-  }, [movementId, fetchDetail]);
+    return () => {
+      cancelled = true;
+    };
+  }, [movementId, makeAuthorizedRequest, establishmentId]);
 
   return (
     <Dialog.Root

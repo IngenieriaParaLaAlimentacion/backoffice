@@ -11,6 +11,9 @@ const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
 const LONG_COMMENT =
   "Donación del municipio, entregada en dos camionetas por la mañana; falta confirmar el remito del segundo envío";
 
+/** No approved access to this one: its movements answer 403. */
+const FORBIDDEN_ID = MOCK_ESTABLISHMENTS[3].id;
+
 /** 25 movements against a PAGE_SIZE of 20 — two pages. */
 const PAGED_ID = MOCK_ESTABLISHMENTS[2].id;
 
@@ -62,6 +65,16 @@ describe("EstablishmentMovementsHistoryPage", () => {
     await renderPage(WITHOUT_DATA_ID);
 
     expect(await screen.findByText(COPY.noMovements)).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("shows a forbidden screen, not an empty listing, on a 403", async () => {
+    await renderPage(FORBIDDEN_ID);
+
+    // "No tenés acceso" and "no hay movimientos" are different answers and a
+    // 403 must never degrade into the second one.
+    expect(await screen.findByText(COPY.forbiddenTitle)).toBeInTheDocument();
+    expect(screen.queryByText(COPY.noMovements)).not.toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 

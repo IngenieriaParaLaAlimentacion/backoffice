@@ -50,6 +50,21 @@ const WITH_DATA_ID = MOCK_ESTABLISHMENTS[0].id;
 const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
 /** Only the movements listing answers for this one: it exists to overflow a page. */
 const PAGED_ID = MOCK_ESTABLISHMENTS[2].id;
+/** The comedor the caller has no approved access to: its movements answer 403. */
+const FORBIDDEN_ID = MOCK_ESTABLISHMENTS[3].id;
+
+function forbidden(instance: string) {
+  return HttpResponse.json(
+    {
+      type: "/errors/role-not-allowed",
+      title: "Forbidden",
+      status: 403,
+      detail: "No tenés acceso a este comedor.",
+      instance,
+    },
+    { status: 403, headers: { "Content-Type": "application/problem+json" } },
+  );
+}
 
 function notFound(instance: string) {
   return HttpResponse.json(
@@ -223,6 +238,9 @@ export function makeEstablishmentFoodMovementsHandler() {
     ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT(":id"),
     ({ params, request }) => {
       const url = new URL(request.url);
+      // 403 and 404 are different situations and render differently: no
+      // approved access to an existing comedor vs. no such comedor.
+      if (params.id === FORBIDDEN_ID) return forbidden(url.pathname);
       if (
         params.id !== WITH_DATA_ID &&
         params.id !== WITHOUT_DATA_ID &&
