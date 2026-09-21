@@ -123,6 +123,8 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
     value: MovementFilters[K],
   ) => setFilters((prev) => ({ ...prev, [key]: value }));
 
+  const clearFilters = () => setFilters(EMPTY_FILTERS);
+
   const hasActiveFilters =
     debouncedFilters.direction !== "" ||
     debouncedFilters.dateFrom !== "" ||
@@ -139,6 +141,7 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
     setPage,
     filters,
     updateFilter,
+    clearFilters,
     hasActiveFilters,
     notFound: status === StatusCodes.NOT_FOUND,
     forbidden: status === StatusCodes.FORBIDDEN,

@@ -11,6 +11,10 @@ import { Separator } from "@/components/ui/separator";
 import FullScreenMessage from "@/components/FullScreenMessage";
 import Pagination from "@/components/Pagination";
 import {
+  FilterPanel,
+  FiltersToggle,
+} from "@/components/listings/FiltersToggle";
+import {
   CARD_HOVER_CLASS,
   ChevronCell,
   ChevronHeaderCell,
@@ -56,6 +60,7 @@ export default function EstablishmentMovementsHistoryPage({
     setPage,
     filters,
     updateFilter,
+    clearFilters,
     hasActiveFilters,
     notFound,
     forbidden,
@@ -71,6 +76,26 @@ export default function EstablishmentMovementsHistoryPage({
   const selectFood = (food: FoodListItem | null) => {
     setSelectedFood(food);
     updateFilter("foodId", food?.id ?? "");
+  };
+
+  // Five controls is more than the listing should spend screen on, so they
+  // collapse the way Sujetos and Mediciones do.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Bumping the key remounts FoodFilter, which is how "Borrar filtros" also
+  // clears the category and the text it keeps to itself.
+  const [foodFilterKey, setFoodFilterKey] = useState(0);
+
+  const activeFilterCount = [
+    filters.direction,
+    filters.dateFrom,
+    filters.dateTo,
+    filters.foodId,
+  ].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    clearFilters();
+    setSelectedFood(null);
+    setFoodFilterKey((key) => key + 1);
   };
 
   const stockHref = `/dashboard/establishments/${id}/stock`;
@@ -131,6 +156,16 @@ export default function EstablishmentMovementsHistoryPage({
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end gap-3">
+            <FiltersToggle
+              open={filtersOpen}
+              onToggle={() => setFiltersOpen((open) => !open)}
+              activeCount={activeFilterCount}
+              hasActiveFilters={activeFilterCount > 0}
+              onClear={clearAllFilters}
+            />
+          </div>
+
+          <FilterPanel open={filtersOpen}>
             <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label
                 className="text-xs text-muted-foreground"
@@ -188,9 +223,13 @@ export default function EstablishmentMovementsHistoryPage({
                 className="w-full sm:w-40"
               />
             </div>
-          </div>
 
-          <FoodFilter selectedFood={selectedFood} onSelectFood={selectFood} />
+            <FoodFilter
+              key={foodFilterKey}
+              selectedFood={selectedFood}
+              onSelectFood={selectFood}
+            />
+          </FilterPanel>
 
           {error && (
             <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">

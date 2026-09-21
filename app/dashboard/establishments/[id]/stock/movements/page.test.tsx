@@ -23,6 +23,10 @@ describe("EstablishmentMovementsHistoryPage", () => {
   // The desktop table and the mobile card list both render in jsdom (no CSS
   // hides either), so every row's text exists twice — scoping to the table is
   // what makes a single `getByText` valid.
+  /** Every filter now lives behind the toggle, collapsed on arrival. */
+  const openFilters = () =>
+    userEvent.click(screen.getByRole("button", { name: /Filtros/ }));
+
   const findRows = async () =>
     within(await screen.findByRole("table"))
       .getAllByRole("row")
@@ -118,6 +122,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("filters the listing by direction", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
+    await openFilters();
 
     await userEvent.selectOptions(
       screen.getByLabelText(COPY.directionLabel),
@@ -134,6 +139,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("filters the listing by date range", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
+    await openFilters();
 
     // 12/09 local covers the 12/09 13:00Z egreso and nothing else: the day
     // bounds are widened to UTC instants, not compared as raw strings.
@@ -148,6 +154,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("rejects an inverted date range without calling the backend", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
+    await openFilters();
 
     await userEvent.type(screen.getByLabelText(COPY.dateFrom), "2026-09-20");
     await userEvent.type(screen.getByLabelText(COPY.dateTo), "2026-09-01");
@@ -159,6 +166,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("suggests foods from the catalog as you type", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
+    await openFilters();
 
     await userEvent.type(screen.getByLabelText(COPY.foodLabel), "ar");
 
@@ -171,9 +179,23 @@ describe("EstablishmentMovementsHistoryPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("closes the food dropdown on Escape", async () => {
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+    await openFilters();
+
+    await userEvent.type(screen.getByLabelText(COPY.foodLabel), "ar");
+    await screen.findByRole("listbox");
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
   it("filters the listing to the movements carrying the chosen food", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
+    await openFilters();
 
     await userEvent.type(screen.getByLabelText(COPY.foodLabel), "arroz");
     const listbox = await screen.findByRole("listbox");
@@ -190,6 +212,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("scopes the food search to the selected category", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
+    await openFilters();
 
     await userEvent.selectOptions(
       screen.getByLabelText(COPY.foodCategoryLabel),
@@ -211,6 +234,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("leaves the listing untouched until a food is actually chosen", async () => {
     await renderPage(WITH_DATA_ID);
     expect(await findRows()).toHaveLength(3);
+    await openFilters();
 
     // The endpoint takes `food_id` and no `category_id`: a category on its own
     // narrows the search and nothing else. Whoever "fixes" this breaks here.
@@ -225,6 +249,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("restores the full listing when the food filter is cleared", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
+    await openFilters();
 
     await userEvent.type(screen.getByLabelText(COPY.foodLabel), "arroz");
     const listbox = await screen.findByRole("listbox");
@@ -268,6 +293,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
   it("returns to the first page when a filter changes", async () => {
     await renderPage(PAGED_ID);
     await findRows();
+    await openFilters();
     await userEvent.click(
       screen.getByRole("button", { name: "Página siguiente" }),
     );
@@ -291,5 +317,21 @@ describe("EstablishmentMovementsHistoryPage", () => {
     await findRows();
 
     expect(screen.queryByText(/Página \d+ de/)).not.toBeInTheDocument();
+  });
+  it("keeps the filters collapsed until asked for", async () => {
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+
+    // The listing is the screen; five controls sitting open above it were
+    // the complaint this collapse answers.
+    expect(
+      screen.queryByLabelText(COPY.directionLabel),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(COPY.foodLabel)).not.toBeInTheDocument();
+
+    await openFilters();
+
+    expect(screen.getByLabelText(COPY.directionLabel)).toBeInTheDocument();
+    expect(screen.getByLabelText(COPY.foodLabel)).toBeInTheDocument();
   });
 });

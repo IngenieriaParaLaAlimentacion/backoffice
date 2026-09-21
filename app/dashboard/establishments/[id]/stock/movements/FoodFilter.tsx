@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Loader2, Search, X } from "lucide-react";
+import { useDismissOnOutside } from "@/hooks/useDismissOnOutside";
 import { useFoodCategories } from "@/hooks/useFoodCategories";
 import { useFoodSearch } from "@/hooks/useFoodSearch";
 import { FoodListItem } from "@/types/foodCatalog";
@@ -35,7 +36,7 @@ export default function FoodFilter({
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useDismissOnOutside(open, () => setOpen(false));
   const listboxId = useId();
 
   const { foods, isLoading, hasMore } = useFoodSearch({
@@ -43,25 +44,6 @@ export default function FoodFilter({
     categoryId,
     enabled: open,
   });
-
-  // Same close mechanics as `components/ui/multi-select.tsx`.
-  useEffect(() => {
-    if (!open) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
 
   useEffect(() => setHighlighted(0), [foods]);
 
@@ -116,7 +98,11 @@ export default function FoodFilter({
   };
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+    // `w-full` claims a row of its own inside the filter panel: the heading
+    // is what keeps the category from reading as a peer of Dirección, and it
+    // only works if the pair sits together on one line. No box of its own —
+    // the panel already draws one.
+    <div className="flex w-full flex-col gap-2">
       <span className="text-xs font-medium">{COPY.foodSearchTitle}</span>
 
       <div className="flex flex-wrap items-end gap-3">
@@ -194,7 +180,10 @@ export default function FoodFilter({
               <div
                 id={listboxId}
                 role="listbox"
-                className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-border bg-popover p-1 shadow-md"
+                // Around four options tall: enough to see there is a list and
+                // that it scrolls, without the dropdown covering the rows the
+                // person is filtering.
+                className="absolute z-10 mt-1 max-h-44 w-full overflow-y-auto rounded-lg border border-border bg-popover p-1 shadow-md"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center py-3">
