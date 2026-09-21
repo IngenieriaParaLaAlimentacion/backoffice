@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { listEstablishmentFoodMovementsAction } from "@/services/establishment.service";
@@ -27,6 +27,12 @@ export type MovementFilters = {
   foodId: string;
 };
 
+const sameFilters = (a: MovementFilters, b: MovementFilters) =>
+  a.direction === b.direction &&
+  a.dateFrom === b.dateFrom &&
+  a.dateTo === b.dateTo &&
+  a.foodId === b.foodId;
+
 const EMPTY_FILTERS: MovementFilters = {
   direction: "",
   dateFrom: "",
@@ -49,10 +55,17 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
   const [debouncedFilters, setDebouncedFilters] =
     useState<MovementFilters>(EMPTY_FILTERS);
 
+  // Read through a ref so settling the debounce can compare against the last
+  // applied value without putting `debouncedFilters` in the effect's deps.
+  const appliedFilters = useRef(EMPTY_FILTERS);
+
   // Typing into a date input fires per keystroke; debouncing keeps a half-typed
-  // year from reaching the API. The page reset rides along with it.
+  // year from reaching the API. The page reset rides along with it — but only
+  // when the filters really changed.
   useEffect(() => {
     const timeout = setTimeout(() => {
+      if (sameFilters(filters, appliedFilters.current)) return;
+      appliedFilters.current = filters;
       setDebouncedFilters(filters);
       setPage(1);
     }, FILTER_DEBOUNCE_MS);

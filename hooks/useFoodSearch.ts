@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { listFoodsAction } from "@/services/foodCatalog.service";
 import { FoodListItem } from "@/types/foodCatalog";
@@ -29,9 +29,17 @@ export function useFoodSearch({
   const [foods, setFoods] = useState<FoodListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  /** The query whose results are already in state; `null` until one lands. */
+  const loadedQuery = useRef<string | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
+
+    // Reopening the dropdown without touching the text would otherwise refetch
+    // what is already on screen, costing a round trip and a spinner for the
+    // same list. Only set on success, so a failed search is retried.
+    const query = `${categoryId}|${search}`;
+    if (query === loadedQuery.current) return;
 
     let cancelled = false;
     setIsLoading(true);
@@ -44,6 +52,7 @@ export function useFoodSearch({
       })
         .then((data) => {
           if (cancelled) return;
+          loadedQuery.current = query;
           setFoods(data.items);
           setTotal(data.total);
         })
