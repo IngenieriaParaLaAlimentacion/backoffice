@@ -60,14 +60,17 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
   const appliedFilters = useRef(EMPTY_FILTERS);
 
   // Typing into a date input fires per keystroke; debouncing keeps a half-typed
-  // year from reaching the API. The page reset rides along with it — but only
-  // when the filters really changed.
+  // year from reaching the API.
+  //
+  // The page reset deliberately does NOT ride along here. Fired 300ms after
+  // the fact, it would silently undo a page the reader clicked in the
+  // meantime; resetting when the filter is edited instead makes it immediate,
+  // visible, and impossible to race against the paginator.
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (sameFilters(filters, appliedFilters.current)) return;
       appliedFilters.current = filters;
       setDebouncedFilters(filters);
-      setPage(1);
     }, FILTER_DEBOUNCE_MS);
     return () => clearTimeout(timeout);
   }, [filters]);
@@ -135,12 +138,20 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
     };
   }, [makeAuthorizedRequest, establishmentId, page, debouncedFilters]);
 
+  // Narrowing the results invalidates whatever page the reader was on, so both
+  // entry points reset it at the moment of the edit.
   const updateFilter = <K extends keyof MovementFilters>(
     key: K,
     value: MovementFilters[K],
-  ) => setFilters((prev) => ({ ...prev, [key]: value }));
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
+  };
 
-  const clearFilters = () => setFilters(EMPTY_FILTERS);
+  const clearFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    setPage(1);
+  };
 
   const hasActiveFilters =
     debouncedFilters.direction !== "" ||

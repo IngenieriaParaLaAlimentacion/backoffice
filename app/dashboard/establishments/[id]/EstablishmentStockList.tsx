@@ -83,7 +83,7 @@ export default function EstablishmentStockList({
             {COPY.subtitle(total)}
           </p>
         </div>
-        <div className="flex flex-wrap items-start gap-2 md:flex-col">
+        <div className="flex flex-wrap items-start gap-2">
           <ExportButton
             isExporting={isExporting}
             onClick={handleExport}

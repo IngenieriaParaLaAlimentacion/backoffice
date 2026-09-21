@@ -325,6 +325,28 @@ describe("EstablishmentMovementsHistoryPage", () => {
     expect(await findRows()).toHaveLength(13);
   });
 
+  it("does not undo a page clicked while a filter is still settling", async () => {
+    await renderPage(PAGED_ID);
+    await findRows();
+    await openFilters();
+
+    // Excludes the 01/08 movement: 24 left, so still two pages but the second
+    // one goes from five rows to four — which is how the test can tell the
+    // filter actually landed.
+    await userEvent.type(screen.getByLabelText(COPY.dateFrom), "2026-08-02");
+    // Editing the filter resets to page 1 right away, not 300ms later.
+    expect(screen.getByText("Página 1 de 2")).toBeInTheDocument();
+
+    // Clicked while the debounce is still pending: nothing fired later may
+    // take this page away.
+    await userEvent.click(
+      screen.getByRole("button", { name: "Página siguiente" }),
+    );
+
+    await waitFor(async () => expect(await findRows()).toHaveLength(4));
+    expect(screen.getByText("Página 2 de 2")).toBeInTheDocument();
+  });
+
   it("hides the paginator when everything fits on one page", async () => {
     await renderPage(WITH_DATA_ID);
     await findRows();
