@@ -6,6 +6,7 @@ import { useFoodCategories } from "@/hooks/useFoodCategories";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { exportEstablishmentStockAction } from "@/services/establishment.service";
 import ExportButton from "@/components/listings/ExportButton";
+import { Button } from "@/components/ui/button";
 import ExportError from "@/components/listings/ExportError";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import { FoodStockSortOrder } from "@/types/establishment";
@@ -17,7 +18,8 @@ import {
   STOCK_UNIT_LABELS,
 } from "@/constants/establishments";
 import { formatQuantity, formatTimestampDate } from "@/lib/format";
-import { Loader2 } from "lucide-react";
+import { ArrowLeftRight, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export default function EstablishmentStockList({
   establishmentId,
@@ -81,12 +83,28 @@ export default function EstablishmentStockList({
             {COPY.subtitle(total)}
           </p>
         </div>
-        <ExportButton
-          isExporting={isExporting}
-          onClick={handleExport}
-          disabled={isLoading || total === 0}
-          emptyHint={total === 0 ? EXPORT.empty : undefined}
-        />
+        <div className="flex flex-wrap items-start gap-2">
+          <ExportButton
+            isExporting={isExporting}
+            onClick={handleExport}
+            disabled={isLoading || total === 0}
+            emptyHint={total === 0 ? EXPORT.empty : undefined}
+          />
+          <Button
+            size="sm"
+            // The render target is a next/link <a>, not a <button>; without
+            // this Base UI keeps native button semantics it cannot deliver.
+            nativeButton={false}
+            render={
+              <Link
+                href={`/dashboard/establishments/${establishmentId}/stock/movements`}
+              />
+            }
+          >
+            <ArrowLeftRight size={14} />
+            {COPY.viewHistory}
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-end gap-3">

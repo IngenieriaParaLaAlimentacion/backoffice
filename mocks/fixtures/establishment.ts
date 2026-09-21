@@ -4,6 +4,9 @@ import {
   PaginatedEstablishmentFieldWorkersResponse,
   PaginatedEstablishmentsResponse,
   PaginatedEstablishmentSubjectsResponse,
+  FoodMovementDetail,
+  FoodMovementListItem,
+  PaginatedFoodMovementsResponse,
   PaginatedFoodStockResponse,
 } from "@/types/establishment";
 import { MOCK_FOOD_CATEGORIES } from "@/mocks/fixtures/foodCatalog";
@@ -248,6 +251,145 @@ export const EMPTY_ESTABLISHMENT_STOCK_RESPONSE: PaginatedFoodStockResponse = {
   total_pages: 0,
 };
 
+// --- Food movements ---
+
+const MOVEMENT_IDS = {
+  intake: "a1000000-0000-0000-0000-000000000001",
+  outflow: "a1000000-0000-0000-0000-000000000002",
+  intakeNoComments: "a1000000-0000-0000-0000-000000000003",
+};
+
+const RESPONSIBLE = {
+  id: "f1000000-0000-0000-0000-000000000001",
+  name: "Juan",
+  last_name: "Gomez",
+};
+
+/**
+ * Deliberately NOT in `occurred_at` order in the source, so a test asserting
+ * the newest-first order is asserting something. The handler sorts.
+ */
+export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovementsResponse =
+  {
+    items: [
+      {
+        id: MOVEMENT_IDS.outflow,
+        direction: "out",
+        occurred_at: "2026-09-12T13:00:00Z",
+        responsible: RESPONSIBLE,
+        food_count: 1,
+      },
+      {
+        id: MOVEMENT_IDS.intake,
+        direction: "in",
+        occurred_at: "2026-09-14T10:00:00Z",
+        responsible: RESPONSIBLE,
+        food_count: 2,
+      },
+      {
+        id: MOVEMENT_IDS.intakeNoComments,
+        direction: "in",
+        occurred_at: "2026-09-08T09:00:00Z",
+        responsible: { ...RESPONSIBLE, name: "Ana", last_name: "Diaz" },
+        food_count: 1,
+      },
+    ],
+    total: 3,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+  };
+
+export const EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovementsResponse =
+  { items: [], total: 0, page: 1, page_size: 20, total_pages: 0 };
+
+/**
+ * Keyed by movement id — a row's `id` resolves straight to its detail.
+ * The outflow carries two lines of the SAME food against `food_count: 1`,
+ * which is exactly the case where labelling `food_count` as "items" lies.
+ */
+/**
+ * A third comedor whose only job is to overflow one page: `PAGE_SIZE` is 20,
+ * so 25 movements make the paginator appear and give page 2 five rows. Dated
+ * across August, all older than the three handcrafted September ones, and
+ * none of them carries the foods those use — keeping them out of every other
+ * fixture's way.
+ */
+const PAGED_MOVEMENT_COUNT = 25;
+
+export const PAGED_FOOD_MOVEMENTS: FoodMovementListItem[] = Array.from(
+  { length: PAGED_MOVEMENT_COUNT },
+  (_, index) => ({
+    id: `a2000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
+    direction: index % 2 === 0 ? "in" : "out",
+    occurred_at: `2026-08-${String(index + 1).padStart(2, "0")}T12:00:00Z`,
+    responsible: RESPONSIBLE,
+    food_count: 1,
+  }),
+);
+
+export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
+  [MOVEMENT_IDS.intake]: {
+    id: MOVEMENT_IDS.intake,
+    direction: "in",
+    occurred_at: "2026-09-14T10:00:00Z",
+    source: "photo",
+    comments:
+      "Donación del municipio, entregada en dos camionetas por la mañana; falta confirmar el remito del segundo envío",
+    responsible: RESPONSIBLE,
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        unit: "kilogramos",
+        quantity: "10.000",
+      },
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000003", name: "Aceite" },
+        unit: "litros",
+        quantity: "4.500",
+      },
+    ],
+  },
+  [MOVEMENT_IDS.outflow]: {
+    id: MOVEMENT_IDS.outflow,
+    direction: "out",
+    occurred_at: "2026-09-12T13:00:00Z",
+    source: "manual",
+    comments: "Almuerzo",
+    responsible: RESPONSIBLE,
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        unit: "kilogramos",
+        quantity: "2.500",
+      },
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        unit: "kilogramos",
+        quantity: "1.250",
+      },
+    ],
+  },
+  [MOVEMENT_IDS.intakeNoComments]: {
+    id: MOVEMENT_IDS.intakeNoComments,
+    direction: "in",
+    occurred_at: "2026-09-08T09:00:00Z",
+    source: "manual",
+    comments: null,
+    responsible: { ...RESPONSIBLE, name: "Ana", last_name: "Diaz" },
+    items: [
+      {
+        food: {
+          id: "d1000000-0000-0000-0000-000000000002",
+          name: "Leche en polvo",
+        },
+        unit: "kilogramos",
+        quantity: "6.000",
+      },
+    ],
+  },
+};
+
 export const DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE: PaginatedEstablishmentFieldWorkersResponse =
   {
     items: [
@@ -278,3 +420,20 @@ export const DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE: PaginatedEstablishmen
     page_size: 20,
     total_pages: 1,
   };
+
+/** Every paged movement resolves to a one-line detail, so the comedor that
+ *  exists to test paging is still clickable in the dev preview. */
+for (const movement of PAGED_FOOD_MOVEMENTS) {
+  MOCK_FOOD_MOVEMENT_DETAILS[movement.id] = {
+    ...movement,
+    source: "manual",
+    comments: null,
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000004", name: "Arvejas" },
+        unit: "kilogramos",
+        quantity: "3.000",
+      },
+    ],
+  };
+}

@@ -4,6 +4,8 @@ import {
   CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
+  ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT,
+  ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT,
   ESTABLISHMENT_STOCK_ENDPOINT,
   ESTABLISHMENT_STOCK_EXPORT_ENDPOINT,
   ESTABLISHMENT_SUBJECTS_ENDPOINT,
@@ -12,10 +14,14 @@ import {
 import {
   DEFAULT_ESTABLISHMENT_DASHBOARD,
   DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE,
+  DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
   DEFAULT_ESTABLISHMENT_STOCK_RESPONSE,
   DEFAULT_ESTABLISHMENT_SUBJECTS_RESPONSE,
   DEFAULT_ESTABLISHMENTS_RESPONSE,
   EMPTY_ESTABLISHMENT_DASHBOARD,
+  EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
+  MOCK_FOOD_MOVEMENT_DETAILS,
+  PAGED_FOOD_MOVEMENTS,
   EMPTY_ESTABLISHMENT_STOCK_RESPONSE,
   EMPTY_ESTABLISHMENT_SUBJECTS_RESPONSE,
   MOCK_ESTABLISHMENTS,
@@ -42,6 +48,23 @@ export function makeListEstablishmentsHandler(
  */
 const WITH_DATA_ID = MOCK_ESTABLISHMENTS[0].id;
 const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
+/** Only the movements listing answers for this one: it exists to overflow a page. */
+const PAGED_ID = MOCK_ESTABLISHMENTS[2].id;
+/** The comedor the caller has no approved access to: its movements answer 403. */
+const FORBIDDEN_ID = MOCK_ESTABLISHMENTS[3].id;
+
+function forbidden(instance: string) {
+  return HttpResponse.json(
+    {
+      type: "/errors/role-not-allowed",
+      title: "Forbidden",
+      status: 403,
+      detail: "No tenés acceso a este comedor.",
+      instance,
+    },
+    { status: 403, headers: { "Content-Type": "application/problem+json" } },
+  );
+}
 
 function notFound(instance: string) {
   return HttpResponse.json(
@@ -201,6 +224,107 @@ export function makeCreateEstablishmentRequestHandler() {
         created_at: new Date().toISOString(),
       };
       return HttpResponse.json(newRequest, { status: 201 });
+    },
+  );
+}
+
+/**
+ * Filters for real (direction + the occurred_at range) so a test exercises the
+ * date conversion end to end, not just the select. Sorted newest event first,
+ * like the backend does.
+ */
+export function makeEstablishmentFoodMovementsHandler() {
+  return http.get<{ id: string }>(
+    ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT(":id"),
+    ({ params, request }) => {
+      const url = new URL(request.url);
+      // 403 and 404 are different situations and render differently: no
+      // approved access to an existing comedor vs. no such comedor.
+      if (params.id === FORBIDDEN_ID) return forbidden(url.pathname);
+      if (
+        params.id !== WITH_DATA_ID &&
+        params.id !== WITHOUT_DATA_ID &&
+        params.id !== PAGED_ID
+      )
+        return notFound(url.pathname);
+      if (params.id === WITHOUT_DATA_ID)
+        return HttpResponse.json(EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE);
+
+      const direction = url.searchParams.get("direction");
+      const occurredFrom = url.searchParams.get("occurred_from");
+      const occurredTo = url.searchParams.get("occurred_to");
+      const foodId = url.searchParams.get("food_id");
+      const page = Number(url.searchParams.get("page") ?? 1);
+      const pageSize = Number(url.searchParams.get("page_size") ?? 20);
+
+      // "Movements carrying this food on at least one line" — the rows have no
+      // lines, so the answer comes from the detail fixture, the same way the
+      // backend joins onto the lines table.
+      const carriesFood = (movementId: string) =>
+        !foodId ||
+        (MOCK_FOOD_MOVEMENT_DETAILS[movementId]?.items ?? []).some(
+          (line) => line.food.id === foodId,
+        );
+
+      const source =
+        params.id === PAGED_ID
+          ? PAGED_FOOD_MOVEMENTS
+          : DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items;
+
+      const matches = source
+        .filter((item) => !direction || item.direction === direction)
+        .filter((item) => !occurredFrom || item.occurred_at >= occurredFrom)
+        .filter((item) => !occurredTo || item.occurred_at <= occurredTo)
+        .filter((item) => carriesFood(item.id))
+        .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+
+      // Slices for real: a handler that returned everything and a fixed
+      // `total_pages: 1` would hide the paginator from every test and from
+      // the dev preview, i.e. from everyone who could notice it broke.
+      const start = (page - 1) * pageSize;
+
+      return HttpResponse.json({
+        items: matches.slice(start, start + pageSize),
+        total: matches.length,
+        page,
+        page_size: pageSize,
+        total_pages: Math.max(1, Math.ceil(matches.length / pageSize)),
+      });
+    },
+  );
+}
+
+/** An unknown movement id answers 404 — the same answer a movement of another
+ *  comedor gets, which is the point: the ids of other comedores stay hidden. */
+export function makeEstablishmentFoodMovementDetailHandler() {
+  return http.get<{ id: string; movementId: string }>(
+    ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT(":id", ":movementId"),
+    ({ params, request }) => {
+      const url = new URL(request.url);
+      if (
+        params.id !== WITH_DATA_ID &&
+        params.id !== WITHOUT_DATA_ID &&
+        params.id !== PAGED_ID
+      )
+        return notFound(url.pathname);
+
+      const detail = MOCK_FOOD_MOVEMENT_DETAILS[params.movementId];
+      if (!detail)
+        return HttpResponse.json(
+          {
+            type: "/errors/food-movement-not-found",
+            title: "Food movement not found",
+            status: 404,
+            detail: "El movimiento solicitado no existe.",
+            instance: url.pathname,
+          },
+          {
+            status: 404,
+            headers: { "Content-Type": "application/problem+json" },
+          },
+        );
+
+      return HttpResponse.json(detail);
     },
   );
 }

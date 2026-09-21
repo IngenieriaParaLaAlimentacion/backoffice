@@ -2,6 +2,8 @@ import {
   EstablishmentRequestSortOrder,
   EstablishmentSortOrder,
   EstablishmentSubjectSortOrder,
+  FoodMovementDirection,
+  FoodMovementSource,
   FoodStockSortOrder,
   FoodStockUnit,
   RelationStatus,
@@ -224,6 +226,7 @@ export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
 export const ESTABLISHMENT_STOCK_PAGE = {
   subtitle: (total: number) =>
     `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
+  viewHistory: "Historial de Movimientos",
   categoryLabel: "Categoría",
   allCategories: "Todas las categorías",
   sortLabel: "Ordenar por",
@@ -236,6 +239,83 @@ export const ESTABLISHMENT_STOCK_PAGE = {
     unit: "Unidad",
     quantity: "Cantidad",
     updatedAt: "Última actualización",
+  },
+} as const;
+
+export const MOVEMENT_DIRECTION_LABELS: Record<FoodMovementDirection, string> =
+  {
+    in: "Ingreso",
+    out: "Egreso",
+  };
+
+/** Only intakes carry a source; outflows are always loaded by hand. */
+export const MOVEMENT_SOURCE_LABELS: Record<FoodMovementSource, string> = {
+  manual: "Carga manual",
+  photo: "Foto",
+};
+
+/** `""` means "no filter" — the API param is simply omitted. */
+export const MOVEMENT_DIRECTION_OPTIONS: {
+  value: "" | FoodMovementDirection;
+  label: string;
+}[] = [
+  { value: "", label: "Ingresos y egresos" },
+  { value: "in", label: "Solo ingresos" },
+  { value: "out", label: "Solo egresos" },
+];
+
+export const ESTABLISHMENT_MOVEMENTS_PAGE = {
+  title: "Historial de movimientos",
+  back: "Volver al stock",
+  subtitle: (total: number) =>
+    `${total} ${total === 1 ? "movimiento registrado" : "movimientos registrados"}`,
+  // `food_count` counts distinct foods, not lines: "3 ítems" would be a lie
+  // for a movement whose detail returns four lines of three foods.
+  foodCount: (count: number) =>
+    `${count} ${count === 1 ? "alimento" : "alimentos"}`,
+  directionLabel: "Dirección",
+  dateFrom: "Fecha desde",
+  dateTo: "Fecha hasta",
+  // The category scopes the search; only the chosen food filters the listing,
+  // because the endpoint takes `food_id` and no `category_id`. The labels say
+  // "Buscar alimento" rather than "Filtros" so that reads as intended.
+  foodSearchTitle: "Buscar alimento",
+  foodCategoryLabel: "Categoría",
+  allCategories: "Todas las categorías",
+  foodLabel: "Alimento",
+  foodPlaceholder: "Ej: Arroz",
+  noFoodResults: "Ningún alimento coincide con la búsqueda",
+  moreFoodResults: "Seguí escribiendo para afinar la búsqueda",
+  clearFood: "Quitar el filtro de alimento",
+  noMovements: "Este comedor todavía no tiene movimientos registrados",
+  noResults: "Ningún movimiento coincide con los filtros aplicados",
+  loadError: "Error al cargar el historial de movimientos",
+  invalidRange: "La fecha desde no puede ser posterior a la fecha hasta",
+  notFoundTitle: "Comedor no encontrado",
+  notFoundBody: "El comedor que buscás no existe o fue eliminado del sistema.",
+  forbiddenTitle: "No tenés permisos",
+  forbiddenBody: "No tenés acceso al historial de este comedor.",
+  backToPanel: "Volver al panel de comedores",
+  columns: {
+    date: "Fecha",
+    direction: "Dirección",
+    responsible: "Responsable",
+    foods: "Alimentos",
+  },
+  detail: {
+    title: "Detalle del movimiento",
+    responsible: "Responsable",
+    date: "Fecha",
+    direction: "Dirección",
+    source: "Origen",
+    comments: "Comentarios",
+    linesTitle: "Alimentos",
+    food: "Alimento",
+    quantity: "Cantidad",
+    unit: "Unidad",
+    // A movement of another comedor answers 404, never 403.
+    notFound: "Ese movimiento no existe",
+    loadError: "Error al cargar el detalle del movimiento",
   },
 } as const;
 

@@ -205,6 +205,9 @@ before.
 
 `app/(auth)/` holds unauthenticated screens (signin, invite, forgot/reset password,
 verify-email); `app/dashboard/` is everything behind the auth gate.
+`app/dashboard/establishments/[id]/(ficha)/` groups the routes that share the
+establishment's header/metrics/tab chrome, so a sibling route can opt out of it — see
+the next section.
 
 ## Tabs inside a resource's detail page
 
@@ -213,12 +216,13 @@ splits a resource's detail page into tabs instead of stacking every section on o
 page — introduced when Sujetos/Relevadores outgrew a single scroll and Stock was
 about to join them, with stock movements (#111) already on deck behind it.
 
-- `[id]/layout.tsx` owns the one fetch that gates the whole ficha
+- `[id]/(ficha)/layout.tsx` owns the one fetch that gates the whole ficha
   (`useEstablishmentDashboard`: 404/403/loading), renders the always-visible
   header/metrics/alert banner above the tab bar, and renders `children` below it —
   whichever tab's `page.tsx` matches the current route.
-- Each tab is a real route (`[id]/page.tsx` = Sujetos, `[id]/field-workers/page.tsx`,
-  `[id]/stock/page.tsx`), not a client-side toggle over one always-mounted tree: a
+- Each tab is a real route (`(ficha)/page.tsx` = Sujetos,
+  `(ficha)/field-workers/page.tsx`, `(ficha)/stock/page.tsx`), not a client-side
+  toggle over one always-mounted tree: a
   tab's data only loads once that tab is actually visited, and deep-linking straight
   to one works.
 - The dashboard payload the layout already fetched is handed down to whichever tab
@@ -230,9 +234,27 @@ about to join them, with stock movements (#111) already on deck behind it.
   leaving the ficha in one click — back to the establishments list, with its filters
   and scroll position restored (see the comment on `router.back()` there).
 
-Follow this same shape for the next tab this ficha gains — e.g. a
-`[id]/stock/movements/page.tsx` for #111 needs no new layout, just a route under the
-existing one.
+Follow this same shape for the next tab this ficha gains: a route under
+`(ficha)/` needs no new layout.
+
+**Not every screen hanging off `[id]` is a tab.** The three tab routes live in the
+`(ficha)` route group precisely so a screen can opt out of that chrome by sitting
+outside it — which is what `[id]/stock/movements/page.tsx` (the movements history,
+#111) does. It is the chronological event log, not another view of the current
+balance, it is reached from a button inside the Stock tab rather than from the tab
+bar, and it renders its own "Volver al stock" affordance and its own 404/403 screens
+instead of inheriting the layout's. Route groups don't affect the URL, so `/stock`
+and `/stock/movements` still resolve as siblings even though one is inside the group
+and the other isn't.
+
+Its food filter is shaped by a backend constraint worth knowing before touching it:
+`GET /establishments/{id}/food-movements` takes `food_id` and **no** `category_id`.
+So the category select in `FoodFilter.tsx` narrows what the food combobox searches in
+the catalog (`GET /food-catalog/foods` does take both) and leaves the listing alone
+until a food is actually picked. That is why both controls live in one component
+labelled "Buscar alimento" instead of sitting in the filter row next to Dirección and
+the dates — a category that looked like a listing filter would be a filter that does
+nothing. A test pins the behaviour.
 
 ## Testing
 

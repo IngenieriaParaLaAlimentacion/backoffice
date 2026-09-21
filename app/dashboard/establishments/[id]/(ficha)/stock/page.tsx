@@ -1,10 +1,10 @@
 "use client";
 
 import { use } from "react";
-import EstablishmentSubjectsList from "./EstablishmentSubjectsList";
-import { useEstablishmentDashboardContext } from "./layout";
+import EstablishmentStockList from "../../EstablishmentStockList";
+import { useEstablishmentDashboardContext } from "../layout";
 
-export default function EstablishmentSubjectsTabPanel({
+export default function EstablishmentStockTabPanel({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -13,7 +13,7 @@ export default function EstablishmentSubjectsTabPanel({
   const dashboard = useEstablishmentDashboardContext();
 
   return (
-    <EstablishmentSubjectsList
+    <EstablishmentStockList
       establishmentId={id}
       establishmentName={dashboard?.establishment.name}
     />

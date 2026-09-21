@@ -71,6 +71,10 @@ export const ERROR_TYPES = {
   INVALID_AGE_RANGE: "/errors/invalid-age-range",
   INVALID_DATE_RANGE: "/errors/invalid-date-range",
 
+  /** Also answered for a movement that belongs to another comedor — the
+   *  backend hides that distinction on purpose, so this is never a 403. */
+  FOOD_MOVEMENT_NOT_FOUND: "/errors/food-movement-not-found",
+
   VALIDATION_FAILED: "/errors/validation-failed",
   INTERNAL_ERROR: "/errors/internal-error",
 } as const;
