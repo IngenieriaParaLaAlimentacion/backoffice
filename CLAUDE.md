@@ -38,8 +38,9 @@ validation; `types/*.ts` hold API response shapes; `constants/*.ts` hold per-dom
 copy/config; `components/ui/` is shadcn-generated, `components/` is everything else.
 
 **Read `docs/architecture.md` before making non-trivial changes to auth, data fetching,
-the geo/address adapter, or the MSW mocking setup** — those pieces have non-obvious
-reasoning behind their shape and are easy to "fix" into something that quietly breaks.
+the geo/address adapter, the establishments map, or the MSW mocking setup** — those
+pieces have non-obvious reasoning behind their shape and are easy to "fix" into
+something that quietly breaks.
 
 ## Conventions
 
@@ -75,8 +76,8 @@ reasoning behind their shape and are easy to "fix" into something that quietly b
 ## Other docs
 
 - `docs/architecture.md` — layering, auth flow, service/error conventions, MSW mocking,
-  the geo-provider adapter, forms, UI components, testing setup.
+  the geo-provider adapter, the establishments map, forms, UI components, testing setup.
 - `docs/conventions.md` — Next.js conventions and how this repo avoids duplication/magic
   values.
 - `docs/adr/` — architecture decision records (the geo-provider adapter choice; the
-  client-side permission model).
+  client-side permission model; the map libraries and base map).

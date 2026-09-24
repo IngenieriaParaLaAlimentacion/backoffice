@@ -60,7 +60,7 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   inline SVG components instead (`components/BrandMark.tsx`, `lucide-react`) — they
   recolor from tokens and cost no request.
 - **Env vars**: only `NEXT_PUBLIC_*` names are exposed to the client (`API_BASE_URL`,
-  `ENABLE_MSW`, the Google Maps key); anything server-only (e.g. `PORT` for
+  `ENABLE_MSW`, `MAP_TILES`, the Google Maps key); anything server-only (e.g. `PORT` for
   docker-compose) stays unprefixed. Don't prefix a secret with `NEXT_PUBLIC_` to "make it
   work" client-side.
 - **No `loading.tsx`/`error.tsx` route files.** Because screens are Client Components,
