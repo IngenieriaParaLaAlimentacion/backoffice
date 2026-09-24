@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import { Loader2, MapPinOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEstablishmentsMap } from "@/hooks/useEstablishmentsMap";
 import { ESTABLISHMENTS_MAP_PAGE } from "@/constants/establishments";
 import { TONE_BANNER_CLASS } from "@/constants/theme";
-import EstablishmentsMap from "./EstablishmentsMap";
+import EstablishmentsMap, {
+  preloadEstablishmentsMap,
+} from "./EstablishmentsMap";
 
 /**
  * The "Mapa" half of the Establecimientos screen: loads the pins and covers
@@ -21,6 +24,9 @@ export default function EstablishmentsMapView({
 }) {
   const { pins, withoutLocation, isLoading, error, forbidden, refetch } =
     useEstablishmentsMap(true);
+
+  // In parallel with the pins request, not after it.
+  useEffect(preloadEstablishmentsMap, []);
 
   if (isLoading)
     return (

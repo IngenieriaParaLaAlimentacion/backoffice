@@ -12,10 +12,10 @@
 
 /*
  * The IGN tiles are raster images with fixed greys, so they can't be repainted
- * from the palette. A soft warm filter on the tile pane alone nudges them
+ * from the palette. On the grey variant, a soft warm filter on the tile pane alone nudges them
  * towards the paper background; pins live in their own pane and are untouched.
  */
-.establishments-map .leaflet-tile-pane {
+.establishments-map--tinted .leaflet-tile-pane {
   filter: sepia(0.28) saturate(0.85) brightness(1.02);
 }
 

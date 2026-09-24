@@ -20,6 +20,7 @@ const nav = vi.hoisted(() => ({
   push: vi.fn(),
   replace: vi.fn(),
   params: new URLSearchParams(),
+  preload: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -31,6 +32,7 @@ vi.mock("next/navigation", () => ({
 // Leaflet itself is covered in map/leaflet; here only what the page hands the
 // map matters: which pins, and what happens when one is picked.
 vi.mock("./map/EstablishmentsMap", () => ({
+  preloadEstablishmentsMap: nav.preload,
   default: ({ pins, onPinClick }: EstablishmentsMapProps) => (
     <div data-testid="map">
       {pins.map((pin) => (
@@ -54,6 +56,7 @@ const viewButton = (name: string) => screen.getByRole("button", { name });
 beforeEach(() => {
   nav.push.mockClear();
   nav.replace.mockClear();
+  nav.preload.mockClear();
   nav.params = new URLSearchParams();
 });
 
@@ -70,6 +73,13 @@ describe("Establecimientos, vista Lista", () => {
     expect(
       screen.getByPlaceholderText(COPY.searchPlaceholder),
     ).toBeInTheDocument();
+  });
+
+  it("does not load the map's code while the table is showing", async () => {
+    await renderWithProviders(<EstablishmentsPage />, { role: "admin" });
+    await screen.findAllByText("Comedor Central Norte");
+
+    expect(nav.preload).not.toHaveBeenCalled();
   });
 
   it("marks Lista as the active view", async () => {
@@ -124,6 +134,13 @@ describe("Establecimientos, vista Mapa", () => {
     expect(onRequest).toHaveBeenCalledTimes(1);
     for (const item of located)
       expect(screen.getByRole("button", { name: item.name })).toBeVisible();
+  });
+
+  // The map's code downloads while the pins are still being requested.
+  it("starts loading the map's code as soon as the view opens", async () => {
+    await renderWithProviders(<EstablishmentsPage />, { role: "admin" });
+
+    expect(nav.preload).toHaveBeenCalled();
   });
 
   it("does not ask for the table while the map is showing", async () => {

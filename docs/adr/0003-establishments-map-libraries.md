@@ -50,33 +50,41 @@ layer are not the same thing).
 Leaflet touches `window` on import, so the map is loaded with `next/dynamic` and
 `ssr: false`.
 
-### Base map: IGN "Argenmap Gris" tiles, with OpenStreetMap as fallback
+### Base map: IGN "Argenmap" (coloured), with OpenStreetMap as fallback
 
 The tiles come from the Instituto Geográfico Nacional's TMS service:
 
 ```
-https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_gris@EPSG%3A3857@png/{z}/{x}/{-y}.png
+https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png
 ```
 
 Checked against the live service on 2026-09-24:
 
 - No API key; responds `200` with `access-control-allow-origin: *`, so the browser calls it
   directly with no proxy.
-- Neutral grey with official Spanish place names and departmental boundaries — a background
-  that lets coloured pins carry the meaning. The standard Argenmap variant fills areas in pink
-  and cream, which fights the brick and mustard pins, so it is not used.
+- Official Spanish place names, departmental boundaries and roads. The coloured variant is
+  served with `cache-control: max-age=1296000` (15 days).
 - Official, free service; attribution "Instituto Geográfico Nacional de la República
   Argentina". The licence refers to Decisión Administrativa 797/2022.
 
-The tile URL and attribution live in a single constant (`constants/map.ts`), so changing
-provider is a one-line change. **OpenStreetMap's standard tiles** are the fallback if IGN
-becomes unavailable or its terms change: no key, but best-effort with no SLA, and a colourful
-map that competes with the pins.
+The grey variant (`mapabase_gris`) was the first choice, since a neutral background lets
+coloured pins carry the meaning. It was set aside after comparing them: the service answers
+it with `cache-control: no-cache, no-store`, so every pan and zoom re-downloads the tiles,
+while the coloured one is cached. The price of the coloured map is that its pink area fills
+sit behind the pins; the pins keep a paper halo so they stay legible over them.
+
+The provider is chosen in `constants/map.ts`, which holds the URL and attribution of three
+layers — `ignColor` (default), `ign` (grey) and `osm` — selectable with the
+`NEXT_PUBLIC_MAP_TILES` env var, so switching or falling back is not a code change.
+**OpenStreetMap's standard tiles** are the fallback if IGN becomes unavailable or its terms
+change: no key and the fastest of the three, but best-effort with no SLA, and a colourful map
+that competes with the pins.
 
 Tiles are raster images with fixed colours, so the base map cannot be repainted with the
-palette. It is warmed towards the paper background with a CSS filter applied only to Leaflet's
-tile pane (pins are in a separate pane and unaffected); everything drawn by us — pins,
-cluster, tooltip, legend, controls — uses the theme tokens directly.
+palette. Only the grey layer gets a soft warm CSS filter towards the paper background,
+applied to Leaflet's tile pane alone (pins are in a separate pane and unaffected);
+everything drawn by us — pins, cluster, tooltip, legend, controls — uses the theme tokens
+directly.
 
 ## Consequences
 
@@ -90,13 +98,13 @@ cluster, tooltip, legend, controls — uses the theme tokens directly.
 
 **Negative**
 
-- IGN's grey variant answers with `cache-control: no-cache, no-store`, so the browser
-  re-requests tiles on every pan and zoom (the standard variant caches for 15 days). Fine for
-  a handful of internal users; worth revisiting if load grows.
+- IGN's tiles are slower than OpenStreetMap's (about 0.14 s against 0.065 s per tile when
+  measured), with an occasional cold start of a couple of seconds.
 - IGN documents no rate limit and no SLA.
+- The coloured map's pink fills reduce the contrast of the pins compared with the grey one.
 - Leaflet DOM markers degrade with many thousands of pins. Far above the expected scale, but
   it is a ceiling.
-- Raster tiles cannot be recoloured exactly to the palette — the tint is an approximation.
+- Raster tiles cannot be recoloured exactly to the palette; only the grey layer is tinted, and only approximately.
 - Leaflet needs a client-only load, its own CSS import, and `divIcon` (the default marker
   images break under bundlers).
 
@@ -120,4 +128,4 @@ is capable but far more verbose than three requirements justify.
 
 **CARTO Positron tiles.** An excellent grey base map, but its raster endpoint now requires an
 API key (requests without one are watermarked), and it is a world map with no advantage for an
-Argentina-only view over IGN's grey variant.
+Argentina-only view over IGN's own maps.

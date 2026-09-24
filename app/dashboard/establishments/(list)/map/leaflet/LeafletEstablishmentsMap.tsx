@@ -27,7 +27,9 @@ export default function LeafletEstablishmentsMap({
       maxZoom={MAP_TILE_LAYER.maxZoom}
       maxBounds={MAP_MAX_BOUNDS}
       maxBoundsViscosity={1}
-      className="establishments-map h-full w-full"
+      className={`establishments-map h-full w-full ${
+        MAP_TILE_LAYER.tinted ? "establishments-map--tinted" : ""
+      }`}
     >
       <TileLayer
         url={MAP_TILE_LAYER.url}

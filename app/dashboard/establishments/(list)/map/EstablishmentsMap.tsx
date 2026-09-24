@@ -21,6 +21,15 @@ const LeafletEstablishmentsMap = dynamic(
 );
 
 /**
+ * Starts fetching Leaflet's code without rendering anything. The map view calls
+ * it as soon as it opens, so the code downloads while the pins are still being
+ * requested instead of only after they arrive.
+ */
+export function preloadEstablishmentsMap() {
+  void import("./leaflet/LeafletEstablishmentsMap");
+}
+
+/**
  * The establishments map. Fills its parent, which has to give it a height.
  * `isolate` keeps Leaflet's own z-indexes (up to 1000) inside this box instead
  * of letting them climb over the app's dialogs and menus.
