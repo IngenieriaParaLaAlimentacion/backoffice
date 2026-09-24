@@ -10,6 +10,7 @@ import {
   ESTABLISHMENT_STOCK_EXPORT_ENDPOINT,
   ESTABLISHMENT_SUBJECTS_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
+  ESTABLISHMENTS_MAP_ENDPOINT,
 } from "@/constants/api";
 import {
   DEFAULT_ESTABLISHMENT_DASHBOARD,
@@ -17,6 +18,7 @@ import {
   DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
   DEFAULT_ESTABLISHMENT_STOCK_RESPONSE,
   DEFAULT_ESTABLISHMENT_SUBJECTS_RESPONSE,
+  DEFAULT_ESTABLISHMENTS_MAP_RESPONSE,
   DEFAULT_ESTABLISHMENTS_RESPONSE,
   EMPTY_ESTABLISHMENT_DASHBOARD,
   EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
@@ -36,6 +38,16 @@ export function makeListEstablishmentsHandler(
     ...options,
     method: "get",
     data: { ...DEFAULT_ESTABLISHMENTS_RESPONSE, ...options?.data },
+  });
+}
+
+export function makeEstablishmentsMapHandler(
+  options?: HandlerOptions<typeof DEFAULT_ESTABLISHMENTS_MAP_RESPONSE>,
+) {
+  return baseHandler(ESTABLISHMENTS_MAP_ENDPOINT, {
+    ...options,
+    method: "get",
+    data: { ...DEFAULT_ESTABLISHMENTS_MAP_RESPONSE, ...options?.data },
   });
 }
 

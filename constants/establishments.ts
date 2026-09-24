@@ -206,6 +206,10 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   },
 } as const;
 
+export const ESTABLISHMENTS_MAP_PAGE = {
+  loadError: "Error al cargar el mapa de establecimientos",
+} as const;
+
 export const STOCK_SORT_OPTIONS: {
   value: FoodStockSortOrder;
   label: string;
