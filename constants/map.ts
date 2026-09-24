@@ -15,6 +15,9 @@ type TileLayerConfig = {
   tinted: boolean;
 };
 
+const IGN_ATTRIBUTION =
+  '&copy; <a href="https://www.ign.gob.ar">Instituto Geográfico Nacional de la República Argentina</a>';
+
 const OSM_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
@@ -25,8 +28,7 @@ export const MAP_TILE_LAYERS = {
    */
   ign: {
     url: "https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_gris@EPSG%3A3857@png/{z}/{x}/{-y}.png",
-    attribution:
-      '&copy; <a href="https://www.ign.gob.ar">Instituto Geográfico Nacional de la República Argentina</a>',
+    attribution: IGN_ATTRIBUTION,
     maxZoom: 18,
     tinted: true,
   },
@@ -37,8 +39,7 @@ export const MAP_TILE_LAYERS = {
    */
   ignColor: {
     url: "https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png",
-    attribution:
-      '&copy; <a href="https://www.ign.gob.ar">Instituto Geográfico Nacional de la República Argentina</a>',
+    attribution: IGN_ATTRIBUTION,
     maxZoom: 18,
     tinted: false,
   },
@@ -81,6 +82,12 @@ export const MAP_MAX_BOUNDS: [[number, number], [number, number]] = [
   [-58, -76],
   [-19, -50],
 ];
+
+/**
+ * Height of the map's box on the Establecimientos screen. A literal so Tailwind
+ * sees it; `EstablishmentsMap` fills whatever height it is given.
+ */
+export const MAP_HEIGHT_CLASS = "h-[70vh] min-h-96";
 
 /** Margin, in px, kept around the pins when the map fits itself to them. */
 export const MAP_FIT_PADDING = 40;

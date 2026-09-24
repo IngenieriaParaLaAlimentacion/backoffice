@@ -9,22 +9,22 @@ import { ESTABLISHMENTS_MAP_PAGE } from "@/constants/establishments";
 import { getErrorMessage } from "@/lib/errorMessages";
 
 /**
- * Loads the map's pins, but only while `enabled`: the map is one view of the
- * Establecimientos screen, and someone reading the list shouldn't pay for a
- * call they never look at. Turning it on again re-fetches, so the pins are as
- * fresh as the last time the view was opened.
+ * Loads the map's pins when the component using it mounts. The map is one view
+ * of the Establecimientos screen and its component is only mounted while that
+ * view is active, so someone reading the list never pays for this call. Each
+ * mount re-fetches, so the pins are as fresh as the last time the view opened.
  *
  * `withoutLocation` counts the establishments that can't be drawn (no location
  * loaded yet) so the screen can say so rather than leave them out silently.
  */
-export function useEstablishmentsMap(enabled: boolean) {
+export function useEstablishmentsMap() {
   const { makeAuthorizedRequest } = useAuth();
   const [items, setItems] = useState<EstablishmentMapItem[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<number | null>(null);
-  // A response that lands after the view was switched off (or a newer load
-  // began) must not overwrite what is on screen.
+  // A response that lands after a newer load began (a retry) must not
+  // overwrite what is on screen.
   const latestRequest = useRef(0);
 
   const fetchMap = useCallback(async () => {
@@ -48,12 +48,8 @@ export function useEstablishmentsMap(enabled: boolean) {
   }, [makeAuthorizedRequest]);
 
   useEffect(() => {
-    if (!enabled) {
-      latestRequest.current++;
-      return;
-    }
     fetchMap();
-  }, [enabled, fetchMap]);
+  }, [fetchMap]);
 
   const { pins, withoutLocation } = useMemo(
     () => buildMapPins(items ?? []),

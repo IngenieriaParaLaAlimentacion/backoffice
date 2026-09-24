@@ -71,13 +71,9 @@ export function buildMapPins(items: EstablishmentMapItem[]): {
 }
 
 export function countPinsByStatus(pins: MapPin[]): Record<PinStatus, number> {
-  const counts: Record<PinStatus, number> = {
-    critical: 0,
-    high: 0,
-    medium: 0,
-    normal: 0,
-    no_data: 0,
-  };
+  const counts = Object.fromEntries(
+    PIN_STATUSES.map((status) => [status, 0]),
+  ) as Record<PinStatus, number>;
   for (const pin of pins) counts[pin.status] += 1;
   return counts;
 }

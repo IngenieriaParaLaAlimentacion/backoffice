@@ -6,9 +6,9 @@ import { server } from "@/mocks/server";
 import { makeEstablishmentsMapHandler } from "@/mocks/handlers/establishment";
 import { MOCK_ESTABLISHMENT_MAP_ITEMS } from "@/mocks/fixtures/establishment";
 
-function Probe({ enabled }: { enabled: boolean }) {
+function Probe() {
   const { pins, withoutLocation, isLoading, error, forbidden } =
-    useEstablishmentsMap(enabled);
+    useEstablishmentsMap();
 
   return (
     <dl>
@@ -31,24 +31,11 @@ function Probe({ enabled }: { enabled: boolean }) {
 const text = (testId: string) => screen.getByTestId(testId).textContent;
 
 describe("useEstablishmentsMap", () => {
-  it("does not call the API while the map is not the active view", async () => {
+  it("loads the pins in one call", async () => {
     const onRequest = vi.fn();
     server.use(makeEstablishmentsMapHandler({ onRequest }));
 
-    await renderWithProviders(<Probe enabled={false} />);
-
-    // Give a stray request every chance to fire before asserting it didn't.
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(onRequest).not.toHaveBeenCalled();
-    expect(text("pins")).toBe("0");
-  });
-
-  it("loads the pins once enabled, in one call", async () => {
-    const onRequest = vi.fn();
-    server.use(makeEstablishmentsMapHandler({ onRequest }));
-
-    const { rerender } = await renderWithProviders(<Probe enabled={false} />);
-    rerender(<Probe enabled />);
+    await renderWithProviders(<Probe />);
 
     await waitFor(() => expect(text("loading")).toBe("false"));
     expect(onRequest).toHaveBeenCalledTimes(1);
@@ -56,7 +43,7 @@ describe("useEstablishmentsMap", () => {
   });
 
   it("turns each establishment into a pin and counts the ones it can't draw", async () => {
-    await renderWithProviders(<Probe enabled />);
+    await renderWithProviders(<Probe />);
 
     await waitFor(() => expect(text("loading")).toBe("false"));
 
@@ -66,7 +53,7 @@ describe("useEstablishmentsMap", () => {
   });
 
   it("keeps an establishment without data apart from a healthy one", async () => {
-    await renderWithProviders(<Probe enabled />);
+    await renderWithProviders(<Probe />);
 
     await waitFor(() => expect(text("loading")).toBe("false"));
 
@@ -88,7 +75,7 @@ describe("useEstablishmentsMap", () => {
       }),
     );
 
-    await renderWithProviders(<Probe enabled />);
+    await renderWithProviders(<Probe />);
 
     await waitFor(() => expect(text("loading")).toBe("false"));
     expect(text("forbidden")).toBe("true");
@@ -104,7 +91,7 @@ describe("useEstablishmentsMap", () => {
       }),
     );
 
-    await renderWithProviders(<Probe enabled />);
+    await renderWithProviders(<Probe />);
 
     await waitFor(() => expect(text("loading")).toBe("false"));
     expect(text("error")).toBe(ESTABLISHMENTS_MAP_PAGE.loadError);

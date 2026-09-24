@@ -5,6 +5,7 @@ import { Loader2, MapPinOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEstablishmentsMap } from "@/hooks/useEstablishmentsMap";
 import { ESTABLISHMENTS_MAP_PAGE } from "@/constants/establishments";
+import { MAP_HEIGHT_CLASS } from "@/constants/map";
 import { TONE_BANNER_CLASS } from "@/constants/theme";
 import EstablishmentsMap, {
   preloadEstablishmentsMap,
@@ -23,7 +24,7 @@ export default function EstablishmentsMapView({
   onSeeList: () => void;
 }) {
   const { pins, withoutLocation, isLoading, error, forbidden, refetch } =
-    useEstablishmentsMap(true);
+    useEstablishmentsMap();
 
   // In parallel with the pins request, not after it.
   useEffect(preloadEstablishmentsMap, []);
@@ -80,7 +81,7 @@ export default function EstablishmentsMapView({
           {ESTABLISHMENTS_MAP_PAGE.noEstablishments}
         </div>
       ) : (
-        <div className="h-[70vh] min-h-96">
+        <div className={MAP_HEIGHT_CLASS}>
           <EstablishmentsMap pins={pins} onPinClick={onPinClick} />
         </div>
       )}

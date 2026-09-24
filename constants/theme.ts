@@ -86,6 +86,13 @@ export const TONE_PIN_CLASS: Record<Tone, string> = {
 export const CLUSTER_PIN_CLASS =
   "flex items-center justify-center rounded-full bg-chart-5 font-mono font-bold text-card ring-2 ring-card shadow-md";
 
+/**
+ * Stacking of the map's own overlays (its legend). Leaflet lays its controls
+ * at z-index 1000 inside the map's `isolate` box, so overlays we add there
+ * need to sit at the same level to stay above the tiles and pins.
+ */
+export const MAP_OVERLAY_CLASS = "z-1000";
+
 /** Scrim behind every dialog and drawer. Warm ink, never black. */
 export const OVERLAY_CLASS = "bg-overlay/45";
 

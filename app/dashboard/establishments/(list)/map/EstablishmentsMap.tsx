@@ -42,7 +42,7 @@ export default function EstablishmentsMap({
     <div
       role="region"
       aria-label={ESTABLISHMENTS_MAP_PAGE.mapAria}
-      className="relative isolate h-full min-h-96 overflow-hidden rounded-lg border border-border"
+      className="relative isolate h-full overflow-hidden rounded-lg border border-border"
     >
       <LeafletEstablishmentsMap pins={pins} onPinClick={onPinClick} />
       <MapLegend pins={pins} />

@@ -3,7 +3,8 @@ import {
   PIN_STATUS_LABELS,
   PIN_STATUS_SYMBOL,
 } from "@/constants/establishments";
-import { DATA_CLASS } from "@/constants/theme";
+import { DATA_CLASS, MAP_OVERLAY_CLASS } from "@/constants/theme";
+import { cn } from "@/lib/utils";
 import {
   countPinsByStatus,
   MapPin,
@@ -19,7 +20,12 @@ export default function MapLegend({ pins }: { pins: MapPin[] }) {
   const counts = countPinsByStatus(pins);
 
   return (
-    <div className="absolute bottom-3 left-3 z-1000 rounded-lg border border-border bg-card/95 p-3 shadow-md">
+    <div
+      className={cn(
+        "absolute bottom-3 left-3 rounded-lg border border-border bg-card/95 p-3 shadow-md",
+        MAP_OVERLAY_CLASS,
+      )}
+    >
       <p className="mb-2 text-xs font-medium text-muted-foreground">
         {ESTABLISHMENTS_MAP_PAGE.legendTitle}
       </p>
