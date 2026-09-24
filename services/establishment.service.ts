@@ -10,8 +10,10 @@ import {
   ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
   ESTABLISHMENTS_EXPORT_ENDPOINT,
+  ESTABLISHMENTS_MAP_ENDPOINT,
 } from "@/constants/api";
 import {
+  EstablishmentMapResponse,
   EstablishmentResponse,
   EstablishmentSortOrder,
   EstablishmentDashboardResponse,
@@ -125,6 +127,23 @@ export const listEstablishmentsAction = async (
   if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as PaginatedEstablishmentsResponse;
+};
+
+/**
+ * Every establishment's location and severity in one unpaginated call, for the
+ * map. Takes no filters: the listing's search/city/province don't apply to it.
+ * Admin, analyst and superadmin only — anyone else gets a 403.
+ */
+export const getEstablishmentsMapAction = async (
+  dispatcher: AuthDispatcher,
+) => {
+  const res = await dispatcher<undefined, EstablishmentMapResponse>(
+    ESTABLISHMENTS_MAP_ENDPOINT,
+  );
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as EstablishmentMapResponse;
 };
 
 /** Downloads every establishment matching the filters as a CSV file. */
