@@ -1,67 +1,72 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
+import useSWR, { mutate } from "swr";
 import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { getEstablishmentsMapAction } from "@/services/establishment.service";
-import { EstablishmentMapItem } from "@/types/establishment";
+import { EstablishmentMapResponse } from "@/types/establishment";
 import { ApiError } from "@/lib/apiError";
 import { buildMapPins } from "@/lib/establishmentPins";
+import { SWR_CONFIG } from "@/lib/swr";
+import { ESTABLISHMENTS_MAP_ENDPOINT } from "@/constants/api";
 import { ESTABLISHMENTS_MAP_PAGE } from "@/constants/establishments";
 import { getErrorMessage } from "@/lib/errorMessages";
 
 /**
+ * Makes the next look at the map fetch again. Call it after something that
+ * adds an establishment, so it doesn't wait out the cache to show up.
+ */
+export const invalidateEstablishmentsMap = () =>
+  mutate(ESTABLISHMENTS_MAP_ENDPOINT);
+
+/**
  * Loads the map's pins when the component using it mounts. The map is one view
  * of the Establecimientos screen and its component is only mounted while that
- * view is active, so someone reading the list never pays for this call. Each
- * mount re-fetches, so the pins are as fresh as the last time the view opened.
+ * view is active, so someone reading the list never pays for this call.
+ *
+ * The response is cached (`lib/swr.ts`): going back to the map within the
+ * cache window shows the pins at once, without a request. The cache key is the
+ * endpoint alone, so a refreshed token doesn't trigger a new fetch.
  *
  * `withoutLocation` counts the establishments that can't be drawn (no location
  * loaded yet) so the screen can say so rather than leave them out silently.
  */
 export function useEstablishmentsMap() {
   const { makeAuthorizedRequest } = useAuth();
-  const [items, setItems] = useState<EstablishmentMapItem[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<number | null>(null);
-  // A response that lands after a newer load began (a retry) must not
-  // overwrite what is on screen.
-  const latestRequest = useRef(0);
-
-  const fetchMap = useCallback(async () => {
-    const request = ++latestRequest.current;
-    setIsLoading(true);
-    setError(null);
-    setStatus(null);
-    try {
-      const data = await getEstablishmentsMapAction(makeAuthorizedRequest);
-      if (request !== latestRequest.current) return;
-      setItems(data.establishments);
-    } catch (err) {
-      if (request !== latestRequest.current) return;
-      if (err instanceof ApiError) setStatus(err.status);
-      setError(
-        getErrorMessage(err, { fallback: ESTABLISHMENTS_MAP_PAGE.loadError }),
-      );
-    } finally {
-      if (request === latestRequest.current) setIsLoading(false);
-    }
-  }, [makeAuthorizedRequest]);
-
-  useEffect(() => {
-    fetchMap();
-  }, [fetchMap]);
+  const { data, error, isLoading, mutate } = useSWR<
+    EstablishmentMapResponse,
+    unknown
+  >(
+    ESTABLISHMENTS_MAP_ENDPOINT,
+    () => getEstablishmentsMapAction(makeAuthorizedRequest),
+    // The screen offers its own "Reintentar"; retrying a 403 by itself is noise.
+    { ...SWR_CONFIG, shouldRetryOnError: false },
+  );
 
   const { pins, withoutLocation } = useMemo(
-    () => buildMapPins(items ?? []),
-    [items],
+    () => buildMapPins(data?.establishments ?? []),
+    [data],
   );
+
+  // Not `mutate` itself: as an `onClick` it would receive the click event as data.
+  const refetch = useCallback(() => {
+    void mutate();
+  }, [mutate]);
+
+  // A failed refresh keeps the pins already on screen instead of replacing them
+  // with an error.
+  const failure = data ? undefined : error;
 
   return {
     pins,
     withoutLocation,
     isLoading,
-    error,
-    forbidden: status === StatusCodes.FORBIDDEN,
-    refetch: fetchMap,
+    error: failure
+      ? getErrorMessage(failure, {
+          fallback: ESTABLISHMENTS_MAP_PAGE.loadError,
+        })
+      : null,
+    forbidden:
+      failure instanceof ApiError && failure.status === StatusCodes.FORBIDDEN,
+    refetch,
   };
 }

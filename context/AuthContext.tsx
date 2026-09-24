@@ -25,6 +25,7 @@ import { AuthTokens } from "@/types/auth";
 import { ApiResponse, RefreshTokenResponse } from "@/lib/types";
 import { clearTokens, getTokens, saveTokens } from "@/lib/tokenStorage";
 import { getOrCreateDeviceId } from "@/lib/deviceIdStorage";
+import { clearSwrCache } from "@/lib/swr";
 
 export type AuthDispatcher = <TRequest, TResponse>(
   path: string,
@@ -139,6 +140,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     async (credentials: SigninInput) => {
       if (!deviceId) return;
       setAuthNotice(null);
+      // Whatever a previous session left cached must not reach this one.
+      await clearSwrCache();
       const response = await loginAction(credentials, deviceId);
       const tokens = {
         refreshToken: response.refresh_token,

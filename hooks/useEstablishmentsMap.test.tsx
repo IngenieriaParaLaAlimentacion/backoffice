@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithProviders, screen, waitFor } from "@/test-utils";
-import { useEstablishmentsMap } from "@/hooks/useEstablishmentsMap";
+import userEvent from "@testing-library/user-event";
+import {
+  invalidateEstablishmentsMap,
+  useEstablishmentsMap,
+} from "@/hooks/useEstablishmentsMap";
 import { ESTABLISHMENTS_MAP_PAGE } from "@/constants/establishments";
 import { server } from "@/mocks/server";
 import { makeEstablishmentsMapHandler } from "@/mocks/handlers/establishment";
@@ -25,6 +30,17 @@ function Probe() {
       <dt>forbidden</dt>
       <dd data-testid="forbidden">{String(forbidden)}</dd>
     </dl>
+  );
+}
+
+/** Mounts and unmounts the probe, as switching between Lista and Mapa does. */
+function Switcher() {
+  const [shown, setShown] = useState(true);
+  return (
+    <>
+      <button onClick={() => setShown((v) => !v)}>toggle</button>
+      {shown && <Probe />}
+    </>
   );
 }
 
@@ -96,5 +112,37 @@ describe("useEstablishmentsMap", () => {
     await waitFor(() => expect(text("loading")).toBe("false"));
     expect(text("error")).toBe(ESTABLISHMENTS_MAP_PAGE.loadError);
     expect(text("forbidden")).toBe("false");
+  });
+
+  it("reuses the pins when the map is opened again, without a new request", async () => {
+    const onRequest = vi.fn();
+    server.use(makeEstablishmentsMapHandler({ onRequest }));
+    const user = userEvent.setup();
+
+    await renderWithProviders(<Switcher />);
+    await waitFor(() => expect(text("loading")).toBe("false"));
+
+    await user.click(screen.getByRole("button", { name: "toggle" })); // hide
+    await user.click(screen.getByRole("button", { name: "toggle" })); // show
+
+    // The pins are there straight away: no spinner, no second call.
+    expect(text("loading")).toBe("false");
+    expect(text("pins")).toBe(String(MOCK_ESTABLISHMENT_MAP_ITEMS.length - 1));
+    expect(onRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("fetches again after an establishment was added", async () => {
+    const onRequest = vi.fn();
+    server.use(makeEstablishmentsMapHandler({ onRequest }));
+    const user = userEvent.setup();
+
+    await renderWithProviders(<Switcher />);
+    await waitFor(() => expect(text("loading")).toBe("false"));
+
+    await user.click(screen.getByRole("button", { name: "toggle" }));
+    await invalidateEstablishmentsMap();
+    await user.click(screen.getByRole("button", { name: "toggle" }));
+
+    await waitFor(() => expect(onRequest).toHaveBeenCalledTimes(2));
   });
 });
