@@ -11,6 +11,11 @@ arg) → `constants/api.ts` (endpoint path constants/builders) → `lib/http.ts`
 source of truth for form input types (`z.infer<...>`). `types/*.ts` hold API response
 shapes (snake_case, matching the backend contract).
 
+Hooks load with `useState` + `useEffect` by default. The one exception so far is
+`useEstablishmentsMap`, which uses SWR to cache its response — see "Caching" under
+Establishments map. Don't convert other hooks to SWR piecemeal; it's a convention to
+agree on for the whole app.
+
 ## Auth (`context/AuthContext.tsx`)
 
 `AuthProvider` wraps the app (in `app/layout.tsx`) and holds tokens + device ID in
@@ -136,6 +141,28 @@ skipped while the map is showing, and the map's while the table is. The list-onl
 (search, sort, filters, pagination, CSV export) are hidden in map mode: the endpoint
 ignores them, and the export follows the table's filters.
 
+**Caching.** The map's response is cached with SWR (`lib/swr.ts`: `SWR_CONFIG`, a 30 s
+`dedupingInterval`, no revalidate-on-focus), so going Lista → Mapa → Lista → Mapa doesn't
+call the backend again inside that window. Reopening shows the pins at once and refreshes
+in the background once the window has passed. Three things to know:
+
+- **The key is the endpoint alone.** The fetcher isn't part of it, so a silent token
+  refresh (which gives `makeAuthorizedRequest` a new identity) doesn't refetch.
+- **Whatever adds an establishment must call `invalidateEstablishmentsMap()`**
+  (`hooks/useEstablishmentsMap.ts`), or its pin waits out the window. Creating one and
+  approving a request do; proposing one doesn't need to, since a proposal isn't on the map
+  yet. New writers are on you to remember: nothing enforces it.
+- **The cache is cleared when a session starts** (`login` in `AuthContext` calls
+  `clearSwrCache`), so one user never sees what the previous one had loaded. It clears on
+  sign-in and not on sign-out on purpose: clearing without revalidating drops the data but
+  keeps SWR's "fetched a moment ago" marker, so a quick sign-out/sign-in would show an
+  empty map and never ask again. Revalidating is only safe when no screen with data is
+  mounted, which is true on the sign-in page. `lib/swr.test.tsx` pins this. It clears every
+  key, so any future SWR hook is covered too.
+
+Data on the map can therefore be up to 30 s old, and a new survey that changes an
+establishment's severity shows after the window: only additions are invalidated.
+
 **What a pin says** (`lib/establishmentPins.ts`, pure and unit-tested).
 
 - `severity: null` means _both_ "healthy" and "nothing measured yet", so a pin's status
@@ -168,7 +195,8 @@ can't import from `components/`), and a test keeps the two in step. Severity doe
 color alone: each status has its own symbol, and "no data" is hollow and dashed. The cluster
 is deliberately a neutral count, not a severity. `leaflet-overrides.css` styles Leaflet's own
 chrome with `var(--…)` only — no literal color. The wrapper is `isolate` so Leaflet's
-z-indexes (up to 1000) stay inside the map instead of climbing over dialogs and menus.
+z-indexes (up to 1000) stay inside the map instead of climbing over dialogs and menus;
+overlays we add there (the legend) use `MAP_OVERLAY_CLASS` to sit at the same level.
 
 **Base map.** The tile layers live in `constants/map.ts`; `NEXT_PUBLIC_MAP_TILES` picks one
 (`ignColor` by default, `ign` grey, `osm`). Tiles are raster images with fixed colors and
@@ -327,3 +355,6 @@ tests need a matching handler in `mocks/handlers.ts`/`mocks/handlers/*.ts`, or a
 handler override). Fixtures for mock data live in `mocks/fixtures/*.ts`. Path alias
 `@/*` (see `tsconfig.json` / `vitest.config.ts`) resolves from the repo root in both app
 code and tests.
+
+SWR's cache outlives a test, so `vitest.setup.ts` clears it after each one; without that,
+a test would be handed the previous test's response.

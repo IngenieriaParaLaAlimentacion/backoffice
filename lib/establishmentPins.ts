@@ -41,10 +41,16 @@ export function toPinStatus(
  * Establishments created before geocoding existed were backfilled with
  * (0, 0) — the Gulf of Guinea. That is "no location loaded", not a place; a
  * real one is never exactly on the equator and the prime meridian at once.
+ *
+ * A coordinate that isn't a finite number (a `null` the backend might send for
+ * "not geocoded") is treated the same way: left alone, Leaflet would read
+ * `null` as 0 and draw the pin in that same spot.
  */
 export function hasLocation(
   item: Pick<EstablishmentMapItem, "latitude" | "longitude">,
 ): boolean {
+  if (!Number.isFinite(item.latitude) || !Number.isFinite(item.longitude))
+    return false;
   return !(item.latitude === 0 && item.longitude === 0);
 }
 

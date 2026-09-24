@@ -57,6 +57,14 @@ describe("hasLocation", () => {
     expect(hasLocation({ latitude: -34.6, longitude: 0 })).toBe(true);
   });
 
+  it("rejects a coordinate that isn't a finite number", () => {
+    const missing = null as unknown as number;
+    expect(hasLocation({ latitude: missing, longitude: missing })).toBe(false);
+    expect(hasLocation({ latitude: -34.6, longitude: missing })).toBe(false);
+    expect(hasLocation({ latitude: NaN, longitude: -58.4 })).toBe(false);
+    expect(hasLocation({ latitude: -34.6, longitude: Infinity })).toBe(false);
+  });
+
   it("accepts a real location", () => {
     expect(hasLocation({ latitude: -34.6, longitude: -58.4 })).toBe(true);
   });
