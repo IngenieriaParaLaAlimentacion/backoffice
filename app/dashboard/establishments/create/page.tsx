@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
+import { invalidateEstablishmentsMap } from "@/hooks/useEstablishmentsMap";
 import { createEstablishmentAction } from "@/services/establishment.service";
 import { PlaceDetails } from "@/lib/geo";
 import {
@@ -61,6 +62,7 @@ function CreateEstablishmentForm() {
         latitude: selectedPlace.lat,
         longitude: selectedPlace.lng,
       });
+      invalidateEstablishmentsMap();
       router.push("/dashboard/establishments");
     } catch (err) {
       setApiError(

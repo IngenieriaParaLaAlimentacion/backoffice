@@ -10,6 +10,7 @@ import {
   UserStatus,
 } from "@/types/establishment";
 import { Tone } from "@/constants/theme";
+import { PinStatus } from "@/lib/establishmentPins";
 
 export const PAGE_SIZE = 20;
 export const FILTER_DEBOUNCE_MS = 300;
@@ -195,6 +196,11 @@ export const ESTABLISHMENTS_LIST_PAGE = {
     province: "Provincia",
   },
   noEstablishments: "No hay establecimientos",
+  viewToggle: {
+    label: "Vista",
+    list: "Lista",
+    map: "Mapa",
+  },
   loadError: "Error al cargar establecimientos",
   proposeSuccess: "Propuesta enviada — un administrador la revisará.",
   closeAria: "Cerrar",
@@ -204,6 +210,58 @@ export const ESTABLISHMENTS_LIST_PAGE = {
     city: "Ciudad",
     province: "Provincia",
   },
+} as const;
+
+/**
+ * Which tone each pin status reads as; the colors are in `constants/theme.ts`.
+ * The three severities mirror `SEVERITY_TONE` (`components/AlertBadge.tsx`),
+ * which a constants file can't import without inverting the layers — a test
+ * pins the two together instead.
+ */
+export const PIN_STATUS_TONE: Record<PinStatus, Tone> = {
+  critical: "critical",
+  high: "danger",
+  medium: "warning",
+  normal: "success",
+  no_data: "neutral",
+};
+
+/**
+ * What a pin says besides its color, so severity survives color blindness:
+ * one mark per level of risk, a check for healthy, a question mark for
+ * "not measured".
+ */
+export const PIN_STATUS_SYMBOL: Record<PinStatus, string> = {
+  critical: "!!!",
+  high: "!!",
+  medium: "!",
+  normal: "✓",
+  no_data: "?",
+};
+
+export const PIN_STATUS_LABELS: Record<PinStatus, string> = {
+  critical: "Crítico",
+  high: "Alto",
+  medium: "Medio",
+  normal: "Normal",
+  no_data: "Sin datos",
+};
+
+export const ESTABLISHMENTS_MAP_PAGE = {
+  loadError: "Error al cargar el mapa de establecimientos",
+  retry: "Reintentar",
+  forbidden: "Esta vista está disponible para administradores y analistas.",
+  noEstablishments: "No hay establecimientos para mostrar en el mapa",
+  mapAria: "Mapa de establecimientos",
+  legendTitle: "Estado nutricional",
+  pinAria: (name: string, status: PinStatus) =>
+    `${name}: ${PIN_STATUS_LABELS[status]}`,
+  clusterAria: (count: number) => `${count} establecimientos agrupados`,
+  withoutLocation: (count: number) =>
+    count === 1
+      ? "1 establecimiento no tiene ubicación cargada y no se muestra en el mapa."
+      : `${count} establecimientos no tienen ubicación cargada y no se muestran en el mapa.`,
+  seeInList: "Ver en la lista",
 } as const;
 
 export const STOCK_SORT_OPTIONS: {

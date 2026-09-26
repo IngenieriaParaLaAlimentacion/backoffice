@@ -17,6 +17,29 @@ export type EstablishmentResponse = {
   province: string;
 };
 
+/**
+ * One pin of the establishments map: location plus the rolled-up severity, in a
+ * payload light enough to fetch every establishment at once (no pagination).
+ *
+ * `has_data: false` means "no measurements loaded yet" and comes with a `null`
+ * severity, exactly like a healthy establishment does — so `severity` alone
+ * cannot tell them apart. Branch on `has_data` first, never on `severity`.
+ */
+export type EstablishmentMapItem = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  has_data: boolean;
+  /** Worst severity among the subjects; `null` when healthy or without data. */
+  severity: AlertSeverity | null;
+  dominant_status: NutritionalStatus | null;
+};
+
+export type EstablishmentMapResponse = {
+  establishments: EstablishmentMapItem[];
+};
+
 export type EstablishmentSortOrder =
   | "newest"
   | "oldest"

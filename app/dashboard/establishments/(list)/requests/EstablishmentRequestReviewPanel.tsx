@@ -6,6 +6,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
+import { invalidateEstablishmentsMap } from "@/hooks/useEstablishmentsMap";
 import {
   approveEstablishmentRequestAction,
   rejectEstablishmentRequestAction,
@@ -113,6 +114,7 @@ export default function EstablishmentRequestReviewPanel({
           longitude: selectedPlace.lng,
         },
       );
+      invalidateEstablishmentsMap();
       onApproved(result);
     } catch (err) {
       if (err instanceof ApiError && err.status === StatusCodes.CONFLICT) {

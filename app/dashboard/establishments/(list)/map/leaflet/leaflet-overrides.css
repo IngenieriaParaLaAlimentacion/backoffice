@@ -1,0 +1,67 @@
+/*
+ * Leaflet's own chrome, restyled with the theme's tokens. No literal color
+ * lives here: everything is a `var(--…)` from app/globals.css, so a re-theme
+ * reaches the map too. (The pins and clusters are styled by Tailwind classes
+ * from constants/theme.ts, not by this file.)
+ */
+
+.establishments-map.leaflet-container {
+  background: var(--secondary);
+  font-family: inherit;
+}
+
+/*
+ * The IGN tiles are raster images with fixed greys, so they can't be repainted
+ * from the palette. On the grey variant, a soft warm filter on the tile pane alone nudges them
+ * towards the paper background; pins live in their own pane and are untouched.
+ */
+.establishments-map--tinted .leaflet-tile-pane {
+  filter: sepia(0.28) saturate(0.85) brightness(1.02);
+}
+
+.establishments-map .leaflet-marker-icon:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+  border-radius: 9999px;
+}
+
+.establishments-map .leaflet-bar {
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.establishments-map .leaflet-bar a,
+.establishments-map .leaflet-bar a:hover {
+  background-color: var(--card);
+  color: var(--foreground);
+  border-bottom-color: var(--border);
+}
+
+.establishments-map .leaflet-bar a:hover {
+  background-color: var(--secondary);
+}
+
+.establishments-map .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  color: var(--muted-foreground);
+}
+
+.establishments-map .leaflet-control-attribution a {
+  color: var(--accent-foreground);
+}
+
+/* The hover label: a small popover-styled card. */
+.leaflet-tooltip.establishment-map-tooltip {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--foreground) 18%, transparent);
+  padding: 4px 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.leaflet-tooltip-top.establishment-map-tooltip::before {
+  border-top-color: var(--popover);
+}

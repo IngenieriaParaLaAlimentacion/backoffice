@@ -1,4 +1,6 @@
 import {
+  EstablishmentMapItem,
+  EstablishmentMapResponse,
   EstablishmentResponse,
   EstablishmentDashboardResponse,
   PaginatedEstablishmentFieldWorkersResponse,
@@ -62,6 +64,118 @@ export const DEFAULT_ESTABLISHMENTS_RESPONSE: PaginatedEstablishmentsResponse =
     page_size: 20,
     total_pages: 1,
   };
+
+// --- Establishments map ---
+
+const [NORTE, SUR, ROSARIO, CORDOBA] = MOCK_ESTABLISHMENTS;
+
+const mapItem = (
+  establishment: Pick<
+    EstablishmentResponse,
+    "id" | "name" | "latitude" | "longitude"
+  >,
+  status: Pick<
+    EstablishmentMapItem,
+    "has_data" | "severity" | "dominant_status"
+  >,
+): EstablishmentMapItem => ({
+  id: establishment.id,
+  name: establishment.name,
+  latitude: establishment.latitude,
+  longitude: establishment.longitude,
+  ...status,
+});
+
+const extraEstablishmentId = (n: number) =>
+  `e1000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
+
+/**
+ * The first four reuse `MOCK_ESTABLISHMENTS`, so clicking their pin lands on a
+ * ficha the mock backend answers (`WITH_DATA_ID` critical, `WITHOUT_DATA_ID`
+ * empty). The rest exist to exercise the map's edge cases and have no ficha
+ * behind them: every severity, "healthy" vs "no data" (both `severity: null`),
+ * several pins in one spot to cluster, two on the exact same coordinates to
+ * spiderfy, and one still at the (0, 0) backfill that can't be drawn.
+ */
+export const MOCK_ESTABLISHMENT_MAP_ITEMS: EstablishmentMapItem[] = [
+  mapItem(NORTE, {
+    has_data: true,
+    severity: "critical",
+    dominant_status: "severely_wasted",
+  }),
+  mapItem(SUR, { has_data: false, severity: null, dominant_status: null }),
+  mapItem(ROSARIO, {
+    has_data: true,
+    severity: null,
+    dominant_status: "normal",
+  }),
+  mapItem(CORDOBA, {
+    has_data: true,
+    severity: "medium",
+    dominant_status: "overweight",
+  }),
+  // Greater Buenos Aires: close enough to fold into a cluster when zoomed out.
+  {
+    id: extraEstablishmentId(5),
+    name: "Comedor Villa Lugano",
+    latitude: -34.6811,
+    longitude: -58.4711,
+    has_data: true,
+    severity: "high",
+    dominant_status: "wasted",
+  },
+  {
+    id: extraEstablishmentId(6),
+    name: "Merendero San Telmo",
+    latitude: -34.6212,
+    longitude: -58.3731,
+    has_data: true,
+    severity: null,
+    dominant_status: "normal",
+  },
+  {
+    id: extraEstablishmentId(7),
+    name: "Comedor La Matanza",
+    latitude: -34.7702,
+    longitude: -58.6267,
+    has_data: false,
+    severity: null,
+    dominant_status: null,
+  },
+  // Same coordinates on purpose: only spiderfying tells them apart.
+  {
+    id: extraEstablishmentId(8),
+    name: "Comedor Barrio Cano A",
+    latitude: -32.8908,
+    longitude: -68.8272,
+    has_data: true,
+    severity: "high",
+    dominant_status: "underweight",
+  },
+  {
+    id: extraEstablishmentId(9),
+    name: "Comedor Barrio Cano B",
+    latitude: -32.8908,
+    longitude: -68.8272,
+    has_data: true,
+    severity: "critical",
+    dominant_status: "severely_wasted",
+  },
+  // Loaded before geocoding existed: backfilled with (0, 0).
+  {
+    id: extraEstablishmentId(10),
+    name: "Comedor sin ubicación",
+    latitude: 0,
+    longitude: 0,
+    has_data: true,
+    severity: null,
+    dominant_status: "normal",
+  },
+];
+
+export const DEFAULT_ESTABLISHMENTS_MAP_RESPONSE: EstablishmentMapResponse = {
+  establishments: MOCK_ESTABLISHMENT_MAP_ITEMS,
+};
 
 // --- Establishment dashboard ---
 
