@@ -74,6 +74,10 @@ export const ERROR_TYPES = {
   /** Also answered for a movement that belongs to another comedor — the
    *  backend hides that distinction on purpose, so this is never a 403. */
   FOOD_MOVEMENT_NOT_FOUND: "/errors/food-movement-not-found",
+  INSUFFICIENT_STOCK: "/errors/insufficient-stock",
+  FOOD_NOT_FOUND: "/errors/food-not-found",
+  ESTABLISHMENT_NOT_FOUND: "/errors/establishment-not-found",
+  CONCURRENT_UPDATE: "/errors/concurrent-update",
 
   VALIDATION_FAILED: "/errors/validation-failed",
   INTERNAL_ERROR: "/errors/internal-error",

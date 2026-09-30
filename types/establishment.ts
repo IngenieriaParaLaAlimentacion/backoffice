@@ -283,3 +283,23 @@ export type FoodMovementDetail = {
   responsible: FoodMovementResponsible;
   items: FoodMovementItem[];
 };
+
+export type CreateFoodMovementRequest = {
+  id: string;
+  establishment_id: string;
+  occurred_at: string;
+  comments: string | null;
+  source: "manual";
+  items: { food_id: string; quantity: string }[];
+};
+
+export type CreatedFoodMovement = {
+  id: string;
+  establishment_id: string;
+  responsible_id: string;
+  occurred_at: string;
+  comments: string | null;
+  source: FoodMovementSource;
+  created_at: string;
+  items: FoodMovementItem[];
+};

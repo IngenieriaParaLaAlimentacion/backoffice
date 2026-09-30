@@ -36,6 +36,8 @@ export const SHARED_ERROR_MESSAGES: Record<string, string> = {
   [ERROR_TYPES.VALIDATION_FAILED]:
     "Algunos datos no son válidos. Revisá los campos e intentá de nuevo.",
   [ERROR_TYPES.INTERNAL_ERROR]: GENERIC_ERROR_MESSAGE,
+  [ERROR_TYPES.CONCURRENT_UPDATE]:
+    "Hay otra actualización en curso. Esperá un momento y volvé a intentar.",
 
   [ERROR_TYPES.EMAIL_DELIVERY_FAILED]:
     "No se pudo enviar el correo. Verificá la dirección e intentá de nuevo.",
