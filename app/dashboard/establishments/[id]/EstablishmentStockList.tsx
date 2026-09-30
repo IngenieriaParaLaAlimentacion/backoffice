@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useEstablishmentStock } from "@/hooks/useEstablishmentStock";
 import { useFoodCategories } from "@/hooks/useFoodCategories";
@@ -20,6 +21,7 @@ import {
 import { formatQuantity, formatTimestampDate } from "@/lib/format";
 import { ArrowLeftRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import FoodMovementDialog from "@/components/FoodMovementDialog";
 
 export default function EstablishmentStockList({
   establishmentId,
@@ -31,6 +33,11 @@ export default function EstablishmentStockList({
 }) {
   const { makeAuthorizedDownload } = useAuth();
   const categories = useFoodCategories();
+  const [movementOpen, setMovementOpen] = useState(false);
+  const [savedNotice, setSavedNotice] = useState<{
+    message: string;
+    movementId: string;
+  } | null>(null);
   const {
     stock,
     total,
@@ -43,6 +50,7 @@ export default function EstablishmentStockList({
     setCategoryId,
     sortOrder,
     setSortOrder,
+    refetch,
   } = useEstablishmentStock(establishmentId);
 
   const {
@@ -84,6 +92,9 @@ export default function EstablishmentStockList({
           </p>
         </div>
         <div className="flex flex-wrap items-start gap-2">
+          <Button size="sm" onClick={() => setMovementOpen(true)}>
+            {COPY.createMovement}
+          </Button>
           <ExportButton
             isExporting={isExporting}
             onClick={handleExport}
@@ -106,6 +117,30 @@ export default function EstablishmentStockList({
           </Button>
         </div>
       </div>
+
+      <FoodMovementDialog
+        establishmentId={establishmentId}
+        open={movementOpen}
+        onOpenChange={setMovementOpen}
+        onSaved={(result) => {
+          refetch();
+          setSavedNotice({
+            message: result.replayed ? COPY.replayed : COPY.saved,
+            movementId: result.movement.id,
+          });
+        }}
+      />
+      {savedNotice && (
+        <p role="status">
+          {savedNotice.message}{" "}
+          <Link
+            className="underline"
+            href={`/dashboard/establishments/${establishmentId}/stock/movements?movement_id=${encodeURIComponent(savedNotice.movementId)}`}
+          >
+            {COPY.viewSaved}
+          </Link>
+        </p>
+      )}
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex w-full flex-col gap-1 sm:w-auto">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { listEstablishmentFoodMovementsAction } from "@/services/establishment.service";
@@ -50,6 +50,7 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<number | null>(null);
+  const [refreshKey, refresh] = useReducer((n: number) => n + 1, 0);
 
   const [filters, setFilters] = useState<MovementFilters>(EMPTY_FILTERS);
   const [debouncedFilters, setDebouncedFilters] =
@@ -136,7 +137,18 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
     return () => {
       cancelled = true;
     };
-  }, [makeAuthorizedRequest, establishmentId, page, debouncedFilters]);
+  }, [
+    makeAuthorizedRequest,
+    establishmentId,
+    page,
+    debouncedFilters,
+    refreshKey,
+  ]);
+
+  const refetch = () => {
+    setPage(1);
+    refresh();
+  };
 
   // Narrowing the results invalidates whatever page the reader was on, so both
   // entry points reset it at the moment of the edit.
@@ -173,5 +185,6 @@ export function useEstablishmentMovementsHistory(establishmentId: string) {
     hasActiveFilters,
     notFound: status === StatusCodes.NOT_FOUND,
     forbidden: status === StatusCodes.FORBIDDEN,
+    refetch,
   };
 }
