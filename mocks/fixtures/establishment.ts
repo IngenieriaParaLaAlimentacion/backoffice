@@ -551,3 +551,64 @@ for (const movement of PAGED_FOOD_MOVEMENTS) {
     ],
   };
 }
+
+const baseDetails = structuredClone(MOCK_FOOD_MOVEMENT_DETAILS);
+const stockByEstablishment = new Map<
+  string,
+  PaginatedFoodStockResponse["items"]
+>();
+const movementsByEstablishment = new Map<string, FoodMovementListItem[]>();
+const createdById = new Map<
+  string,
+  import("@/types/establishment").CreatedFoodMovement
+>();
+
+export function resetMovementFixture() {
+  stockByEstablishment.clear();
+  movementsByEstablishment.clear();
+  createdById.clear();
+  for (const key of Object.keys(MOCK_FOOD_MOVEMENT_DETAILS))
+    delete MOCK_FOOD_MOVEMENT_DETAILS[key];
+  Object.assign(MOCK_FOOD_MOVEMENT_DETAILS, structuredClone(baseDetails));
+}
+
+export function currentStock(establishmentId: string) {
+  if (!stockByEstablishment.has(establishmentId)) {
+    stockByEstablishment.set(
+      establishmentId,
+      structuredClone(
+        establishmentId === MOCK_ESTABLISHMENTS[1].id
+          ? []
+          : DEFAULT_ESTABLISHMENT_STOCK_RESPONSE.items,
+      ),
+    );
+  }
+  return stockByEstablishment.get(establishmentId)!;
+}
+
+export function setMovementStock(
+  establishmentId: string,
+  stock: PaginatedFoodStockResponse["items"],
+) {
+  stockByEstablishment.set(establishmentId, structuredClone(stock));
+}
+
+export function currentMovements(establishmentId: string) {
+  if (!movementsByEstablishment.has(establishmentId)) {
+    const initial =
+      establishmentId === MOCK_ESTABLISHMENTS[1].id
+        ? []
+        : establishmentId === MOCK_ESTABLISHMENTS[2].id
+          ? PAGED_FOOD_MOVEMENTS
+          : DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items;
+    movementsByEstablishment.set(establishmentId, structuredClone(initial));
+  }
+  return movementsByEstablishment.get(establishmentId)!;
+}
+
+export const createdMovement = (id: string) => createdById.get(id);
+export const storeCreatedMovement = (
+  movement: import("@/types/establishment").CreatedFoodMovement,
+) => {
+  createdById.set(movement.id, movement);
+};

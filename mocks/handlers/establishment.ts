@@ -15,19 +15,17 @@ import {
 import {
   DEFAULT_ESTABLISHMENT_DASHBOARD,
   DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE,
-  DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
-  DEFAULT_ESTABLISHMENT_STOCK_RESPONSE,
   DEFAULT_ESTABLISHMENT_SUBJECTS_RESPONSE,
   DEFAULT_ESTABLISHMENTS_MAP_RESPONSE,
   DEFAULT_ESTABLISHMENTS_RESPONSE,
   EMPTY_ESTABLISHMENT_DASHBOARD,
-  EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE,
   MOCK_FOOD_MOVEMENT_DETAILS,
-  PAGED_FOOD_MOVEMENTS,
-  EMPTY_ESTABLISHMENT_STOCK_RESPONSE,
   EMPTY_ESTABLISHMENT_SUBJECTS_RESPONSE,
   MOCK_ESTABLISHMENTS,
+  currentStock,
+  currentMovements,
 } from "@/mocks/fixtures/establishment";
+import { availableMillis } from "@/lib/foodMovementQuantity";
 
 type PaginatedEstablishmentsResponse = typeof DEFAULT_ESTABLISHMENTS_RESPONSE;
 
@@ -149,20 +147,37 @@ export function makeEstablishmentStockHandler() {
       if (params.id !== WITH_DATA_ID && params.id !== WITHOUT_DATA_ID)
         return notFound(url.pathname);
 
-      if (params.id === WITHOUT_DATA_ID)
-        return HttpResponse.json(EMPTY_ESTABLISHMENT_STOCK_RESPONSE);
-
       const categoryId = url.searchParams.get("category_id");
-      const items = categoryId
-        ? DEFAULT_ESTABLISHMENT_STOCK_RESPONSE.items.filter(
-            (item) => item.category.id === categoryId,
-          )
-        : DEFAULT_ESTABLISHMENT_STOCK_RESPONSE.items;
+      const onlyAvailable = url.searchParams.get("only_available") === "true";
+      const page = Number(url.searchParams.get("page") ?? 1);
+      const pageSize = Number(url.searchParams.get("page_size") ?? 20);
+      const sortOrder = url.searchParams.get("sort_order") ?? "name_asc";
+      const items = currentStock(params.id)
+        .filter(
+          (item) =>
+            !onlyAvailable || availableMillis(item.quantity) > BigInt("0"),
+        )
+        .filter((item) => !categoryId || item.category.id === categoryId)
+        .sort((a, b) => {
+          if (sortOrder === "name_desc")
+            return b.food.name.localeCompare(a.food.name);
+          if (sortOrder === "quantity_asc" || sortOrder === "quantity_desc") {
+            const delta =
+              availableMillis(a.quantity) - availableMillis(b.quantity);
+            const order = delta < BigInt(0) ? -1 : delta > BigInt(0) ? 1 : 0;
+            return sortOrder === "quantity_asc" ? order : -order;
+          }
+          if (sortOrder === "updated_at_desc")
+            return b.updated_at.localeCompare(a.updated_at);
+          return a.food.name.localeCompare(b.food.name);
+        });
 
       return HttpResponse.json({
-        ...DEFAULT_ESTABLISHMENT_STOCK_RESPONSE,
-        items,
+        items: items.slice((page - 1) * pageSize, page * pageSize),
         total: items.length,
+        page,
+        page_size: pageSize,
+        total_pages: Math.max(1, Math.ceil(items.length / pageSize)),
       });
     },
   );
@@ -259,9 +274,6 @@ export function makeEstablishmentFoodMovementsHandler() {
         params.id !== PAGED_ID
       )
         return notFound(url.pathname);
-      if (params.id === WITHOUT_DATA_ID)
-        return HttpResponse.json(EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE);
-
       const direction = url.searchParams.get("direction");
       const occurredFrom = url.searchParams.get("occurred_from");
       const occurredTo = url.searchParams.get("occurred_to");
@@ -278,17 +290,18 @@ export function makeEstablishmentFoodMovementsHandler() {
           (line) => line.food.id === foodId,
         );
 
-      const source =
-        params.id === PAGED_ID
-          ? PAGED_FOOD_MOVEMENTS
-          : DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items;
+      const source = currentMovements(params.id);
 
       const matches = source
         .filter((item) => !direction || item.direction === direction)
         .filter((item) => !occurredFrom || item.occurred_at >= occurredFrom)
         .filter((item) => !occurredTo || item.occurred_at <= occurredTo)
         .filter((item) => carriesFood(item.id))
-        .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+        .sort(
+          (a, b) =>
+            b.occurred_at.localeCompare(a.occurred_at) ||
+            b.id.localeCompare(a.id),
+        );
 
       // Slices for real: a handler that returned everything and a fixed
       // `total_pages: 1` would hide the paginator from every test and from

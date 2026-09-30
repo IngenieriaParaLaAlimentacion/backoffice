@@ -49,6 +49,10 @@ import {
 } from "@/mocks/handlers/surveyResponse";
 import { makeExportSubjectsHandler } from "@/mocks/handlers/csvExport";
 import { makeMeHandler } from "@/mocks/handlers/user";
+import {
+  makeFoodIntakeHandler,
+  makeFoodOutflowHandler,
+} from "@/mocks/handlers/foodMovement";
 
 export const handlers = [
   makeLoginHandler(),
@@ -71,6 +75,8 @@ export const handlers = [
   makeEstablishmentFoodMovementsHandler(),
   makeEstablishmentFoodMovementDetailHandler(),
   makeEstablishmentStockHandler(),
+  makeFoodIntakeHandler(),
+  makeFoodOutflowHandler(),
   makeExportEstablishmentStockHandler(),
   makeListFoodCategoriesHandler(),
   makeListFoodsHandler(),
