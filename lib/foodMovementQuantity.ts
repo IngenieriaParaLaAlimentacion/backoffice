@@ -1,4 +1,4 @@
-export const MAX_QUANTITY_MILLIS = BigInt("9999999999");
+const MAX_QUANTITY_MILLIS = BigInt("9999999999");
 
 export function quantityMillis(value: string): bigint | null {
   const text = value.trim();
@@ -10,15 +10,5 @@ export function quantityMillis(value: string): bigint | null {
 }
 
 export function availableMillis(value: string): bigint {
-  if (value === "0" || /^0(?:\.0{1,3})?$/.test(value)) return BigInt("0");
   return quantityMillis(value) ?? BigInt("0");
-}
-
-export function quantityDisplay(value: bigint): string {
-  const whole = value / BigInt("1000");
-  const fraction = (value % BigInt("1000"))
-    .toString()
-    .padStart(3, "0")
-    .replace(/0+$/, "");
-  return fraction ? `${whole}.${fraction}` : String(whole);
 }

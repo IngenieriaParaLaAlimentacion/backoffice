@@ -1,10 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { FOOD_INTAKES_ENDPOINT, FOOD_OUTFLOWS_ENDPOINT } from "@/constants/api";
-import {
-  availableMillis,
-  quantityDisplay,
-  quantityMillis,
-} from "@/lib/foodMovementQuantity";
+import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
 import { MOCK_FOODS } from "@/mocks/fixtures/foodCatalog";
 import {
   currentMovements,
@@ -12,6 +8,7 @@ import {
   createdMovement,
   MOCK_ESTABLISHMENTS,
   MOCK_FOOD_MOVEMENT_DETAILS,
+  RESPONSIBLE,
   storeCreatedMovement,
 } from "@/mocks/fixtures/establishment";
 import {
@@ -19,6 +16,35 @@ import {
   CreatedFoodMovement,
   FoodMovementDirection,
 } from "@/types/establishment";
+
+function quantityDisplay(value: bigint): string {
+  const whole = value / BigInt("1000");
+  const fraction = (value % BigInt("1000"))
+    .toString()
+    .padStart(3, "0")
+    .replace(/0+$/, "");
+  return fraction ? `${whole}.${fraction}` : String(whole);
+}
+
+function problem(
+  slug: string,
+  title: string,
+  status: number,
+  instance: string,
+  extensions: Record<string, string> = {},
+) {
+  return HttpResponse.json(
+    {
+      type: `/errors/${slug}`,
+      title,
+      status,
+      detail: title,
+      instance,
+      ...extensions,
+    },
+    { status, headers: { "Content-Type": "application/problem+json" } },
+  );
+}
 
 function makeHandler(direction: FoodMovementDirection) {
   return http.post(
@@ -31,65 +57,35 @@ function makeHandler(direction: FoodMovementDirection) {
       if (
         !MOCK_ESTABLISHMENTS.some((item) => item.id === body.establishment_id)
       )
-        return HttpResponse.json(
-          {
-            type: "/errors/establishment-not-found",
-            title: "Establishment not found",
-            status: 404,
-            detail: "Not found",
-            instance: path,
-          },
-          {
-            status: 404,
-            headers: { "Content-Type": "application/problem+json" },
-          },
+        return problem(
+          "establishment-not-found",
+          "Establishment not found",
+          404,
+          path,
         );
 
       const stock = currentStock(body.establishment_id);
       for (const line of body.items) {
         const food = MOCK_FOODS.find((item) => item.id === line.food_id);
         if (!food)
-          return HttpResponse.json(
-            {
-              type: "/errors/food-not-found",
-              title: "Food not found",
-              status: 404,
-              detail: "Not found",
-              instance: path,
-            },
-            { status: 404 },
-          );
+          return problem("food-not-found", "Food not found", 404, path);
         const quantity = quantityMillis(line.quantity);
         if (quantity === null)
-          return HttpResponse.json(
-            {
-              type: "/errors/validation-failed",
-              title: "Validation failed",
-              status: 422,
-              detail: "Invalid quantity",
-              instance: path,
-            },
-            { status: 422 },
-          );
+          return problem("validation-failed", "Validation failed", 422, path);
         const row = stock.find((item) => item.food.id === food.id);
         if (
           direction === "out" &&
           quantity > availableMillis(row?.quantity ?? "0")
         )
-          return HttpResponse.json(
+          return problem(
+            "insufficient-stock",
+            "Insufficient stock",
+            409,
+            path,
             {
-              type: "/errors/insufficient-stock",
-              title: "Insufficient stock",
-              status: 409,
-              detail: "Insufficient stock",
-              instance: path,
               food_id: food.id,
               requested: line.quantity,
               available: row?.quantity ?? "0",
-            },
-            {
-              status: 409,
-              headers: { "Content-Type": "application/problem+json" },
             },
           );
       }
@@ -122,7 +118,7 @@ function makeHandler(direction: FoodMovementDirection) {
       const movement: CreatedFoodMovement = {
         id: body.id,
         establishment_id: body.establishment_id,
-        responsible_id: "f1000000-0000-0000-0000-000000000001",
+        responsible_id: RESPONSIBLE.id,
         occurred_at: body.occurred_at,
         comments: body.comments,
         source: "manual",
@@ -134,11 +130,7 @@ function makeHandler(direction: FoodMovementDirection) {
         id: movement.id,
         direction,
         occurred_at: movement.occurred_at,
-        responsible: {
-          id: movement.responsible_id,
-          name: "Juan",
-          last_name: "Gomez",
-        },
+        responsible: RESPONSIBLE,
         food_count: items.length,
       });
       MOCK_FOOD_MOVEMENT_DETAILS[movement.id] = {
@@ -147,11 +139,7 @@ function makeHandler(direction: FoodMovementDirection) {
         occurred_at: movement.occurred_at,
         source: "manual",
         comments: movement.comments,
-        responsible: {
-          id: movement.responsible_id,
-          name: "Juan",
-          last_name: "Gomez",
-        },
+        responsible: RESPONSIBLE,
         items,
       };
       return HttpResponse.json(movement, { status: 201 });

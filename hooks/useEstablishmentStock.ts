@@ -49,6 +49,9 @@ export function useEstablishmentStock(establishmentId: string) {
           },
         );
         if (!cancelled()) {
+          // An outflow can empty the page being viewed.
+          if (currentPage > 1 && data.items.length === 0)
+            setPage(Math.max(1, data.total_pages));
           setStock(data.items);
           setTotal(data.total);
           setTotalPages(data.total_pages);

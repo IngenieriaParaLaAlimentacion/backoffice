@@ -10,6 +10,10 @@ import { FoodListItem } from "@/types/foodCatalog";
 import { FoodMovementDirection, FoodStockItem } from "@/types/establishment";
 import { getErrorMessage } from "@/lib/errorMessages";
 
+const FOOD_SEARCH_PAGE_SIZE = 20;
+// The stock endpoint caps a page at 100 rows.
+const STOCK_PAGE_SIZE = 100;
+
 export function useMovementFoodOptions(
   establishmentId: string,
   direction: FoodMovementDirection,
@@ -27,14 +31,18 @@ export function useMovementFoodOptions(
   const generation = useRef(0);
   const pageInFlight = useRef(false);
 
-  const reload = useCallback(() => {
-    generation.current += 1;
+  const resetStock = useCallback(() => {
     pageInFlight.current = false;
     setStock([]);
     setStockPage(0);
     setStockPages(1);
-    setVersion((n) => n + 1);
   }, []);
+
+  const reload = useCallback(() => {
+    generation.current += 1;
+    resetStock();
+    setVersion((n) => n + 1);
+  }, [resetStock]);
 
   useEffect(() => {
     if (!open || direction !== "in") return;
@@ -44,7 +52,7 @@ export function useMovementFoodOptions(
     const timer = setTimeout(() => {
       listFoodsAction(makeAuthorizedRequest, {
         search: search || undefined,
-        page_size: 20,
+        page_size: FOOD_SEARCH_PAGE_SIZE,
       })
         .then((result) => {
           if (!cancelled) setFoods(result.items);
@@ -78,7 +86,7 @@ export function useMovementFoodOptions(
           {
             only_available: true,
             page,
-            page_size: 100,
+            page_size: STOCK_PAGE_SIZE,
             sort_order: "name_asc",
           },
         );
@@ -104,27 +112,25 @@ export function useMovementFoodOptions(
   useEffect(() => {
     if (!open || direction !== "out") return;
     const requestGeneration = ++generation.current;
-    pageInFlight.current = false;
-    setStock([]);
-    setStockPage(0);
-    setStockPages(1);
+    resetStock();
     void loadStockPage(1, requestGeneration);
     return () => {
       generation.current += 1;
     };
-  }, [open, direction, version, loadStockPage]);
+  }, [open, direction, version, loadStockPage, resetStock]);
 
+  const hasMoreStock = stockPage > 0 && stockPage < stockPages;
   const loadMoreStock = useCallback(() => {
-    if (!pageInFlight.current && stockPage > 0 && stockPage < stockPages)
+    if (!pageInFlight.current && hasMoreStock)
       void loadStockPage(stockPage + 1, generation.current);
-  }, [stockPage, stockPages, loadStockPage]);
+  }, [hasMoreStock, stockPage, loadStockPage]);
 
   return {
     foods,
-    allStock: stock,
+    stock,
     loading,
     error,
-    hasMoreStock: stockPage > 0 && stockPage < stockPages,
+    hasMoreStock,
     stockLoaded: stockPage > 0,
     loadMoreStock,
     reload,

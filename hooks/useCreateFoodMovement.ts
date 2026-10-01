@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { createFoodMovementAction } from "@/services/foodMovement.service";
 import {
@@ -9,24 +10,21 @@ import { ApiError, ERROR_TYPES } from "@/lib/apiError";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { FOOD_MOVEMENT_FORM as COPY } from "@/constants/establishments";
 
+type MovementRequest = {
+  direction: FoodMovementDirection;
+  body: CreateFoodMovementRequest;
+};
+
 export function useCreateFoodMovement() {
   const { makeAuthorizedRequest } = useAuth();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ambiguous, setAmbiguous] = useState(false);
-  const [frozen, setFrozen] = useState<{
-    direction: FoodMovementDirection;
-    body: CreateFoodMovementRequest;
-  } | null>(null);
+  const [frozen, setFrozen] = useState<MovementRequest | null>(null);
   const reset = () => {
     setError(null);
-    setAmbiguous(false);
     setFrozen(null);
   };
-  const perform = async (request: {
-    direction: FoodMovementDirection;
-    body: CreateFoodMovementRequest;
-  }) => {
+  const perform = async (request: MovementRequest) => {
     if (saving) return null;
     setSaving(true);
     setError(null);
@@ -37,11 +35,15 @@ export function useCreateFoodMovement() {
         request.body,
       );
       setFrozen(null);
-      setAmbiguous(false);
       return result;
     } catch (reason) {
-      if (reason instanceof ApiError) {
-        setAmbiguous(false);
+      // A 5xx may come from a proxy after the backend committed, so only a
+      // client error or the lock-timeout slug proves nothing was saved.
+      const rejected =
+        reason instanceof ApiError &&
+        (reason.status < StatusCodes.INTERNAL_SERVER_ERROR ||
+          reason.type === ERROR_TYPES.CONCURRENT_UPDATE);
+      if (rejected) {
         setFrozen(null);
         setError(
           reason.type === ERROR_TYPES.INSUFFICIENT_STOCK
@@ -50,7 +52,6 @@ export function useCreateFoodMovement() {
         );
       } else {
         setFrozen(request);
-        setAmbiguous(true);
         setError(COPY.uncertainSave);
       }
       throw reason;
@@ -61,7 +62,7 @@ export function useCreateFoodMovement() {
   return {
     saving,
     error,
-    ambiguous,
+    ambiguous: frozen !== null,
     reset,
     submit: (
       direction: FoodMovementDirection,

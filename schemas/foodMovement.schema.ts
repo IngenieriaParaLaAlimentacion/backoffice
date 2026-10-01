@@ -5,10 +5,8 @@ import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
 
 export type MovementFood = FoodListItem | FoodStockItem;
 export const OUTFLOW_EXCEEDS_STOCK = "La cantidad supera el stock disponible";
-export const foodMovementLineSchema = z.object({
-  food: z.custom<MovementFood | null>(
-    (value) => value === null || (typeof value === "object" && value !== null),
-  ),
+const foodMovementLineSchema = z.object({
+  food: z.custom<MovementFood | null>((value) => typeof value === "object"),
   quantity: z.string(),
 });
 export const foodMovementSchema = z.object({
@@ -23,6 +21,8 @@ export const selectedFoodId = (food: MovementFood) =>
   "food" in food ? food.food.id : food.id;
 export const selectedUnit = (food: MovementFood) =>
   "food" in food ? food.unit : food.base_unit;
+export const selectedName = (food: MovementFood) =>
+  "food" in food ? food.food.name : food.name;
 
 export function validateMovement(
   value: FoodMovementInput,

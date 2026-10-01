@@ -5,13 +5,14 @@ import {
   CreateFoodMovementRequest,
   CreatedFoodMovement,
   FoodMovementDirection,
+  FoodMovementSaveResult,
 } from "@/types/establishment";
 
 export async function createFoodMovementAction(
   dispatcher: AuthDispatcher,
   direction: FoodMovementDirection,
   data: CreateFoodMovementRequest,
-): Promise<{ movement: CreatedFoodMovement; replayed: boolean }> {
+): Promise<FoodMovementSaveResult> {
   const endpoint =
     direction === "in" ? FOOD_INTAKES_ENDPOINT : FOOD_OUTFLOWS_ENDPOINT;
   const res = await dispatcher<CreateFoodMovementRequest, CreatedFoodMovement>(

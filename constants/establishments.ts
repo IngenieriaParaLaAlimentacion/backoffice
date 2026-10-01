@@ -281,15 +281,20 @@ export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
   litros: "Litros",
 };
 
+/** Copy shared by every screen that opens the movement form. */
+const FOOD_MOVEMENT_ENTRY = {
+  createMovement: "Registrar movimiento",
+  replayed:
+    "El movimiento ya estaba registrado; mostramos el registro guardado.",
+  viewSaved: "Ver movimiento",
+} as const;
+
 export const ESTABLISHMENT_STOCK_PAGE = {
   subtitle: (total: number) =>
     `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
   viewHistory: "Historial de Movimientos",
-  createMovement: "Registrar movimiento",
+  ...FOOD_MOVEMENT_ENTRY,
   saved: "Movimiento registrado.",
-  replayed:
-    "El movimiento ya estaba registrado; mostramos el registro guardado.",
-  viewSaved: "Ver movimiento",
   categoryLabel: "Categoría",
   allCategories: "Todas las categorías",
   sortLabel: "Ordenar por",
@@ -329,12 +334,9 @@ export const MOVEMENT_DIRECTION_OPTIONS: {
 
 export const ESTABLISHMENT_MOVEMENTS_PAGE = {
   title: "Historial de movimientos",
-  createMovement: "Registrar movimiento",
+  ...FOOD_MOVEMENT_ENTRY,
   savedChronological:
     "Movimiento registrado. Aparece según su fecha y los filtros actuales.",
-  replayed:
-    "El movimiento ya estaba registrado; mostramos el registro guardado.",
-  viewSaved: "Ver movimiento",
   back: "Volver al stock",
   subtitle: (total: number) =>
     `${total} ${total === 1 ? "movimiento registrado" : "movimientos registrados"}`,
@@ -389,10 +391,8 @@ export const ESTABLISHMENT_MOVEMENTS_PAGE = {
 } as const;
 
 export const FOOD_MOVEMENT_FORM = {
-  title: "Registrar movimiento",
+  title: FOOD_MOVEMENT_ENTRY.createMovement,
   description: "Completá los alimentos y la fecha del movimiento.",
-  intake: "Ingreso",
-  outflow: "Egreso",
   date: "Fecha",
   food: "Alimento",
   quantity: "Cantidad",

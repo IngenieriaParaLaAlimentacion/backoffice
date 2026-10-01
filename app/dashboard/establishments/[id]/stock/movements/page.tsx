@@ -69,8 +69,10 @@ export default function EstablishmentMovementsHistoryPage({
   } = useEstablishmentMovementsHistory(id);
 
   const [movementOpen, setMovementOpen] = useState(false);
-  const [savedNotice, setSavedNotice] = useState<string | null>(null);
-  const [savedMovementId, setSavedMovementId] = useState<string | null>(null);
+  const [savedNotice, setSavedNotice] = useState<{
+    message: string;
+    movementId: string;
+  } | null>(null);
 
   const [selectedMovementId, setSelectedMovementId] = useState<string | null>(
     null,
@@ -162,11 +164,9 @@ export default function EstablishmentMovementsHistoryPage({
               {COPY.createMovement}
             </Button>
           </div>
-          <div className="flex flex-col gap-1">
-            <p className="text-muted-foreground text-sm">
-              {COPY.subtitle(total)}
-            </p>
-          </div>
+          <p className="text-muted-foreground text-sm">
+            {COPY.subtitle(total)}
+          </p>
         </div>
 
         <Separator />
@@ -177,20 +177,22 @@ export default function EstablishmentMovementsHistoryPage({
           onOpenChange={setMovementOpen}
           onSaved={(result) => {
             refetch();
-            setSavedNotice(
-              result.replayed ? COPY.replayed : COPY.savedChronological,
-            );
-            setSavedMovementId(result.movement.id);
+            setSavedNotice({
+              message: result.replayed
+                ? COPY.replayed
+                : COPY.savedChronological,
+              movementId: result.movement.id,
+            });
             setSelectedMovementId(result.movement.id);
           }}
         />
-        {savedNotice && savedMovementId && (
+        {savedNotice && (
           <p role="status">
-            {savedNotice}{" "}
+            {savedNotice.message}{" "}
             <Button
               type="button"
               variant="link"
-              onClick={() => setSelectedMovementId(savedMovementId)}
+              onClick={() => setSelectedMovementId(savedNotice.movementId)}
             >
               {COPY.viewSaved}
             </Button>

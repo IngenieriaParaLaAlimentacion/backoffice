@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { FOOD_MOVEMENT_FORM as COPY } from "@/constants/establishments";
 import { FoodMovementDirection, FoodStockItem } from "@/types/establishment";
 import { FoodListItem } from "@/types/foodCatalog";
-import { MovementFood, selectedFoodId } from "@/schemas/foodMovement.schema";
+import {
+  MovementFood,
+  selectedFoodId,
+  selectedName,
+} from "@/schemas/foodMovement.schema";
 import { formatQuantity } from "@/lib/format";
 import { useDismissOnOutside } from "@/hooks/useDismissOnOutside";
-
-const nameOf = (item: MovementFood) =>
-  "food" in item ? item.food.name : item.name;
 
 export default function MovementFoodPicker({
   direction,
@@ -46,20 +47,19 @@ export default function MovementFoodPicker({
   const [active, setActive] = useState(0);
   const containerRef = useDismissOnOutside(open, () => setOpen(false));
   useEffect(() => {
-    if (value) setQuery(nameOf(value));
+    if (value) setQuery(selectedName(value));
   }, [value]);
+  const needle = query.toLocaleLowerCase("es-AR");
   const options: MovementFood[] = (
     direction === "in"
       ? foods
       : stock.filter((item) =>
-          item.food.name
-            .toLocaleLowerCase("es-AR")
-            .includes(query.toLocaleLowerCase("es-AR")),
+          item.food.name.toLocaleLowerCase("es-AR").includes(needle),
         )
   ).filter((item) => !excludedIds.has(selectedFoodId(item)));
   const choose = (item: MovementFood) => {
     onChange(item);
-    setQuery(nameOf(item));
+    setQuery(selectedName(item));
     setOpen(false);
   };
   return (
@@ -91,7 +91,11 @@ export default function MovementFoodPicker({
           setOpen(true);
         }}
         onKeyDown={(event) => {
-          if (event.key === "Escape") setOpen(false);
+          if (event.key === "Escape" && open) {
+            // Dismisses the list only; the dialog keeps the draft.
+            event.stopPropagation();
+            setOpen(false);
+          }
           if (event.key === "ArrowDown") {
             event.preventDefault();
             setActive((current) => Math.min(current + 1, options.length - 1));
@@ -100,9 +104,9 @@ export default function MovementFoodPicker({
             event.preventDefault();
             setActive((current) => Math.max(0, current - 1));
           }
-          if (event.key === "Enter" && open && options[active]) {
+          if (event.key === "Enter" && open) {
             event.preventDefault();
-            choose(options[active]);
+            if (!loading && !error && options[active]) choose(options[active]);
           }
         }}
       />
@@ -133,7 +137,7 @@ export default function MovementFoodPicker({
                 onMouseEnter={() => setActive(index)}
                 onClick={() => choose(item)}
               >
-                {nameOf(item)}{" "}
+                {selectedName(item)}{" "}
                 {"food" in item
                   ? `· ${formatQuantity(item.quantity)} ${item.unit}`
                   : `· ${item.category.name}`}

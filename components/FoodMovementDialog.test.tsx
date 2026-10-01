@@ -317,4 +317,101 @@ describe("FoodMovementDialog", () => {
       { food_id: MOCK_FOODS[0].id, quantity: "1.125" },
     ]);
   });
+
+  it("keeps the request frozen when a gateway error hides the outcome", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post(
+        FOOD_INTAKES_ENDPOINT,
+        () => new HttpResponse("Bad gateway", { status: 502 }),
+      ),
+    );
+    await openDialog();
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    expect(
+      await screen.findByRole("button", { name: "Comprobar y reintentar" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Cantidad 1" })).toBeDisabled();
+  });
+
+  it("reports a stock conflict answered to an identical retry", async () => {
+    const user = userEvent.setup();
+    const food = MOCK_FOODS[0];
+    setMovementStock(establishmentId, [
+      {
+        food: { id: food.id, name: food.name },
+        category: food.category,
+        unit: food.base_unit,
+        quantity: "5",
+        updated_at: "2026-09-01T00:00:00Z",
+      },
+    ]);
+    let posts = 0;
+    server.use(
+      http.post(FOOD_OUTFLOWS_ENDPOINT, async ({ request }) => {
+        posts += 1;
+        if (posts === 1) return HttpResponse.error();
+        return HttpResponse.json(
+          {
+            type: "/errors/insufficient-stock",
+            title: "Insufficient stock",
+            status: 409,
+            detail: "Insufficient stock",
+            instance: new URL(request.url).pathname,
+            food_id: food.id,
+            requested: "2",
+            available: "1",
+          },
+          { status: 409 },
+        );
+      }),
+    );
+    await openDialog();
+    await user.click(screen.getByLabelText("Egreso"));
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "2");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "Comprobar y reintentar" }),
+    );
+    expect(
+      await screen.findByText(/Stock insuficiente para Arroz/),
+    ).toBeInTheDocument();
+  });
+
+  it("closes only the food list on Escape and keeps the draft", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    await renderWithProviders(
+      <FoodMovementDialog
+        establishmentId={establishmentId}
+        open
+        onOpenChange={onOpenChange}
+        onSaved={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await screen.findByRole("option", { name: /Arroz/ });
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("option", { name: /Arroz/ })).toBeNull();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("does not pick a stale option while a new search is loading", async () => {
+    const user = userEvent.setup();
+    await openDialog();
+    const picker = screen.getByRole("combobox", { name: "Alimento" });
+    await user.click(picker);
+    await screen.findByRole("option", { name: /Arroz/ });
+    await user.type(picker, "zzz{Enter}");
+    expect(picker).toHaveValue("zzz");
+  });
 });

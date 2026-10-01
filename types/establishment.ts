@@ -303,3 +303,9 @@ export type CreatedFoodMovement = {
   created_at: string;
   items: FoodMovementItem[];
 };
+
+export type FoodMovementSaveResult = {
+  movement: CreatedFoodMovement;
+  /** The backend already held this request id and answered with the stored record. */
+  replayed: boolean;
+};

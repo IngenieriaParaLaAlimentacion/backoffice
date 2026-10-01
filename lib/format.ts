@@ -117,6 +117,12 @@ function argentineDayStartMs(day: string) {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** The current Argentine calendar day as "YYYY-MM-DD". */
+export function argentineToday() {
+  const parts = timestampParts(new Date().toISOString());
+  return parts ? `${parts.year}-${parts.month}-${parts.day}` : "";
+}
+
 /** Inclusive lower bound for "responses on or after this Argentine day". */
 export function argentineDayStartUtc(day: string) {
   if (!day) return undefined;

@@ -7,11 +7,15 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OVERLAY_CLASS } from "@/constants/theme";
-import { FOOD_MOVEMENT_FORM as COPY } from "@/constants/establishments";
+import {
+  FOOD_MOVEMENT_FORM as COPY,
+  MOVEMENT_DIRECTION_LABELS,
+} from "@/constants/establishments";
 import {
   foodMovementSchema,
   FoodMovementInput,
   selectedFoodId,
+  selectedName,
   selectedUnit,
   validateMovement,
   OUTFLOW_EXCEEDS_STOCK,
@@ -19,19 +23,24 @@ import {
 import { useMovementFoodOptions } from "@/hooks/useMovementFoodOptions";
 import { useCreateFoodMovement } from "@/hooks/useCreateFoodMovement";
 import { ApiError, ERROR_TYPES } from "@/lib/apiError";
-import { argentineDayStartUtc, formatTimestampDate } from "@/lib/format";
 import {
-  CreatedFoodMovement,
+  argentineDayStartUtc,
+  argentineToday,
+  formatQuantity,
+} from "@/lib/format";
+import { cn } from "@/lib/utils";
+import {
   FoodMovementDirection,
+  FoodMovementSaveResult,
 } from "@/types/establishment";
 import MovementFoodPicker from "@/components/MovementFoodPicker";
 import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
 
-const todayInArgentina = () =>
-  formatTimestampDate(new Date().toISOString()).split("/").reverse().join("-");
+const ERROR_CLASS = "text-sm text-destructive";
+
 const initial = (direction: FoodMovementDirection): FoodMovementInput => ({
   direction,
-  date: todayInArgentina(),
+  date: argentineToday(),
   comments: "",
   lines: [{ food: null, quantity: "" }],
 });
@@ -45,10 +54,7 @@ export default function FoodMovementDialog({
   establishmentId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSaved: (result: {
-    movement: CreatedFoodMovement;
-    replayed: boolean;
-  }) => void;
+  onSaved: (result: FoodMovementSaveResult) => void;
 }) {
   const [entryId, setEntryId] = useState(() => crypto.randomUUID());
   const [activeSearch, setActiveSearch] = useState("");
@@ -72,32 +78,34 @@ export default function FoodMovementDialog({
   const { fields, append, remove } = useFieldArray({ control, name: "lines" });
   const direction = watch("direction");
   const lines = watch("lines");
-  const options = useMovementFoodOptions(
-    establishmentId,
-    direction,
-    open,
-    activeSearch,
-  );
   const {
+    foods,
+    stock,
+    stockLoaded,
     hasMoreStock,
     loading: optionsLoading,
     error: optionsError,
     loadMoreStock,
-  } = options;
+    reload: reloadStock,
+  } = useMovementFoodOptions(establishmentId, direction, open, activeSearch);
   const save = useCreateFoodMovement();
+  const locked = save.saving || save.ambiguous;
   const availability = useMemo(
-    () => new Map(options.allStock.map((row) => [row.food.id, row.quantity])),
-    [options.allStock],
+    () => new Map(stock.map((row) => [row.food.id, row.quantity])),
+    [stock],
   );
 
-  useEffect(() => {
-    if (!open) return;
+  const startDraft = (next: FoodMovementDirection) => {
     setEntryId(crypto.randomUUID());
-    reset(initial("in"));
+    reset(initial(next));
     save.reset();
     setConflict(null);
     setActiveSearch("");
     setActiveLineId(null);
+  };
+
+  useEffect(() => {
+    if (open) startDraft("in");
     // A new draft belongs to each opening, not each stock response.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -135,7 +143,7 @@ export default function FoodMovementDialog({
     if (
       !conflict ||
       direction !== "out" ||
-      !options.stockLoaded ||
+      !stockLoaded ||
       (hasMoreStock && unresolvedSelected) ||
       optionsLoading ||
       optionsError
@@ -155,7 +163,7 @@ export default function FoodMovementDialog({
   }, [
     conflict,
     direction,
-    options.stockLoaded,
+    stockLoaded,
     hasMoreStock,
     unresolvedSelected,
     optionsLoading,
@@ -167,32 +175,42 @@ export default function FoodMovementDialog({
     clearErrors,
   ]);
 
-  const changeDirection = (next: FoodMovementDirection) => {
-    setEntryId(crypto.randomUUID());
-    reset(initial(next));
-    save.reset();
-    setConflict(null);
-    setActiveSearch("");
-    setActiveLineId(null);
-  };
-
-  const finish = (result: {
-    movement: CreatedFoodMovement;
-    replayed: boolean;
-  }) => {
+  const finish = (result: FoodMovementSaveResult) => {
     onSaved(result);
     onOpenChange(false);
   };
 
+  const reportConflict = (reason: unknown) => {
+    if (
+      !(reason instanceof ApiError) ||
+      reason.type !== ERROR_TYPES.INSUFFICIENT_STOCK
+    )
+      return;
+    const foodId = reason.extensions.food_id;
+    const selected = getValues("lines").find(
+      (line) => line.food && selectedFoodId(line.food) === foodId,
+    )?.food;
+    setConflict(
+      selected
+        ? COPY.insufficient(selectedName(selected))
+        : COPY.insufficientUnknown,
+    );
+    reloadStock();
+  };
+
+  // An outflow is checked against the loaded stock, so it waits for it.
+  const stockPending = direction === "out" && optionsLoading;
+
   const submit = handleSubmit(async (value) => {
-    if (save.ambiguous || options.loading || options.error) return;
+    if (save.ambiguous || stockPending || optionsError) return;
+    const today = argentineToday();
     const available = new Map(availability);
-    if (direction === "out" && options.stockLoaded && !options.hasMoreStock) {
+    if (direction === "out" && stockLoaded && !hasMoreStock) {
       for (const line of value.lines)
         if (line.food && !available.has(selectedFoodId(line.food)))
           available.set(selectedFoodId(line.food), "0");
     }
-    const problems = validateMovement(value, todayInArgentina(), available);
+    const problems = validateMovement(value, today, available);
     if (Object.keys(problems).length) {
       for (const [path, message] of Object.entries(problems))
         setError(
@@ -205,7 +223,7 @@ export default function FoodMovementDialog({
       id: entryId,
       establishment_id: establishmentId,
       occurred_at:
-        value.date === todayInArgentina()
+        value.date === today
           ? new Date().toISOString()
           : argentineDayStartUtc(value.date)!,
       comments: value.comments.trim() || null,
@@ -219,19 +237,7 @@ export default function FoodMovementDialog({
       const saved = await save.submit(direction, body);
       if (saved) finish(saved);
     } catch (reason) {
-      if (
-        reason instanceof ApiError &&
-        reason.type === ERROR_TYPES.INSUFFICIENT_STOCK
-      ) {
-        const foodId = reason.extensions.food_id;
-        const selected = value.lines.find(
-          (line) => line.food && selectedFoodId(line.food) === foodId,
-        )?.food;
-        const name =
-          selected && ("food" in selected ? selected.food.name : selected.name);
-        setConflict(name ? COPY.insufficient(name) : COPY.insufficientUnknown);
-        options.reload();
-      }
+      reportConflict(reason);
     }
   });
 
@@ -243,7 +249,7 @@ export default function FoodMovementDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className={`fixed inset-0 z-40 ${OVERLAY_CLASS}`} />
+        <Dialog.Backdrop className={cn("fixed inset-0 z-40", OVERLAY_CLASS)} />
         <Dialog.Popup className="fixed inset-0 z-50 m-auto h-fit max-h-[90vh] w-[min(95vw,40rem)] overflow-y-auto rounded-lg border border-border bg-background p-5 shadow-xl">
           <Dialog.Title className="text-xl font-semibold">
             {COPY.title}
@@ -252,153 +258,167 @@ export default function FoodMovementDialog({
             {COPY.description}
           </Dialog.Description>
           <form onSubmit={submit} className="mt-4 flex flex-col gap-4">
-            <fieldset
-              disabled={save.saving || save.ambiguous}
-              className="flex gap-4"
-            >
+            <fieldset disabled={locked} className="flex gap-4">
               <label>
                 <input
                   type="radio"
                   name="movement-direction"
                   checked={direction === "in"}
-                  onChange={() => changeDirection("in")}
+                  onChange={() => startDraft("in")}
                 />{" "}
-                {COPY.intake}
+                {MOVEMENT_DIRECTION_LABELS.in}
               </label>
               <label>
                 <input
                   type="radio"
                   name="movement-direction"
                   checked={direction === "out"}
-                  onChange={() => changeDirection("out")}
+                  onChange={() => startDraft("out")}
                 />{" "}
-                {COPY.outflow}
+                {MOVEMENT_DIRECTION_LABELS.out}
               </label>
             </fieldset>
             <label className="text-sm">
               {COPY.date}
               <Input
                 type="date"
-                max={todayInArgentina()}
-                disabled={save.saving || save.ambiguous}
+                max={argentineToday()}
+                disabled={locked}
                 {...register("date")}
               />
             </label>
             {errors.date && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className={ERROR_CLASS}>
                 {errors.date.message}
               </p>
             )}
             {direction === "out" &&
-              options.stockLoaded &&
-              !options.loading &&
-              !options.error &&
-              options.allStock.length === 0 &&
-              !options.hasMoreStock && <p>{COPY.emptyStock}</p>}
-            {fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid grid-cols-1 gap-2 rounded-md border border-border p-2 sm:grid-cols-[1fr_8rem_auto] sm:items-end"
-              >
-                <div>
-                  <MovementFoodPicker
-                    direction={direction}
-                    value={lines[index]?.food ?? null}
-                    foods={activeLineId === field.id ? options.foods : []}
-                    stock={options.allStock}
-                    excludedIds={
-                      new Set(
-                        lines
-                          .filter((_, row) => row !== index)
-                          .flatMap((line) =>
-                            line.food ? [selectedFoodId(line.food)] : [],
-                          ),
-                      )
-                    }
-                    onSearch={(text) => {
-                      setActiveLineId(field.id);
-                      setActiveSearch(text);
-                    }}
-                    loading={options.loading}
-                    error={options.error}
-                    hasMoreStock={options.hasMoreStock}
-                    onLoadMore={options.loadMoreStock}
-                    onChange={(food) => {
-                      setValue(`lines.${index}.food`, food, {
-                        shouldValidate: true,
-                      });
-                      clearErrors(`lines.${index}.food`);
-                    }}
-                    disabled={save.saving || save.ambiguous}
-                  />
-                  {errors.lines?.[index]?.food && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {errors.lines[index]?.food?.message}
-                    </p>
-                  )}
-                  {direction === "out" && lines[index]?.food && (
-                    <small className="text-muted-foreground">
-                      {availability.get(selectedFoodId(lines[index].food!)) ??
-                        (options.hasMoreStock ||
-                        !options.stockLoaded ||
-                        options.loading
-                          ? COPY.availabilityUnknown
-                          : "0")}{" "}
-                      {selectedUnit(lines[index].food!)}
-                    </small>
-                  )}
-                </div>
-                <div>
-                  <Input
-                    aria-label={`${COPY.quantity} ${index + 1}`}
-                    inputMode="decimal"
-                    disabled={save.saving || save.ambiguous}
-                    {...register(`lines.${index}.quantity`)}
-                  />
-                  <small>
-                    {lines[index]?.food ? selectedUnit(lines[index].food!) : ""}
-                  </small>
-                  {errors.lines?.[index]?.quantity && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {errors.lines[index]?.quantity?.message}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={
-                    fields.length === 1 || save.saving || save.ambiguous
-                  }
-                  onClick={() => remove(index)}
+              stockLoaded &&
+              !optionsLoading &&
+              !optionsError &&
+              stock.length === 0 &&
+              !hasMoreStock && <p>{COPY.emptyStock}</p>}
+            {fields.map((field, index) => {
+              const food = lines[index]?.food ?? null;
+              return (
+                <div
+                  key={field.id}
+                  className="grid grid-cols-1 gap-2 rounded-md border border-border p-2 sm:grid-cols-[1fr_8rem_auto] sm:items-end"
                 >
-                  {COPY.removeLine}
-                </Button>
-              </div>
-            ))}
+                  <div>
+                    <MovementFoodPicker
+                      direction={direction}
+                      value={food}
+                      foods={activeLineId === field.id ? foods : []}
+                      stock={stock}
+                      excludedIds={
+                        new Set(
+                          lines
+                            .filter((_, row) => row !== index)
+                            .flatMap((line) =>
+                              line.food ? [selectedFoodId(line.food)] : [],
+                            ),
+                        )
+                      }
+                      onSearch={(text) => {
+                        setActiveLineId(field.id);
+                        setActiveSearch(text);
+                      }}
+                      loading={optionsLoading}
+                      error={optionsError}
+                      hasMoreStock={hasMoreStock}
+                      onLoadMore={loadMoreStock}
+                      onChange={(food) => {
+                        setValue(`lines.${index}.food`, food, {
+                          shouldValidate: true,
+                        });
+                        clearErrors(`lines.${index}.food`);
+                      }}
+                      disabled={locked}
+                    />
+                    {errors.lines?.[index]?.food && (
+                      <p role="alert" className={ERROR_CLASS}>
+                        {errors.lines[index]?.food?.message}
+                      </p>
+                    )}
+                    {direction === "out" && food && (
+                      <small className="text-muted-foreground">
+                        {availability.has(selectedFoodId(food)) ||
+                        !(hasMoreStock || !stockLoaded || optionsLoading)
+                          ? formatQuantity(
+                              availability.get(selectedFoodId(food)) ?? "0",
+                            )
+                          : COPY.availabilityUnknown}{" "}
+                        {selectedUnit(food)}
+                      </small>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      aria-label={`${COPY.quantity} ${index + 1}`}
+                      inputMode="decimal"
+                      disabled={locked}
+                      {...register(`lines.${index}.quantity`)}
+                    />
+                    <small>{food ? selectedUnit(food) : ""}</small>
+                    {errors.lines?.[index]?.quantity && (
+                      <p role="alert" className={ERROR_CLASS}>
+                        {errors.lines[index]?.quantity?.message}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={fields.length === 1 || locked}
+                    onClick={() => remove(index)}
+                  >
+                    {COPY.removeLine}
+                  </Button>
+                </div>
+              );
+            })}
             <Button
               type="button"
               variant="outline"
-              disabled={save.saving || save.ambiguous}
+              disabled={locked}
               onClick={() => append({ food: null, quantity: "" })}
             >
               {COPY.addLine}
             </Button>
             {errors.lines?.message && (
-              <p role="alert">{errors.lines.message}</p>
+              <p role="alert" className={ERROR_CLASS}>
+                {errors.lines.message}
+              </p>
             )}
             <label className="text-sm">
               {COPY.comments}
               <textarea
                 className="w-full rounded-lg border border-input bg-background p-2"
-                disabled={save.saving || save.ambiguous}
+                disabled={locked}
                 {...register("comments")}
               />
             </label>
-            {errors.comments && <p role="alert">{errors.comments.message}</p>}
-            {options.error && <p role="alert">{options.error}</p>}
-            {conflict && <p role="alert">{conflict}</p>}
-            {save.error && <p role="alert">{save.error}</p>}
+            {errors.comments && (
+              <p role="alert" className={ERROR_CLASS}>
+                {errors.comments.message}
+              </p>
+            )}
+            {optionsError && (
+              <p role="alert" className={ERROR_CLASS}>
+                {optionsError}
+              </p>
+            )}
+            {conflict && (
+              <p role="alert" className={ERROR_CLASS}>
+                {conflict}
+              </p>
+            )}
+            {save.error && (
+              <p role="alert" className={ERROR_CLASS}>
+                {save.error}
+              </p>
+            )}
             {save.ambiguous && (
               <Button
                 type="button"
@@ -406,8 +426,8 @@ export default function FoodMovementDialog({
                   try {
                     const saved = await save.retryFrozen();
                     if (saved) finish(saved);
-                  } catch {
-                    /* The hook reports the result. */
+                  } catch (reason) {
+                    reportConflict(reason);
                   }
                 }}
               >
@@ -426,10 +446,10 @@ export default function FoodMovementDialog({
               <Button
                 type="submit"
                 disabled={
-                  save.saving ||
-                  save.ambiguous ||
-                  !!options.error ||
-                  (direction === "out" && options.allStock.length === 0)
+                  locked ||
+                  stockPending ||
+                  !!optionsError ||
+                  (direction === "out" && stock.length === 0)
                 }
               >
                 {COPY.save}
