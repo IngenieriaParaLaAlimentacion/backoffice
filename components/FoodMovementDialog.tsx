@@ -303,7 +303,7 @@ export default function FoodMovementDialog({
               return (
                 <div
                   key={field.id}
-                  className="grid grid-cols-1 gap-2 rounded-md border border-border p-2 sm:grid-cols-[1fr_8rem_auto] sm:items-end"
+                  className="grid grid-cols-1 gap-2 rounded-md border border-border p-2 sm:grid-cols-[1fr_12rem_auto] sm:items-start"
                 >
                   <div>
                     <MovementFoodPicker
@@ -354,13 +354,20 @@ export default function FoodMovementDialog({
                     )}
                   </div>
                   <div>
-                    <Input
-                      aria-label={`${COPY.quantity} ${index + 1}`}
-                      inputMode="decimal"
-                      disabled={locked}
-                      {...register(`lines.${index}.quantity`)}
-                    />
-                    <small>{food ? selectedUnit(food) : ""}</small>
+                    <span className="text-sm">{COPY.quantity}</span>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        aria-label={`${COPY.quantity} ${index + 1}`}
+                        inputMode="decimal"
+                        disabled={locked}
+                        {...register(`lines.${index}.quantity`)}
+                      />
+                      {food && (
+                        <span className="shrink-0 text-sm text-muted-foreground">
+                          {selectedUnit(food)}
+                        </span>
+                      )}
+                    </div>
                     {errors.lines?.[index]?.quantity && (
                       <p role="alert" className={ERROR_CLASS}>
                         {errors.lines[index]?.quantity?.message}
@@ -370,6 +377,7 @@ export default function FoodMovementDialog({
                   <Button
                     type="button"
                     variant="ghost"
+                    className="sm:mt-5"
                     disabled={fields.length === 1 || locked}
                     onClick={() => remove(index)}
                   >
