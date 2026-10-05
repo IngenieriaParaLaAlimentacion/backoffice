@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { listEstablishmentStockAction } from "@/services/establishment.service";
 import { FoodStockItem, FoodStockSortOrder } from "@/types/establishment";
@@ -19,6 +19,7 @@ export function useEstablishmentStock(establishmentId: string) {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, refetch] = useReducer((n: number) => n + 1, 0);
 
   const [categoryId, setCategoryId] = useState("");
   const [sortOrder, setSortOrderState] =
@@ -29,6 +30,7 @@ export function useEstablishmentStock(establishmentId: string) {
       currentPage: number,
       currentCategoryId: string,
       currentSortOrder: FoodStockSortOrder,
+      cancelled: () => boolean,
     ) => {
       setIsLoading(true);
       setError(null);
@@ -46,25 +48,35 @@ export function useEstablishmentStock(establishmentId: string) {
             sort_order: currentSortOrder,
           },
         );
-        setStock(data.items);
-        setTotal(data.total);
-        setTotalPages(data.total_pages);
+        if (!cancelled()) {
+          // An outflow can empty the page being viewed.
+          if (currentPage > 1 && data.items.length === 0)
+            setPage(Math.max(1, data.total_pages));
+          setStock(data.items);
+          setTotal(data.total);
+          setTotalPages(data.total_pages);
+        }
       } catch (err) {
-        setError(
-          getErrorMessage(err, {
-            fallback: ESTABLISHMENT_STOCK_PAGE.loadError,
-          }),
-        );
+        if (!cancelled())
+          setError(
+            getErrorMessage(err, {
+              fallback: ESTABLISHMENT_STOCK_PAGE.loadError,
+            }),
+          );
       } finally {
-        setIsLoading(false);
+        if (!cancelled()) setIsLoading(false);
       }
     },
     [makeAuthorizedRequest, establishmentId],
   );
 
   useEffect(() => {
-    fetchStock(page, categoryId, sortOrder);
-  }, [fetchStock, page, categoryId, sortOrder]);
+    let cancelled = false;
+    void fetchStock(page, categoryId, sortOrder, () => cancelled);
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchStock, page, categoryId, sortOrder, refreshKey]);
 
   const changeCategoryId = (next: string) => {
     setCategoryId(next);
@@ -88,5 +100,6 @@ export function useEstablishmentStock(establishmentId: string) {
     setCategoryId: changeCategoryId,
     sortOrder,
     setSortOrder: changeSortOrder,
+    refetch,
   };
 }

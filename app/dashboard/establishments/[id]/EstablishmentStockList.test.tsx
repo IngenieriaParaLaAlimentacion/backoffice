@@ -3,7 +3,10 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import EstablishmentStockList from "./EstablishmentStockList";
 import { renderWithProviders } from "@/test-utils";
-import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
+import {
+  currentStock,
+  MOCK_ESTABLISHMENTS,
+} from "@/mocks/fixtures/establishment";
 import { ESTABLISHMENT_STOCK_PAGE as COPY } from "@/constants/establishments";
 import { EXPORT } from "@/constants/exports";
 
@@ -60,6 +63,38 @@ describe("EstablishmentStockList", () => {
     expect(await screen.findByText(COPY.noStock)).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
+
+  it.each(["admin", "analyst"] as const)(
+    "registers an intake from empty stock as %s and refreshes",
+    async (role) => {
+      const user = userEvent.setup();
+      await renderWithProviders(
+        <EstablishmentStockList establishmentId={WITHOUT_DATA_ID} />,
+        { role },
+      );
+      expect(await screen.findByText(COPY.noStock)).toBeInTheDocument();
+      await user.click(
+        screen.getByRole("button", { name: COPY.createMovement }),
+      );
+      await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+      await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+      await user.type(
+        screen.getByRole("textbox", { name: "Cantidad 1" }),
+        "1.125",
+      );
+      await user.click(
+        screen.getByRole("button", { name: "Guardar movimiento" }),
+      );
+      await waitFor(() =>
+        expect(currentStock(WITHOUT_DATA_ID)[0]?.quantity).toBe("1.125"),
+      );
+      expect(await screen.findByRole("status")).toHaveTextContent(COPY.saved);
+      expect(
+        screen.getByRole("link", { name: COPY.viewSaved }),
+      ).toHaveAttribute("href", expect.stringContaining("movement_id="));
+      expect(within(await findTable()).getByText("Arroz")).toBeInTheDocument();
+    },
+  );
 
   it("filters the listing by category", async () => {
     await renderWithProviders(

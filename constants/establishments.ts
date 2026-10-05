@@ -281,10 +281,20 @@ export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
   litros: "Litros",
 };
 
+/** Copy shared by every screen that opens the movement form. */
+const FOOD_MOVEMENT_ENTRY = {
+  createMovement: "Registrar movimiento",
+  replayed:
+    "El movimiento ya estaba registrado; mostramos el registro guardado.",
+  viewSaved: "Ver movimiento",
+} as const;
+
 export const ESTABLISHMENT_STOCK_PAGE = {
   subtitle: (total: number) =>
     `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
   viewHistory: "Historial de Movimientos",
+  ...FOOD_MOVEMENT_ENTRY,
+  saved: "Movimiento registrado.",
   categoryLabel: "Categoría",
   allCategories: "Todas las categorías",
   sortLabel: "Ordenar por",
@@ -324,6 +334,9 @@ export const MOVEMENT_DIRECTION_OPTIONS: {
 
 export const ESTABLISHMENT_MOVEMENTS_PAGE = {
   title: "Historial de movimientos",
+  ...FOOD_MOVEMENT_ENTRY,
+  savedChronological:
+    "Movimiento registrado. Aparece según su fecha y los filtros actuales.",
   back: "Volver al stock",
   subtitle: (total: number) =>
     `${total} ${total === 1 ? "movimiento registrado" : "movimientos registrados"}`,
@@ -375,6 +388,36 @@ export const ESTABLISHMENT_MOVEMENTS_PAGE = {
     notFound: "Ese movimiento no existe",
     loadError: "Error al cargar el detalle del movimiento",
   },
+} as const;
+
+export const FOOD_MOVEMENT_FORM = {
+  title: FOOD_MOVEMENT_ENTRY.createMovement,
+  description: "Completá los alimentos y la fecha del movimiento.",
+  date: "Fecha",
+  invalidDate: "Ingresá una fecha válida",
+  food: "Alimento",
+  quantity: "Cantidad",
+  quantityHint: "Podés usar coma o punto para los decimales.",
+  comments: "Comentarios",
+  addLine: "Agregar alimento",
+  removeLine: "Quitar",
+  save: "Guardar movimiento",
+  cancel: "Cancelar",
+  loadingFoods: "Buscando alimentos…",
+  noFoods: "No hay alimentos coincidentes",
+  loadMore: "Cargar más alimentos",
+  emptyStock: "No hay stock disponible para registrar un egreso.",
+  foodLoadError: "No se pudo cargar el catálogo de alimentos.",
+  stockLoadError: "No se pudo cargar el stock disponible.",
+  saveError: "No se pudo guardar el movimiento.",
+  uncertainSave:
+    "No pudimos confirmar si se guardó. Reintentá exactamente este movimiento o cerrá y consultá el historial.",
+  retrySame: "Comprobar y reintentar",
+  insufficient: (food: string) =>
+    `Stock insuficiente para ${food}. Revisá la cantidad disponible.`,
+  insufficientUnknown:
+    "Stock insuficiente. Actualizamos las cantidades disponibles; revisá las líneas.",
+  availabilityUnknown: "Estamos comprobando el stock actualizado.",
 } as const;
 
 export const ESTABLISHMENT_REQUEST_SORT_OPTIONS: {

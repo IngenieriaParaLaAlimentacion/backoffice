@@ -1,4 +1,5 @@
 import {
+  CreatedFoodMovement,
   EstablishmentMapItem,
   EstablishmentMapResponse,
   EstablishmentResponse,
@@ -355,16 +356,6 @@ export const DEFAULT_ESTABLISHMENT_STOCK_RESPONSE: PaginatedFoodStockResponse =
     total_pages: 1,
   };
 
-/** `only_available` is always sent as `true` by the frontend, so a comedor
- * whose stock is fully zeroed out looks identical to one with none loaded. */
-export const EMPTY_ESTABLISHMENT_STOCK_RESPONSE: PaginatedFoodStockResponse = {
-  items: [],
-  total: 0,
-  page: 1,
-  page_size: 20,
-  total_pages: 0,
-};
-
 // --- Food movements ---
 
 const MOVEMENT_IDS = {
@@ -373,7 +364,7 @@ const MOVEMENT_IDS = {
   intakeNoComments: "a1000000-0000-0000-0000-000000000003",
 };
 
-const RESPONSIBLE = {
+export const RESPONSIBLE = {
   id: "f1000000-0000-0000-0000-000000000001",
   name: "Juan",
   last_name: "Gomez",
@@ -413,9 +404,6 @@ export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovemen
     page_size: 20,
     total_pages: 1,
   };
-
-export const EMPTY_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovementsResponse =
-  { items: [], total: 0, page: 1, page_size: 20, total_pages: 0 };
 
 /**
  * Keyed by movement id — a row's `id` resolves straight to its detail.
@@ -551,3 +539,59 @@ for (const movement of PAGED_FOOD_MOVEMENTS) {
     ],
   };
 }
+
+const baseDetails = structuredClone(MOCK_FOOD_MOVEMENT_DETAILS);
+const stockByEstablishment = new Map<
+  string,
+  PaginatedFoodStockResponse["items"]
+>();
+const movementsByEstablishment = new Map<string, FoodMovementListItem[]>();
+const createdById = new Map<string, CreatedFoodMovement>();
+
+export function resetMovementFixture() {
+  stockByEstablishment.clear();
+  movementsByEstablishment.clear();
+  createdById.clear();
+  for (const key of Object.keys(MOCK_FOOD_MOVEMENT_DETAILS))
+    delete MOCK_FOOD_MOVEMENT_DETAILS[key];
+  Object.assign(MOCK_FOOD_MOVEMENT_DETAILS, structuredClone(baseDetails));
+}
+
+export function currentStock(establishmentId: string) {
+  if (!stockByEstablishment.has(establishmentId)) {
+    stockByEstablishment.set(
+      establishmentId,
+      structuredClone(
+        establishmentId === MOCK_ESTABLISHMENTS[1].id
+          ? []
+          : DEFAULT_ESTABLISHMENT_STOCK_RESPONSE.items,
+      ),
+    );
+  }
+  return stockByEstablishment.get(establishmentId)!;
+}
+
+export function setMovementStock(
+  establishmentId: string,
+  stock: PaginatedFoodStockResponse["items"],
+) {
+  stockByEstablishment.set(establishmentId, structuredClone(stock));
+}
+
+export function currentMovements(establishmentId: string) {
+  if (!movementsByEstablishment.has(establishmentId)) {
+    const initial =
+      establishmentId === MOCK_ESTABLISHMENTS[1].id
+        ? []
+        : establishmentId === MOCK_ESTABLISHMENTS[2].id
+          ? PAGED_FOOD_MOVEMENTS
+          : DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items;
+    movementsByEstablishment.set(establishmentId, structuredClone(initial));
+  }
+  return movementsByEstablishment.get(establishmentId)!;
+}
+
+export const createdMovement = (id: string) => createdById.get(id);
+export const storeCreatedMovement = (movement: CreatedFoodMovement) => {
+  createdById.set(movement.id, movement);
+};

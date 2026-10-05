@@ -283,3 +283,29 @@ export type FoodMovementDetail = {
   responsible: FoodMovementResponsible;
   items: FoodMovementItem[];
 };
+
+export type CreateFoodMovementRequest = {
+  id: string;
+  establishment_id: string;
+  occurred_at: string;
+  comments: string | null;
+  source: "manual";
+  items: { food_id: string; quantity: string }[];
+};
+
+export type CreatedFoodMovement = {
+  id: string;
+  establishment_id: string;
+  responsible_id: string;
+  occurred_at: string;
+  comments: string | null;
+  source: FoodMovementSource;
+  created_at: string;
+  items: FoodMovementItem[];
+};
+
+export type FoodMovementSaveResult = {
+  movement: CreatedFoodMovement;
+  /** The backend already held this request id and answered with the stored record. */
+  replayed: boolean;
+};

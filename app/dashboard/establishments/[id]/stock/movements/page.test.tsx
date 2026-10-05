@@ -50,6 +50,51 @@ describe("EstablishmentMovementsHistoryPage", () => {
     expect(within(rows[2]).getByText("08/09/2026 06:00")).toBeInTheDocument();
   });
 
+  it("keeps a backdated intake in chronological order and opens its saved detail", async () => {
+    const user = userEvent.setup();
+    await renderPage(WITH_DATA_ID);
+    await findRows();
+    await user.click(screen.getByRole("button", { name: COPY.createMovement }));
+    await user.clear(screen.getByLabelText("Fecha"));
+    await user.type(screen.getByLabelText("Fecha"), "2026-09-10");
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "2");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    expect(
+      await screen.findByText(COPY.savedChronological),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        document.querySelectorAll("table")[0]?.querySelectorAll("tbody tr"),
+      ).toHaveLength(4),
+    );
+    const rows = Array.from(
+      document.querySelectorAll("table")[0].querySelectorAll("tbody tr"),
+    );
+    expect(within(rows[2]).getByText("10/09/2026 00:00")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", {
+        name: "Ingreso — 10/09/2026 00:00",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the saved detail by URL id independently of the current list page", async () => {
+    const movementId = "a1000000-0000-0000-0000-000000000001";
+    window.history.replaceState(null, "", `?movement_id=${movementId}`);
+    try {
+      await renderPage(WITH_DATA_ID);
+      expect(
+        await screen.findByRole("heading", { name: /Ingreso — 14\/09\/2026/ }),
+      ).toBeInTheDocument();
+    } finally {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  });
+
   it("summarises each row with its responsible and distinct food count", async () => {
     await renderPage(WITH_DATA_ID);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useEstablishmentMovementsHistory } from "@/hooks/useEstablishmentMovementsHistory";
@@ -33,6 +33,7 @@ import { MovementDirectionFilter } from "@/hooks/useEstablishmentMovementsHistor
 import { FoodListItem } from "@/types/foodCatalog";
 import FoodFilter from "./FoodFilter";
 import MovementDetailPanel from "./MovementDetailPanel";
+import FoodMovementDialog from "@/components/FoodMovementDialog";
 
 const PANEL_HREF = "/dashboard/establishments";
 
@@ -64,11 +65,24 @@ export default function EstablishmentMovementsHistoryPage({
     hasActiveFilters,
     notFound,
     forbidden,
+    refetch,
   } = useEstablishmentMovementsHistory(id);
+
+  const [movementOpen, setMovementOpen] = useState(false);
+  const [savedNotice, setSavedNotice] = useState<{
+    message: string;
+    movementId: string;
+  } | null>(null);
 
   const [selectedMovementId, setSelectedMovementId] = useState<string | null>(
     null,
   );
+  useEffect(() => {
+    const movementId = new URLSearchParams(window.location.search).get(
+      "movement_id",
+    );
+    if (movementId) setSelectedMovementId(movementId);
+  }, []);
   // The picker holds the whole food so the input can show its name; only the
   // id reaches the query.
   const [selectedFood, setSelectedFood] = useState<FoodListItem | null>(null);
@@ -144,15 +158,46 @@ export default function EstablishmentMovementsHistoryPage({
             {COPY.back}
           </Button>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-3xl font-semibold">{COPY.title}</h1>
-            <p className="text-muted-foreground text-sm">
-              {COPY.subtitle(total)}
-            </p>
+            <Button size="sm" onClick={() => setMovementOpen(true)}>
+              {COPY.createMovement}
+            </Button>
           </div>
+          <p className="text-muted-foreground text-sm">
+            {COPY.subtitle(total)}
+          </p>
         </div>
 
         <Separator />
+
+        <FoodMovementDialog
+          establishmentId={id}
+          open={movementOpen}
+          onOpenChange={setMovementOpen}
+          onSaved={(result) => {
+            refetch();
+            setSavedNotice({
+              message: result.replayed
+                ? COPY.replayed
+                : COPY.savedChronological,
+              movementId: result.movement.id,
+            });
+            setSelectedMovementId(result.movement.id);
+          }}
+        />
+        {savedNotice && (
+          <p role="status">
+            {savedNotice.message}{" "}
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setSelectedMovementId(savedNotice.movementId)}
+            >
+              {COPY.viewSaved}
+            </Button>
+          </p>
+        )}
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end gap-3">
