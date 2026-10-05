@@ -34,7 +34,11 @@ import {
   FoodMovementSaveResult,
 } from "@/types/establishment";
 import MovementFoodPicker from "@/components/MovementFoodPicker";
-import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
+import {
+  apiQuantity,
+  availableMillis,
+  quantityMillis,
+} from "@/lib/foodMovementQuantity";
 
 const ERROR_CLASS = "text-sm text-destructive";
 
@@ -230,7 +234,7 @@ export default function FoodMovementDialog({
       source: "manual" as const,
       items: value.lines.map((line) => ({
         food_id: selectedFoodId(line.food!),
-        quantity: line.quantity.trim(),
+        quantity: apiQuantity(line.quantity),
       })),
     };
     try {
@@ -257,7 +261,11 @@ export default function FoodMovementDialog({
           <Dialog.Description className="text-sm text-muted-foreground">
             {COPY.description}
           </Dialog.Description>
-          <form onSubmit={submit} className="mt-4 flex flex-col gap-4">
+          <form
+            noValidate
+            onSubmit={submit}
+            className="mt-4 flex flex-col gap-4"
+          >
             <fieldset disabled={locked} className="flex gap-4">
               <label>
                 <input
@@ -368,6 +376,9 @@ export default function FoodMovementDialog({
                         </span>
                       )}
                     </div>
+                    <small className="text-muted-foreground">
+                      {COPY.quantityHint}
+                    </small>
                     {errors.lines?.[index]?.quantity && (
                       <p role="alert" className={ERROR_CLASS}>
                         {errors.lines[index]?.quantity?.message}

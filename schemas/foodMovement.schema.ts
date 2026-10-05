@@ -2,6 +2,7 @@ import { z } from "zod";
 import { FoodListItem } from "@/types/foodCatalog";
 import { FoodStockItem } from "@/types/establishment";
 import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
+import { FOOD_MOVEMENT_FORM } from "@/constants/establishments";
 
 export type MovementFood = FoodListItem | FoodStockItem;
 export const OUTFLOW_EXCEEDS_STOCK = "La cantidad supera el stock disponible";
@@ -11,7 +12,7 @@ const foodMovementLineSchema = z.object({
 });
 export const foodMovementSchema = z.object({
   direction: z.enum(["in", "out"]),
-  date: z.iso.date(),
+  date: z.iso.date({ error: FOOD_MOVEMENT_FORM.invalidDate }),
   comments: z.string().max(500, "Máximo 500 caracteres"),
   lines: z.array(foodMovementLineSchema).min(1, "Agregá un alimento"),
 });
@@ -44,7 +45,7 @@ export function validateMovement(
     const parsed = quantityMillis(line.quantity);
     if (parsed === null) {
       errors[`lines.${index}.quantity`] =
-        "Ingresá una cantidad mayor a cero, con hasta tres decimales y siete enteros";
+        "Ingresá una cantidad mayor a cero, con hasta tres decimales (coma o punto) y siete enteros";
       return;
     }
     if (

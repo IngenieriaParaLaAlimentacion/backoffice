@@ -32,6 +32,51 @@ const openDialog = async (onSaved = vi.fn()) => {
 };
 
 describe("FoodMovementDialog", () => {
+  it("accepts comma decimals and sends dot decimals to the API", async () => {
+    const user = userEvent.setup();
+    let submitted: CreateFoodMovementRequest | null = null;
+    server.use(
+      http.post(FOOD_INTAKES_ENDPOINT, async ({ request }) => {
+        submitted = (await request.json()) as CreateFoodMovementRequest;
+        return HttpResponse.json(
+          {
+            ...submitted,
+            responsible_id: "f1000000-0000-0000-0000-000000000001",
+            created_at: new Date().toISOString(),
+            items: [],
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    const onSaved = await openDialog();
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    expect(
+      screen.getByText("Podés usar coma o punto para los decimales."),
+    ).toBeInTheDocument();
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "0,5");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect((submitted as CreateFoodMovementRequest | null)?.items).toEqual([
+      { food_id: MOCK_FOODS[0].id, quantity: "0.5" },
+    ]);
+  });
+
+  it("shows a Spanish validation message for an empty date", async () => {
+    const user = userEvent.setup();
+    await openDialog();
+    await user.clear(screen.getByLabelText("Fecha"));
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    expect(await screen.findByRole("alert", { name: "" })).toHaveTextContent(
+      "Ingresá una fecha válida",
+    );
+  });
+
   it("supports keyboard food selection and returns focus to the trigger", async () => {
     const user = userEvent.setup();
     function Harness() {

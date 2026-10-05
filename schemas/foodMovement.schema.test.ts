@@ -4,6 +4,16 @@ import { foodMovementSchema, validateMovement } from "./foodMovement.schema";
 
 describe("food movement form", () => {
   const food = MOCK_FOODS[0];
+  it("explains an invalid date in Spanish", () => {
+    const result = foodMovementSchema.safeParse({
+      direction: "in",
+      date: "2026-02-30",
+      comments: "",
+      lines: [{ food, quantity: "1" }],
+    });
+    expect(result.error?.issues[0].message).toBe("Ingresá una fecha válida");
+  });
+
   it("rejects future dates and duplicate foods", () => {
     const value = foodMovementSchema.parse({
       direction: "in",
