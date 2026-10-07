@@ -4,6 +4,7 @@ import {
   makeLogoutHandler,
   makeRefreshHandler,
   makeResetPasswordHandler,
+  makeVerifyEmailHandler,
 } from "@/mocks/handlers/auth";
 import {
   makeApproveEstablishmentRequestHandler,
@@ -59,6 +60,7 @@ export const handlers = [
   makeRefreshHandler(),
   makeResetPasswordHandler(),
   makeForgotPasswordHandler(),
+  makeVerifyEmailHandler(),
   makeLogoutHandler(),
   makeListUsersHandler(),
   makeListPendingEstablishmentAccessHandler(),
