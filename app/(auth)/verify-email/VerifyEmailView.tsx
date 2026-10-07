@@ -27,9 +27,8 @@ function toFailureState(err: unknown): ViewState {
   const type = err instanceof ApiError ? err.type : undefined;
 
   if (type === ERROR_TYPES.VERIFICATION_TOKEN_USED) return { status: "used" };
-  if (type && type in LINK_ERRORS) {
-    return { status: "failed", message: LINK_ERRORS[type] };
-  }
+  const linkError = type ? LINK_ERRORS[type] : undefined;
+  if (linkError) return { status: "failed", message: linkError };
   return {
     status: "idle",
     submitError: getErrorMessage(err, { fallback: COPY.submitError }),
