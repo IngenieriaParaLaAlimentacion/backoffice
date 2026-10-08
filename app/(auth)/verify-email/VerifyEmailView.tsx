@@ -1,91 +1,147 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { verifyEmailAction } from "@/services/auth.service";
+import { ApiError, ERROR_TYPES } from "@/lib/apiError";
 import { getErrorMessage } from "@/lib/errorMessages";
-import { VERIFY_EMAIL_ERRORS } from "@/constants/auth";
+import { VERIFY_EMAIL_PAGE as COPY } from "@/constants/auth";
 
 type VerifyEmailViewProps = {
-  token: string;
+  token?: string;
 };
 
-type VerificationStatus = "verifying" | "success" | "error";
+type ViewState =
+  | { status: "idle"; submitError?: string }
+  | { status: "verifying" }
+  | { status: "success" }
+  | { status: "used" }
+  | { status: "failed"; message: string };
+
+const LINK_ERRORS: Record<string, string> = COPY.linkErrors;
+
+/** Final answers about the link end the flow; anything else can be retried. */
+function toFailureState(err: unknown): ViewState {
+  const type = err instanceof ApiError ? err.type : undefined;
+
+  if (type === ERROR_TYPES.VERIFICATION_TOKEN_USED) return { status: "used" };
+  const linkError = type ? LINK_ERRORS[type] : undefined;
+  if (linkError) return { status: "failed", message: linkError };
+  return {
+    status: "idle",
+    submitError: getErrorMessage(err, { fallback: COPY.submitError }),
+  };
+}
+
+function ScreenHeading({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <h1 className="text-3xl font-semibold">{title}</h1>
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+    </div>
+  );
+}
+
+function SignInPrompt() {
+  return (
+    <p className="text-sm text-muted-foreground">
+      {COPY.signInPrompt}{" "}
+      <Link href="/signin" className="text-accent-foreground hover:underline">
+        {COPY.signInLink}
+      </Link>
+    </p>
+  );
+}
 
 export default function VerifyEmailView({ token }: VerifyEmailViewProps) {
-  const [status, setStatus] = useState<VerificationStatus>("verifying");
-  const [errorMessage, setErrorMessage] = useState("");
-  const hasRequested = useRef(false);
+  const [state, setState] = useState<ViewState>({ status: "idle" });
+  // The disabled button already blocks a second click; this also holds if two
+  // activations land before a render. A second POST would be answered
+  // "token used" and replace the success screen.
+  const inFlight = useRef(false);
 
-  useEffect(() => {
-    if (hasRequested.current) return;
-    hasRequested.current = true;
+  // The token is single-use and mail scanners open links, so nothing is sent
+  // until the person presses the button.
+  async function handleVerify() {
+    if (!token || inFlight.current) return;
+    inFlight.current = true;
+    setState({ status: "verifying" });
 
-    verifyEmailAction(token)
-      .then(() => setStatus("success"))
-      .catch((err: unknown) => {
-        setErrorMessage(
-          getErrorMessage(err, {
-            overrides: VERIFY_EMAIL_ERRORS,
-            fallback: "",
-          }),
-        );
-        setStatus("error");
-      });
-  }, [token]);
+    try {
+      await verifyEmailAction(token);
+      setState({ status: "success" });
+    } catch (err) {
+      setState(toFailureState(err));
+    } finally {
+      inFlight.current = false;
+    }
+  }
 
-  if (status === "verifying") {
+  if (!token) {
     return (
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">Verificando tu email</h1>
-        <p className="text-sm text-muted-foreground">
-          Estamos confirmando tu dirección de correo. Aguardá un momento...
-        </p>
-      </div>
+      <ScreenHeading
+        title={COPY.missingToken.title}
+        description={COPY.missingToken.description}
+      />
     );
   }
 
-  if (status === "success") {
+  if (state.status === "success" || state.status === "used") {
+    const { title, description } = COPY[state.status];
     return (
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-semibold">¡Email verificado!</h1>
-          <p className="text-sm text-muted-foreground">
-            Tu dirección de correo fue confirmada correctamente. Ya podés
-            iniciar sesión.
-          </p>
-        </div>
-        <Button render={<Link href="/signin" />} size="lg" className="w-full">
-          Ir a iniciar sesión
-        </Button>
+        <ScreenHeading title={title} description={description} />
+        <Alert>
+          <AlertDescription>{COPY.nextSteps}</AlertDescription>
+        </Alert>
+        <SignInPrompt />
       </div>
     );
   }
+
+  if (state.status === "failed") {
+    return (
+      <div className="flex flex-col gap-6">
+        <ScreenHeading title={COPY.failed.title} />
+        <Alert variant="destructive">
+          <AlertDescription>{state.message}</AlertDescription>
+        </Alert>
+        <SignInPrompt />
+      </div>
+    );
+  }
+
+  const isVerifying = state.status === "verifying";
+  const submitError = state.status === "idle" ? state.submitError : undefined;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">
-          No pudimos verificar tu email
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          El enlace de verificación no es válido o ya expiró.
-        </p>
-      </div>
-      {errorMessage && (
+      <ScreenHeading
+        title={COPY.landing.title}
+        description={COPY.landing.description}
+      />
+      {submitError && (
         <Alert variant="destructive">
-          <AlertDescription>{errorMessage}</AlertDescription>
+          <AlertDescription>{submitError}</AlertDescription>
         </Alert>
       )}
       <Button
-        render={<Link href="/signin" />}
         size="lg"
-        variant="outline"
         className="w-full"
+        disabled={isVerifying}
+        onClick={handleVerify}
       >
-        Volver al inicio de sesión
+        {isVerifying ? COPY.landing.submitting : COPY.landing.submit}
       </Button>
     </div>
   );
