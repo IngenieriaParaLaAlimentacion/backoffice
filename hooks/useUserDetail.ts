@@ -43,5 +43,8 @@ export function useUserDetail(userId: string | null) {
     if (userId) void fetchUser(userId);
   }, [userId, fetchUser]);
 
-  return { user, isLoading, error, refetch };
+  /** Swaps in a user the API already returned, e.g. after an update. */
+  const replace = useCallback((next: AdminUserDetail) => setUser(next), []);
+
+  return { user, isLoading, error, refetch, replace };
 }

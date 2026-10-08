@@ -28,6 +28,10 @@ export type AdminUserDetail = {
   contact_phone?: string;
 };
 
+export type ChangeUserRoleRequest = {
+  role: UserRole;
+};
+
 export type PaginatedUsersResponse = {
   items: UserAdminView[];
   total: number;

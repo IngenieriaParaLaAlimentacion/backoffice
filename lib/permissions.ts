@@ -57,3 +57,37 @@ export function can(role: UserRole | null, permission: Permission): boolean {
   if (!role) return false;
   return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
 }
+
+/** The roles a role change may assign. `superadmin` is never offered. */
+const ASSIGNABLE_ROLES = [
+  "field_worker",
+  "analyst",
+  "admin",
+] as const satisfies readonly UserRole[];
+
+/**
+ * Which users' roles each actor may change, by the target's current role. An
+ * admin can't demote another admin (nor anyone it promoted to admin); nobody
+ * touches a superadmin.
+ */
+const ROLE_CHANGE_TARGETS: Record<UserRole, readonly UserRole[]> = {
+  superadmin: ["field_worker", "analyst", "admin"],
+  admin: ["field_worker", "analyst"],
+  analyst: [],
+  field_worker: [],
+};
+
+/**
+ * The roles `actor` may move a `target`-role user to — empty when it may not
+ * change that user's role at all. Lives outside `can()` because it depends on
+ * two roles, not just the viewer's. The caller still has to rule out the
+ * viewer's own profile. Like `can`, a UX guard: the backend answers 403.
+ */
+export function assignableRoles(
+  actor: UserRole | null,
+  target: UserRole | null | undefined,
+): UserRole[] {
+  if (!actor || !target) return [];
+  if (!ROLE_CHANGE_TARGETS[actor]?.includes(target)) return [];
+  return ASSIGNABLE_ROLES.filter((role) => role !== target);
+}

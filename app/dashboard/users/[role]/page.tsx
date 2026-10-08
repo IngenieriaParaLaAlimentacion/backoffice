@@ -34,10 +34,8 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
   const label = section?.label ?? role;
   const canInvite = useSession().can("users.invite");
 
-  const { users, page, totalPages, isLoading, error, setPage } = useUsers(
-    role,
-    PAGE_SIZE,
-  );
+  const { users, page, totalPages, isLoading, error, setPage, refetch } =
+    useUsers(role, PAGE_SIZE);
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -212,6 +210,7 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
       <UserDetailPanel
         userId={selectedUserId}
         onClose={() => setSelectedUserId(null)}
+        onUserChanged={refetch}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import {
+  AdminUserDetail,
   EstablishmentApprovalResponse,
   PaginatedEstablishmentRequestsResponse,
   PaginatedUsersResponse,
@@ -142,3 +143,13 @@ export const DEFAULT_ESTABLISHMENT_APPROVAL_RESPONSE: EstablishmentApprovalRespo
     province: "Córdoba",
     reused: false,
   };
+
+export const DEFAULT_USER_DETAIL: AdminUserDetail = {
+  id: "a1b2c3d4-0000-0000-0000-000000000010",
+  email: "laura.diaz@example.com",
+  name: "Laura",
+  last_name: "Díaz",
+  role: "analyst",
+  status: "active",
+  establishments: [],
+};

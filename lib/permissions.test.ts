@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { can, Permission } from "@/lib/permissions";
+import { assignableRoles, can, Permission } from "@/lib/permissions";
 import { ROLE_LABELS, UserRole } from "@/types/user";
 
 const ADMIN_ONLY: Permission[] = [
@@ -49,5 +49,37 @@ describe("can", () => {
     for (const role of roles) {
       expect(typeof can(role, "requests.view")).toBe("boolean");
     }
+  });
+});
+
+describe("assignableRoles", () => {
+  const cases: [UserRole | null, UserRole, UserRole[]][] = [
+    ["superadmin", "field_worker", ["analyst", "admin"]],
+    ["superadmin", "analyst", ["field_worker", "admin"]],
+    ["superadmin", "admin", ["field_worker", "analyst"]],
+    ["superadmin", "superadmin", []],
+    ["admin", "field_worker", ["analyst", "admin"]],
+    ["admin", "analyst", ["field_worker", "admin"]],
+    ["admin", "admin", []],
+    ["admin", "superadmin", []],
+    ["analyst", "field_worker", []],
+    ["analyst", "analyst", []],
+    ["analyst", "admin", []],
+    ["analyst", "superadmin", []],
+    ["field_worker", "field_worker", []],
+    ["field_worker", "analyst", []],
+    ["field_worker", "admin", []],
+    ["field_worker", "superadmin", []],
+    [null, "field_worker", []],
+    [null, "analyst", []],
+  ];
+
+  it.each(cases)("lets %s move a %s to %j", (actor, target, expected) => {
+    expect(assignableRoles(actor, target)).toEqual(expected);
+  });
+
+  it("offers nothing while the target's role is unknown", () => {
+    expect(assignableRoles("superadmin", undefined)).toEqual([]);
+    expect(assignableRoles("superadmin", null)).toEqual([]);
   });
 });

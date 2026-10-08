@@ -39,5 +39,10 @@ export function useUsers(role: string, pageSize: number) {
     fetchUsers(page);
   }, [fetchUsers, page]);
 
-  return { users, page, totalPages, isLoading, error, setPage };
+  /** Re-fetches the current page, e.g. after a user moved to another role. */
+  const refetch = useCallback(() => {
+    void fetchUsers(page);
+  }, [fetchUsers, page]);
+
+  return { users, page, totalPages, isLoading, error, setPage, refetch };
 }

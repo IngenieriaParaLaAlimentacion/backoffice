@@ -63,6 +63,8 @@ export const ERROR_TYPES = {
   INVITE_ALREADY_PENDING: "/errors/admin/invite-already-pending",
   USER_ALREADY_EXISTS: "/errors/user-already-exists",
   USER_IS_NOT_PENDING: "/errors/user-is-not-pending",
+  USER_IS_NOT_ACTIVE: "/errors/user-is-not-active",
+  USER_NOT_FOUND: "/errors/user-not-found",
   EMAIL_DELIVERY_FAILED: "/errors/email-delivery-failed",
 
   SURVEY_LOCKED: "/errors/survey-locked",
