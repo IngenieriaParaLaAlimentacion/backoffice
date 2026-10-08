@@ -109,6 +109,19 @@ tests depend on them matching `constants/api.ts` and `types/*.ts`.
 `NEXT_PUBLIC_API_BASE_URL` (the real backend) — set that env var rather than changing
 `API_BASE_URL`.
 
+`proxy.ts` (project root, matched on `/api/:path*`) runs before that rewrite and sets two
+headers on each forwarded call: `x-internal-token`, the secret shared with the backend, and
+`x-client-ip`, the address of the user who made the call. The backend counts its per-IP limits
+against that address; without it every backoffice user would share the address of the Next.js
+server. Whatever the browser sends in those two headers is discarded. The names are in
+`constants/serviceHeaders.ts`.
+
+`INTERNAL_SERVICE_TOKEN` and `CLIENT_IP_HEADER` (the header where the edge proxy writes the
+caller's address, `x-real-ip` by default) are server-only and read at runtime, so changing them
+needs a restart, not a rebuild. Without a token the proxy sets neither header. It only copies an
+address: it reads no auth token and makes no permission decision. The reasoning is in
+`docs/adr/0004-forward-user-ip-to-backend.md`.
+
 ## Geo / address autocomplete (`lib/geo/`)
 
 Address search is behind a `GeoLocationProvider` adapter (`lib/geo/types.ts`) with a
