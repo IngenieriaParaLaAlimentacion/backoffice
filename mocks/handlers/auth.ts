@@ -6,6 +6,7 @@ import {
   LOGOUT_ENDPOINT,
   REFRESH_ENDPOINT,
   RESET_PASSWORD_ENDPOINT,
+  VERIFY_EMAIL_ENDPOINT,
 } from "@/constants/api";
 import { AuthTokensResponse } from "@/types/auth";
 import {
@@ -41,6 +42,15 @@ export function makeForgotPasswordHandler(options?: HandlerOptions<undefined>) {
 export function makeResetPasswordHandler(options?: HandlerOptions<undefined>) {
   return baseHandler(RESET_PASSWORD_ENDPOINT, {
     ...options,
+    method: "post",
+  });
+}
+
+/** Answers 204 with no body, like the backend; pass `status` + `error` to fail. */
+export function makeVerifyEmailHandler(options?: HandlerOptions<undefined>) {
+  return baseHandler(VERIFY_EMAIL_ENDPOINT, {
+    ...options,
+    status: options?.status ?? 204,
     method: "post",
   });
 }

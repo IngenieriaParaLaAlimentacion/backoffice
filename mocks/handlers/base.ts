@@ -2,7 +2,7 @@ import { http, HttpResponse, PathParams } from "msw";
 
 export type BaseHandlerOptions<T> = {
   method: "get" | "post" | "put" | "delete" | "patch";
-  status?: 400 | 401 | 403 | 407 | 500 | 200 | 201;
+  status?: 400 | 401 | 403 | 407 | 500 | 200 | 201 | 204;
   data?: Partial<T>;
   error?: { type?: string; title?: string; detail: string };
   onRequest?: (request: Request) => void | Promise<void>;
@@ -20,6 +20,8 @@ export function baseHandler<T, TPath extends PathParams<keyof TPath>>(
     url,
     async ({ request }) => {
       await options.onRequest?.(request);
+
+      if (status === 204) return new HttpResponse(null, { status });
 
       if (status !== 200 && status !== 201) {
         return HttpResponse.json(

@@ -1,0 +1,22 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ar.com.ingenieriaalimentacion",
+      "sha256_cert_fingerprints": [
+        "4A:23:A0:DC:1E:82:4A:35:35:09:5F:54:9E:FF:8D:11:F9:84:9E:92:D2:6C:48:4E:70:22:A7:33:96:38:A5:40"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ar.com.ingenieriaalimentacion.tst",
+      "sha256_cert_fingerprints": [
+        "4A:23:A0:DC:1E:82:4A:35:35:09:5F:54:9E:FF:8D:11:F9:84:9E:92:D2:6C:48:4E:70:22:A7:33:96:38:A5:40"
+      ]
+    }
+  }
+]
