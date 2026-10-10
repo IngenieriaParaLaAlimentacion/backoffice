@@ -47,7 +47,8 @@ something that quietly breaks.
 - This app is **Client Components by default, deliberately** (auth is a client-side
   localStorage token, not cookies/middleware) — don't convert a page to a Server
   Component fetching with a bare `fetch`, it would bypass the auth/refresh logic in
-  `lib/http.ts`.
+  `lib/http.ts`. The one piece of server code, `proxy.ts`, only forwards the user's IP to
+  the backend; it is not an auth guard and never reads the token.
 - **Roles are permissions, not `isAdmin` checks.** Ask `useSession().can("surveys.delete")`
   for a named capability from `lib/permissions.ts`; never branch on a role literal in a
   component, and never fetch `GET /users/me` for a role — `SessionProvider` already has
@@ -80,4 +81,5 @@ something that quietly breaks.
 - `docs/conventions.md` — Next.js conventions and how this repo avoids duplication/magic
   values.
 - `docs/adr/` — architecture decision records (the geo-provider adapter choice; the
-  client-side permission model; the map libraries and base map).
+  client-side permission model; the map libraries and base map; forwarding the user's IP
+  to the backend).

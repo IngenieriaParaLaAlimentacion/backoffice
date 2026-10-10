@@ -61,8 +61,8 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   recolor from tokens and cost no request.
 - **Env vars**: only `NEXT_PUBLIC_*` names are exposed to the client (`API_BASE_URL`,
   `ENABLE_MSW`, `MAP_TILES`, the Google Maps key); anything server-only (e.g. `PORT` for
-  docker-compose) stays unprefixed. Don't prefix a secret with `NEXT_PUBLIC_` to "make it
-  work" client-side.
+  docker-compose, `INTERNAL_SERVICE_TOKEN` and `CLIENT_IP_HEADER` for `proxy.ts`) stays
+  unprefixed. Don't prefix a secret with `NEXT_PUBLIC_` to "make it work" client-side.
 - **No `loading.tsx`/`error.tsx` route files.** Because screens are Client Components,
   loading/error states are modeled explicitly in each hook's return value (`isLoading`,
   `error`, `notFound`, `forbidden` — see `useEstablishmentDashboard`) and handled in the
