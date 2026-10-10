@@ -27,6 +27,8 @@ import {
   MOVEMENT_DIRECTION_LABELS,
   MOVEMENT_DIRECTION_OPTIONS,
   SELECT_CLASS,
+  FOOD_INTAKE_ORIGIN_LABELS,
+  recurrenceLabel,
 } from "@/constants/establishments";
 import { formatTimestamp } from "@/lib/format";
 import { MovementDirectionFilter } from "@/hooks/useEstablishmentMovementsHistory";
@@ -307,6 +309,12 @@ export default function EstablishmentMovementsHistoryPage({
                         {columns.responsible}
                       </th>
                       <th className="px-4 py-3 font-medium">{columns.foods}</th>
+                      <th className="px-4 py-3 font-medium">
+                        {columns.origin}
+                      </th>
+                      <th className="px-4 py-3 font-medium">
+                        {columns.recurrence}
+                      </th>
                       <ChevronHeaderCell />
                     </tr>
                   </thead>
@@ -333,6 +341,16 @@ export default function EstablishmentMovementsHistoryPage({
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {COPY.foodCount(movement.food_count)}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {movement.direction === "in"
+                            ? FOOD_INTAKE_ORIGIN_LABELS[movement.origin_type]
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {movement.direction === "in"
+                            ? recurrenceLabel(movement.is_recurring)
+                            : "—"}
                         </td>
                         <ChevronCell />
                       </tr>
@@ -367,6 +385,18 @@ export default function EstablishmentMovementsHistoryPage({
                       </span>
                       <span>{COPY.foodCount(movement.food_count)}</span>
                     </div>
+                    {movement.direction === "in" && (
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        <span>
+                          {columns.origin}:{" "}
+                          {FOOD_INTAKE_ORIGIN_LABELS[movement.origin_type]}
+                        </span>
+                        <span>
+                          {columns.recurrence}:{" "}
+                          {recurrenceLabel(movement.is_recurring)}
+                        </span>
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>

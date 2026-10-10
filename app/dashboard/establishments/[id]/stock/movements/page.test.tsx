@@ -60,6 +60,11 @@ describe("EstablishmentMovementsHistoryPage", () => {
     await user.click(screen.getByRole("combobox", { name: "Alimento" }));
     await user.click(await screen.findByRole("option", { name: /Arroz/ }));
     await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "2");
+    await user.selectOptions(
+      screen.getByLabelText("Origen del alimento"),
+      "foundation",
+    );
+    await user.selectOptions(screen.getByLabelText("Tipo de aporte"), "false");
     await user.click(
       screen.getByRole("button", { name: "Guardar movimiento" }),
     );
@@ -104,6 +109,20 @@ describe("EstablishmentMovementsHistoryPage", () => {
     // The egreso has two lines of the same food but `food_count: 1`; the row
     // must report the food count, not a line count.
     expect(within(rows[1]).getByText("1 alimento")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("Gobierno municipal")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("Recurrente")).toBeInTheDocument();
+    expect(within(rows[1]).getAllByText("—")).toHaveLength(2);
+    expect(within(rows[2]).getByText("Único")).toBeInTheDocument();
+    const cards = screen
+      .getAllByRole("button")
+      .filter((button) => button.textContent?.includes("Origen del alimento:"));
+    expect(
+      cards.some(
+        (card) =>
+          card.textContent?.includes("Gobierno municipal") &&
+          card.textContent?.includes("Recurrente"),
+      ),
+    ).toBe(true);
   });
 
   it("shows an empty state, not an error, for a comedor with no movements", async () => {
@@ -138,7 +157,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     expect(within(dialog).getAllByText("Kilogramos")).toHaveLength(2);
   });
 
-  it("shows origen and comentarios on an ingreso only", async () => {
+  it("shows origin, recurrence, capture mode and comments on an ingreso", async () => {
     await renderPage(WITH_DATA_ID);
 
     const rows = await findRows();
@@ -146,11 +165,26 @@ describe("EstablishmentMovementsHistoryPage", () => {
 
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText(COPY.detail.source)).toBeInTheDocument();
+    expect(within(dialog).getByText(COPY.detail.origin)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(COPY.detail.recurrence),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByText("Gobierno municipal")).toBeInTheDocument();
+    expect(within(dialog).getByText("Recurrente")).toBeInTheDocument();
     expect(within(dialog).getByText("Foto")).toBeInTheDocument();
     expect(within(dialog).getByText(LONG_COMMENT)).toBeInTheDocument();
   });
 
-  it("hides origen on an egreso but still shows its comentarios", async () => {
+  it("shows an explicit false recurrence as Único in intake detail", async () => {
+    await renderPage(WITH_DATA_ID);
+    const rows = await findRows();
+    await userEvent.click(rows[2]);
+    const dialog = await screen.findByRole("dialog");
+    expect(await within(dialog).findByText("Único")).toBeInTheDocument();
+    expect(within(dialog).getByText("Fundación")).toBeInTheDocument();
+  });
+
+  it("hides intake metadata on an egreso but still shows its comments", async () => {
     await renderPage(WITH_DATA_ID);
 
     const rows = await findRows();
@@ -161,6 +195,12 @@ describe("EstablishmentMovementsHistoryPage", () => {
     // An outflow is always loaded by hand, so naming the source says nothing.
     expect(
       within(dialog).queryByText(COPY.detail.source),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByText(COPY.detail.origin),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByText(COPY.detail.recurrence),
     ).not.toBeInTheDocument();
     // Its comment, on the other hand, is the only field explaining why the
     // stock left.
