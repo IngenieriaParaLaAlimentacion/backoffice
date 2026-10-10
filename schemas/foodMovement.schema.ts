@@ -10,12 +10,26 @@ const foodMovementLineSchema = z.object({
   food: z.custom<MovementFood | null>((value) => typeof value === "object"),
   quantity: z.string(),
 });
-export const foodMovementSchema = z.object({
-  direction: z.enum(["in", "out"]),
-  date: z.iso.date({ error: FOOD_MOVEMENT_FORM.invalidDate }),
-  comments: z.string().max(500, "Máximo 500 caracteres"),
-  lines: z.array(foodMovementLineSchema).min(1, "Agregá un alimento"),
-});
+export const foodMovementSchema = z
+  .object({
+    direction: z.enum(["in", "out"]),
+    date: z.iso.date({ error: FOOD_MOVEMENT_FORM.invalidDate }),
+    category: z.union([
+      z.literal(""),
+      z.enum(["family_delivery", "kitchen", "discard", "other"]),
+    ]),
+    comments: z.string().max(500, "Máximo 500 caracteres"),
+    lines: z.array(foodMovementLineSchema).min(1, "Agregá un alimento"),
+  })
+  .superRefine((value, ctx) => {
+    if (value.direction === "out" && value.category === "") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["category"],
+        message: FOOD_MOVEMENT_FORM.categoryRequired,
+      });
+    }
+  });
 export type FoodMovementInput = z.infer<typeof foodMovementSchema>;
 
 export const selectedFoodId = (food: MovementFood) =>

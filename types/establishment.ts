@@ -232,6 +232,11 @@ export type FoodStockSortOrder =
 // --- Food movements (ingresos y egresos) ---
 
 export type FoodMovementDirection = "in" | "out";
+export type FoodOutflowCategory =
+  | "family_delivery"
+  | "kitchen"
+  | "discard"
+  | "other";
 
 /** How an intake was loaded. Outflows are always `manual`. */
 export type FoodMovementSource = "manual" | "photo";
@@ -257,6 +262,7 @@ export type FoodMovementListItem = {
   occurred_at: string;
   responsible: FoodMovementResponsible;
   food_count: number;
+  category: FoodOutflowCategory | null;
 };
 
 export type PaginatedFoodMovementsResponse = {
@@ -280,18 +286,30 @@ export type FoodMovementDetail = {
   occurred_at: string;
   source: FoodMovementSource;
   comments: string | null;
+  category: FoodOutflowCategory | null;
   responsible: FoodMovementResponsible;
   items: FoodMovementItem[];
 };
 
-export type CreateFoodMovementRequest = {
+type FoodMovementRequestBase = {
   id: string;
   establishment_id: string;
   occurred_at: string;
-  comments: string | null;
   source: "manual";
   items: { food_id: string; quantity: string }[];
 };
+
+export type CreateFoodIntakeRequest = FoodMovementRequestBase & {
+  comments: string | null;
+};
+export type CreateFoodOutflowRequest = FoodMovementRequestBase &
+  (
+    | { category: "other"; comments?: string | null }
+    | { category: Exclude<FoodOutflowCategory, "other">; comments?: never }
+  );
+export type CreateFoodMovementRequest =
+  | CreateFoodIntakeRequest
+  | CreateFoodOutflowRequest;
 
 export type CreatedFoodMovement = {
   id: string;
@@ -299,6 +317,7 @@ export type CreatedFoodMovement = {
   responsible_id: string;
   occurred_at: string;
   comments: string | null;
+  category?: FoodOutflowCategory;
   source: FoodMovementSource;
   created_at: string;
   items: FoodMovementItem[];

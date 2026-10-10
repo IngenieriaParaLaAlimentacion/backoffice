@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import {
   FOOD_MOVEMENT_FORM as COPY,
+  FOOD_OUTFLOW_CATEGORY_OPTIONS,
   MOVEMENT_DIRECTION_LABELS,
+  SELECT_CLASS,
 } from "@/constants/establishments";
 import {
   foodMovementSchema,
@@ -30,8 +32,11 @@ import {
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
+  CreateFoodIntakeRequest,
+  CreateFoodOutflowRequest,
   FoodMovementDirection,
   FoodMovementSaveResult,
+  FoodOutflowCategory,
 } from "@/types/establishment";
 import MovementFoodPicker from "@/components/MovementFoodPicker";
 import {
@@ -45,6 +50,7 @@ const ERROR_CLASS = "text-sm text-destructive";
 const initial = (direction: FoodMovementDirection): FoodMovementInput => ({
   direction,
   date: argentineToday(),
+  category: "",
   comments: "",
   lines: [{ food: null, quantity: "" }],
 });
@@ -81,6 +87,7 @@ export default function FoodMovementDialog({
   });
   const { fields, append, remove } = useFieldArray({ control, name: "lines" });
   const direction = watch("direction");
+  const category = watch("category");
   const lines = watch("lines");
   const {
     foods,
@@ -223,20 +230,32 @@ export default function FoodMovementDialog({
         );
       return;
     }
-    const body = {
+    const base = {
       id: entryId,
       establishment_id: establishmentId,
       occurred_at:
         value.date === today
           ? new Date().toISOString()
           : argentineDayStartUtc(value.date)!,
-      comments: value.comments.trim() || null,
       source: "manual" as const,
       items: value.lines.map((line) => ({
         food_id: selectedFoodId(line.food!),
         quantity: apiQuantity(line.quantity),
       })),
     };
+    const body: CreateFoodIntakeRequest | CreateFoodOutflowRequest =
+      direction === "out"
+        ? value.category === "other"
+          ? {
+              ...base,
+              category: "other",
+              comments: value.comments.trim() || null,
+            }
+          : {
+              ...base,
+              category: value.category as Exclude<FoodOutflowCategory, "other">,
+            }
+        : { ...base, comments: value.comments.trim() || null };
     try {
       const saved = await save.submit(direction, body);
       if (saved) finish(saved);
@@ -299,6 +318,39 @@ export default function FoodMovementDialog({
               <p role="alert" className={ERROR_CLASS}>
                 {errors.date.message}
               </p>
+            )}
+            {direction === "out" && (
+              <div className="flex flex-col gap-1 text-sm">
+                <label htmlFor="outflow-category">{COPY.category}</label>
+                <select
+                  id="outflow-category"
+                  className={SELECT_CLASS}
+                  disabled={locked}
+                  value={category}
+                  onChange={(event) => {
+                    const next = event.target
+                      .value as FoodMovementInput["category"];
+                    if (category === "other" && next !== "other") {
+                      setValue("comments", "", { shouldValidate: true });
+                      clearErrors("comments");
+                    }
+                    setValue("category", next, { shouldValidate: true });
+                    clearErrors("category");
+                  }}
+                >
+                  <option value="">{COPY.chooseCategory}</option>
+                  {FOOD_OUTFLOW_CATEGORY_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <p role="alert" className={ERROR_CLASS}>
+                    {errors.category.message}
+                  </p>
+                )}
+              </div>
             )}
             {direction === "out" &&
               stockLoaded &&
@@ -410,14 +462,24 @@ export default function FoodMovementDialog({
                 {errors.lines.message}
               </p>
             )}
-            <label className="text-sm">
-              {COPY.comments}
-              <textarea
-                className="w-full rounded-lg border border-input bg-background p-2"
-                disabled={locked}
-                {...register("comments")}
-              />
-            </label>
+            {(direction === "in" || category === "other") && (
+              <label className="text-sm">
+                {direction === "in" ? COPY.comments : COPY.otherSpecification}
+                <textarea
+                  aria-label={
+                    direction === "in" ? COPY.comments : COPY.otherSpecification
+                  }
+                  className="w-full rounded-lg border border-input bg-background p-2"
+                  disabled={locked}
+                  {...register("comments")}
+                />
+                {direction === "out" && (
+                  <small className="text-muted-foreground">
+                    {COPY.otherSpecificationHint}
+                  </small>
+                )}
+              </label>
+            )}
             {errors.comments && (
               <p role="alert" className={ERROR_CLASS}>
                 {errors.comments.message}

@@ -63,6 +63,7 @@ describe("FoodMovementDialog", () => {
     expect((submitted as CreateFoodMovementRequest | null)?.items).toEqual([
       { food_id: MOCK_FOODS[0].id, quantity: "0.5" },
     ]);
+    expect(submitted).not.toHaveProperty("category");
   });
 
   it("shows a Spanish validation message for an empty date", async () => {
@@ -240,6 +241,10 @@ describe("FoodMovementDialog", () => {
     );
     await openDialog();
     await user.click(screen.getByLabelText("Egreso"));
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "kitchen",
+    );
     await user.click(screen.getByRole("combobox", { name: "Alimento" }));
     await user.click(
       await screen.findByRole("button", { name: "Cargar más alimentos" }),
@@ -299,6 +304,10 @@ describe("FoodMovementDialog", () => {
     );
     await openDialog();
     await user.click(screen.getByLabelText("Egreso"));
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "kitchen",
+    );
     await user.click(screen.getByRole("combobox", { name: "Alimento" }));
     await user.click(await screen.findByRole("option", { name: /Arroz/ }));
     await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "2");
@@ -397,9 +406,11 @@ describe("FoodMovementDialog", () => {
       },
     ]);
     let posts = 0;
+    const bodies: Record<string, unknown>[] = [];
     server.use(
       http.post(FOOD_OUTFLOWS_ENDPOINT, async ({ request }) => {
         posts += 1;
+        bodies.push((await request.json()) as Record<string, unknown>);
         if (posts === 1) return HttpResponse.error();
         return HttpResponse.json(
           {
@@ -418,6 +429,14 @@ describe("FoodMovementDialog", () => {
     );
     await openDialog();
     await user.click(screen.getByLabelText("Egreso"));
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "other",
+    );
+    await user.type(
+      screen.getByLabelText("Especificación (opcional)"),
+      "Para taller",
+    );
     await user.click(screen.getByRole("combobox", { name: "Alimento" }));
     await user.click(await screen.findByRole("option", { name: /Arroz/ }));
     await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "2");
@@ -430,6 +449,12 @@ describe("FoodMovementDialog", () => {
     expect(
       await screen.findByText(/Stock insuficiente para Arroz/),
     ).toBeInTheDocument();
+    expect(bodies).toHaveLength(2);
+    expect(bodies[0]).toEqual(bodies[1]);
+    expect(bodies[0]).toMatchObject({
+      category: "other",
+      comments: "Para taller",
+    });
   });
 
   it("closes only the food list on Escape and keeps the draft", async () => {
@@ -458,5 +483,110 @@ describe("FoodMovementDialog", () => {
     await screen.findByRole("option", { name: /Arroz/ });
     await user.type(picker, "zzz{Enter}");
     expect(picker).toHaveValue("zzz");
+  });
+
+  it("requires an outflow category before posting", async () => {
+    const user = userEvent.setup();
+    let posts = 0;
+    server.use(
+      http.post(FOOD_OUTFLOWS_ENDPOINT, () => {
+        posts += 1;
+        return HttpResponse.json({}, { status: 201 });
+      }),
+    );
+    await openDialog();
+    await user.click(screen.getByLabelText("Egreso"));
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Elegí una categoría para el egreso",
+    );
+    expect(posts).toBe(0);
+  });
+
+  it("clears Other text and omits comments after changing category", async () => {
+    const user = userEvent.setup();
+    let submitted: Record<string, unknown> | null = null;
+    server.use(
+      http.post(FOOD_OUTFLOWS_ENDPOINT, async ({ request }) => {
+        submitted = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ ...submitted, items: [] }, { status: 201 });
+      }),
+    );
+    const onSaved = await openDialog();
+    await user.click(screen.getByLabelText("Egreso"));
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "other",
+    );
+    await user.type(
+      screen.getByLabelText("Especificación (opcional)"),
+      "Para taller",
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "kitchen",
+    );
+    expect(
+      screen.queryByLabelText("Especificación (opcional)"),
+    ).not.toBeInTheDocument();
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "other",
+    );
+    expect(screen.getByLabelText("Especificación (opcional)")).toHaveValue("");
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "kitchen",
+    );
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(submitted).toHaveProperty("category", "kitchen");
+    expect(submitted).not.toHaveProperty("comments");
+  });
+
+  it("accepts empty Other text and keeps its draft after a 422", async () => {
+    const user = userEvent.setup();
+    const bodies: Record<string, unknown>[] = [];
+    server.use(
+      http.post(FOOD_OUTFLOWS_ENDPOINT, async ({ request }) => {
+        bodies.push((await request.json()) as Record<string, unknown>);
+        return HttpResponse.json(
+          {
+            type: "/errors/validation-failed",
+            title: "Validation failed",
+            status: 422,
+          },
+          { status: 422 },
+        );
+      }),
+    );
+    await openDialog();
+    await user.click(screen.getByLabelText("Egreso"));
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "other",
+    );
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect(bodies[0]).toMatchObject({ category: "other", comments: null });
+    expect(screen.getByLabelText("Categoría del egreso")).toHaveValue("other");
+    expect(screen.getByRole("textbox", { name: "Cantidad 1" })).toHaveValue(
+      "1",
+    );
   });
 });
