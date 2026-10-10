@@ -52,8 +52,6 @@ function makeHandler(direction: FoodMovementDirection) {
     direction === "in" ? FOOD_INTAKES_ENDPOINT : FOOD_OUTFLOWS_ENDPOINT,
     async ({ request }) => {
       const body = (await request.json()) as CreateFoodMovementRequest;
-      const existing = createdMovement(body.id);
-      if (existing) return HttpResponse.json(existing, { status: 200 });
       const path = new URL(request.url).pathname;
       const category: FoodOutflowCategory =
         direction === "out" && "category" in body
@@ -68,6 +66,8 @@ function makeHandler(direction: FoodMovementDirection) {
         return problem("validation-failed", "Validation failed", 422, path);
       if (direction === "out" && category !== "other" && "comments" in body)
         return problem("validation-failed", "Validation failed", 422, path);
+      const existing = createdMovement(body.id);
+      if (existing) return HttpResponse.json(existing, { status: 200 });
       if (
         !MOCK_ESTABLISHMENTS.some((item) => item.id === body.establishment_id)
       )
