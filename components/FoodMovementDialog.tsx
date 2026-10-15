@@ -245,16 +245,11 @@ export default function FoodMovementDialog({
     };
     const body: CreateFoodIntakeRequest | CreateFoodOutflowRequest =
       direction === "out"
-        ? value.category === "other"
-          ? {
-              ...base,
-              category: "other",
-              comments: value.comments.trim() || null,
-            }
-          : {
-              ...base,
-              category: value.category as Exclude<FoodOutflowCategory, "other">,
-            }
+        ? {
+            ...base,
+            category: value.category as FoodOutflowCategory,
+            comments: value.comments.trim() || null,
+          }
         : { ...base, comments: value.comments.trim() || null };
     try {
       const saved = await save.submit(direction, body);
@@ -328,13 +323,11 @@ export default function FoodMovementDialog({
                   disabled={locked}
                   value={category}
                   onChange={(event) => {
-                    const next = event.target
-                      .value as FoodMovementInput["category"];
-                    if (category === "other" && next !== "other") {
-                      setValue("comments", "", { shouldValidate: true });
-                      clearErrors("comments");
-                    }
-                    setValue("category", next, { shouldValidate: true });
+                    setValue(
+                      "category",
+                      event.target.value as FoodMovementInput["category"],
+                      { shouldValidate: true },
+                    );
                     clearErrors("category");
                   }}
                 >
@@ -462,24 +455,15 @@ export default function FoodMovementDialog({
                 {errors.lines.message}
               </p>
             )}
-            {(direction === "in" || category === "other") && (
-              <label className="text-sm">
-                {direction === "in" ? COPY.comments : COPY.otherSpecification}
-                <textarea
-                  aria-label={
-                    direction === "in" ? COPY.comments : COPY.otherSpecification
-                  }
-                  className="w-full rounded-lg border border-input bg-background p-2"
-                  disabled={locked}
-                  {...register("comments")}
-                />
-                {direction === "out" && (
-                  <small className="text-muted-foreground">
-                    {COPY.otherSpecificationHint}
-                  </small>
-                )}
-              </label>
-            )}
+            <label className="text-sm">
+              {COPY.comments}
+              <textarea
+                aria-label={COPY.comments}
+                className="w-full rounded-lg border border-input bg-background p-2"
+                disabled={locked}
+                {...register("comments")}
+              />
+            </label>
             {errors.comments && (
               <p role="alert" className={ERROR_CLASS}>
                 {errors.comments.message}

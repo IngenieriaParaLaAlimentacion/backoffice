@@ -302,11 +302,10 @@ type FoodMovementRequestBase = {
 export type CreateFoodIntakeRequest = FoodMovementRequestBase & {
   comments: string | null;
 };
-export type CreateFoodOutflowRequest = FoodMovementRequestBase &
-  (
-    | { category: "other"; comments?: string | null }
-    | { category: Exclude<FoodOutflowCategory, "other">; comments?: never }
-  );
+export type CreateFoodOutflowRequest = FoodMovementRequestBase & {
+  category: FoodOutflowCategory;
+  comments?: string | null;
+};
 export type CreateFoodMovementRequest =
   | CreateFoodIntakeRequest
   | CreateFoodOutflowRequest;

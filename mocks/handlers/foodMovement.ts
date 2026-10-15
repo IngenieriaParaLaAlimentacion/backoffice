@@ -64,8 +64,6 @@ function makeHandler(direction: FoodMovementDirection) {
         ).includes(category)
       )
         return problem("validation-failed", "Validation failed", 422, path);
-      if (direction === "out" && category !== "other" && "comments" in body)
-        return problem("validation-failed", "Validation failed", 422, path);
       const existing = createdMovement(body.id);
       if (existing) return HttpResponse.json(existing, { status: 200 });
       if (

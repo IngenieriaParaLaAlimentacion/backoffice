@@ -423,8 +423,6 @@ export const FOOD_MOVEMENT_FORM = {
   category: "Categoría del egreso",
   chooseCategory: "Elegí una categoría",
   categoryRequired: "Elegí una categoría para el egreso",
-  otherSpecification: "Especificación (opcional)",
-  otherSpecificationHint: "Contá qué pasó con los alimentos, si querés.",
   addLine: "Agregar alimento",
   removeLine: "Quitar",
   save: "Guardar movimiento",

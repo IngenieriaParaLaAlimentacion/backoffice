@@ -433,10 +433,7 @@ describe("FoodMovementDialog", () => {
       screen.getByLabelText("Categoría del egreso"),
       "other",
     );
-    await user.type(
-      screen.getByLabelText("Especificación (opcional)"),
-      "Para taller",
-    );
+    await user.type(screen.getByLabelText("Comentarios"), "Para taller");
     await user.click(screen.getByRole("combobox", { name: "Alimento" }));
     await user.click(await screen.findByRole("option", { name: /Arroz/ }));
     await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "2");
@@ -508,7 +505,7 @@ describe("FoodMovementDialog", () => {
     expect(posts).toBe(0);
   });
 
-  it("clears Other text and omits comments after changing category", async () => {
+  it("keeps comments when an outflow category changes", async () => {
     const user = userEvent.setup();
     let submitted: Record<string, unknown> | null = null;
     server.use(
@@ -523,25 +520,13 @@ describe("FoodMovementDialog", () => {
       screen.getByLabelText("Categoría del egreso"),
       "other",
     );
-    await user.type(
-      screen.getByLabelText("Especificación (opcional)"),
-      "Para taller",
-    );
+    await user.type(screen.getByLabelText("Comentarios"), "Familia Gonzales");
     await user.selectOptions(
       screen.getByLabelText("Categoría del egreso"),
-      "kitchen",
+      "family_delivery",
     );
-    expect(
-      screen.queryByLabelText("Especificación (opcional)"),
-    ).not.toBeInTheDocument();
-    await user.selectOptions(
-      screen.getByLabelText("Categoría del egreso"),
-      "other",
-    );
-    expect(screen.getByLabelText("Especificación (opcional)")).toHaveValue("");
-    await user.selectOptions(
-      screen.getByLabelText("Categoría del egreso"),
-      "kitchen",
+    expect(screen.getByLabelText("Comentarios")).toHaveValue(
+      "Familia Gonzales",
     );
     await user.click(screen.getByRole("combobox", { name: "Alimento" }));
     await user.click(await screen.findByRole("option", { name: /Arroz/ }));
@@ -550,8 +535,8 @@ describe("FoodMovementDialog", () => {
       screen.getByRole("button", { name: "Guardar movimiento" }),
     );
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
-    expect(submitted).toHaveProperty("category", "kitchen");
-    expect(submitted).not.toHaveProperty("comments");
+    expect(submitted).toHaveProperty("category", "family_delivery");
+    expect(submitted).toHaveProperty("comments", "Familia Gonzales");
   });
 
   it("accepts empty Other text and keeps its draft after a 422", async () => {
