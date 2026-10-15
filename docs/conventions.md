@@ -53,9 +53,10 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   component.
 - **Routing APIs**: `next/navigation` (`useRouter`, `useParams`, etc.), never the Pages
   Router's `next/router`.
-- **Fonts** load via `next/font/google` (`app/layout.tsx`), not a `<link>` tag or CSS
-  `@import` — keep new fonts on that path for the same reason (no layout shift, no
-  render-blocking request).
+- **Fonts** load from the licensed files in `app/fonts/` via `next/font/local`
+  (`app/layout.tsx`), not a `<link>` tag or CSS `@import`. This avoids network
+  requests during builds and keeps font loading free of layout shifts and
+  render-blocking requests.
 - **Images** go through `next/image`, not a bare `<img>`. Icons and the brand mark are
   inline SVG components instead (`components/BrandMark.tsx`, `lucide-react`) — they
   recolor from tokens and cost no request.
