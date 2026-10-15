@@ -24,6 +24,14 @@ export function useUsers(role: string, pageSize: number) {
           page: currentPage,
           page_size: pageSize,
         });
+        // The page can fall past the end when its last user leaves the list
+        // (e.g. a role change); jump to the new last page instead of showing
+        // an empty one with the pagination controls hidden.
+        const lastPage = Math.max(1, data.total_pages);
+        if (currentPage > lastPage) {
+          setPage(lastPage);
+          return;
+        }
         setUsers(data.items);
         setTotalPages(data.total_pages);
       } catch (err) {
