@@ -383,6 +383,8 @@ export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovemen
         occurred_at: "2026-09-12T13:00:00Z",
         responsible: RESPONSIBLE,
         food_count: 1,
+        origin_type: null,
+        is_recurring: null,
       },
       {
         id: MOVEMENT_IDS.intake,
@@ -390,6 +392,8 @@ export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovemen
         occurred_at: "2026-09-14T10:00:00Z",
         responsible: RESPONSIBLE,
         food_count: 2,
+        origin_type: "municipal_government",
+        is_recurring: true,
       },
       {
         id: MOVEMENT_IDS.intakeNoComments,
@@ -397,6 +401,8 @@ export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovemen
         occurred_at: "2026-09-08T09:00:00Z",
         responsible: { ...RESPONSIBLE, name: "Ana", last_name: "Diaz" },
         food_count: 1,
+        origin_type: "foundation",
+        is_recurring: false,
       },
     ],
     total: 3,
@@ -421,13 +427,17 @@ const PAGED_MOVEMENT_COUNT = 25;
 
 export const PAGED_FOOD_MOVEMENTS: FoodMovementListItem[] = Array.from(
   { length: PAGED_MOVEMENT_COUNT },
-  (_, index) => ({
-    id: `a2000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
-    direction: index % 2 === 0 ? "in" : "out",
-    occurred_at: `2026-08-${String(index + 1).padStart(2, "0")}T12:00:00Z`,
-    responsible: RESPONSIBLE,
-    food_count: 1,
-  }),
+  (_, index): FoodMovementListItem => {
+    const base = {
+      id: `a2000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
+      occurred_at: `2026-08-${String(index + 1).padStart(2, "0")}T12:00:00Z`,
+      responsible: RESPONSIBLE,
+      food_count: 1,
+    };
+    return index % 2 === 0
+      ? { ...base, direction: "in", origin_type: "other", is_recurring: false }
+      : { ...base, direction: "out", origin_type: null, is_recurring: null };
+  },
 );
 
 export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
@@ -436,6 +446,8 @@ export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
     direction: "in",
     occurred_at: "2026-09-14T10:00:00Z",
     source: "photo",
+    origin_type: "municipal_government",
+    is_recurring: true,
     comments:
       "Donación del municipio, entregada en dos camionetas por la mañana; falta confirmar el remito del segundo envío",
     responsible: RESPONSIBLE,
@@ -457,6 +469,8 @@ export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
     direction: "out",
     occurred_at: "2026-09-12T13:00:00Z",
     source: "manual",
+    origin_type: null,
+    is_recurring: null,
     comments: "Almuerzo",
     responsible: RESPONSIBLE,
     items: [
@@ -477,6 +491,8 @@ export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
     direction: "in",
     occurred_at: "2026-09-08T09:00:00Z",
     source: "manual",
+    origin_type: "foundation",
+    is_recurring: false,
     comments: null,
     responsible: { ...RESPONSIBLE, name: "Ana", last_name: "Diaz" },
     items: [

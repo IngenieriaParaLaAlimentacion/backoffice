@@ -235,6 +235,23 @@ export type FoodMovementDirection = "in" | "out";
 
 /** How an intake was loaded. Outflows are always `manual`. */
 export type FoodMovementSource = "manual" | "photo";
+export type FoodIntakeOriginType =
+  | "national_government"
+  | "provincial_government"
+  | "municipal_government"
+  | "private_company"
+  | "foundation"
+  | "social_organization"
+  | "church"
+  | "other";
+
+type MovementOrigin =
+  | {
+      direction: "in";
+      origin_type: FoodIntakeOriginType;
+      is_recurring: boolean;
+    }
+  | { direction: "out"; origin_type: null; is_recurring: null };
 
 export type FoodMovementResponsible = {
   id: string;
@@ -249,15 +266,15 @@ export type FoodMovementResponsible = {
  * rice reports `food_count: 1` while its detail returns two items. Labelling
  * it "2 items" would be a lie.
  */
-export type FoodMovementListItem = {
+type MovementListBase = {
   id: string;
-  direction: FoodMovementDirection;
   /** When the movement happened, not when it was loaded: a backdated entry
    *  belongs to its own period, and the date filter reads this column too. */
   occurred_at: string;
   responsible: FoodMovementResponsible;
   food_count: number;
 };
+export type FoodMovementListItem = MovementListBase & MovementOrigin;
 
 export type PaginatedFoodMovementsResponse = {
   items: FoodMovementListItem[];
@@ -274,17 +291,17 @@ export type FoodMovementItem = {
   quantity: string;
 };
 
-export type FoodMovementDetail = {
+type MovementDetailBase = {
   id: string;
-  direction: FoodMovementDirection;
   occurred_at: string;
   source: FoodMovementSource;
   comments: string | null;
   responsible: FoodMovementResponsible;
   items: FoodMovementItem[];
 };
+export type FoodMovementDetail = MovementDetailBase & MovementOrigin;
 
-export type CreateFoodMovementRequest = {
+type CreateMovementBase = {
   id: string;
   establishment_id: string;
   occurred_at: string;
@@ -292,6 +309,20 @@ export type CreateFoodMovementRequest = {
   source: "manual";
   items: { food_id: string; quantity: string }[];
 };
+export type CreateFoodIntakeRequest = CreateMovementBase & {
+  origin_type: FoodIntakeOriginType;
+  is_recurring: boolean;
+};
+export type CreateFoodOutflowRequest = CreateMovementBase & {
+  origin_type?: never;
+  is_recurring?: never;
+};
+export type CreateFoodMovementRequest =
+  | CreateFoodIntakeRequest
+  | CreateFoodOutflowRequest;
+export type MovementRequest =
+  | { direction: "in"; body: CreateFoodIntakeRequest }
+  | { direction: "out"; body: CreateFoodOutflowRequest };
 
 export type CreatedFoodMovement = {
   id: string;
@@ -302,6 +333,8 @@ export type CreatedFoodMovement = {
   source: FoodMovementSource;
   created_at: string;
   items: FoodMovementItem[];
+  origin_type?: FoodIntakeOriginType;
+  is_recurring?: boolean;
 };
 
 export type FoodMovementSaveResult = {

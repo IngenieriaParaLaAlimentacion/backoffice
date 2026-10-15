@@ -10,6 +10,9 @@ import { OVERLAY_CLASS } from "@/constants/theme";
 import {
   FOOD_MOVEMENT_FORM as COPY,
   MOVEMENT_DIRECTION_LABELS,
+  FOOD_INTAKE_ORIGIN_OPTIONS,
+  FOOD_INTAKE_RECURRENCE_LABELS,
+  SELECT_CLASS,
 } from "@/constants/establishments";
 import {
   foodMovementSchema,
@@ -32,6 +35,8 @@ import { cn } from "@/lib/utils";
 import {
   FoodMovementDirection,
   FoodMovementSaveResult,
+  MovementRequest,
+  FoodIntakeOriginType,
 } from "@/types/establishment";
 import MovementFoodPicker from "@/components/MovementFoodPicker";
 import {
@@ -46,6 +51,8 @@ const initial = (direction: FoodMovementDirection): FoodMovementInput => ({
   direction,
   date: argentineToday(),
   comments: "",
+  origin_type: "",
+  is_recurring: "",
   lines: [{ food: null, quantity: "" }],
 });
 
@@ -223,7 +230,7 @@ export default function FoodMovementDialog({
         );
       return;
     }
-    const body = {
+    const common = {
       id: entryId,
       establishment_id: establishmentId,
       occurred_at:
@@ -237,8 +244,19 @@ export default function FoodMovementDialog({
         quantity: apiQuantity(line.quantity),
       })),
     };
+    const request: MovementRequest =
+      direction === "in"
+        ? {
+            direction: "in",
+            body: {
+              ...common,
+              origin_type: value.origin_type as FoodIntakeOriginType,
+              is_recurring: value.is_recurring === "true",
+            },
+          }
+        : { direction: "out", body: common };
     try {
-      const saved = await save.submit(direction, body);
+      const saved = await save.submit(request);
       if (saved) finish(saved);
     } catch (reason) {
       reportConflict(reason);
@@ -410,6 +428,75 @@ export default function FoodMovementDialog({
                 {errors.lines.message}
               </p>
             )}
+            {direction === "in" && (
+              <>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm" htmlFor="movement-origin">
+                    {COPY.origin}
+                  </label>
+                  <select
+                    id="movement-origin"
+                    className={SELECT_CLASS}
+                    disabled={locked}
+                    aria-invalid={!!errors.origin_type}
+                    aria-describedby={
+                      errors.origin_type ? "movement-origin-error" : undefined
+                    }
+                    {...register("origin_type")}
+                  >
+                    <option value="">{COPY.chooseOrigin}</option>
+                    {FOOD_INTAKE_ORIGIN_OPTIONS.map(({ value, label }) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.origin_type && (
+                    <p
+                      id="movement-origin-error"
+                      role="alert"
+                      className={ERROR_CLASS}
+                    >
+                      {errors.origin_type.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm" htmlFor="movement-recurrence">
+                    {COPY.recurrence}
+                  </label>
+                  <select
+                    id="movement-recurrence"
+                    className={SELECT_CLASS}
+                    disabled={locked}
+                    aria-invalid={!!errors.is_recurring}
+                    aria-describedby={
+                      errors.is_recurring
+                        ? "movement-recurrence-error"
+                        : undefined
+                    }
+                    {...register("is_recurring")}
+                  >
+                    <option value="">{COPY.chooseRecurrence}</option>
+                    <option value="false">
+                      {FOOD_INTAKE_RECURRENCE_LABELS.false}
+                    </option>
+                    <option value="true">
+                      {FOOD_INTAKE_RECURRENCE_LABELS.true}
+                    </option>
+                  </select>
+                  {errors.is_recurring && (
+                    <p
+                      id="movement-recurrence-error"
+                      role="alert"
+                      className={ERROR_CLASS}
+                    >
+                      {errors.is_recurring.message}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
             <label className="text-sm">
               {COPY.comments}
               <textarea
@@ -418,6 +505,11 @@ export default function FoodMovementDialog({
                 {...register("comments")}
               />
             </label>
+            {direction === "in" && (
+              <small className="text-muted-foreground">
+                {COPY.donorCommentHint}
+              </small>
+            )}
             {errors.comments && (
               <p role="alert" className={ERROR_CLASS}>
                 {errors.comments.message}

@@ -2,18 +2,10 @@ import { useState } from "react";
 import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { createFoodMovementAction } from "@/services/foodMovement.service";
-import {
-  CreateFoodMovementRequest,
-  FoodMovementDirection,
-} from "@/types/establishment";
+import { MovementRequest } from "@/types/establishment";
 import { ApiError, ERROR_TYPES } from "@/lib/apiError";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { FOOD_MOVEMENT_FORM as COPY } from "@/constants/establishments";
-
-type MovementRequest = {
-  direction: FoodMovementDirection;
-  body: CreateFoodMovementRequest;
-};
 
 export function useCreateFoodMovement() {
   const { makeAuthorizedRequest } = useAuth();
@@ -31,8 +23,7 @@ export function useCreateFoodMovement() {
     try {
       const result = await createFoodMovementAction(
         makeAuthorizedRequest,
-        request.direction,
-        request.body,
+        request,
       );
       setFrozen(null);
       return result;
@@ -64,10 +55,7 @@ export function useCreateFoodMovement() {
     error,
     ambiguous: frozen !== null,
     reset,
-    submit: (
-      direction: FoodMovementDirection,
-      body: CreateFoodMovementRequest,
-    ) => perform({ direction, body }),
+    submit: (request: MovementRequest) => perform(request),
     retryFrozen: () => (frozen ? perform(frozen) : Promise.resolve(null)),
   };
 }
