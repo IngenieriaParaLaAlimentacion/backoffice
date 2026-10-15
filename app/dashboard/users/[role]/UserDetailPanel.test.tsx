@@ -92,7 +92,7 @@ describe("UserDetailPanel — change role", () => {
   it("hides the button on the viewer's own profile", async () => {
     await renderPanel({
       viewer: "superadmin",
-      target: "superadmin",
+      target: "analyst",
       targetId: VIEWER_ID,
     });
     expect(
