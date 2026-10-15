@@ -80,7 +80,6 @@ describe("UserDetailPanel — change role", () => {
     await renderPanel({ viewer: "superadmin", target: "admin" });
     const { dialog } = await openDialog();
     expect(optionLabels(dialog)).toEqual(["Relevador", "Analista"]);
-    expect(within(dialog).getByText(COPY.warning)).toBeInTheDocument();
   });
 
   it("hides the button on a superadmin's profile", async () => {

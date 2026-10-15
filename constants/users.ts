@@ -186,8 +186,6 @@ export const USER_DETAIL_PANEL = {
     description: "Elegí el nuevo rol de este usuario.",
     currentRole: "Rol actual",
     newRole: "Nuevo rol",
-    warning:
-      "El usuario va a tener que volver a iniciar sesión y le va a llegar un mail avisándole del cambio.",
     confirm: "Cambiar rol",
     confirming: "Cambiando…",
     cancel: "Cancelar",

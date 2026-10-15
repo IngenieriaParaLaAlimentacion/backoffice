@@ -109,10 +109,6 @@ export default function ChangeRoleDialog({
               ))}
             </fieldset>
 
-            <Alert>
-              <AlertDescription>{COPY.warning}</AlertDescription>
-            </Alert>
-
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
