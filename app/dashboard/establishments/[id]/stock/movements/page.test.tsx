@@ -45,9 +45,14 @@ describe("EstablishmentMovementsHistoryPage", () => {
     // by the event date descending.
     expect(within(rows[0]).getByText("14/09/2026 07:00")).toBeInTheDocument();
     expect(within(rows[0]).getByText("Ingreso")).toBeInTheDocument();
+    expect(within(rows[0]).queryByText("Otro")).not.toBeInTheDocument();
     expect(within(rows[1]).getByText("12/09/2026 10:00")).toBeInTheDocument();
     expect(within(rows[1]).getByText("Egreso")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("Otro")).toBeInTheDocument();
     expect(within(rows[2]).getByText("08/09/2026 06:00")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Egreso.*Otro/ }),
+    ).toBeInTheDocument();
   });
 
   it("keeps a backdated intake in chronological order and opens its saved detail", async () => {
@@ -205,6 +210,17 @@ describe("EstablishmentMovementsHistoryPage", () => {
     // Its comment, on the other hand, is the only field explaining why the
     // stock left.
     expect(within(dialog).getByText("Almuerzo")).toBeInTheDocument();
+    expect(within(dialog).getByText(COPY.detail.category)).toBeInTheDocument();
+    expect(within(dialog).getByText("Otro")).toBeInTheDocument();
+  });
+
+  it("shows Cocina in paged outflow rows and cards", async () => {
+    await renderPage(PAGED_ID);
+    const rows = await findRows();
+    expect(rows.some((row) => within(row).queryByText("Cocina"))).toBe(true);
+    expect(
+      screen.getAllByRole("button", { name: /Egreso.*Cocina/ }).length,
+    ).toBeGreaterThan(0);
   });
 
   it("shows a long comment whole, never clipped", async () => {

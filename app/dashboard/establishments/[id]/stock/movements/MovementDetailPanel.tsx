@@ -9,6 +9,7 @@ import { FoodMovementDetail } from "@/types/establishment";
 import { Separator } from "@/components/ui/separator";
 import {
   ESTABLISHMENT_MOVEMENTS_PAGE as COPY,
+  FOOD_OUTFLOW_CATEGORY_LABELS,
   MOVEMENT_DIRECTION_LABELS,
   MOVEMENT_SOURCE_LABELS,
   FOOD_INTAKE_ORIGIN_LABELS,
@@ -163,6 +164,12 @@ export default function MovementDetailPanel({
                       value={MOVEMENT_SOURCE_LABELS[detail.source]}
                     />
                   </>
+                )}
+                {detail.direction === "out" && detail.category && (
+                  <DetailField
+                    label={COPY.detail.category}
+                    value={FOOD_OUTFLOW_CATEGORY_LABELS[detail.category]}
+                  />
                 )}
               </div>
               {detail.comments && (

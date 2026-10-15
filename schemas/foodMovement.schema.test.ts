@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { MOCK_FOODS } from "@/mocks/fixtures/foodCatalog";
 import { foodMovementSchema, validateMovement } from "./foodMovement.schema";
+import { FOOD_MOVEMENT_FORM } from "@/constants/establishments";
 
 describe("food movement form", () => {
   const food = MOCK_FOODS[0];
   it("explains an invalid date in Spanish", () => {
     const result = foodMovementSchema.safeParse({
       direction: "in",
+      category: "",
       date: "2026-02-30",
       comments: "",
       origin_type: "foundation",
@@ -19,6 +21,7 @@ describe("food movement form", () => {
   it("rejects future dates and duplicate foods", () => {
     const value = foodMovementSchema.parse({
       direction: "in",
+      category: "",
       date: "2026-10-01",
       comments: "",
       origin_type: "foundation",
@@ -37,6 +40,7 @@ describe("food movement form", () => {
   it("compares outflows in thousandths", () => {
     const value = foodMovementSchema.parse({
       direction: "out",
+      category: "kitchen",
       date: "2026-09-30",
       comments: "",
       origin_type: "",
@@ -54,6 +58,7 @@ describe("food movement form", () => {
     const unitFood = { ...food, base_unit: "unidades" as const };
     const value = foodMovementSchema.parse({
       direction: "in",
+      category: "",
       date: "2026-09-30",
       comments: "",
       origin_type: "foundation",
@@ -65,9 +70,57 @@ describe("food movement form", () => {
     ).toBe("Las unidades deben ser enteras");
   });
 
+  it("requires an outflow category but leaves intake uncategorized", () => {
+    const base = {
+      date: "2026-09-30",
+      comments: "",
+      origin_type: "",
+      is_recurring: "",
+      lines: [{ food, quantity: "1" }],
+    };
+    const missing = foodMovementSchema.safeParse({
+      ...base,
+      direction: "out",
+      category: "",
+    });
+    expect(missing.error?.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["category"],
+          message: FOOD_MOVEMENT_FORM.categoryRequired,
+        }),
+      ]),
+    );
+    expect(
+      foodMovementSchema.safeParse({
+        ...base,
+        direction: "in",
+        category: "",
+        origin_type: "foundation",
+        is_recurring: "false",
+      }).success,
+    ).toBe(true);
+    expect(
+      foodMovementSchema.safeParse({
+        ...base,
+        direction: "out",
+        category: "other",
+      }).success,
+    ).toBe(true);
+    expect(
+      foodMovementSchema.safeParse({
+        ...base,
+        direction: "out",
+        category: "other",
+        comments: "x".repeat(501),
+      }).success,
+    ).toBe(false);
+  });
+
   it("requires explicit origin and recurrence for an intake", () => {
     const draft = {
       direction: "in",
+      category: "",
       date: "2026-09-30",
       comments: "",
       lines: [{ food, quantity: "1" }],
@@ -109,6 +162,7 @@ describe("food movement form", () => {
         direction: "out",
         origin_type: "",
         is_recurring: "",
+        category: "kitchen",
       }).success,
     ).toBe(true);
   });

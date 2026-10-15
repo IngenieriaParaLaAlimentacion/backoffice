@@ -381,6 +381,7 @@ export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovemen
         id: MOVEMENT_IDS.outflow,
         direction: "out",
         occurred_at: "2026-09-12T13:00:00Z",
+        category: "other",
         responsible: RESPONSIBLE,
         food_count: 1,
         origin_type: null,
@@ -390,6 +391,7 @@ export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovemen
         id: MOVEMENT_IDS.intake,
         direction: "in",
         occurred_at: "2026-09-14T10:00:00Z",
+        category: null,
         responsible: RESPONSIBLE,
         food_count: 2,
         origin_type: "municipal_government",
@@ -399,6 +401,7 @@ export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovemen
         id: MOVEMENT_IDS.intakeNoComments,
         direction: "in",
         occurred_at: "2026-09-08T09:00:00Z",
+        category: null,
         responsible: { ...RESPONSIBLE, name: "Ana", last_name: "Diaz" },
         food_count: 1,
         origin_type: "foundation",
@@ -435,8 +438,20 @@ export const PAGED_FOOD_MOVEMENTS: FoodMovementListItem[] = Array.from(
       food_count: 1,
     };
     return index % 2 === 0
-      ? { ...base, direction: "in", origin_type: "other", is_recurring: false }
-      : { ...base, direction: "out", origin_type: null, is_recurring: null };
+      ? {
+          ...base,
+          direction: "in",
+          category: null,
+          origin_type: "other",
+          is_recurring: false,
+        }
+      : {
+          ...base,
+          direction: "out",
+          category: "kitchen",
+          origin_type: null,
+          is_recurring: null,
+        };
   },
 );
 
@@ -445,6 +460,7 @@ export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
     id: MOVEMENT_IDS.intake,
     direction: "in",
     occurred_at: "2026-09-14T10:00:00Z",
+    category: null,
     source: "photo",
     origin_type: "municipal_government",
     is_recurring: true,
@@ -468,6 +484,7 @@ export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
     id: MOVEMENT_IDS.outflow,
     direction: "out",
     occurred_at: "2026-09-12T13:00:00Z",
+    category: "other",
     source: "manual",
     origin_type: null,
     is_recurring: null,
@@ -490,6 +507,7 @@ export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
     id: MOVEMENT_IDS.intakeNoComments,
     direction: "in",
     occurred_at: "2026-09-08T09:00:00Z",
+    category: null,
     source: "manual",
     origin_type: "foundation",
     is_recurring: false,

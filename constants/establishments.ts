@@ -3,6 +3,7 @@ import {
   EstablishmentSortOrder,
   EstablishmentSubjectSortOrder,
   FoodMovementDirection,
+  FoodOutflowCategory,
   FoodMovementSource,
   FoodIntakeOriginType,
   FoodStockSortOrder,
@@ -282,6 +283,24 @@ export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
   litros: "Litros",
 };
 
+export const FOOD_OUTFLOW_CATEGORY_OPTIONS: {
+  value: FoodOutflowCategory;
+  label: string;
+}[] = [
+  { value: "family_delivery", label: "Entrega a familias" },
+  { value: "kitchen", label: "Cocina" },
+  { value: "discard", label: "Descarte" },
+  { value: "other", label: "Otro" },
+];
+
+export const FOOD_OUTFLOW_CATEGORY_LABELS: Record<FoodOutflowCategory, string> =
+  {
+    family_delivery: "Entrega a familias",
+    kitchen: "Cocina",
+    discard: "Descarte",
+    other: "Otro",
+  };
+
 /** Copy shared by every screen that opens the movement form. */
 const FOOD_MOVEMENT_ENTRY = {
   createMovement: "Registrar movimiento",
@@ -392,6 +411,7 @@ export const ESTABLISHMENT_MOVEMENTS_PAGE = {
   columns: {
     date: "Fecha",
     direction: "Dirección",
+    category: "Categoría del egreso",
     responsible: "Responsable",
     foods: "Alimentos",
     origin: "Origen del alimento",
@@ -402,6 +422,7 @@ export const ESTABLISHMENT_MOVEMENTS_PAGE = {
     responsible: "Responsable",
     date: "Fecha",
     direction: "Dirección",
+    category: "Categoría del egreso",
     source: "Modo de carga",
     origin: "Origen del alimento",
     recurrence: "Tipo de aporte",
@@ -425,6 +446,9 @@ export const FOOD_MOVEMENT_FORM = {
   quantity: "Cantidad",
   quantityHint: "Podés usar coma o punto para los decimales.",
   comments: "Comentarios",
+  category: "Categoría del egreso",
+  chooseCategory: "Elegí una categoría",
+  categoryRequired: "Elegí una categoría para el egreso",
   origin: "Origen del alimento",
   chooseOrigin: "Seleccioná el origen",
   originRequired: "Seleccioná el origen del alimento",

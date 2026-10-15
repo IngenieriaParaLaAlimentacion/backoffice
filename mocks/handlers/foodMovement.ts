@@ -17,6 +17,7 @@ import {
   CreateFoodIntakeRequest,
   CreatedFoodMovement,
   FoodMovementDirection,
+  FoodOutflowCategory,
 } from "@/types/establishment";
 
 function isIntakeRequest(
@@ -65,11 +66,22 @@ function makeHandler(direction: FoodMovementDirection) {
     direction === "in" ? FOOD_INTAKES_ENDPOINT : FOOD_OUTFLOWS_ENDPOINT,
     async ({ request }) => {
       const body = (await request.json()) as CreateFoodMovementRequest;
-      const existing = createdMovement(body.id);
-      if (existing) return HttpResponse.json(existing, { status: 200 });
       const path = new URL(request.url).pathname;
+      const category: FoodOutflowCategory =
+        direction === "out" && "category" in body
+          ? (body.category as FoodOutflowCategory)
+          : "other";
+      if (
+        direction === "out" &&
+        !(
+          ["family_delivery", "kitchen", "discard", "other"] as string[]
+        ).includes(category)
+      )
+        return problem("validation-failed", "Validation failed", 422, path);
       if (direction === "in" && !isIntakeRequest(body))
         return problem("validation-failed", "Validation failed", 422, path);
+      const existing = createdMovement(body.id);
+      if (existing) return HttpResponse.json(existing, { status: 200 });
       if (
         !MOCK_ESTABLISHMENTS.some((item) => item.id === body.establishment_id)
       )
@@ -136,7 +148,8 @@ function makeHandler(direction: FoodMovementDirection) {
         establishment_id: body.establishment_id,
         responsible_id: RESPONSIBLE.id,
         occurred_at: body.occurred_at,
-        comments: body.comments,
+        comments: body.comments ?? null,
+        ...(direction === "out" ? { category } : {}),
         source: "manual",
         created_at: now,
         items,
@@ -163,6 +176,7 @@ function makeHandler(direction: FoodMovementDirection) {
         occurred_at: movement.occurred_at,
         responsible: RESPONSIBLE,
         food_count: items.length,
+        category: direction === "out" ? category : null,
       });
       MOCK_FOOD_MOVEMENT_DETAILS[movement.id] = {
         id: movement.id,
@@ -170,6 +184,7 @@ function makeHandler(direction: FoodMovementDirection) {
         occurred_at: movement.occurred_at,
         source: "manual",
         comments: movement.comments,
+        category: direction === "out" ? category : null,
         responsible: RESPONSIBLE,
         items,
       };

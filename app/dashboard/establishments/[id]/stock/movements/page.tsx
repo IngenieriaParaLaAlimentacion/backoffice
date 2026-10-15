@@ -24,6 +24,7 @@ import {
 } from "@/components/listings/RowAffordance";
 import {
   ESTABLISHMENT_MOVEMENTS_PAGE as COPY,
+  FOOD_OUTFLOW_CATEGORY_LABELS,
   MOVEMENT_DIRECTION_LABELS,
   MOVEMENT_DIRECTION_OPTIONS,
   SELECT_CLASS,
@@ -306,6 +307,9 @@ export default function EstablishmentMovementsHistoryPage({
                         {columns.direction}
                       </th>
                       <th className="px-4 py-3 font-medium">
+                        {columns.category}
+                      </th>
+                      <th className="px-4 py-3 font-medium">
                         {columns.responsible}
                       </th>
                       <th className="px-4 py-3 font-medium">{columns.foods}</th>
@@ -334,6 +338,11 @@ export default function EstablishmentMovementsHistoryPage({
                         </td>
                         <td className="px-4 py-3">
                           {MOVEMENT_DIRECTION_LABELS[movement.direction]}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {movement.direction === "out" && movement.category
+                            ? FOOD_OUTFLOW_CATEGORY_LABELS[movement.category]
+                            : ""}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {movement.responsible.name}{" "}
@@ -379,6 +388,11 @@ export default function EstablishmentMovementsHistoryPage({
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                      {movement.direction === "out" && movement.category && (
+                        <span>
+                          {FOOD_OUTFLOW_CATEGORY_LABELS[movement.category]}
+                        </span>
+                      )}
                       <span>
                         {movement.responsible.name}{" "}
                         {movement.responsible.last_name}

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { OVERLAY_CLASS } from "@/constants/theme";
 import {
   FOOD_MOVEMENT_FORM as COPY,
+  FOOD_OUTFLOW_CATEGORY_OPTIONS,
   MOVEMENT_DIRECTION_LABELS,
   FOOD_INTAKE_ORIGIN_OPTIONS,
   FOOD_INTAKE_RECURRENCE_LABELS,
@@ -35,6 +36,7 @@ import { cn } from "@/lib/utils";
 import {
   FoodMovementDirection,
   FoodMovementSaveResult,
+  FoodOutflowCategory,
   MovementRequest,
   FoodIntakeOriginType,
 } from "@/types/establishment";
@@ -50,6 +52,7 @@ const ERROR_CLASS = "text-sm text-destructive";
 const initial = (direction: FoodMovementDirection): FoodMovementInput => ({
   direction,
   date: argentineToday(),
+  category: "",
   comments: "",
   origin_type: "",
   is_recurring: "",
@@ -88,6 +91,7 @@ export default function FoodMovementDialog({
   });
   const { fields, append, remove } = useFieldArray({ control, name: "lines" });
   const direction = watch("direction");
+  const category = watch("category");
   const lines = watch("lines");
   const {
     foods,
@@ -254,7 +258,13 @@ export default function FoodMovementDialog({
               is_recurring: value.is_recurring === "true",
             },
           }
-        : { direction: "out", body: common };
+        : {
+            direction: "out",
+            body: {
+              ...common,
+              category: value.category as FoodOutflowCategory,
+            },
+          };
     try {
       const saved = await save.submit(request);
       if (saved) finish(saved);
@@ -317,6 +327,37 @@ export default function FoodMovementDialog({
               <p role="alert" className={ERROR_CLASS}>
                 {errors.date.message}
               </p>
+            )}
+            {direction === "out" && (
+              <div className="flex flex-col gap-1 text-sm">
+                <label htmlFor="outflow-category">{COPY.category}</label>
+                <select
+                  id="outflow-category"
+                  className={SELECT_CLASS}
+                  disabled={locked}
+                  value={category}
+                  onChange={(event) => {
+                    setValue(
+                      "category",
+                      event.target.value as FoodMovementInput["category"],
+                      { shouldValidate: true },
+                    );
+                    clearErrors("category");
+                  }}
+                >
+                  <option value="">{COPY.chooseCategory}</option>
+                  {FOOD_OUTFLOW_CATEGORY_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <p role="alert" className={ERROR_CLASS}>
+                    {errors.category.message}
+                  </p>
+                )}
+              </div>
             )}
             {direction === "out" &&
               stockLoaded &&
@@ -500,6 +541,7 @@ export default function FoodMovementDialog({
             <label className="text-sm">
               {COPY.comments}
               <textarea
+                aria-label={COPY.comments}
                 className="w-full rounded-lg border border-input bg-background p-2"
                 disabled={locked}
                 {...register("comments")}

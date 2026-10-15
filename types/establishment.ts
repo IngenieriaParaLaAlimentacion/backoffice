@@ -232,6 +232,11 @@ export type FoodStockSortOrder =
 // --- Food movements (ingresos y egresos) ---
 
 export type FoodMovementDirection = "in" | "out";
+export type FoodOutflowCategory =
+  | "family_delivery"
+  | "kitchen"
+  | "discard"
+  | "other";
 
 /** How an intake was loaded. Outflows are always `manual`. */
 export type FoodMovementSource = "manual" | "photo";
@@ -273,6 +278,7 @@ type MovementListBase = {
   occurred_at: string;
   responsible: FoodMovementResponsible;
   food_count: number;
+  category: FoodOutflowCategory | null;
 };
 export type FoodMovementListItem = MovementListBase & MovementOrigin;
 
@@ -296,6 +302,7 @@ type MovementDetailBase = {
   occurred_at: string;
   source: FoodMovementSource;
   comments: string | null;
+  category: FoodOutflowCategory | null;
   responsible: FoodMovementResponsible;
   items: FoodMovementItem[];
 };
@@ -312,8 +319,10 @@ type CreateMovementBase = {
 export type CreateFoodIntakeRequest = CreateMovementBase & {
   origin_type: FoodIntakeOriginType;
   is_recurring: boolean;
+  category?: never;
 };
 export type CreateFoodOutflowRequest = CreateMovementBase & {
+  category: FoodOutflowCategory;
   origin_type?: never;
   is_recurring?: never;
 };
@@ -330,6 +339,7 @@ export type CreatedFoodMovement = {
   responsible_id: string;
   occurred_at: string;
   comments: string | null;
+  category?: FoodOutflowCategory;
   source: FoodMovementSource;
   created_at: string;
   items: FoodMovementItem[];
