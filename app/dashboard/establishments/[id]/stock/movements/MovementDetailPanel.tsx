@@ -12,6 +12,8 @@ import {
   FOOD_OUTFLOW_CATEGORY_LABELS,
   MOVEMENT_DIRECTION_LABELS,
   MOVEMENT_SOURCE_LABELS,
+  FOOD_INTAKE_ORIGIN_LABELS,
+  recurrenceLabel,
   STOCK_UNIT_LABELS,
 } from "@/constants/establishments";
 import { formatQuantity, formatTimestamp } from "@/lib/format";
@@ -148,10 +150,20 @@ export default function MovementDetailPanel({
                   value={`${detail.responsible.name} ${detail.responsible.last_name}`}
                 />
                 {detail.direction === "in" && (
-                  <DetailField
-                    label={COPY.detail.source}
-                    value={MOVEMENT_SOURCE_LABELS[detail.source]}
-                  />
+                  <>
+                    <DetailField
+                      label={COPY.detail.origin}
+                      value={FOOD_INTAKE_ORIGIN_LABELS[detail.origin_type]}
+                    />
+                    <DetailField
+                      label={COPY.detail.recurrence}
+                      value={recurrenceLabel(detail.is_recurring)}
+                    />
+                    <DetailField
+                      label={COPY.detail.source}
+                      value={MOVEMENT_SOURCE_LABELS[detail.source]}
+                    />
+                  </>
                 )}
                 {detail.direction === "out" && detail.category && (
                   <DetailField

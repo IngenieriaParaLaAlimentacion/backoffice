@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw";
 import { FOOD_INTAKES_ENDPOINT, FOOD_OUTFLOWS_ENDPOINT } from "@/constants/api";
 import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
 import { MOCK_FOODS } from "@/mocks/fixtures/foodCatalog";
+import { FOOD_INTAKE_ORIGIN_VALUES } from "@/schemas/foodMovement.schema";
 import {
   currentMovements,
   currentStock,
@@ -13,10 +14,23 @@ import {
 } from "@/mocks/fixtures/establishment";
 import {
   CreateFoodMovementRequest,
+  CreateFoodIntakeRequest,
   CreatedFoodMovement,
   FoodMovementDirection,
   FoodOutflowCategory,
 } from "@/types/establishment";
+
+function isIntakeRequest(
+  body: CreateFoodMovementRequest,
+): body is CreateFoodIntakeRequest {
+  return (
+    typeof body.origin_type === "string" &&
+    (FOOD_INTAKE_ORIGIN_VALUES as readonly string[]).includes(
+      body.origin_type,
+    ) &&
+    typeof body.is_recurring === "boolean"
+  );
+}
 
 function quantityDisplay(value: bigint): string {
   const whole = value / BigInt("1000");
@@ -63,6 +77,8 @@ function makeHandler(direction: FoodMovementDirection) {
           ["family_delivery", "kitchen", "discard", "other"] as string[]
         ).includes(category)
       )
+        return problem("validation-failed", "Validation failed", 422, path);
+      if (direction === "in" && !isIntakeRequest(body))
         return problem("validation-failed", "Validation failed", 422, path);
       const existing = createdMovement(body.id);
       if (existing) return HttpResponse.json(existing, { status: 200 });
@@ -137,11 +153,26 @@ function makeHandler(direction: FoodMovementDirection) {
         source: "manual",
         created_at: now,
         items,
+        ...(direction === "in" && isIntakeRequest(body)
+          ? { origin_type: body.origin_type, is_recurring: body.is_recurring }
+          : {}),
       };
       storeCreatedMovement(movement);
+      const metadata =
+        direction === "in" && isIntakeRequest(body)
+          ? {
+              direction: "in" as const,
+              origin_type: body.origin_type,
+              is_recurring: body.is_recurring,
+            }
+          : {
+              direction: "out" as const,
+              origin_type: null,
+              is_recurring: null,
+            };
       currentMovements(body.establishment_id).push({
         id: movement.id,
-        direction,
+        ...metadata,
         occurred_at: movement.occurred_at,
         responsible: RESPONSIBLE,
         food_count: items.length,
@@ -149,7 +180,7 @@ function makeHandler(direction: FoodMovementDirection) {
       });
       MOCK_FOOD_MOVEMENT_DETAILS[movement.id] = {
         id: movement.id,
-        direction,
+        ...metadata,
         occurred_at: movement.occurred_at,
         source: "manual",
         comments: movement.comments,

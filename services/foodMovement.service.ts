@@ -4,20 +4,19 @@ import { toApiError } from "@/lib/apiError";
 import {
   CreateFoodMovementRequest,
   CreatedFoodMovement,
-  FoodMovementDirection,
   FoodMovementSaveResult,
+  MovementRequest,
 } from "@/types/establishment";
 
 export async function createFoodMovementAction(
   dispatcher: AuthDispatcher,
-  direction: FoodMovementDirection,
-  data: CreateFoodMovementRequest,
+  request: MovementRequest,
 ): Promise<FoodMovementSaveResult> {
   const endpoint =
-    direction === "in" ? FOOD_INTAKES_ENDPOINT : FOOD_OUTFLOWS_ENDPOINT;
+    request.direction === "in" ? FOOD_INTAKES_ENDPOINT : FOOD_OUTFLOWS_ENDPOINT;
   const res = await dispatcher<CreateFoodMovementRequest, CreatedFoodMovement>(
     endpoint,
-    { method: "POST", body: data },
+    { method: "POST", body: request.body },
   );
   if (!res.ok) throw toApiError(res.data, res.status);
   return {

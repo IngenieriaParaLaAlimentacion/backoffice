@@ -5,6 +5,7 @@ import {
   FoodMovementDirection,
   FoodOutflowCategory,
   FoodMovementSource,
+  FoodIntakeOriginType,
   FoodStockSortOrder,
   FoodStockUnit,
   RelationStatus,
@@ -340,6 +341,27 @@ export const MOVEMENT_SOURCE_LABELS: Record<FoodMovementSource, string> = {
   manual: "Carga manual",
   photo: "Foto",
 };
+export const FOOD_INTAKE_ORIGIN_LABELS: Record<FoodIntakeOriginType, string> = {
+  national_government: "Gobierno nacional",
+  provincial_government: "Gobierno provincial",
+  municipal_government: "Gobierno municipal",
+  private_company: "Empresa privada",
+  foundation: "Fundación",
+  social_organization: "Organización social",
+  church: "Iglesia",
+  other: "Otro",
+};
+export const FOOD_INTAKE_ORIGIN_OPTIONS = Object.entries(
+  FOOD_INTAKE_ORIGIN_LABELS,
+).map(([value, label]) => ({ value: value as FoodIntakeOriginType, label }));
+export const FOOD_INTAKE_RECURRENCE_LABELS = {
+  true: "Recurrente",
+  false: "Único",
+} as const;
+export const recurrenceLabel = (value: boolean) =>
+  value
+    ? FOOD_INTAKE_RECURRENCE_LABELS.true
+    : FOOD_INTAKE_RECURRENCE_LABELS.false;
 
 /** `""` means "no filter" — the API param is simply omitted. */
 export const MOVEMENT_DIRECTION_OPTIONS: {
@@ -392,6 +414,8 @@ export const ESTABLISHMENT_MOVEMENTS_PAGE = {
     category: "Categoría del egreso",
     responsible: "Responsable",
     foods: "Alimentos",
+    origin: "Origen del alimento",
+    recurrence: "Tipo de aporte",
   },
   detail: {
     title: "Detalle del movimiento",
@@ -399,7 +423,9 @@ export const ESTABLISHMENT_MOVEMENTS_PAGE = {
     date: "Fecha",
     direction: "Dirección",
     category: "Categoría del egreso",
-    source: "Origen",
+    source: "Modo de carga",
+    origin: "Origen del alimento",
+    recurrence: "Tipo de aporte",
     comments: "Comentarios",
     linesTitle: "Alimentos",
     food: "Alimento",
@@ -423,6 +449,13 @@ export const FOOD_MOVEMENT_FORM = {
   category: "Categoría del egreso",
   chooseCategory: "Elegí una categoría",
   categoryRequired: "Elegí una categoría para el egreso",
+  origin: "Origen del alimento",
+  chooseOrigin: "Seleccioná el origen",
+  originRequired: "Seleccioná el origen del alimento",
+  recurrence: "Tipo de aporte",
+  chooseRecurrence: "Seleccioná el tipo de aporte",
+  recurrenceRequired: "Seleccioná si el aporte es único o recurrente",
+  donorCommentHint: "Nombre del donante o descripción",
   addLine: "Agregar alimento",
   removeLine: "Quitar",
   save: "Guardar movimiento",

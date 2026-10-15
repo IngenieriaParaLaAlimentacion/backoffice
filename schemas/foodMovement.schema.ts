@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { FoodListItem } from "@/types/foodCatalog";
-import { FoodStockItem } from "@/types/establishment";
+import { FoodIntakeOriginType, FoodStockItem } from "@/types/establishment";
 import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
 import { FOOD_MOVEMENT_FORM } from "@/constants/establishments";
 
@@ -10,6 +10,16 @@ const foodMovementLineSchema = z.object({
   food: z.custom<MovementFood | null>((value) => typeof value === "object"),
   quantity: z.string(),
 });
+export const FOOD_INTAKE_ORIGIN_VALUES = [
+  "national_government",
+  "provincial_government",
+  "municipal_government",
+  "private_company",
+  "foundation",
+  "social_organization",
+  "church",
+  "other",
+] as const satisfies readonly FoodIntakeOriginType[];
 export const foodMovementSchema = z
   .object({
     direction: z.enum(["in", "out"]),
@@ -19,16 +29,33 @@ export const foodMovementSchema = z
       z.enum(["family_delivery", "kitchen", "discard", "other"]),
     ]),
     comments: z.string().max(500, "Máximo 500 caracteres"),
+    origin_type: z.union([z.enum(FOOD_INTAKE_ORIGIN_VALUES), z.literal("")]),
+    is_recurring: z.union([
+      z.literal(""),
+      z.literal("true"),
+      z.literal("false"),
+    ]),
     lines: z.array(foodMovementLineSchema).min(1, "Agregá un alimento"),
   })
   .superRefine((value, ctx) => {
-    if (value.direction === "out" && value.category === "") {
+    if (value.direction === "out" && !value.category)
       ctx.addIssue({
         code: "custom",
         path: ["category"],
         message: FOOD_MOVEMENT_FORM.categoryRequired,
       });
-    }
+    if (value.direction === "in" && !value.origin_type)
+      ctx.addIssue({
+        code: "custom",
+        path: ["origin_type"],
+        message: FOOD_MOVEMENT_FORM.originRequired,
+      });
+    if (value.direction === "in" && !value.is_recurring)
+      ctx.addIssue({
+        code: "custom",
+        path: ["is_recurring"],
+        message: FOOD_MOVEMENT_FORM.recurrenceRequired,
+      });
   });
 export type FoodMovementInput = z.infer<typeof foodMovementSchema>;
 

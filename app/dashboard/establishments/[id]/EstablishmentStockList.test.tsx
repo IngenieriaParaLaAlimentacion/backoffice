@@ -82,6 +82,14 @@ describe("EstablishmentStockList", () => {
         screen.getByRole("textbox", { name: "Cantidad 1" }),
         "1.125",
       );
+      await user.selectOptions(
+        screen.getByLabelText("Origen del alimento"),
+        "foundation",
+      );
+      await user.selectOptions(
+        screen.getByLabelText("Tipo de aporte"),
+        "false",
+      );
       await user.click(
         screen.getByRole("button", { name: "Guardar movimiento" }),
       );

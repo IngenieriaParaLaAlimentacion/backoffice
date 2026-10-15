@@ -30,8 +30,102 @@ const openDialog = async (onSaved = vi.fn()) => {
   );
   return onSaved;
 };
+const chooseIntakeMetadata = async (
+  user: ReturnType<typeof userEvent.setup>,
+  recurrence = "false",
+) => {
+  await user.selectOptions(
+    screen.getByLabelText("Origen del alimento"),
+    "foundation",
+  );
+  await user.selectOptions(screen.getByLabelText("Tipo de aporte"), recurrence);
+};
 
 describe("FoodMovementDialog", () => {
+  it("requires two explicit intake choices and clears them on direction changes", async () => {
+    const user = userEvent.setup();
+    let posts = 0;
+    server.use(
+      http.post(FOOD_INTAKES_ENDPOINT, () => {
+        posts += 1;
+        return HttpResponse.json({}, { status: 201 });
+      }),
+    );
+    await openDialog();
+    expect(screen.getByLabelText("Origen del alimento")).toHaveValue("");
+    expect(screen.getByLabelText("Tipo de aporte")).toHaveValue("");
+    expect(
+      screen.getByText("Nombre del donante o descripción"),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    expect(
+      await screen.findByText("Seleccioná el origen del alimento"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Seleccioná si el aporte es único o recurrente"),
+    ).toBeInTheDocument();
+    expect(posts).toBe(0);
+    await user.selectOptions(
+      screen.getByLabelText("Origen del alimento"),
+      "foundation",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    expect(posts).toBe(0);
+    await user.selectOptions(screen.getByLabelText("Tipo de aporte"), "false");
+    await user.click(screen.getByLabelText("Egreso"));
+    expect(
+      screen.queryByLabelText("Origen del alimento"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Nombre del donante o descripción"),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText("Ingreso"));
+    expect(screen.getByLabelText("Origen del alimento")).toHaveValue("");
+    expect(screen.getByLabelText("Tipo de aporte")).toHaveValue("");
+  });
+
+  it("keeps donor metadata out of outflow JSON", async () => {
+    const user = userEvent.setup();
+    let submitted: CreateFoodMovementRequest | null = null;
+    server.use(
+      http.post(FOOD_OUTFLOWS_ENDPOINT, async ({ request }) => {
+        submitted = (await request.json()) as CreateFoodMovementRequest;
+        return HttpResponse.json(
+          {
+            ...submitted,
+            responsible_id: "f1000000-0000-0000-0000-000000000001",
+            created_at: new Date().toISOString(),
+            items: [],
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    const onSaved = await openDialog();
+    await user.click(screen.getByLabelText("Egreso"));
+    await user.selectOptions(
+      screen.getByLabelText("Categoría del egreso"),
+      "kitchen",
+    );
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(submitted).not.toHaveProperty("origin_type");
+    expect(submitted).not.toHaveProperty("is_recurring");
+    expect(submitted).toHaveProperty("category", "kitchen");
+  });
+
   it("accepts comma decimals and sends dot decimals to the API", async () => {
     const user = userEvent.setup();
     let submitted: CreateFoodMovementRequest | null = null;
@@ -56,6 +150,7 @@ describe("FoodMovementDialog", () => {
       screen.getByText("Podés usar coma o punto para los decimales."),
     ).toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "0,5");
+    await chooseIntakeMetadata(user);
     await user.click(
       screen.getByRole("button", { name: "Guardar movimiento" }),
     );
@@ -64,6 +159,10 @@ describe("FoodMovementDialog", () => {
       { food_id: MOCK_FOODS[0].id, quantity: "0.5" },
     ]);
     expect(submitted).not.toHaveProperty("category");
+    expect(submitted).toMatchObject({
+      origin_type: "foundation",
+      is_recurring: false,
+    });
   });
 
   it("shows a Spanish validation message for an empty date", async () => {
@@ -73,9 +172,9 @@ describe("FoodMovementDialog", () => {
     await user.click(
       screen.getByRole("button", { name: "Guardar movimiento" }),
     );
-    expect(await screen.findByRole("alert", { name: "" })).toHaveTextContent(
-      "Ingresá una fecha válida",
-    );
+    expect(
+      await screen.findByText("Ingresá una fecha válida"),
+    ).toBeInTheDocument();
   });
 
   it("supports keyboard food selection and returns focus to the trigger", async () => {
@@ -180,6 +279,7 @@ describe("FoodMovementDialog", () => {
       await user.click(screen.getByRole("combobox", { name: "Alimento" }));
       await user.click(await screen.findByRole("option", { name: /Arroz/ }));
       await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+      await chooseIntakeMetadata(user, "true");
       await user.click(
         screen.getByRole("button", { name: "Guardar movimiento" }),
       );
@@ -353,6 +453,7 @@ describe("FoodMovementDialog", () => {
       screen.getByRole("textbox", { name: "Cantidad 1" }),
       "1.125",
     );
+    await chooseIntakeMetadata(user);
     await user.click(
       screen.getByRole("button", { name: "Guardar movimiento" }),
     );
@@ -367,6 +468,10 @@ describe("FoodMovementDialog", () => {
     expect(bodies).toHaveLength(2);
     expect(bodies[0]).toEqual(bodies[1]);
     expect(bodies[0].id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(bodies[0]).toMatchObject({
+      origin_type: "foundation",
+      is_recurring: false,
+    });
     expect(bodies[0].items).toEqual([
       { food_id: MOCK_FOODS[0].id, quantity: "1.125" },
     ]);
@@ -384,6 +489,7 @@ describe("FoodMovementDialog", () => {
     await user.click(screen.getByRole("combobox", { name: "Alimento" }));
     await user.click(await screen.findByRole("option", { name: /Arroz/ }));
     await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await chooseIntakeMetadata(user);
     await user.click(
       screen.getByRole("button", { name: "Guardar movimiento" }),
     );
