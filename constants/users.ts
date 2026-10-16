@@ -12,6 +12,9 @@ export const ROLE_SECTIONS: readonly { role: UserRole; label: string }[] = [
   { role: "analyst", label: "Analistas" },
 ];
 
+/** How many establishments a user's row lists before collapsing into "+N más". */
+export const MAX_LISTED_ESTABLISHMENTS = 2;
+
 export const USERS_PAGE = {
   title: "Usuarios",
   subtitle: "Usuarios aceptados",
@@ -25,6 +28,7 @@ export const USERS_PAGE = {
     email: "Email",
     establishments: "Establecimientos",
   },
+  moreEstablishments: (count: number) => `+${count} más`,
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
 

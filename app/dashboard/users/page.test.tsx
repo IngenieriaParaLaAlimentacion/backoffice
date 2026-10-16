@@ -6,7 +6,12 @@ import { renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { makeListUsersHandler } from "@/mocks/handlers/admin";
 import { DEFAULT_PENDING_USERS_RESPONSE } from "@/mocks/fixtures/admin";
-import { INVITE_LABELS, USERS_PAGE } from "@/constants/users";
+import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
+import {
+  INVITE_LABELS,
+  MAX_LISTED_ESTABLISHMENTS,
+  USERS_PAGE,
+} from "@/constants/users";
 
 // The page previews 3 users per role section.
 const PREVIEW = DEFAULT_PENDING_USERS_RESPONSE.items.slice(0, 3);
@@ -74,5 +79,62 @@ describe("UsersPage invite buttons", () => {
     });
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+});
+
+describe("UsersPage establishments column", () => {
+  beforeEach(() => localStorage.clear());
+
+  // A field worker can hold dozens of establishments; listing them all would
+  // stretch one row across the whole screen.
+  it("lists only the first establishments of a user and counts the rest", async () => {
+    const establishments = MOCK_ESTABLISHMENTS.slice(0, 5);
+    server.use(
+      makeListUsersHandler({
+        data: {
+          items: [{ ...PREVIEW[0], establishments }],
+          total: 1,
+          total_pages: 1,
+        },
+      }),
+    );
+    await renderWithProviders(<UsersPageRoute />, { role: "admin" });
+
+    const listed = establishments.slice(0, MAX_LISTED_ESTABLISHMENTS);
+    const hidden = establishments.slice(MAX_LISTED_ESTABLISHMENTS);
+    // Each section renders its own copy of the (mocked) user, desktop table
+    // and mobile card included.
+    expect((await screen.findAllByText(listed[0].name)).length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.getAllByText(listed[1].name).length).toBeGreaterThan(0);
+    expect(screen.queryByText(hidden[0].name)).not.toBeInTheDocument();
+    expect(
+      screen.getAllByText(USERS_PAGE.moreEstablishments(hidden.length)).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("shows no counter when the user has no more than the limit", async () => {
+    server.use(
+      makeListUsersHandler({
+        data: {
+          items: [
+            {
+              ...PREVIEW[0],
+              establishments: MOCK_ESTABLISHMENTS.slice(
+                0,
+                MAX_LISTED_ESTABLISHMENTS,
+              ),
+            },
+          ],
+          total: 1,
+          total_pages: 1,
+        },
+      }),
+    );
+    await renderWithProviders(<UsersPageRoute />, { role: "admin" });
+
+    await screen.findAllByText(MOCK_ESTABLISHMENTS[0].name);
+    expect(screen.queryByText(/^\+\d+ más$/)).not.toBeInTheDocument();
   });
 });

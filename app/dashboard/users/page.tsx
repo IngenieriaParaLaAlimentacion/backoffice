@@ -18,6 +18,7 @@ import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import Link from "next/link";
 import { useUsers } from "@/hooks/useUsers";
 import UserDetailPanel from "./[role]/UserDetailPanel";
+import UserEstablishments from "./UserEstablishments";
 import RoleInviteButton from "./RoleInviteButton";
 
 const PAGE_SIZE = 3;
@@ -80,21 +81,9 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                       {user.email}
                     </td>
                     <td className="px-4 py-3">
-                      {user.establishments.length === 0 ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : (
-                        <div className="flex flex-col gap-0.5">
-                          {user.establishments.map((est) => (
-                            <span key={est.id} className="text-xs">
-                              <span className="font-medium">{est.name}</span>
-                              <span className="text-muted-foreground">
-                                {" "}
-                                — {est.formatted_address}
-                              </span>
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      <UserEstablishments
+                        establishments={user.establishments}
+                      />
                     </td>
                     <ChevronCell className="w-12" />
                   </tr>
@@ -121,17 +110,10 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                     {user.email}
                   </span>
                   {user.establishments.length > 0 && (
-                    <div className="mt-1 flex flex-col gap-0.5">
-                      {user.establishments.map((est) => (
-                        <span key={est.id} className="text-xs">
-                          <span className="font-medium">{est.name}</span>
-                          <span className="text-muted-foreground">
-                            {" "}
-                            — {est.formatted_address}
-                          </span>
-                        </span>
-                      ))}
-                    </div>
+                    <UserEstablishments
+                      establishments={user.establishments}
+                      className="mt-1"
+                    />
                   )}
                 </span>
                 <RowChevron className="shrink-0" />
