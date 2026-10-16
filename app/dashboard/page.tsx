@@ -302,7 +302,7 @@ export default function DashboardPage() {
                     )
                   }
                   label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
-                  href="/dashboard/establishments/requests"
+                  href="/dashboard/requests/establishment-creations"
                   emphasize={
                     !pendingEstablishmentCreationsLoading &&
                     !!pendingEstablishmentCreations
