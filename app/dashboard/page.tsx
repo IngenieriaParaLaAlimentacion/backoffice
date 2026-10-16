@@ -99,7 +99,6 @@ export default function DashboardPage() {
   const { makeAuthorizedRequest } = useAuth();
   const { role, can } = useSession();
   const canViewRequests = can("requests.view");
-  const canViewEstablishmentRequests = can("establishments.requests.view");
   // Quick-access cards mirror the sidebar, minus the dashboard self-link.
   const accessItems = visibleNavItems(role).filter(
     (item) => item.href !== "/dashboard",
@@ -178,13 +177,10 @@ export default function DashboardPage() {
     if (canViewRequests) {
       fetchPendingUserRegistrations();
       fetchPendingEstablishmentAccess();
-    }
-    if (canViewEstablishmentRequests) {
       fetchPendingEstablishmentCreations();
     }
   }, [
     canViewRequests,
-    canViewEstablishmentRequests,
     fetchPendingUserRegistrations,
     fetchPendingEstablishmentCreations,
     fetchPendingEstablishmentAccess,
@@ -287,7 +283,7 @@ export default function DashboardPage() {
                   />
                 </>
               )}
-              {canViewEstablishmentRequests && (
+              {canViewRequests && (
                 <IndicatorCard
                   icon={<Building size={18} />}
                   value={
@@ -302,7 +298,7 @@ export default function DashboardPage() {
                     )
                   }
                   label={DASHBOARD_INDICATORS.pendingEstablishmentCreations}
-                  href="/dashboard/establishments/requests"
+                  href="/dashboard/requests/establishment-creations"
                   emphasize={
                     !pendingEstablishmentCreationsLoading &&
                     !!pendingEstablishmentCreations

@@ -8,12 +8,14 @@ import {
   listPendingEstablishmentAccessAction,
   listUsersAction,
 } from "@/services/admin.service";
+import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
 import { usePendingCount } from "@/hooks/usePendingCount";
 import { REQUEST_TABS } from "@/constants/users";
 import RequirePermission from "@/components/RequirePermission";
 
 const USERS_TAB_HREF = "/dashboard/requests";
 const ESTABLISHMENTS_TAB_HREF = "/dashboard/requests/establishments";
+const CREATIONS_TAB_HREF = "/dashboard/requests/establishment-creations";
 
 const COUNT_ONLY_QUERY = { page: 1, page_size: 1 } as const;
 
@@ -67,10 +69,22 @@ function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
     }, [makeAuthorizedRequest]),
   );
 
+  const { count: pendingCreations, fetch: fetchPendingCreations } =
+    usePendingCount(
+      useCallback(async () => {
+        const data = await listEstablishmentRequestsAction(
+          makeAuthorizedRequest,
+          COUNT_ONLY_QUERY,
+        );
+        return data.total;
+      }, [makeAuthorizedRequest]),
+    );
+
   const refreshCounts = useCallback(() => {
     fetchPendingUsers();
     fetchPendingAccess();
-  }, [fetchPendingUsers, fetchPendingAccess]);
+    fetchPendingCreations();
+  }, [fetchPendingUsers, fetchPendingAccess, fetchPendingCreations]);
 
   useEffect(() => {
     // Re-check whenever a tab becomes active so navigating between them also
@@ -85,19 +99,24 @@ function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
       href: ESTABLISHMENTS_TAB_HREF,
       count: pendingAccess,
     },
+    {
+      label: REQUEST_TABS.establishmentCreations,
+      href: CREATIONS_TAB_HREF,
+      count: pendingCreations,
+    },
   ];
 
   return (
     <RefreshRequestCountsContext.Provider value={refreshCounts}>
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex gap-1 border-b border-border">
+        <div className="flex gap-1 overflow-x-auto border-b border-border">
           {tabs.map((tab) => {
             const isActive = pathname === tab.href;
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`-mb-px flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground"

@@ -11,15 +11,14 @@ import { UserRole } from "@/types/user";
  * boundary and still answers 403 to anything it shouldn't allow.
  */
 export type Permission =
-  /** The "Solicitudes" screen and its two tabs (user + establishment access). */
+  /** The "Solicitudes" screen and its three tabs (user registrations,
+   * establishment access and establishment creation requests). */
   | "requests.view"
   /** The "Usuarios" screen. The backend 403s non-admins on the listing
    * endpoints, so the screen has nothing to show without this. */
   | "users.view"
   /** Creating an establishment outright (button + `/establishments/create`). */
   | "establishments.create"
-  /** The "Solicitudes" tab inside Establecimientos (approve/reject new ones). */
-  | "establishments.requests.view"
   /** Inviting admins/analysts from the Usuarios screen. */
   | "users.invite"
   /** Revoking a field worker's access to an establishment. */
@@ -31,7 +30,6 @@ const ALL_PERMISSIONS = [
   "requests.view",
   "users.view",
   "establishments.create",
-  "establishments.requests.view",
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",

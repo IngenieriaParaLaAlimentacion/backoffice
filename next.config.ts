@@ -9,6 +9,18 @@ console.log(API_BASE_URL);
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Establishment-creation requests moved from Establecimientos into the
+  // Solicitudes section; keep bookmarks and old links working (Next.js
+  // forwards the query string, so saved filters survive).
+  async redirects() {
+    return [
+      {
+        source: "/dashboard/establishments/requests",
+        destination: "/dashboard/requests/establishment-creations",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       { source: "/api/:path*", destination: DESTINATIONS_BASE_URL.toString() },

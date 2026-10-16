@@ -21,7 +21,7 @@ export default function SideBarItem({
   const pathname = usePathname();
   // "/dashboard" (Inicio) is a prefix of every dashboard route, so it only
   // highlights on an exact match; other items also highlight on sub-routes
-  // (e.g. "/dashboard/establishments/requests" under "Establecimientos").
+  // (e.g. "/dashboard/requests/establishments" under "Solicitudes").
   const isSelected =
     pathname === href ||
     (href !== "/dashboard" && pathname.startsWith(`${href}/`));

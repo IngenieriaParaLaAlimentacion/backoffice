@@ -146,13 +146,7 @@ export const ESTABLISHMENT_DASHBOARD_PAGE = {
   relationStatus: "Inscripción",
 } as const;
 
-export const ESTABLISHMENT_TABS = {
-  establishments: "Establecimientos",
-  requests: "Solicitudes",
-} as const;
-
-// Tabs inside a single establishment's ficha (app/dashboard/establishments/[id]/),
-// not to be confused with ESTABLISHMENT_TABS above (the establishments-wide nav).
+// Tabs inside a single establishment's ficha (app/dashboard/establishments/[id]/).
 export const ESTABLISHMENT_DETAIL_TABS = {
   subjects: "Sujetos",
   fieldWorkers: "Relevadores",

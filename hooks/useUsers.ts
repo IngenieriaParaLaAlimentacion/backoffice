@@ -10,6 +10,7 @@ export function useUsers(role: string, pageSize: number) {
   const [users, setUsers] = useState<UserAdminView[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +35,7 @@ export function useUsers(role: string, pageSize: number) {
         }
         setUsers(data.items);
         setTotalPages(data.total_pages);
+        setTotal(data.total);
       } catch (err) {
         setError(getErrorMessage(err, { fallback: USERS_PAGE.loadError }));
       } finally {
@@ -52,5 +54,5 @@ export function useUsers(role: string, pageSize: number) {
     void fetchUsers(page);
   }, [fetchUsers, page]);
 
-  return { users, page, totalPages, isLoading, error, setPage, refetch };
+  return { users, page, totalPages, total, isLoading, error, setPage, refetch };
 }

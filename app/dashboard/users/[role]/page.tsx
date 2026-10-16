@@ -15,15 +15,11 @@ import {
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
-import { useSession } from "@/context/SessionContext";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
-import InviteUserDialog from "./InviteUserDialog";
+import UserEstablishments from "../UserEstablishments";
+import RoleInviteButton from "../RoleInviteButton";
 import UserDetailPanel from "./UserDetailPanel";
-import {
-  inviteAdminAction,
-  inviteAnalystAction,
-} from "@/services/admin.service";
 
 const PAGE_SIZE = 20;
 
@@ -32,7 +28,6 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
   const { role } = use(params);
   const section = ROLE_SECTIONS.find((s) => s.role === role);
   const label = section?.label ?? role;
-  const canInvite = useSession().can("users.invite");
 
   const { users, page, totalPages, isLoading, error, setPage, refetch } =
     useUsers(role, PAGE_SIZE);
@@ -58,18 +53,7 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
             </p>
           </div>
           <div className="self-start">
-            {canInvite && role === "admin" && (
-              <InviteUserDialog
-                label="Invitar administrador"
-                inviteAction={inviteAdminAction}
-              />
-            )}
-            {canInvite && role === "analyst" && (
-              <InviteUserDialog
-                label="Invitar analista"
-                inviteAction={inviteAnalystAction}
-              />
-            )}
+            <RoleInviteButton role={role} />
           </div>
         </div>
 
@@ -123,21 +107,9 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
                         {user.email}
                       </td>
                       <td className="px-4 py-3">
-                        {user.establishments.length === 0 ? (
-                          <span className="text-muted-foreground">—</span>
-                        ) : (
-                          <div className="flex flex-col gap-0.5">
-                            {user.establishments.map((est) => (
-                              <span key={est.id} className="text-xs">
-                                <span className="font-medium">{est.name}</span>
-                                <span className="text-muted-foreground">
-                                  {" "}
-                                  — {est.formatted_address}
-                                </span>
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        <UserEstablishments
+                          establishments={user.establishments}
+                        />
                       </td>
                       <ChevronCell />
                     </tr>
@@ -164,17 +136,10 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
                       {user.email}
                     </span>
                     {user.establishments.length > 0 && (
-                      <div className="mt-1 flex flex-col gap-0.5">
-                        {user.establishments.map((est) => (
-                          <span key={est.id} className="text-xs">
-                            <span className="font-medium">{est.name}</span>
-                            <span className="text-muted-foreground">
-                              {" "}
-                              — {est.formatted_address}
-                            </span>
-                          </span>
-                        ))}
-                      </div>
+                      <UserEstablishments
+                        establishments={user.establishments}
+                        className="mt-1"
+                      />
                     )}
                   </span>
                   <RowChevron className="shrink-0" />

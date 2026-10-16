@@ -12,10 +12,15 @@ export const ROLE_SECTIONS: readonly { role: UserRole; label: string }[] = [
   { role: "analyst", label: "Analistas" },
 ];
 
+/** How many establishments a user's row lists before collapsing into "+N más". */
+export const MAX_LISTED_ESTABLISHMENTS = 2;
+
 export const USERS_PAGE = {
   title: "Usuarios",
   subtitle: "Usuarios aceptados",
-  viewAll: "Ver Todos",
+  viewAll: "Ver todos",
+  /** Shown when a section previews fewer users than the role has. */
+  showing: (shown: number, total: number) => `Mostrando ${shown} de ${total}`,
   noUsers: "No hay usuarios",
   loadError: "Error al cargar usuarios",
   columns: {
@@ -23,12 +28,20 @@ export const USERS_PAGE = {
     email: "Email",
     establishments: "Establecimientos",
   },
+  moreEstablishments: (count: number) => `+${count} más`,
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
 
+/** The invite buttons beside the admin and analyst section titles. */
+export const INVITE_LABELS = {
+  admin: "Invitar administrador",
+  analyst: "Invitar analista",
+} as const;
+
 export const REQUEST_TABS = {
-  users: "Usuarios",
-  establishments: "Establecimientos",
+  users: "Registros de usuarios",
+  establishments: "Accesos a establecimientos",
+  establishmentCreations: "Altas de establecimientos",
 } as const;
 
 export const PENDING_REQUESTS_PAGE = {
@@ -37,7 +50,7 @@ export const PENDING_REQUESTS_PAGE = {
   loadError: "Error al cargar solicitudes",
   applyError: "Error al aplicar los cambios",
   partialApplyError:
-    "La cuenta se activó, pero no se pudieron rechazar algunos establecimientos. Reintentá o resolvelos desde la pestaña Establecimientos.",
+    "La cuenta se activó, pero no se pudieron rechazar algunos establecimientos. Reintentá o resolvelos desde la pestaña Accesos a establecimientos.",
   rejectError: "Error al rechazar la solicitud",
   noRequests: "No hay solicitudes pendientes",
   columns: {
@@ -52,7 +65,7 @@ export const PENDING_REQUESTS_PAGE = {
   defaultDialogTitle: "Solicitud",
   emailNotVerified: "Email sin verificar",
   establishmentsIntro:
-    "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes y se resuelven en la pestaña Establecimientos.",
+    "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes y se resuelven en la pestaña Accesos a establecimientos.",
   noEstablishmentsRequested: "No solicitó acceso a ningún establecimiento.",
   accept: "Aceptar",
   reject: "Rechazar",
