@@ -15,15 +15,10 @@ import {
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
 import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
-import { useSession } from "@/context/SessionContext";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
-import InviteUserDialog from "./InviteUserDialog";
+import RoleInviteButton from "../RoleInviteButton";
 import UserDetailPanel from "./UserDetailPanel";
-import {
-  inviteAdminAction,
-  inviteAnalystAction,
-} from "@/services/admin.service";
 
 const PAGE_SIZE = 20;
 
@@ -32,7 +27,6 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
   const { role } = use(params);
   const section = ROLE_SECTIONS.find((s) => s.role === role);
   const label = section?.label ?? role;
-  const canInvite = useSession().can("users.invite");
 
   const { users, page, totalPages, isLoading, error, setPage, refetch } =
     useUsers(role, PAGE_SIZE);
@@ -58,18 +52,7 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
             </p>
           </div>
           <div className="self-start">
-            {canInvite && role === "admin" && (
-              <InviteUserDialog
-                label="Invitar administrador"
-                inviteAction={inviteAdminAction}
-              />
-            )}
-            {canInvite && role === "analyst" && (
-              <InviteUserDialog
-                label="Invitar analista"
-                inviteAction={inviteAnalystAction}
-              />
-            )}
+            <RoleInviteButton role={role} />
           </div>
         </div>
 

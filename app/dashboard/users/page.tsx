@@ -18,6 +18,7 @@ import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import Link from "next/link";
 import { useUsers } from "@/hooks/useUsers";
 import UserDetailPanel from "./[role]/UserDetailPanel";
+import RoleInviteButton from "./RoleInviteButton";
 
 const PAGE_SIZE = 3;
 
@@ -27,7 +28,10 @@ function RoleSection({ role, label }: { role: string; label: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{label}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">{label}</h2>
+        <RoleInviteButton role={role} />
+      </div>
       {error && (
         <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
           {error}

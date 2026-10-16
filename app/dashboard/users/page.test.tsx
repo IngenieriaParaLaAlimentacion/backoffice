@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 import UsersPageRoute from "./page";
+import RoleInviteButton from "./RoleInviteButton";
 import { renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { makeListUsersHandler } from "@/mocks/handlers/admin";
 import { DEFAULT_PENDING_USERS_RESPONSE } from "@/mocks/fixtures/admin";
-import { USERS_PAGE } from "@/constants/users";
+import { INVITE_LABELS, USERS_PAGE } from "@/constants/users";
 
 // The page previews 3 users per role section.
 const PREVIEW = DEFAULT_PENDING_USERS_RESPONSE.items.slice(0, 3);
@@ -46,5 +47,32 @@ describe("UsersPage", () => {
     expect(
       screen.queryByRole("link", { name: USERS_PAGE.viewAll }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("UsersPage invite buttons", () => {
+  beforeEach(() => localStorage.clear());
+
+  it("offers Invitar administrador and Invitar analista beside their sections to someone who can invite", async () => {
+    await renderWithProviders(<UsersPageRoute />, { role: "admin" });
+
+    expect(
+      await screen.findByRole("button", { name: INVITE_LABELS.admin }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: INVITE_LABELS.analyst }),
+    ).toBeInTheDocument();
+    // Field workers register themselves: nobody is invited to that role.
+    expect(screen.getAllByRole("button", { name: /^Invitar/ })).toHaveLength(2);
+  });
+
+  it("shows no invite buttons to a role without users.invite", async () => {
+    // An analyst can't open this screen at all; stub the permission instead
+    // of the role so only the invite gate is exercised.
+    await renderWithProviders(<RoleInviteButton role="admin" />, {
+      role: "analyst",
+    });
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

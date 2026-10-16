@@ -28,6 +28,12 @@ export const USERS_PAGE = {
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
 
+/** The invite buttons beside the admin and analyst section titles. */
+export const INVITE_LABELS = {
+  admin: "Invitar administrador",
+  analyst: "Invitar analista",
+} as const;
+
 export const REQUEST_TABS = {
   users: "Registros de usuarios",
   establishments: "Accesos a establecimientos",
