@@ -14,9 +14,6 @@ const HOME_HREF = "/dashboard";
  * screen the sidebar deliberately hides. A UX guard — the backend still
  * refuses the underlying calls.
  *
- * `permission` may be a list, in which case holding any one of them is enough
- * (a section whose tabs each have their own permission).
- *
  * Renders nothing while the role is unknown; the dashboard layout already
  * blocks on that, so this only matters if the guard is used elsewhere.
  */
@@ -24,15 +21,14 @@ export default function RequirePermission({
   permission,
   children,
 }: {
-  permission: Permission | readonly Permission[];
+  permission: Permission;
   children: ReactNode;
 }) {
   const { can, isLoading } = useSession();
-  const required = typeof permission === "string" ? [permission] : permission;
 
   if (isLoading) return null;
 
-  if (!required.some(can)) {
+  if (!can(permission)) {
     return (
       <FullScreenMessage
         title={FORBIDDEN_SCREEN.title}

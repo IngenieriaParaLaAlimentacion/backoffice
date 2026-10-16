@@ -7,7 +7,7 @@ import {
   Ruler,
   Users,
 } from "lucide-react";
-import { canAny, Permission } from "@/lib/permissions";
+import { can, Permission } from "@/lib/permissions";
 import { UserRole } from "@/types/user";
 
 export type NavItem = {
@@ -15,9 +15,8 @@ export type NavItem = {
   href: string;
   /** The icon component, not an element — keeps this file plain `.ts`. */
   icon: LucideIcon;
-  /** When set, the item only shows for roles holding this permission (or, for
-   * a list, at least one of them). */
-  permission?: Permission | readonly Permission[];
+  /** When set, the item only shows for roles holding this permission. */
+  permission?: Permission;
 };
 
 /**
@@ -31,8 +30,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Solicitudes",
     href: "/dashboard/requests",
     icon: ClipboardList,
-    // One tab of Solicitudes per permission: the section shows if any tab does.
-    permission: ["requests.view", "establishments.requests.view"],
+    permission: "requests.view",
   },
   {
     label: "Usuarios",
@@ -62,13 +60,6 @@ export const PROFILE_NAV_ITEM = {
 /** The nav items `role` is allowed to see, in declaration order. */
 export function visibleNavItems(role: UserRole | null): NavItem[] {
   return NAV_ITEMS.filter(
-    (item) =>
-      !item.permission ||
-      canAny(
-        role,
-        typeof item.permission === "string"
-          ? [item.permission]
-          : item.permission,
-      ),
+    (item) => !item.permission || can(role, item.permission),
   );
 }

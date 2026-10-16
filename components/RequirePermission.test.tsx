@@ -32,27 +32,4 @@ describe("RequirePermission", () => {
       screen.getByRole("link", { name: FORBIDDEN_SCREEN.backToHome }),
     ).toHaveAttribute("href", "/dashboard");
   });
-
-  describe("with a list of permissions", () => {
-    const guardedByList = (
-      <RequirePermission
-        permission={["requests.view", "establishments.requests.view"]}
-      >
-        <p>{CHILD}</p>
-      </RequirePermission>
-    );
-
-    it("renders the children for a role holding any of them", async () => {
-      await renderWithProviders(guardedByList, { role: "admin" });
-
-      expect(screen.getByText(CHILD)).toBeInTheDocument();
-    });
-
-    it("shows the 403 screen for a role holding none of them", async () => {
-      await renderWithProviders(guardedByList, { role: "analyst" });
-
-      expect(screen.queryByText(CHILD)).not.toBeInTheDocument();
-      expect(screen.getByText(FORBIDDEN_SCREEN.title)).toBeInTheDocument();
-    });
-  });
 });

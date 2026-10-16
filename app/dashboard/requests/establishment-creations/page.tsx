@@ -485,7 +485,7 @@ function EstablishmentRequestsPage() {
 
 export default function EstablishmentRequestsRoute() {
   return (
-    <RequirePermission permission="establishments.requests.view">
+    <RequirePermission permission="requests.view">
       <EstablishmentRequestsPage />
     </RequirePermission>
   );

@@ -11,15 +11,14 @@ import { UserRole } from "@/types/user";
  * boundary and still answers 403 to anything it shouldn't allow.
  */
 export type Permission =
-  /** The "Registros de usuarios" and "Accesos a establecimientos" tabs of Solicitudes. */
+  /** The "Solicitudes" screen and its three tabs (user registrations,
+   * establishment access and establishment creation requests). */
   | "requests.view"
   /** The "Usuarios" screen. The backend 403s non-admins on the listing
    * endpoints, so the screen has nothing to show without this. */
   | "users.view"
   /** Creating an establishment outright (button + `/establishments/create`). */
   | "establishments.create"
-  /** The "Altas de establecimientos" tab of Solicitudes (approve/reject new ones). */
-  | "establishments.requests.view"
   /** Inviting admins/analysts from the Usuarios screen. */
   | "users.invite"
   /** Revoking a field worker's access to an establishment. */
@@ -31,7 +30,6 @@ const ALL_PERMISSIONS = [
   "requests.view",
   "users.view",
   "establishments.create",
-  "establishments.requests.view",
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",
@@ -56,14 +54,6 @@ const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
 export function can(role: UserRole | null, permission: Permission): boolean {
   if (!role) return false;
   return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
-}
-
-/** Whether `role` holds at least one of `permissions`. */
-export function canAny(
-  role: UserRole | null,
-  permissions: readonly Permission[],
-): boolean {
-  return permissions.some((permission) => can(role, permission));
 }
 
 /** The roles a role change may assign. `superadmin` is never offered. */

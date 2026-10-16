@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useSession } from "@/context/SessionContext";
 import {
   listPendingEstablishmentAccessAction,
   listUsersAction,
@@ -13,21 +12,12 @@ import { listEstablishmentRequestsAction } from "@/services/establishmentRequest
 import { usePendingCount } from "@/hooks/usePendingCount";
 import { REQUEST_TABS } from "@/constants/users";
 import RequirePermission from "@/components/RequirePermission";
-import { Permission } from "@/lib/permissions";
 
 const USERS_TAB_HREF = "/dashboard/requests";
 const ESTABLISHMENTS_TAB_HREF = "/dashboard/requests/establishments";
-
 const CREATIONS_TAB_HREF = "/dashboard/requests/establishment-creations";
 
 const COUNT_ONLY_QUERY = { page: 1, page_size: 1 } as const;
-
-// Each tab is gated by its own permission, so a role that holds one but not
-// the other sees only its tabs (today admins hold both, analysts neither).
-const TAB_PERMISSIONS: readonly Permission[] = [
-  "requests.view",
-  "establishments.requests.view",
-];
 
 // Lets each tab tell the layout to refresh the badges right after an
 // approve/reject, since those actions don't navigate anywhere (the
@@ -41,7 +31,7 @@ export default function RequestsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <RequirePermission permission={TAB_PERMISSIONS}>
+    <RequirePermission permission="requests.view">
       <RequestsTabs>{children}</RequestsTabs>
     </RequirePermission>
   );
@@ -55,9 +45,6 @@ export default function RequestsLayout({
 function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const { makeAuthorizedRequest } = useAuth();
-  const { can } = useSession();
-  const canViewRegistrations = can("requests.view");
-  const canViewCreations = can("establishments.requests.view");
 
   const { count: pendingUsers, fetch: fetchPendingUsers } = usePendingCount(
     useCallback(async () => {
@@ -94,18 +81,10 @@ function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
     );
 
   const refreshCounts = useCallback(() => {
-    if (canViewRegistrations) {
-      fetchPendingUsers();
-      fetchPendingAccess();
-    }
-    if (canViewCreations) fetchPendingCreations();
-  }, [
-    canViewRegistrations,
-    canViewCreations,
-    fetchPendingUsers,
-    fetchPendingAccess,
-    fetchPendingCreations,
-  ]);
+    fetchPendingUsers();
+    fetchPendingAccess();
+    fetchPendingCreations();
+  }, [fetchPendingUsers, fetchPendingAccess, fetchPendingCreations]);
 
   useEffect(() => {
     // Re-check whenever a tab becomes active so navigating between them also
@@ -114,29 +93,17 @@ function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
   }, [refreshCounts, pathname]);
 
   const tabs = [
-    ...(canViewRegistrations
-      ? [
-          {
-            label: REQUEST_TABS.users,
-            href: USERS_TAB_HREF,
-            count: pendingUsers,
-          },
-          {
-            label: REQUEST_TABS.establishments,
-            href: ESTABLISHMENTS_TAB_HREF,
-            count: pendingAccess,
-          },
-        ]
-      : []),
-    ...(canViewCreations
-      ? [
-          {
-            label: REQUEST_TABS.establishmentCreations,
-            href: CREATIONS_TAB_HREF,
-            count: pendingCreations,
-          },
-        ]
-      : []),
+    { label: REQUEST_TABS.users, href: USERS_TAB_HREF, count: pendingUsers },
+    {
+      label: REQUEST_TABS.establishments,
+      href: ESTABLISHMENTS_TAB_HREF,
+      count: pendingAccess,
+    },
+    {
+      label: REQUEST_TABS.establishmentCreations,
+      href: CREATIONS_TAB_HREF,
+      count: pendingCreations,
+    },
   ];
 
   return (
