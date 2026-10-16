@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assignableRoles, can, Permission } from "@/lib/permissions";
+import { assignableRoles, can, canAny, Permission } from "@/lib/permissions";
 import { ROLE_LABELS, UserRole } from "@/types/user";
 
 const ADMIN_ONLY: Permission[] = [
@@ -49,6 +49,27 @@ describe("can", () => {
     for (const role of roles) {
       expect(typeof can(role, "requests.view")).toBe("boolean");
     }
+  });
+});
+
+describe("canAny", () => {
+  const TABS: Permission[] = ["requests.view", "establishments.requests.view"];
+
+  it("grants a role holding at least one of the permissions", () => {
+    expect(canAny("admin", TABS)).toBe(true);
+    expect(canAny("superadmin", ["surveys.delete", "requests.view"])).toBe(
+      true,
+    );
+  });
+
+  it("denies a role holding none of them, and an unresolved role", () => {
+    expect(canAny("analyst", TABS)).toBe(false);
+    expect(canAny("field_worker", TABS)).toBe(false);
+    expect(canAny(null, TABS)).toBe(false);
+  });
+
+  it("denies an empty list", () => {
+    expect(canAny("admin", [])).toBe(false);
   });
 });
 
