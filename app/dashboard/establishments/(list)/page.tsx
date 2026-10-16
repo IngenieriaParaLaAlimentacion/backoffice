@@ -10,20 +10,18 @@ import {
   exportEstablishmentsAction,
   listEstablishmentsAction,
 } from "@/services/establishment.service";
-import { EstablishmentResponse, EstablishmentSortOrder } from "@/types/admin";
+import {
+  EstablishmentResponse,
+  EstablishmentSortOrder,
+} from "@/types/establishment";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
 import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
-import {
-  FilterPanel,
-  FiltersToggle,
-} from "@/components/listings/FiltersToggle";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -33,29 +31,33 @@ import {
   RowLink,
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
-import { Loader2, Plus, Search } from "lucide-react";
+import { CircleCheck, Loader2, Plus, X } from "lucide-react";
 import {
   ESTABLISHMENT_SORT_OPTIONS,
   ESTABLISHMENTS_LIST_PAGE,
+  FILTER_DEBOUNCE_MS,
+  PAGE_SIZE,
 } from "@/constants/establishments";
+import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { EstablishmentsView, ViewToggle } from "./ViewToggle";
+import EstablishmentListFilters from "./EstablishmentListFilters";
+import EstablishmentsMapView from "./map/EstablishmentsMapView";
 
-const PAGE_SIZE = 20;
-const FILTER_DEBOUNCE_MS = 300;
-
-const SELECT_CLASS =
-  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+const PROPOSED_BANNER_MS = 5000;
 
 const DEFAULT_SORT_ORDER: EstablishmentSortOrder = "newest";
 
-const SORT_OPTIONS = ESTABLISHMENT_SORT_OPTIONS;
-
-const SORT_VALUES = SORT_OPTIONS.map((o) => o.value);
+const SORT_VALUES = ESTABLISHMENT_SORT_OPTIONS.map((o) => o.value);
 
 function parseSortOrder(value: string | null): EstablishmentSortOrder {
   return SORT_VALUES.includes(value as EstablishmentSortOrder)
     ? (value as EstablishmentSortOrder)
     : DEFAULT_SORT_ORDER;
+}
+
+function parseView(value: string | null): EstablishmentsView {
+  return value === "map" ? "map" : "list";
 }
 
 function parsePage(value: string | null) {
@@ -77,6 +79,9 @@ function EstablishmentsContent() {
   const provinceFilter = searchParams.get("province") ?? "";
   const sortOrder = parseSortOrder(searchParams.get("sort_order"));
   const page = parsePage(searchParams.get("page"));
+  // Also in the URL, so going back from a ficha lands on the same view.
+  const view = parseView(searchParams.get("view"));
+  const isMapView = view === "map";
 
   const [establishments, setEstablishments] = useState<EstablishmentResponse[]>(
     [],
@@ -85,6 +90,9 @@ function EstablishmentsContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showProposedBanner, setShowProposedBanner] = useState(
+    () => searchParams.get("proposed") === "1",
+  );
 
   // Local mirrors so typing stays responsive; the debounce writes to the URL.
   const [searchInput, setSearchInput] = useState(search);
@@ -115,6 +123,7 @@ function EstablishmentsContent() {
         province: string;
         sort_order: string;
         page: number;
+        view: EstablishmentsView;
       }>,
     ) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -140,6 +149,10 @@ function EstablishmentsContent() {
         if (next.page > 1) params.set("page", String(next.page));
         else params.delete("page");
       }
+      if (next.view !== undefined) {
+        if (next.view === "map") params.set("view", "map");
+        else params.delete("view");
+      }
 
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, {
@@ -148,6 +161,28 @@ function EstablishmentsContent() {
     },
     [router, pathname, searchParams],
   );
+
+  // Strip the flag right away so a refresh or back-navigation doesn't
+  // resurrect the banner — its visibility from here on lives in
+  // showProposedBanner (below), not in the URL.
+  useEffect(() => {
+    if (searchParams.get("proposed") !== "1") return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("proposed");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }, [searchParams, pathname, router]);
+
+  useEffect(() => {
+    if (!showProposedBanner) return;
+    const timeout = setTimeout(
+      () => setShowProposedBanner(false),
+      PROPOSED_BANNER_MS,
+    );
+    return () => clearTimeout(timeout);
+  }, [showProposedBanner]);
 
   useEffect(() => {
     if (
@@ -212,9 +247,12 @@ function EstablishmentsContent() {
     [search, cityFilter, provinceFilter, sortOrder],
   );
 
+  // The map has its own (unpaginated) request; the table is only fetched while
+  // it is the visible view, and again each time it comes back.
   useEffect(() => {
+    if (isMapView) return;
     fetchEstablishments(page, filters);
-  }, [fetchEstablishments, page, filters]);
+  }, [fetchEstablishments, page, filters, isMapView]);
 
   const handleExport = () =>
     runExport(
@@ -246,13 +284,20 @@ function EstablishmentsContent() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 self-start">
-            <ExportButton
-              isExporting={isExporting}
-              onClick={handleExport}
-              disabled={isLoading || total === 0}
-              emptyHint={total === 0 ? EXPORT.empty : undefined}
+            <ViewToggle
+              view={view}
+              onChange={(next) => updateParams({ view: next })}
             />
-            {can("establishments.create") && (
+            {/* The export follows the table's filters, which the map ignores. */}
+            {!isMapView && (
+              <ExportButton
+                isExporting={isExporting}
+                onClick={handleExport}
+                disabled={isLoading || total === 0}
+                emptyHint={total === 0 ? EXPORT.empty : undefined}
+              />
+            )}
+            {can("establishments.create") ? (
               <Link
                 href="/dashboard/establishments/create"
                 className={buttonVariants({ size: "sm" })}
@@ -260,98 +305,79 @@ function EstablishmentsContent() {
                 <Plus size={14} />
                 {ESTABLISHMENTS_LIST_PAGE.createButton}
               </Link>
+            ) : (
+              // Roles without establishments.create (analyst today) can't
+              // create outright, but can still propose one for an admin to
+              // review — see PROPOSE_ESTABLISHMENT_PAGE.
+              <Link
+                href="/dashboard/establishments/propose"
+                className={buttonVariants({ size: "sm" })}
+              >
+                <Plus size={14} />
+                {ESTABLISHMENTS_LIST_PAGE.proposeButton}
+              </Link>
             )}
           </div>
         </div>
 
         <Separator />
 
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">
-                {ESTABLISHMENTS_LIST_PAGE.searchLabel}
-              </label>
-              <div className="relative w-full sm:w-72">
-                <Search
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                  size={16}
-                />
-                <Input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={ESTABLISHMENTS_LIST_PAGE.searchPlaceholder}
-                  className="pl-8"
-                />
-              </div>
-            </div>
+        {!isMapView && (
+          <EstablishmentListFilters
+            searchInput={searchInput}
+            onSearchChange={setSearchInput}
+            sortOrder={sortOrder}
+            onSortChange={(value) =>
+              updateParams({ sort_order: value, page: 1 })
+            }
+            cityInput={cityInput}
+            onCityChange={setCityInput}
+            provinceInput={provinceInput}
+            onProvinceChange={setProvinceInput}
+            filtersOpen={filtersOpen}
+            onToggleFilters={() => setFiltersOpen((o) => !o)}
+            activeFilterCount={activeFilterCount}
+            hasActiveFilters={hasActiveFilters}
+            onClear={clearFilters}
+          />
+        )}
 
-            <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">
-                {ESTABLISHMENTS_LIST_PAGE.sortLabel}
-              </label>
-              <select
-                value={sortOrder}
-                onChange={(e) =>
-                  updateParams({ sort_order: e.target.value, page: 1 })
-                }
-                className={`${SELECT_CLASS} w-full sm:w-56`}
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <FiltersToggle
-              open={filtersOpen}
-              onToggle={() => setFiltersOpen((o) => !o)}
-              activeCount={activeFilterCount}
-              hasActiveFilters={hasActiveFilters}
-              onClear={clearFilters}
-            />
+        {showProposedBanner && (
+          <div
+            className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${TONE_BANNER_CLASS.success}`}
+          >
+            <CircleCheck size={18} className="mt-0.5 shrink-0" />
+            <span className="flex-1">
+              {ESTABLISHMENTS_LIST_PAGE.proposeSuccess}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowProposedBanner(false)}
+              className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
+              aria-label={ESTABLISHMENTS_LIST_PAGE.closeAria}
+            >
+              <X size={16} />
+            </button>
           </div>
+        )}
 
-          <FilterPanel open={filtersOpen}>
-            <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">
-                {ESTABLISHMENTS_LIST_PAGE.filters.city}
-              </label>
-              <Input
-                value={cityInput}
-                onChange={(e) => setCityInput(e.target.value)}
-                placeholder={ESTABLISHMENTS_LIST_PAGE.filters.city}
-                className="w-full sm:w-40"
-              />
-            </div>
-
-            <div className="flex w-full flex-col gap-1 sm:w-auto">
-              <label className="text-xs text-muted-foreground">
-                {ESTABLISHMENTS_LIST_PAGE.filters.province}
-              </label>
-              <Input
-                value={provinceInput}
-                onChange={(e) => setProvinceInput(e.target.value)}
-                placeholder={ESTABLISHMENTS_LIST_PAGE.filters.province}
-                className="w-full sm:w-40"
-              />
-            </div>
-          </FilterPanel>
-        </div>
-
-        {error && (
+        {!isMapView && error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
             {error}
           </div>
         )}
 
-        {exportError && (
+        {!isMapView && exportError && (
           <ExportError message={exportError} onDismiss={clearExportError} />
         )}
 
-        {isLoading ? (
+        {isMapView ? (
+          <EstablishmentsMapView
+            // Same destination as a row of the table.
+            onPinClick={(id) => router.push(detailHref(id))}
+            onSeeList={() => updateParams({ view: "list" })}
+          />
+        ) : isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="animate-spin text-muted-foreground" size={28} />
           </div>

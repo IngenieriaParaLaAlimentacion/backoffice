@@ -7,6 +7,7 @@ function surveyWithOptions(count: number): SurveyFormInput {
     name: "Encuesta",
     description: "",
     response_target: "anonymous",
+    requires_response_number: false,
     questions: [
       {
         text: "¿Cuál preferís?",
@@ -27,6 +28,15 @@ function optionIssues(survey: SurveyFormInput) {
 }
 
 describe("surveySchema choice options", () => {
+  it("requires explicit response-number authoring state", () => {
+    const survey = surveyWithOptions(MIN_OPTIONS);
+    const withoutSetting = { ...survey } as Partial<SurveyFormInput>;
+    delete withoutSetting.requires_response_number;
+
+    expect(surveySchema.safeParse(withoutSetting).success).toBe(false);
+    expect(surveySchema.safeParse(survey).success).toBe(true);
+  });
+
   // The backend requires 2..20 and rejects anything else with a 400 whose
   // message names no field. These bounds must match it exactly, or the author
   // is told the form is valid and then shown an untranslatable API error.

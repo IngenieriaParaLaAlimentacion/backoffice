@@ -1,10 +1,18 @@
-import { EstablishmentResponse } from "@/types/admin";
 import {
+  CreatedFoodMovement,
+  EstablishmentMapItem,
+  EstablishmentMapResponse,
+  EstablishmentResponse,
   EstablishmentDashboardResponse,
   PaginatedEstablishmentFieldWorkersResponse,
   PaginatedEstablishmentsResponse,
   PaginatedEstablishmentSubjectsResponse,
+  FoodMovementDetail,
+  FoodMovementListItem,
+  PaginatedFoodMovementsResponse,
+  PaginatedFoodStockResponse,
 } from "@/types/establishment";
+import { MOCK_FOOD_CATEGORIES } from "@/mocks/fixtures/foodCatalog";
 
 export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
   {
@@ -57,6 +65,118 @@ export const DEFAULT_ESTABLISHMENTS_RESPONSE: PaginatedEstablishmentsResponse =
     page_size: 20,
     total_pages: 1,
   };
+
+// --- Establishments map ---
+
+const [NORTE, SUR, ROSARIO, CORDOBA] = MOCK_ESTABLISHMENTS;
+
+const mapItem = (
+  establishment: Pick<
+    EstablishmentResponse,
+    "id" | "name" | "latitude" | "longitude"
+  >,
+  status: Pick<
+    EstablishmentMapItem,
+    "has_data" | "severity" | "dominant_status"
+  >,
+): EstablishmentMapItem => ({
+  id: establishment.id,
+  name: establishment.name,
+  latitude: establishment.latitude,
+  longitude: establishment.longitude,
+  ...status,
+});
+
+const extraEstablishmentId = (n: number) =>
+  `e1000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
+
+/**
+ * The first four reuse `MOCK_ESTABLISHMENTS`, so clicking their pin lands on a
+ * ficha the mock backend answers (`WITH_DATA_ID` critical, `WITHOUT_DATA_ID`
+ * empty). The rest exist to exercise the map's edge cases and have no ficha
+ * behind them: every severity, "healthy" vs "no data" (both `severity: null`),
+ * several pins in one spot to cluster, two on the exact same coordinates to
+ * spiderfy, and one still at the (0, 0) backfill that can't be drawn.
+ */
+export const MOCK_ESTABLISHMENT_MAP_ITEMS: EstablishmentMapItem[] = [
+  mapItem(NORTE, {
+    has_data: true,
+    severity: "critical",
+    dominant_status: "severely_wasted",
+  }),
+  mapItem(SUR, { has_data: false, severity: null, dominant_status: null }),
+  mapItem(ROSARIO, {
+    has_data: true,
+    severity: null,
+    dominant_status: "normal",
+  }),
+  mapItem(CORDOBA, {
+    has_data: true,
+    severity: "medium",
+    dominant_status: "overweight",
+  }),
+  // Greater Buenos Aires: close enough to fold into a cluster when zoomed out.
+  {
+    id: extraEstablishmentId(5),
+    name: "Comedor Villa Lugano",
+    latitude: -34.6811,
+    longitude: -58.4711,
+    has_data: true,
+    severity: "high",
+    dominant_status: "wasted",
+  },
+  {
+    id: extraEstablishmentId(6),
+    name: "Merendero San Telmo",
+    latitude: -34.6212,
+    longitude: -58.3731,
+    has_data: true,
+    severity: null,
+    dominant_status: "normal",
+  },
+  {
+    id: extraEstablishmentId(7),
+    name: "Comedor La Matanza",
+    latitude: -34.7702,
+    longitude: -58.6267,
+    has_data: false,
+    severity: null,
+    dominant_status: null,
+  },
+  // Same coordinates on purpose: only spiderfying tells them apart.
+  {
+    id: extraEstablishmentId(8),
+    name: "Comedor Barrio Cano A",
+    latitude: -32.8908,
+    longitude: -68.8272,
+    has_data: true,
+    severity: "high",
+    dominant_status: "underweight",
+  },
+  {
+    id: extraEstablishmentId(9),
+    name: "Comedor Barrio Cano B",
+    latitude: -32.8908,
+    longitude: -68.8272,
+    has_data: true,
+    severity: "critical",
+    dominant_status: "severely_wasted",
+  },
+  // Loaded before geocoding existed: backfilled with (0, 0).
+  {
+    id: extraEstablishmentId(10),
+    name: "Comedor sin ubicación",
+    latitude: 0,
+    longitude: 0,
+    has_data: true,
+    severity: null,
+    dominant_status: "normal",
+  },
+];
+
+export const DEFAULT_ESTABLISHMENTS_MAP_RESPONSE: EstablishmentMapResponse = {
+  establishments: MOCK_ESTABLISHMENT_MAP_ITEMS,
+};
 
 // --- Establishment dashboard ---
 
@@ -200,6 +320,212 @@ export const DEFAULT_ESTABLISHMENT_SUBJECTS_RESPONSE: PaginatedEstablishmentSubj
 export const EMPTY_ESTABLISHMENT_SUBJECTS_RESPONSE: PaginatedEstablishmentSubjectsResponse =
   { items: [], total: 0, page: 1, page_size: 20, total_pages: 0 };
 
+// --- Establishment stock ---
+
+export const DEFAULT_ESTABLISHMENT_STOCK_RESPONSE: PaginatedFoodStockResponse =
+  {
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        category: MOCK_FOOD_CATEGORIES[0],
+        unit: "kilogramos",
+        quantity: "25.500",
+        updated_at: "2026-09-10T14:00:00Z",
+      },
+      {
+        food: {
+          id: "d1000000-0000-0000-0000-000000000002",
+          name: "Leche en polvo",
+        },
+        category: MOCK_FOOD_CATEGORIES[2],
+        unit: "kilogramos",
+        quantity: "8.000",
+        updated_at: "2026-09-12T09:30:00Z",
+      },
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000003", name: "Aceite" },
+        category: MOCK_FOOD_CATEGORIES[4],
+        unit: "litros",
+        quantity: "12.000",
+        updated_at: "2026-09-08T11:15:00Z",
+      },
+    ],
+    total: 3,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+  };
+
+// --- Food movements ---
+
+const MOVEMENT_IDS = {
+  intake: "a1000000-0000-0000-0000-000000000001",
+  outflow: "a1000000-0000-0000-0000-000000000002",
+  intakeNoComments: "a1000000-0000-0000-0000-000000000003",
+};
+
+export const RESPONSIBLE = {
+  id: "f1000000-0000-0000-0000-000000000001",
+  name: "Juan",
+  last_name: "Gomez",
+};
+
+/**
+ * Deliberately NOT in `occurred_at` order in the source, so a test asserting
+ * the newest-first order is asserting something. The handler sorts.
+ */
+export const DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE: PaginatedFoodMovementsResponse =
+  {
+    items: [
+      {
+        id: MOVEMENT_IDS.outflow,
+        direction: "out",
+        occurred_at: "2026-09-12T13:00:00Z",
+        category: "other",
+        responsible: RESPONSIBLE,
+        food_count: 1,
+        origin_type: null,
+        is_recurring: null,
+      },
+      {
+        id: MOVEMENT_IDS.intake,
+        direction: "in",
+        occurred_at: "2026-09-14T10:00:00Z",
+        category: null,
+        responsible: RESPONSIBLE,
+        food_count: 2,
+        origin_type: "municipal_government",
+        is_recurring: true,
+      },
+      {
+        id: MOVEMENT_IDS.intakeNoComments,
+        direction: "in",
+        occurred_at: "2026-09-08T09:00:00Z",
+        category: null,
+        responsible: { ...RESPONSIBLE, name: "Ana", last_name: "Diaz" },
+        food_count: 1,
+        origin_type: "foundation",
+        is_recurring: false,
+      },
+    ],
+    total: 3,
+    page: 1,
+    page_size: 20,
+    total_pages: 1,
+  };
+
+/**
+ * Keyed by movement id — a row's `id` resolves straight to its detail.
+ * The outflow carries two lines of the SAME food against `food_count: 1`,
+ * which is exactly the case where labelling `food_count` as "items" lies.
+ */
+/**
+ * A third comedor whose only job is to overflow one page: `PAGE_SIZE` is 20,
+ * so 25 movements make the paginator appear and give page 2 five rows. Dated
+ * across August, all older than the three handcrafted September ones, and
+ * none of them carries the foods those use — keeping them out of every other
+ * fixture's way.
+ */
+const PAGED_MOVEMENT_COUNT = 25;
+
+export const PAGED_FOOD_MOVEMENTS: FoodMovementListItem[] = Array.from(
+  { length: PAGED_MOVEMENT_COUNT },
+  (_, index): FoodMovementListItem => {
+    const base = {
+      id: `a2000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
+      occurred_at: `2026-08-${String(index + 1).padStart(2, "0")}T12:00:00Z`,
+      responsible: RESPONSIBLE,
+      food_count: 1,
+    };
+    return index % 2 === 0
+      ? {
+          ...base,
+          direction: "in",
+          category: null,
+          origin_type: "other",
+          is_recurring: false,
+        }
+      : {
+          ...base,
+          direction: "out",
+          category: "kitchen",
+          origin_type: null,
+          is_recurring: null,
+        };
+  },
+);
+
+export const MOCK_FOOD_MOVEMENT_DETAILS: Record<string, FoodMovementDetail> = {
+  [MOVEMENT_IDS.intake]: {
+    id: MOVEMENT_IDS.intake,
+    direction: "in",
+    occurred_at: "2026-09-14T10:00:00Z",
+    category: null,
+    source: "photo",
+    origin_type: "municipal_government",
+    is_recurring: true,
+    comments:
+      "Donación del municipio, entregada en dos camionetas por la mañana; falta confirmar el remito del segundo envío",
+    responsible: RESPONSIBLE,
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        unit: "kilogramos",
+        quantity: "10.000",
+      },
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000003", name: "Aceite" },
+        unit: "litros",
+        quantity: "4.500",
+      },
+    ],
+  },
+  [MOVEMENT_IDS.outflow]: {
+    id: MOVEMENT_IDS.outflow,
+    direction: "out",
+    occurred_at: "2026-09-12T13:00:00Z",
+    category: "other",
+    source: "manual",
+    origin_type: null,
+    is_recurring: null,
+    comments: "Almuerzo",
+    responsible: RESPONSIBLE,
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        unit: "kilogramos",
+        quantity: "2.500",
+      },
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000001", name: "Arroz" },
+        unit: "kilogramos",
+        quantity: "1.250",
+      },
+    ],
+  },
+  [MOVEMENT_IDS.intakeNoComments]: {
+    id: MOVEMENT_IDS.intakeNoComments,
+    direction: "in",
+    occurred_at: "2026-09-08T09:00:00Z",
+    category: null,
+    source: "manual",
+    origin_type: "foundation",
+    is_recurring: false,
+    comments: null,
+    responsible: { ...RESPONSIBLE, name: "Ana", last_name: "Diaz" },
+    items: [
+      {
+        food: {
+          id: "d1000000-0000-0000-0000-000000000002",
+          name: "Leche en polvo",
+        },
+        unit: "kilogramos",
+        quantity: "6.000",
+      },
+    ],
+  },
+};
+
 export const DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE: PaginatedEstablishmentFieldWorkersResponse =
   {
     items: [
@@ -230,3 +556,76 @@ export const DEFAULT_ESTABLISHMENT_FIELD_WORKERS_RESPONSE: PaginatedEstablishmen
     page_size: 20,
     total_pages: 1,
   };
+
+/** Every paged movement resolves to a one-line detail, so the comedor that
+ *  exists to test paging is still clickable in the dev preview. */
+for (const movement of PAGED_FOOD_MOVEMENTS) {
+  MOCK_FOOD_MOVEMENT_DETAILS[movement.id] = {
+    ...movement,
+    source: "manual",
+    comments: null,
+    items: [
+      {
+        food: { id: "d1000000-0000-0000-0000-000000000004", name: "Arvejas" },
+        unit: "kilogramos",
+        quantity: "3.000",
+      },
+    ],
+  };
+}
+
+const baseDetails = structuredClone(MOCK_FOOD_MOVEMENT_DETAILS);
+const stockByEstablishment = new Map<
+  string,
+  PaginatedFoodStockResponse["items"]
+>();
+const movementsByEstablishment = new Map<string, FoodMovementListItem[]>();
+const createdById = new Map<string, CreatedFoodMovement>();
+
+export function resetMovementFixture() {
+  stockByEstablishment.clear();
+  movementsByEstablishment.clear();
+  createdById.clear();
+  for (const key of Object.keys(MOCK_FOOD_MOVEMENT_DETAILS))
+    delete MOCK_FOOD_MOVEMENT_DETAILS[key];
+  Object.assign(MOCK_FOOD_MOVEMENT_DETAILS, structuredClone(baseDetails));
+}
+
+export function currentStock(establishmentId: string) {
+  if (!stockByEstablishment.has(establishmentId)) {
+    stockByEstablishment.set(
+      establishmentId,
+      structuredClone(
+        establishmentId === MOCK_ESTABLISHMENTS[1].id
+          ? []
+          : DEFAULT_ESTABLISHMENT_STOCK_RESPONSE.items,
+      ),
+    );
+  }
+  return stockByEstablishment.get(establishmentId)!;
+}
+
+export function setMovementStock(
+  establishmentId: string,
+  stock: PaginatedFoodStockResponse["items"],
+) {
+  stockByEstablishment.set(establishmentId, structuredClone(stock));
+}
+
+export function currentMovements(establishmentId: string) {
+  if (!movementsByEstablishment.has(establishmentId)) {
+    const initial =
+      establishmentId === MOCK_ESTABLISHMENTS[1].id
+        ? []
+        : establishmentId === MOCK_ESTABLISHMENTS[2].id
+          ? PAGED_FOOD_MOVEMENTS
+          : DEFAULT_ESTABLISHMENT_FOOD_MOVEMENTS_RESPONSE.items;
+    movementsByEstablishment.set(establishmentId, structuredClone(initial));
+  }
+  return movementsByEstablishment.get(establishmentId)!;
+}
+
+export const createdMovement = (id: string) => createdById.get(id);
+export const storeCreatedMovement = (movement: CreatedFoodMovement) => {
+  createdById.set(movement.id, movement);
+};

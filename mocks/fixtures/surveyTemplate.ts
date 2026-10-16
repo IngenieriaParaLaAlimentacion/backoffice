@@ -23,6 +23,7 @@ export const FIES_TEMPLATE: SurveyTemplateResponse = {
     "Escala de Experiencia de Inseguridad Alimentaria (FIES) - metodología FAO.",
   // The API ships the template pre-set to anonymous; the author can change it.
   response_target: "anonymous",
+  requires_response_number: true,
   questions: FIES_QUESTIONS.map((text, position) => ({
     text,
     response_type: "single_choice",
@@ -38,6 +39,7 @@ export const DEFAULT_SURVEY_DETAIL: SurveyResponse = {
   name: "FIES 2026 - Línea de base",
   description: "Relevamiento de inseguridad alimentaria.",
   response_target: "anonymous",
+  requires_response_number: true,
   is_active: true,
   created_by_id: "b1c2d3e4-0000-0000-0000-000000000001",
   response_count: 0,

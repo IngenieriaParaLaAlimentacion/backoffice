@@ -15,13 +15,30 @@ const eslintConfig = defineConfig([
       "react-hooks/incompatible-library": "off",
     },
   },
-  globalIgnores([
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    "public/",
-  ]),
+  {
+    // Leaflet stays behind the `pins -> onPinClick` contract of the establishments
+    // map (docs/adr/0003-establishments-map-libraries.md): only its `leaflet/`
+    // folder may import it, so swapping the library is a one-folder rewrite.
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: "^(leaflet|react-leaflet)($|/|\\.)",
+              message:
+                "Import Leaflet only from a `map/leaflet/` folder (docs/adr/0003).",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["**/map/leaflet/**"],
+    rules: { "no-restricted-imports": "off" },
+  },
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "public/"]),
 ]);
 
 export default eslintConfig;

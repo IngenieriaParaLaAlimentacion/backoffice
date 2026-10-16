@@ -11,6 +11,8 @@ import {
   makeApproveEstablishmentsHandler,
   makeListEstablishmentRequestsHandler,
   makeApproveFieldWorkerHandler,
+  makeChangeUserRoleHandler,
+  makeGetUserHandler,
   makeListPendingEstablishmentAccessHandler,
   makeListUsersHandler,
   makeRejectEstablishmentRequestHandler,
@@ -19,11 +21,21 @@ import {
 } from "@/mocks/handlers/admin";
 import {
   makeCreateEstablishmentHandler,
+  makeCreateEstablishmentRequestHandler,
   makeEstablishmentDashboardHandler,
   makeEstablishmentFieldWorkersHandler,
+  makeEstablishmentFoodMovementDetailHandler,
+  makeEstablishmentFoodMovementsHandler,
+  makeEstablishmentStockHandler,
   makeEstablishmentSubjectsHandler,
+  makeEstablishmentsMapHandler,
+  makeExportEstablishmentStockHandler,
   makeListEstablishmentsHandler,
 } from "@/mocks/handlers/establishment";
+import {
+  makeListFoodCategoriesHandler,
+  makeListFoodsHandler,
+} from "@/mocks/handlers/foodCatalog";
 import {
   makeCreateSurveyHandler,
   makeDuplicateSurveyHandler,
@@ -40,6 +52,10 @@ import {
 } from "@/mocks/handlers/surveyResponse";
 import { makeExportSubjectsHandler } from "@/mocks/handlers/csvExport";
 import { makeMeHandler } from "@/mocks/handlers/user";
+import {
+  makeFoodIntakeHandler,
+  makeFoodOutflowHandler,
+} from "@/mocks/handlers/foodMovement";
 
 export const handlers = [
   makeLoginHandler(),
@@ -49,6 +65,8 @@ export const handlers = [
   makeVerifyEmailHandler(),
   makeLogoutHandler(),
   makeListUsersHandler(),
+  makeGetUserHandler(),
+  makeChangeUserRoleHandler(),
   makeListPendingEstablishmentAccessHandler(),
   makeApproveFieldWorkerHandler(),
   makeRejectFieldWorkerHandler(),
@@ -60,8 +78,18 @@ export const handlers = [
   makeEstablishmentDashboardHandler(),
   makeEstablishmentSubjectsHandler(),
   makeEstablishmentFieldWorkersHandler(),
+  makeEstablishmentFoodMovementsHandler(),
+  makeEstablishmentFoodMovementDetailHandler(),
+  makeEstablishmentStockHandler(),
+  makeFoodIntakeHandler(),
+  makeFoodOutflowHandler(),
+  makeExportEstablishmentStockHandler(),
+  makeListFoodCategoriesHandler(),
+  makeListFoodsHandler(),
   makeListEstablishmentsHandler(),
+  makeEstablishmentsMapHandler(),
   makeCreateEstablishmentHandler(),
+  makeCreateEstablishmentRequestHandler(),
   makeFiesTemplateHandler(),
   makeDuplicateSurveyHandler(),
   makeUpdateSurveyHandler(),

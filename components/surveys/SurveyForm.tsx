@@ -28,7 +28,9 @@ type SurveyFormProps = {
   onSubmit: (values: SurveyFormInput) => Promise<void>;
   onCancel?: () => void;
   submitLabel?: string;
-  readOnly?: boolean;
+  /** The survey already has recorded responses: target and response-number
+   * requiredness are locked, and questions keep their narrower edit rules. */
+  hasResponses?: boolean;
 };
 
 export default function SurveyForm({
@@ -36,7 +38,7 @@ export default function SurveyForm({
   onSubmit,
   onCancel,
   submitLabel = SURVEY_FORM.save,
-  readOnly,
+  hasResponses,
 }: SurveyFormProps) {
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -108,7 +110,6 @@ export default function SurveyForm({
         <Input
           {...register("name")}
           placeholder={SURVEY_FORM.namePlaceholder}
-          disabled={readOnly}
         />
         {errors.name?.message && (
           <p className="text-xs text-destructive">{errors.name.message}</p>
@@ -123,7 +124,6 @@ export default function SurveyForm({
         <textarea
           {...register("description")}
           placeholder={SURVEY_FORM.descriptionPlaceholder}
-          disabled={readOnly}
           rows={3}
           className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
         />
@@ -147,12 +147,13 @@ export default function SurveyForm({
             <label
               key={target}
               className="flex items-start gap-2 text-sm has-disabled:opacity-50"
+              title={hasResponses ? SURVEY_FORM.targetLockedReason : undefined}
             >
               <input
                 type="radio"
                 value={target}
                 {...register("response_target")}
-                disabled={readOnly}
+                disabled={hasResponses}
                 className="mt-0.5 h-4 w-4 accent-primary"
               />
               <span className="flex flex-col">
@@ -170,6 +171,28 @@ export default function SurveyForm({
           </p>
         )}
       </div>
+
+      <label
+        className="flex items-start gap-2 text-sm has-disabled:opacity-50"
+        title={
+          hasResponses
+            ? SURVEY_FORM.responseNumberRequiredLockedReason
+            : undefined
+        }
+      >
+        <input
+          type="checkbox"
+          {...register("requires_response_number")}
+          disabled={hasResponses}
+          className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+        />
+        <span className="flex flex-col">
+          <span>{SURVEY_FORM.responseNumberRequiredLabel}</span>
+          <span className="text-xs text-muted-foreground">
+            {SURVEY_FORM.responseNumberRequiredDescription}
+          </span>
+        </span>
+      </label>
 
       <Separator />
 
@@ -202,55 +225,50 @@ export default function SurveyForm({
             onMoveUp={() => move(index, index - 1)}
             onMoveDown={() => move(index, index + 1)}
             onRemove={() => remove(index)}
-            readOnly={readOnly}
+            hasResponses={hasResponses}
+            originalIsRequired={field.is_required}
           />
         ))}
       </div>
 
-      {!readOnly && (
-        <Button
-          type="button"
-          variant="outline"
-          className="w-fit"
-          disabled={fields.length >= MAX_QUESTIONS}
-          onClick={() =>
-            append({
-              text: "",
-              response_type: "text",
-              is_required: false,
-              options: [],
-            })
-          }
-        >
-          <Plus size={16} />
-          {SURVEY_FORM.addQuestion}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-fit"
+        disabled={fields.length >= MAX_QUESTIONS}
+        onClick={() =>
+          append({
+            text: "",
+            response_type: "text",
+            is_required: false,
+            options: [],
+          })
+        }
+      >
+        <Plus size={16} />
+        {SURVEY_FORM.addQuestion}
+      </Button>
+
+      <Separator />
+
+      {/* --- Submit / Cancel --- */}
+      <div className="flex gap-3">
+        <Button type="submit" size="lg" disabled={isSubmitting}>
+          {isSubmitting ? SURVEY_FORM.saving : submitLabel}
         </Button>
-      )}
 
-      {!readOnly && (
-        <>
-          <Separator />
-
-          {/* --- Submit / Cancel --- */}
-          <div className="flex gap-3">
-            <Button type="submit" size="lg" disabled={isSubmitting}>
-              {isSubmitting ? SURVEY_FORM.saving : submitLabel}
-            </Button>
-
-            {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                disabled={isSubmitting}
-                onClick={onCancel}
-              >
-                {SURVEY_FORM.cancel}
-              </Button>
-            )}
-          </div>
-        </>
-      )}
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            disabled={isSubmitting}
+            onClick={onCancel}
+          >
+            {SURVEY_FORM.cancel}
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

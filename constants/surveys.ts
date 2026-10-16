@@ -49,6 +49,9 @@ export const SURVEY_FORM = {
   descriptionLabel: "Descripción",
   descriptionPlaceholder: "Descripción (opcional)",
   targetLabel: "Destino de las respuestas",
+  responseNumberRequiredLabel: "Requerir número de respuesta",
+  responseNumberRequiredDescription:
+    "Si se desactiva, el campo seguirá disponible como opcional en la aplicación móvil.",
   questionsLabel: "Preguntas",
   addQuestion: "Agregar pregunta",
   addOption: "Agregar opción",
@@ -59,8 +62,23 @@ export const SURVEY_FORM = {
   save: "Guardar",
   saving: "Guardando...",
   cancel: "Cancelar",
+  deleteQuestionLabel: "Eliminar",
   lockedNotice:
-    "Esta encuesta ya tiene respuestas registradas: no se pueden modificar las preguntas ni el destino.",
+    "Esta encuesta ya tiene respuestas registradas: no se puede cambiar el destino ni la obligatoriedad del número de respuesta, eliminar preguntas u opciones existentes, cambiar el tipo de una pregunta o volverla obligatoria, ni agregar preguntas nuevas obligatorias.",
+  targetLockedReason:
+    "El destino no se puede cambiar: la encuesta ya tiene respuestas registradas.",
+  responseNumberRequiredLockedReason:
+    "La obligatoriedad del número de respuesta no se puede cambiar: la encuesta ya tiene respuestas registradas.",
+  questionDeleteLockedReason:
+    "No se puede eliminar: la encuesta ya tiene respuestas registradas.",
+  questionTypeLockedReason:
+    "El tipo de respuesta no se puede cambiar: la encuesta ya tiene respuestas registradas.",
+  questionRequiredLockedReason:
+    "No se puede volver obligatoria: la encuesta ya tiene respuestas registradas.",
+  newQuestionRequiredLockedReason:
+    "Una pregunta nueva no puede ser obligatoria: la encuesta ya tiene respuestas registradas.",
+  optionDeleteLockedReason:
+    "No se puede eliminar: la encuesta ya tiene respuestas registradas.",
   nameConflict: "Ya existe una encuesta con ese nombre",
   // The backend's structural 400 names no field, and the zod schema mirrors
   // those same rules — reaching this means the form and the API disagree.
@@ -69,10 +87,12 @@ export const SURVEY_FORM = {
   saveError: "No se pudo guardar la encuesta.",
   loadError: "Error al cargar la encuesta",
   fiesTemplateError: "Error al cargar la plantilla FIES",
-  // Race condition: someone answered the survey while the form was open, so the
-  // API rejects a change the disabled-field rule assumed could not be sent.
+  // Race condition: the survey's lock state changed while the form was open
+  // (it got its first response, or someone else's edit touched a question) —
+  // the backend reports every trigger as the same 409, so this covers all of
+  // them rather than naming just one.
   lockedConflict:
-    "La encuesta recibió respuestas mientras la editabas; ya no se puede cambiar su destino. Recargá la página para ver el estado actual.",
+    "La encuesta recibió respuestas mientras la editabas y este cambio ya no está permitido. Recargá la página para ver el estado actual.",
   activate: "Activar",
   activateTitle: "Habilita la encuesta para que puedan responderla",
   activateConfirm: "¿Activar esta encuesta? Quedará disponible para responder.",
@@ -105,7 +125,6 @@ export const SURVEYS_PAGE = {
   actions: "Acciones",
   actionsMenuLabel: "Más acciones",
   edit: "Editar",
-  editDisabledReason: "No se puede editar: ya tiene respuestas registradas.",
   duplicate: "Duplicar",
   loadError: "Error al cargar encuestas",
   duplicateError: "No se pudo duplicar la encuesta",
@@ -132,6 +151,7 @@ export const RESPONSES_PAGE = {
   establishment: "Establecimiento",
   subject: "Sujeto",
   targetPrefix: "Destino:",
+  responseNumber: "N.º de respuesta",
   date: "Fecha de relevamiento",
   score: "Score FIES",
   export: "Exportar",
@@ -143,10 +163,14 @@ export const RESPONSES_PAGE = {
     city: "Ciudad",
     province: "Provincia",
     sort: "Ordenar por",
+    responseNumber: "N.º exacto",
+    responseNumberFrom: "N.º desde",
+    responseNumberTo: "N.º hasta",
   },
   columns: {
     entity: "Entidad",
     respondent: "Completado por",
+    responseNumber: "N.º",
     city: "Ciudad",
     province: "Provincia",
     date: "Fecha",
@@ -161,6 +185,10 @@ export const RESPONSES_PAGE = {
   },
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
   loadError: "Error al cargar las respuestas",
+  errors: {
+    invertedNumberRange:
+      "El número desde no puede ser mayor que el número hasta.",
+  },
   detailLoadError: "Error al cargar el detalle de la respuesta",
   detailTitle: "Detalle de respuesta",
   questionAnswers: "Respuestas",

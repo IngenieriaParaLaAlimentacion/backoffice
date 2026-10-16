@@ -8,8 +8,8 @@ import { listEstablishmentRequestsAction } from "@/services/establishmentRequest
 import {
   EstablishmentApprovalResponse,
   EstablishmentRequestAdminView,
-  EstablishmentRequestSortOrder,
 } from "@/types/admin";
+import { EstablishmentRequestSortOrder } from "@/types/establishment";
 import { formatTimestampDate, EMPTY_VALUE } from "@/lib/format";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

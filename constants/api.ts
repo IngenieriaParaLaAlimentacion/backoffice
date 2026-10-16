@@ -36,6 +36,8 @@ export const RESEND_INVITE_ENDPOINT = (userId: string) =>
   `/api/v1/admin/users/${userId}/resend-invite`;
 export const GET_USER_ENDPOINT = (userId: string) =>
   `/api/v1/admin/users/${userId}`;
+export const CHANGE_USER_ROLE_ENDPOINT = (userId: string) =>
+  `/api/v1/admin/users/${userId}/role`;
 export const LIST_ESTABLISHMENT_REQUESTS_ENDPOINT =
   "/api/v1/admin/establishment-requests";
 export const APPROVE_ESTABLISHMENT_REQUEST_ENDPOINT = (requestId: string) =>
@@ -47,6 +49,7 @@ export const REJECT_ESTABLISHMENT_REQUEST_ENDPOINT = (requestId: string) =>
 
 export const ESTABLISHMENTS_ENDPOINT = "/api/v1/establishments";
 export const ESTABLISHMENTS_EXPORT_ENDPOINT = "/api/v1/establishments/export";
+export const ESTABLISHMENTS_MAP_ENDPOINT = "/api/v1/establishments/map";
 export const ESTABLISHMENT_DASHBOARD_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/dashboard`;
 export const ESTABLISHMENT_SUBJECTS_ENDPOINT = (establishmentId: string) =>
@@ -56,6 +59,26 @@ export const ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT = (
 ) => `/api/v1/establishments/${establishmentId}/subjects/export`;
 export const ESTABLISHMENT_FIELD_WORKERS_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/field-workers`;
+export const ESTABLISHMENT_STOCK_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}/stock`;
+export const ESTABLISHMENT_STOCK_EXPORT_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}/stock/export`;
+export const ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT = (
+  establishmentId: string,
+) => `/api/v1/establishments/${establishmentId}/food-movements`;
+export const ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT = (
+  establishmentId: string,
+  movementId: string,
+) => `/api/v1/establishments/${establishmentId}/food-movements/${movementId}`;
+export const CREATE_ESTABLISHMENT_REQUEST_ENDPOINT =
+  "/api/v1/establishments/requests";
+
+// --- Food Catalog Endpoints ---
+
+export const FOOD_CATEGORIES_ENDPOINT = "/api/v1/food-catalog/categories";
+export const FOODS_ENDPOINT = "/api/v1/food-catalog/foods";
+export const FOOD_INTAKES_ENDPOINT = "/api/v1/food-intakes";
+export const FOOD_OUTFLOWS_ENDPOINT = "/api/v1/food-outflows";
 
 // --- Subjects Endpoints ---
 

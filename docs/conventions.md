@@ -53,16 +53,17 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   component.
 - **Routing APIs**: `next/navigation` (`useRouter`, `useParams`, etc.), never the Pages
   Router's `next/router`.
-- **Fonts** load via `next/font/google` (`app/layout.tsx`), not a `<link>` tag or CSS
-  `@import` — keep new fonts on that path for the same reason (no layout shift, no
-  render-blocking request).
+- **Fonts** load from the licensed files in `app/fonts/` via `next/font/local`
+  (`app/layout.tsx`), not a `<link>` tag or CSS `@import`. This avoids network
+  requests during builds and keeps font loading free of layout shifts and
+  render-blocking requests.
 - **Images** go through `next/image`, not a bare `<img>`. Icons and the brand mark are
   inline SVG components instead (`components/BrandMark.tsx`, `lucide-react`) — they
   recolor from tokens and cost no request.
 - **Env vars**: only `NEXT_PUBLIC_*` names are exposed to the client (`API_BASE_URL`,
-  `ENABLE_MSW`, the Google Maps key); anything server-only (e.g. `PORT` for
-  docker-compose) stays unprefixed. Don't prefix a secret with `NEXT_PUBLIC_` to "make it
-  work" client-side.
+  `ENABLE_MSW`, `MAP_TILES`, the Google Maps key); anything server-only (e.g. `PORT` for
+  docker-compose, `INTERNAL_SERVICE_TOKEN` and `CLIENT_IP_HEADER` for `proxy.ts`) stays
+  unprefixed. Don't prefix a secret with `NEXT_PUBLIC_` to "make it work" client-side.
 - **No `loading.tsx`/`error.tsx` route files.** Because screens are Client Components,
   loading/error states are modeled explicitly in each hook's return value (`isLoading`,
   `error`, `notFound`, `forbidden` — see `useEstablishmentDashboard`) and handled in the

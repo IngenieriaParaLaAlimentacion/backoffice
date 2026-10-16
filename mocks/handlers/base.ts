@@ -2,7 +2,7 @@ import { http, HttpResponse, PathParams } from "msw";
 
 export type BaseHandlerOptions<T> = {
   method: "get" | "post" | "put" | "delete" | "patch";
-  status?: 400 | 401 | 403 | 407 | 500 | 200 | 201 | 204;
+  status?: 400 | 401 | 403 | 404 | 422 | 407 | 500 | 200 | 201 | 204;
   data?: Partial<T>;
   error?: { type?: string; title?: string; detail: string };
   onRequest?: (request: Request) => void | Promise<void>;

@@ -1,13 +1,18 @@
 import {
+  EstablishmentRequestSortOrder,
+  EstablishmentSortOrder,
   EstablishmentSubjectSortOrder,
+  FoodMovementDirection,
+  FoodOutflowCategory,
+  FoodMovementSource,
+  FoodIntakeOriginType,
+  FoodStockSortOrder,
+  FoodStockUnit,
   RelationStatus,
   UserStatus,
 } from "@/types/establishment";
-import {
-  EstablishmentRequestSortOrder,
-  EstablishmentSortOrder,
-} from "@/types/admin";
 import { Tone } from "@/constants/theme";
+import { PinStatus } from "@/lib/establishmentPins";
 
 export const PAGE_SIZE = 20;
 export const FILTER_DEBOUNCE_MS = 300;
@@ -146,9 +151,19 @@ export const ESTABLISHMENT_TABS = {
   requests: "Solicitudes",
 } as const;
 
-// Shared by the create-establishment form and the request review form —
-// address/city/province are identical in both contexts, only the "name"
-// placeholder differs (see CREATE_ESTABLISHMENT_PAGE / ESTABLISHMENT_REQUEST_REVIEW_PANEL).
+// Tabs inside a single establishment's ficha (app/dashboard/establishments/[id]/),
+// not to be confused with ESTABLISHMENT_TABS above (the establishments-wide nav).
+export const ESTABLISHMENT_DETAIL_TABS = {
+  subjects: "Sujetos",
+  fieldWorkers: "Relevadores",
+  stock: "Stock",
+} as const;
+
+// Shared by the create-establishment form, the request review form and the
+// propose-establishment form — address/city/province are identical in all
+// three contexts, only the "name" placeholder differs (see
+// CREATE_ESTABLISHMENT_PAGE / ESTABLISHMENT_REQUEST_REVIEW_PANEL /
+// PROPOSE_ESTABLISHMENT_PAGE).
 export const ESTABLISHMENT_FORM_FIELDS = {
   name: { label: "Nombre" },
   address: { label: "Dirección", placeholder: "Ej: Av. Corrientes 1234, CABA" },
@@ -174,6 +189,7 @@ export const ESTABLISHMENTS_LIST_PAGE = {
   title: "Establecimientos",
   subtitle: "Establecimientos registrados en el sistema",
   createButton: "Nuevo establecimiento",
+  proposeButton: "Proponer establecimiento",
   searchLabel: "Buscar",
   searchPlaceholder: "Nombre o dirección",
   sortLabel: "Ordenar por",
@@ -182,13 +198,283 @@ export const ESTABLISHMENTS_LIST_PAGE = {
     province: "Provincia",
   },
   noEstablishments: "No hay establecimientos",
+  viewToggle: {
+    label: "Vista",
+    list: "Lista",
+    map: "Mapa",
+  },
   loadError: "Error al cargar establecimientos",
+  proposeSuccess: "Propuesta enviada — un administrador la revisará.",
+  closeAria: "Cerrar",
   columns: {
     name: "Nombre",
     address: "Dirección",
     city: "Ciudad",
     province: "Provincia",
   },
+} as const;
+
+/**
+ * Which tone each pin status reads as; the colors are in `constants/theme.ts`.
+ * The three severities mirror `SEVERITY_TONE` (`components/AlertBadge.tsx`),
+ * which a constants file can't import without inverting the layers — a test
+ * pins the two together instead.
+ */
+export const PIN_STATUS_TONE: Record<PinStatus, Tone> = {
+  critical: "critical",
+  high: "danger",
+  medium: "warning",
+  normal: "success",
+  no_data: "neutral",
+};
+
+/**
+ * What a pin says besides its color, so severity survives color blindness:
+ * one mark per level of risk, a check for healthy, a question mark for
+ * "not measured".
+ */
+export const PIN_STATUS_SYMBOL: Record<PinStatus, string> = {
+  critical: "!!!",
+  high: "!!",
+  medium: "!",
+  normal: "✓",
+  no_data: "?",
+};
+
+export const PIN_STATUS_LABELS: Record<PinStatus, string> = {
+  critical: "Crítico",
+  high: "Alto",
+  medium: "Medio",
+  normal: "Normal",
+  no_data: "Sin datos",
+};
+
+export const ESTABLISHMENTS_MAP_PAGE = {
+  loadError: "Error al cargar el mapa de establecimientos",
+  retry: "Reintentar",
+  forbidden: "Esta vista está disponible para administradores y analistas.",
+  noEstablishments: "No hay establecimientos para mostrar en el mapa",
+  mapAria: "Mapa de establecimientos",
+  legendTitle: "Estado nutricional",
+  pinAria: (name: string, status: PinStatus) =>
+    `${name}: ${PIN_STATUS_LABELS[status]}`,
+  clusterAria: (count: number) => `${count} establecimientos agrupados`,
+  withoutLocation: (count: number) =>
+    count === 1
+      ? "1 establecimiento no tiene ubicación cargada y no se muestra en el mapa."
+      : `${count} establecimientos no tienen ubicación cargada y no se muestran en el mapa.`,
+  seeInList: "Ver en la lista",
+} as const;
+
+export const STOCK_SORT_OPTIONS: {
+  value: FoodStockSortOrder;
+  label: string;
+}[] = [
+  { value: "name_asc", label: "Nombre A → Z" },
+  { value: "name_desc", label: "Nombre Z → A" },
+  { value: "quantity_desc", label: "Cantidad (mayor a menor)" },
+  { value: "quantity_asc", label: "Cantidad (menor a mayor)" },
+  { value: "updated_at_desc", label: "Última actualización" },
+];
+
+export const STOCK_UNIT_LABELS: Record<FoodStockUnit, string> = {
+  unidades: "Unidades",
+  kilogramos: "Kilogramos",
+  litros: "Litros",
+};
+
+export const FOOD_OUTFLOW_CATEGORY_OPTIONS: {
+  value: FoodOutflowCategory;
+  label: string;
+}[] = [
+  { value: "family_delivery", label: "Entrega a familias" },
+  { value: "kitchen", label: "Cocina" },
+  { value: "discard", label: "Descarte" },
+  { value: "other", label: "Otro" },
+];
+
+export const FOOD_OUTFLOW_CATEGORY_LABELS: Record<FoodOutflowCategory, string> =
+  {
+    family_delivery: "Entrega a familias",
+    kitchen: "Cocina",
+    discard: "Descarte",
+    other: "Otro",
+  };
+
+/** Copy shared by every screen that opens the movement form. */
+const FOOD_MOVEMENT_ENTRY = {
+  createMovement: "Registrar movimiento",
+  replayed:
+    "El movimiento ya estaba registrado; mostramos el registro guardado.",
+  viewSaved: "Ver movimiento",
+} as const;
+
+export const ESTABLISHMENT_STOCK_PAGE = {
+  subtitle: (total: number) =>
+    `${total} ${total === 1 ? "alimento" : "alimentos"} en stock`,
+  viewHistory: "Historial de Movimientos",
+  ...FOOD_MOVEMENT_ENTRY,
+  saved: "Movimiento registrado.",
+  categoryLabel: "Categoría",
+  allCategories: "Todas las categorías",
+  sortLabel: "Ordenar por",
+  noStock: "No hay alimentos con stock disponible en este establecimiento",
+  noResults: "Ningún alimento coincide con los filtros aplicados",
+  loadError: "Error al cargar el stock",
+  columns: {
+    food: "Alimento",
+    category: "Categoría",
+    unit: "Unidad",
+    quantity: "Cantidad",
+    updatedAt: "Última actualización",
+  },
+} as const;
+
+export const MOVEMENT_DIRECTION_LABELS: Record<FoodMovementDirection, string> =
+  {
+    in: "Ingreso",
+    out: "Egreso",
+  };
+
+/** Only intakes carry a source; outflows are always loaded by hand. */
+export const MOVEMENT_SOURCE_LABELS: Record<FoodMovementSource, string> = {
+  manual: "Carga manual",
+  photo: "Foto",
+};
+export const FOOD_INTAKE_ORIGIN_LABELS: Record<FoodIntakeOriginType, string> = {
+  national_government: "Gobierno nacional",
+  provincial_government: "Gobierno provincial",
+  municipal_government: "Gobierno municipal",
+  private_company: "Empresa privada",
+  foundation: "Fundación",
+  social_organization: "Organización social",
+  church: "Iglesia",
+  other: "Otro",
+};
+export const FOOD_INTAKE_ORIGIN_OPTIONS = Object.entries(
+  FOOD_INTAKE_ORIGIN_LABELS,
+).map(([value, label]) => ({ value: value as FoodIntakeOriginType, label }));
+export const FOOD_INTAKE_RECURRENCE_LABELS = {
+  true: "Recurrente",
+  false: "Único",
+} as const;
+export const recurrenceLabel = (value: boolean) =>
+  value
+    ? FOOD_INTAKE_RECURRENCE_LABELS.true
+    : FOOD_INTAKE_RECURRENCE_LABELS.false;
+
+/** `""` means "no filter" — the API param is simply omitted. */
+export const MOVEMENT_DIRECTION_OPTIONS: {
+  value: "" | FoodMovementDirection;
+  label: string;
+}[] = [
+  { value: "", label: "Ingresos y egresos" },
+  { value: "in", label: "Solo ingresos" },
+  { value: "out", label: "Solo egresos" },
+];
+
+export const ESTABLISHMENT_MOVEMENTS_PAGE = {
+  title: "Historial de movimientos",
+  ...FOOD_MOVEMENT_ENTRY,
+  savedChronological:
+    "Movimiento registrado. Aparece según su fecha y los filtros actuales.",
+  back: "Volver al stock",
+  subtitle: (total: number) =>
+    `${total} ${total === 1 ? "movimiento registrado" : "movimientos registrados"}`,
+  // `food_count` counts distinct foods, not lines: "3 ítems" would be a lie
+  // for a movement whose detail returns four lines of three foods.
+  foodCount: (count: number) =>
+    `${count} ${count === 1 ? "alimento" : "alimentos"}`,
+  directionLabel: "Dirección",
+  dateFrom: "Fecha desde",
+  dateTo: "Fecha hasta",
+  // The category scopes the search; only the chosen food filters the listing,
+  // because the endpoint takes `food_id` and no `category_id`. The labels say
+  // "Buscar alimento" rather than "Filtros" so that reads as intended.
+  foodSearchTitle: "Buscar alimento",
+  foodCategoryLabel: "Categoría",
+  allCategories: "Todas las categorías",
+  foodLabel: "Alimento",
+  foodPlaceholder: "Ej: Arroz",
+  noFoodResults: "Ningún alimento coincide con la búsqueda",
+  moreFoodResults: "Seguí escribiendo para afinar la búsqueda",
+  clearFood: "Quitar el filtro de alimento",
+  noMovements: "Este comedor todavía no tiene movimientos registrados",
+  noResults: "Ningún movimiento coincide con los filtros aplicados",
+  loadError: "Error al cargar el historial de movimientos",
+  invalidRange: "La fecha desde no puede ser posterior a la fecha hasta",
+  notFoundTitle: "Comedor no encontrado",
+  notFoundBody: "El comedor que buscás no existe o fue eliminado del sistema.",
+  forbiddenTitle: "No tenés permisos",
+  forbiddenBody: "No tenés acceso al historial de este comedor.",
+  backToPanel: "Volver al panel de comedores",
+  columns: {
+    date: "Fecha",
+    direction: "Dirección",
+    category: "Categoría del egreso",
+    responsible: "Responsable",
+    foods: "Alimentos",
+    origin: "Origen del alimento",
+    recurrence: "Tipo de aporte",
+  },
+  detail: {
+    title: "Detalle del movimiento",
+    responsible: "Responsable",
+    date: "Fecha",
+    direction: "Dirección",
+    category: "Categoría del egreso",
+    source: "Modo de carga",
+    origin: "Origen del alimento",
+    recurrence: "Tipo de aporte",
+    comments: "Comentarios",
+    linesTitle: "Alimentos",
+    food: "Alimento",
+    quantity: "Cantidad",
+    unit: "Unidad",
+    // A movement of another comedor answers 404, never 403.
+    notFound: "Ese movimiento no existe",
+    loadError: "Error al cargar el detalle del movimiento",
+  },
+} as const;
+
+export const FOOD_MOVEMENT_FORM = {
+  title: FOOD_MOVEMENT_ENTRY.createMovement,
+  description: "Completá los alimentos y la fecha del movimiento.",
+  date: "Fecha",
+  invalidDate: "Ingresá una fecha válida",
+  food: "Alimento",
+  quantity: "Cantidad",
+  quantityHint: "Podés usar coma o punto para los decimales.",
+  comments: "Comentarios",
+  category: "Categoría del egreso",
+  chooseCategory: "Elegí una categoría",
+  categoryRequired: "Elegí una categoría para el egreso",
+  origin: "Origen del alimento",
+  chooseOrigin: "Seleccioná el origen",
+  originRequired: "Seleccioná el origen del alimento",
+  recurrence: "Tipo de aporte",
+  chooseRecurrence: "Seleccioná el tipo de aporte",
+  recurrenceRequired: "Seleccioná si el aporte es único o recurrente",
+  donorCommentHint: "Nombre del donante o descripción",
+  addLine: "Agregar alimento",
+  removeLine: "Quitar",
+  save: "Guardar movimiento",
+  cancel: "Cancelar",
+  loadingFoods: "Buscando alimentos…",
+  noFoods: "No hay alimentos coincidentes",
+  loadMore: "Cargar más alimentos",
+  emptyStock: "No hay stock disponible para registrar un egreso.",
+  foodLoadError: "No se pudo cargar el catálogo de alimentos.",
+  stockLoadError: "No se pudo cargar el stock disponible.",
+  saveError: "No se pudo guardar el movimiento.",
+  uncertainSave:
+    "No pudimos confirmar si se guardó. Reintentá exactamente este movimiento o cerrá y consultá el historial.",
+  retrySame: "Comprobar y reintentar",
+  insufficient: (food: string) =>
+    `Stock insuficiente para ${food}. Revisá la cantidad disponible.`,
+  insufficientUnknown:
+    "Stock insuficiente. Actualizamos las cantidades disponibles; revisá las líneas.",
+  availabilityUnknown: "Estamos comprobando el stock actualizado.",
 } as const;
 
 export const ESTABLISHMENT_REQUEST_SORT_OPTIONS: {
@@ -246,4 +532,14 @@ export const CREATE_ESTABLISHMENT_PAGE = {
   namePlaceholder: "Ej: Comedor Central Norte",
   submitError: "Error al crear el establecimiento",
   submitButton: "Crear establecimiento",
+} as const;
+
+export const PROPOSE_ESTABLISHMENT_PAGE = {
+  title: "Proponer establecimiento",
+  subtitle:
+    "Como analista no tenés los permisos para crear establecimientos directamente. Completá los datos que tengas y un administrador revisará tu propuesta.",
+  back: "Volver",
+  namePlaceholder: "Ej: Comedor Central Norte",
+  submitError: "Error al enviar la propuesta",
+  submitButton: "Enviar propuesta",
 } as const;

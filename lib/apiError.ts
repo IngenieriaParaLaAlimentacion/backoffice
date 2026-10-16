@@ -63,6 +63,8 @@ export const ERROR_TYPES = {
   INVITE_ALREADY_PENDING: "/errors/admin/invite-already-pending",
   USER_ALREADY_EXISTS: "/errors/user-already-exists",
   USER_IS_NOT_PENDING: "/errors/user-is-not-pending",
+  USER_IS_NOT_ACTIVE: "/errors/user-is-not-active",
+  USER_NOT_FOUND: "/errors/user-not-found",
   EMAIL_DELIVERY_FAILED: "/errors/email-delivery-failed",
 
   SURVEY_LOCKED: "/errors/survey-locked",
@@ -70,6 +72,12 @@ export const ERROR_TYPES = {
 
   INVALID_AGE_RANGE: "/errors/invalid-age-range",
   INVALID_DATE_RANGE: "/errors/invalid-date-range",
+
+  /** Also answered for a movement that belongs to another comedor — the
+   *  backend hides that distinction on purpose, so this is never a 403. */
+  FOOD_MOVEMENT_NOT_FOUND: "/errors/food-movement-not-found",
+  INSUFFICIENT_STOCK: "/errors/insufficient-stock",
+  CONCURRENT_UPDATE: "/errors/concurrent-update",
 
   VALIDATION_FAILED: "/errors/validation-failed",
   INTERNAL_ERROR: "/errors/internal-error",
