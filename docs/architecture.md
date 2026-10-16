@@ -382,6 +382,28 @@ labelled "Buscar alimento" instead of sitting in the filter row next to Direcci�
 the dates — a category that looked like a listing filter would be a filter that does
 nothing. A test pins the behaviour.
 
+## Email verification link (`/verify-email`) and Android App Links
+
+The backend emails `<backoffice origin>/verify-email?token=…` to field workers who
+sign up in the mobile app. The same URL has two consumers: this page, and the Android
+app through App Links.
+
+- **The page sends nothing on load.** The token is single-use and mail security
+  scanners open links, so `VerifyEmailView` posts it only when the person presses the
+  button. Don't move the request into an effect.
+- **The page can't know the role.** The confirm endpoint answers 204 with no body, so
+  the copy (`VERIFY_EMAIL_PAGE` in `constants/auth.ts`) has to stay true for a field
+  worker whose account still waits for approval. A reload after success is answered
+  `verification-token-used`, which the page shows as a neutral outcome.
+- **`public/.well-known/assetlinks.json`** lets both Android packages claim this host.
+  Android fetches it when the app is installed and gives no error if it can't: the link
+  just keeps opening the browser. It must answer 200 as JSON with no redirect, so
+  don't put a redirect, a middleware/proxy match or a `robots.txt` disallow in front of
+  `/.well-known/`. The fingerprints are the SHA-256 of the app's signing certificates
+  (`./gradlew :composeApp:signingReport` in the mobile repo); a new signing key needs a
+  new entry here, deployed before the build that uses it. `app/assetlinks.test.ts`
+  checks the file's shape.
+
 ## Testing
 
 Vitest + jsdom + `@testing-library/react` + MSW (`vitest.setup.ts` starts the shared MSW
