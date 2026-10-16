@@ -15,7 +15,9 @@ export const ROLE_SECTIONS: readonly { role: UserRole; label: string }[] = [
 export const USERS_PAGE = {
   title: "Usuarios",
   subtitle: "Usuarios aceptados",
-  viewAll: "Ver Todos",
+  viewAll: "Ver todos",
+  /** Shown when a section previews fewer users than the role has. */
+  showing: (shown: number, total: number) => `Mostrando ${shown} de ${total}`,
   noUsers: "No hay usuarios",
   loadError: "Error al cargar usuarios",
   columns: {

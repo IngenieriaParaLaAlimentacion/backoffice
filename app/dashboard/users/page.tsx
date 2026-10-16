@@ -3,9 +3,9 @@
 import RequirePermission from "@/components/RequirePermission";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -22,21 +22,12 @@ import UserDetailPanel from "./[role]/UserDetailPanel";
 const PAGE_SIZE = 3;
 
 function RoleSection({ role, label }: { role: string; label: string }) {
-  const { users, isLoading, error } = useUsers(role, PAGE_SIZE);
+  const { users, total, isLoading, error } = useUsers(role, PAGE_SIZE);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{label}</h2>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-muted-foreground hover:text-foreground gap-1"
-        >
-          <Link href={`/dashboard/users/${role}`}>{USERS_PAGE.viewAll}</Link>
-        </Button>
-      </div>
+      <h2 className="text-lg font-semibold">{label}</h2>
       {error && (
         <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
           {error}
@@ -144,6 +135,21 @@ function RoleSection({ role, label }: { role: string; label: string }) {
             ))}
           </div>
         </>
+      )}
+
+      {!isLoading && total > users.length && (
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm text-muted-foreground">
+            {USERS_PAGE.showing(users.length, total)}
+          </span>
+          <Link
+            href={`/dashboard/users/${role}`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            {USERS_PAGE.viewAll}
+            <ArrowRight />
+          </Link>
+        </div>
       )}
 
       <UserDetailPanel
