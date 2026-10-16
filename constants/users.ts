@@ -180,4 +180,27 @@ export const USER_DETAIL_PANEL = {
   removeAccessError: "No se pudo quitar el acceso",
   removeAccessConflict:
     "El acceso a este comedor ya no está aprobado; se actualizó la lista.",
+  changeRole: {
+    button: "Cambiar rol",
+    title: "Cambiar rol",
+    description: "Elegí el nuevo rol de este usuario.",
+    currentRole: "Rol actual",
+    newRole: "Nuevo rol",
+    confirm: "Cambiar rol",
+    confirming: "Cambiando…",
+    cancel: "Cancelar",
+    success: (role: string) => `Rol cambiado a ${role}.`,
+    closeAria: "Cerrar mensaje",
+    // Overrides the shared ROLE_NOT_ALLOWED copy, which is about the
+    // viewer's own access to a screen, not about the user being edited.
+    errors: {
+      [ERROR_TYPES.ROLE_NOT_ALLOWED]:
+        "No tenés permiso para cambiarle el rol a este usuario.",
+      [ERROR_TYPES.USER_NOT_FOUND]: "El usuario ya no existe.",
+      [ERROR_TYPES.USER_IS_NOT_ACTIVE]:
+        "El usuario no está activo: tiene una invitación pendiente o todavía no fue validado.",
+      [ERROR_TYPES.VALIDATION_FAILED]: "El rol elegido no es válido.",
+    },
+    genericError: "No se pudo cambiar el rol",
+  },
 } as const;

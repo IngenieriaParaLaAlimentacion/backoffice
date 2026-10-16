@@ -1,20 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { Loader2, X } from "lucide-react";
+import { CircleCheck, Loader2, X } from "lucide-react";
 import { useUserDetail } from "@/hooks/useUserDetail";
 import { useRevokeAccess } from "@/hooks/useRevokeAccess";
 import { useSession } from "@/context/SessionContext";
 import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
 import { USER_DETAIL_PANEL } from "@/constants/users";
+import { AdminUserDetail } from "@/types/admin";
 import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
-import { OVERLAY_CLASS } from "@/constants/theme";
+import { OVERLAY_CLASS, TONE_BANNER_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
+import { assignableRoles } from "@/lib/permissions";
+import ChangeRoleDialog from "./ChangeRoleDialog";
 
 type UserDetailPanelProps = {
   userId: string | null;
   onClose: () => void;
+  /** Called after an action moved the user out of (or within) the list. */
+  onUserChanged?: () => void;
 };
 
 function ProfileField({
@@ -35,9 +40,20 @@ function ProfileField({
 export default function UserDetailPanel({
   userId,
   onClose,
+  onUserChanged,
 }: UserDetailPanelProps) {
-  const { user, isLoading, error, refetch } = useUserDetail(userId);
-  const canRevokeAccess = useSession().can("users.revokeAccess");
+  const { user, isLoading, error, refetch, replace } = useUserDetail(userId);
+  const { can, profile, role: viewerRole } = useSession();
+  const canRevokeAccess = can("users.revokeAccess");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Nobody changes their own role, whatever the matrix says, and only an
+  // active user's role can change (pending invitations and unvalidated field
+  // workers get a 400).
+  const roleOptions =
+    user && user.id !== profile?.id && user.status === "active"
+      ? assignableRoles(viewerRole, user.role)
+      : [];
 
   const { revokingId, actionError, revoke, reset } = useRevokeAccess(
     {
@@ -50,7 +66,18 @@ export default function UserDetailPanel({
 
   useEffect(() => {
     reset();
+    setSuccessMessage(null);
   }, [userId, reset]);
+
+  const handleRoleChanged = (updated: AdminUserDetail) => {
+    replace(updated);
+    setSuccessMessage(
+      USER_DETAIL_PANEL.changeRole.success(
+        updated.role ? ROLE_LABELS[updated.role] : "",
+      ),
+    );
+    onUserChanged?.();
+  };
 
   const handleRemoveAccess = (establishmentId: string) => {
     if (!user) return;
@@ -90,6 +117,24 @@ export default function UserDetailPanel({
             </div>
           )}
 
+          {successMessage && (
+            <div
+              role="status"
+              className={`mb-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${TONE_BANNER_CLASS.success}`}
+            >
+              <CircleCheck size={18} className="mt-0.5 shrink-0" />
+              <span className="flex-1">{successMessage}</span>
+              <button
+                type="button"
+                onClick={() => setSuccessMessage(null)}
+                className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
+                aria-label={USER_DETAIL_PANEL.changeRole.closeAria}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           {actionError && (
             <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
               {actionError}
@@ -117,10 +162,20 @@ export default function UserDetailPanel({
                 value={user.email}
               />
               {user.role && (
-                <ProfileField
-                  label={USER_DETAIL_PANEL.fields.role}
-                  value={ROLE_LABELS[user.role] ?? user.role}
-                />
+                <div className="flex items-end justify-between gap-2">
+                  <ProfileField
+                    label={USER_DETAIL_PANEL.fields.role}
+                    value={ROLE_LABELS[user.role] ?? user.role}
+                  />
+                  {roleOptions.length > 0 && (
+                    <ChangeRoleDialog
+                      userId={user.id}
+                      currentRole={user.role}
+                      options={roleOptions}
+                      onChanged={handleRoleChanged}
+                    />
+                  )}
+                </div>
               )}
               {user.status && (
                 <ProfileField

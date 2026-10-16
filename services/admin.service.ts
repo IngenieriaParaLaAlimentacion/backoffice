@@ -2,6 +2,7 @@ import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENTS_ENDPOINT,
   APPROVE_FIELD_WORKER_ENDPOINT,
+  CHANGE_USER_ROLE_ENDPOINT,
   GET_USER_ENDPOINT,
   INVITE_ADMIN_ENDPOINT,
   INVITE_ANALYST_ENDPOINT,
@@ -14,6 +15,7 @@ import {
 } from "@/constants/api";
 import {
   AdminUserDetail,
+  ChangeUserRoleRequest,
   EstablishmentAccessRequest,
   InviteAdminResponse,
   PaginatedUsersResponse,
@@ -22,6 +24,7 @@ import {
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
 import { toApiError } from "@/lib/apiError";
+import { UserRole } from "@/types/user";
 
 type ListUsersParams = {
   page?: number;
@@ -90,6 +93,27 @@ export const getUserAction = async (
 ): Promise<AdminUserDetail> => {
   const res = await dispatcher<undefined, AdminUserDetail>(
     GET_USER_ENDPOINT(userId),
+  );
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as AdminUserDetail;
+};
+
+/**
+ * Changes only the user's role. The backend revokes their sessions and emails
+ * them; asking for the role they already hold is a no-op `200`.
+ */
+export const changeUserRoleAction = async (
+  dispatcher: AuthDispatcher,
+  userId: string,
+  role: UserRole,
+): Promise<AdminUserDetail> => {
+  const body: ChangeUserRoleRequest = { role };
+
+  const res = await dispatcher<ChangeUserRoleRequest, AdminUserDetail>(
+    CHANGE_USER_ROLE_ENDPOINT(userId),
+    { method: "PATCH", body },
   );
 
   if (!res.ok) throw toApiError(res.data, res.status);
