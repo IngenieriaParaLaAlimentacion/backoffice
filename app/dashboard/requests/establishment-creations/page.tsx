@@ -22,7 +22,7 @@ import {
   rowStateClass,
 } from "@/components/listings/RowAffordance";
 import EstablishmentRequestReviewPanel from "./EstablishmentRequestReviewPanel";
-import { useRefreshPendingRequestsCount } from "../layout";
+import { useRefreshRequestCounts } from "../layout";
 import { CircleCheck, ClipboardCheck, Loader2, Search, X } from "lucide-react";
 import {
   ESTABLISHMENT_FORM_FIELDS,
@@ -55,7 +55,7 @@ function parsePage(value: string | null) {
 
 function EstablishmentRequestsContent() {
   const { makeAuthorizedRequest } = useAuth();
-  const refreshPendingCount = useRefreshPendingRequestsCount();
+  const refreshPendingCount = useRefreshRequestCounts();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

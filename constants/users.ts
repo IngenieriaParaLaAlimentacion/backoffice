@@ -27,8 +27,9 @@ export const USERS_PAGE = {
 } as const;
 
 export const REQUEST_TABS = {
-  users: "Usuarios",
-  establishments: "Establecimientos",
+  users: "Registros de usuarios",
+  establishments: "Accesos a establecimientos",
+  establishmentCreations: "Altas de establecimientos",
 } as const;
 
 export const PENDING_REQUESTS_PAGE = {
@@ -37,7 +38,7 @@ export const PENDING_REQUESTS_PAGE = {
   loadError: "Error al cargar solicitudes",
   applyError: "Error al aplicar los cambios",
   partialApplyError:
-    "La cuenta se activó, pero no se pudieron rechazar algunos establecimientos. Reintentá o resolvelos desde la pestaña Establecimientos.",
+    "La cuenta se activó, pero no se pudieron rechazar algunos establecimientos. Reintentá o resolvelos desde la pestaña Accesos a establecimientos.",
   rejectError: "Error al rechazar la solicitud",
   noRequests: "No hay solicitudes pendientes",
   columns: {
@@ -52,7 +53,7 @@ export const PENDING_REQUESTS_PAGE = {
   defaultDialogTitle: "Solicitud",
   emailNotVerified: "Email sin verificar",
   establishmentsIntro:
-    "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes y se resuelven en la pestaña Establecimientos.",
+    "Aceptá o rechazá los establecimientos que quieras resolver ahora; los que dejes sin decidir quedan pendientes y se resuelven en la pestaña Accesos a establecimientos.",
   noEstablishmentsRequested: "No solicitó acceso a ningún establecimiento.",
   accept: "Aceptar",
   reject: "Rechazar",

@@ -4,18 +4,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useSession } from "@/context/SessionContext";
 import {
   listPendingEstablishmentAccessAction,
   listUsersAction,
 } from "@/services/admin.service";
+import { listEstablishmentRequestsAction } from "@/services/establishmentRequest.service";
 import { usePendingCount } from "@/hooks/usePendingCount";
 import { REQUEST_TABS } from "@/constants/users";
 import RequirePermission from "@/components/RequirePermission";
+import { Permission } from "@/lib/permissions";
 
 const USERS_TAB_HREF = "/dashboard/requests";
 const ESTABLISHMENTS_TAB_HREF = "/dashboard/requests/establishments";
 
+const CREATIONS_TAB_HREF = "/dashboard/requests/establishment-creations";
+
 const COUNT_ONLY_QUERY = { page: 1, page_size: 1 } as const;
+
+// Each tab is gated by its own permission, so a role that holds one but not
+// the other sees only its tabs (today admins hold both, analysts neither).
+const TAB_PERMISSIONS: readonly Permission[] = [
+  "requests.view",
+  "establishments.requests.view",
+];
 
 // Lets each tab tell the layout to refresh the badges right after an
 // approve/reject, since those actions don't navigate anywhere (the
@@ -29,7 +41,7 @@ export default function RequestsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <RequirePermission permission="requests.view">
+    <RequirePermission permission={TAB_PERMISSIONS}>
       <RequestsTabs>{children}</RequestsTabs>
     </RequirePermission>
   );
@@ -43,6 +55,9 @@ export default function RequestsLayout({
 function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const { makeAuthorizedRequest } = useAuth();
+  const { can } = useSession();
+  const canViewRegistrations = can("requests.view");
+  const canViewCreations = can("establishments.requests.view");
 
   const { count: pendingUsers, fetch: fetchPendingUsers } = usePendingCount(
     useCallback(async () => {
@@ -67,10 +82,30 @@ function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
     }, [makeAuthorizedRequest]),
   );
 
+  const { count: pendingCreations, fetch: fetchPendingCreations } =
+    usePendingCount(
+      useCallback(async () => {
+        const data = await listEstablishmentRequestsAction(
+          makeAuthorizedRequest,
+          COUNT_ONLY_QUERY,
+        );
+        return data.total;
+      }, [makeAuthorizedRequest]),
+    );
+
   const refreshCounts = useCallback(() => {
-    fetchPendingUsers();
-    fetchPendingAccess();
-  }, [fetchPendingUsers, fetchPendingAccess]);
+    if (canViewRegistrations) {
+      fetchPendingUsers();
+      fetchPendingAccess();
+    }
+    if (canViewCreations) fetchPendingCreations();
+  }, [
+    canViewRegistrations,
+    canViewCreations,
+    fetchPendingUsers,
+    fetchPendingAccess,
+    fetchPendingCreations,
+  ]);
 
   useEffect(() => {
     // Re-check whenever a tab becomes active so navigating between them also
@@ -79,25 +114,42 @@ function RequestsTabs({ children }: Readonly<{ children: React.ReactNode }>) {
   }, [refreshCounts, pathname]);
 
   const tabs = [
-    { label: REQUEST_TABS.users, href: USERS_TAB_HREF, count: pendingUsers },
-    {
-      label: REQUEST_TABS.establishments,
-      href: ESTABLISHMENTS_TAB_HREF,
-      count: pendingAccess,
-    },
+    ...(canViewRegistrations
+      ? [
+          {
+            label: REQUEST_TABS.users,
+            href: USERS_TAB_HREF,
+            count: pendingUsers,
+          },
+          {
+            label: REQUEST_TABS.establishments,
+            href: ESTABLISHMENTS_TAB_HREF,
+            count: pendingAccess,
+          },
+        ]
+      : []),
+    ...(canViewCreations
+      ? [
+          {
+            label: REQUEST_TABS.establishmentCreations,
+            href: CREATIONS_TAB_HREF,
+            count: pendingCreations,
+          },
+        ]
+      : []),
   ];
 
   return (
     <RefreshRequestCountsContext.Provider value={refreshCounts}>
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex gap-1 border-b border-border">
+        <div className="flex gap-1 overflow-x-auto border-b border-border">
           {tabs.map((tab) => {
             const isActive = pathname === tab.href;
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`-mb-px flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground"
