@@ -1,5 +1,6 @@
 import { UserRole } from "@/types/user";
 import {
+  EstablishmentCharacterization,
   EstablishmentResponse,
   EstablishmentRequestStatus,
 } from "@/types/establishment";
@@ -70,6 +71,9 @@ export type EstablishmentRequestAdminView = {
   requester_email: string;
   reviewed_by: string | null;
   updated_at: string;
+  /** The profile the requester proposed, if any. Approving stores it as is;
+   * the admin corrects it afterwards from the establishment's Perfil tab. */
+  characterization: EstablishmentCharacterization | null;
 };
 
 export type PaginatedEstablishmentRequestsResponse = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDays, profileSummary } from "./profileDisplay";
+import { formatDays, profileSummary } from "@/lib/characterizationDisplay";
 import { EMPTY_CHARACTERIZATION } from "@/schemas/establishmentCharacterization.schema";
 
 describe("formatDays", () => {

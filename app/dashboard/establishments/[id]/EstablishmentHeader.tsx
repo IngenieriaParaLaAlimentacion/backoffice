@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ESTABLISHMENT_DASHBOARD_PAGE as COPY } from "@/constants/establishments";
 import { ArrowLeft } from "lucide-react";
 import ProfilePendingBadge from "@/components/establishments/ProfilePendingBadge";
-import { locationDetail, profileSummary } from "./profileDisplay";
+import { locationDetail, profileSummary } from "@/lib/characterizationDisplay";
 import EditEstablishmentDialog from "./EditEstablishmentDialog";
 
 const PANEL_HREF = "/dashboard/establishments";

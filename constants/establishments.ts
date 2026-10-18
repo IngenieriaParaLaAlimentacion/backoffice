@@ -796,6 +796,10 @@ export const ESTABLISHMENT_REQUEST_REVIEW_PANEL = {
   cancelLabel: "Cancelar",
   namePlaceholder: "Ej: Establecimiento Central Norte",
   approveError: "Error al aprobar la solicitud",
+  proposedProfile: "Perfil propuesto",
+  noProposedProfile: "Quien propuso el establecimiento no completó el perfil.",
+  proposedProfileHint:
+    "Se guarda tal como fue propuesto. Para corregirlo o completarlo, hacelo desde la pestaña Perfil del establecimiento una vez aprobado.",
   rejectError: "Error al rechazar la solicitud",
 } as const;
 

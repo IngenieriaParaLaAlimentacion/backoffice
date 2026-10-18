@@ -5,7 +5,10 @@ import {
   PaginatedUsersResponse,
   PendingEstablishmentAccessResponse,
 } from "@/types/admin";
-import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
+import {
+  MOCK_CHARACTERIZATION,
+  MOCK_ESTABLISHMENTS,
+} from "@/mocks/fixtures/establishment";
 
 export const DEFAULT_PENDING_USERS_RESPONSE: PaginatedUsersResponse = {
   items: [
@@ -108,6 +111,7 @@ export const DEFAULT_ESTABLISHMENT_REQUESTS_RESPONSE: PaginatedEstablishmentRequ
         requester_email: "juan.lopez@example.com",
         reviewed_by: null,
         updated_at: "2026-06-01T10:00:00Z",
+        characterization: MOCK_CHARACTERIZATION,
       },
       {
         id: "b2c3d4e5-0000-0000-0000-000000000002",
@@ -123,6 +127,7 @@ export const DEFAULT_ESTABLISHMENT_REQUESTS_RESPONSE: PaginatedEstablishmentRequ
         requester_email: "ana.garcia@example.com",
         reviewed_by: null,
         updated_at: "2026-06-02T10:00:00Z",
+        characterization: null,
       },
     ],
     total: 2,

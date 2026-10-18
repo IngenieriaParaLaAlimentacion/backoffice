@@ -25,6 +25,9 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import CharacterizationView from "@/components/establishments/CharacterizationView";
+import { isCharacterizationEmpty } from "@/schemas/establishmentCharacterization.schema";
+import { EstablishmentCharacterization } from "@/types/establishment";
 import { Check, Loader2, X } from "lucide-react";
 import {
   ESTABLISHMENT_FORM_FIELDS,
@@ -35,6 +38,47 @@ import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/errorMessages";
 
 type PendingAction = "approve" | "reject" | null;
+
+/**
+ * Read-only on purpose (US #92, CA2): approving stores the profile exactly as
+ * proposed, and any correction happens afterwards in the establishment's
+ * Perfil tab — one place to edit it, not two. Collapsed by default so the
+ * approve/reject buttons stay within reach in this narrow panel.
+ */
+function ProposedProfile({
+  characterization,
+}: {
+  characterization: EstablishmentCharacterization | null;
+}) {
+  const COPY = ESTABLISHMENT_REQUEST_REVIEW_PANEL;
+  const hasProfile =
+    characterization !== null && !isCharacterizationEmpty(characterization);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {hasProfile ? (
+        <details className="rounded-lg border border-border">
+          <summary className="cursor-pointer px-3 py-2 text-sm font-medium">
+            {COPY.proposedProfile}
+          </summary>
+          <div className="px-3 pb-3">
+            <CharacterizationView characterization={characterization} />
+          </div>
+        </details>
+      ) : (
+        <>
+          <span className="text-sm font-medium">{COPY.proposedProfile}</span>
+          <span className="text-sm text-muted-foreground">
+            {COPY.noProposedProfile}
+          </span>
+        </>
+      )}
+      <p className="text-xs text-muted-foreground">
+        {COPY.proposedProfileHint}
+      </p>
+    </div>
+  );
+}
 
 type EstablishmentRequestReviewPanelProps = {
   request: EstablishmentRequestAdminView | null;
@@ -261,6 +305,8 @@ export default function EstablishmentRequestReviewPanel({
                 placeholder={ESTABLISHMENT_FORM_FIELDS.province.placeholder}
                 required
               />
+
+              <ProposedProfile characterization={request.characterization} />
 
               <Separator />
 
