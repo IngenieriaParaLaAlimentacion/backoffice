@@ -20,6 +20,25 @@ export type EstablishmentResponse = {
   characterization_status: CharacterizationStatus;
 };
 
+/**
+ * `PATCH /establishments/{id}` is partial: only the fields sent change. The
+ * address goes as a whole (text, `place_id` and coordinates together) so the
+ * pin never drifts from the text; the backend answers 409 when that
+ * `place_id` already belongs to another establishment.
+ */
+export type UpdateEstablishmentRequest = Partial<
+  Pick<
+    EstablishmentResponse,
+    | "name"
+    | "formatted_address"
+    | "place_id"
+    | "latitude"
+    | "longitude"
+    | "city"
+    | "province"
+  >
+>;
+
 // --- Characterization ("Perfil" in the UI) ---
 // Options follow the Mapa Nacional de Espacios Comunitarios de Cuidados form
 // the referents shared, plus the food fields backend#196 needs for recipes.

@@ -50,6 +50,8 @@ export const REJECT_ESTABLISHMENT_REQUEST_ENDPOINT = (requestId: string) =>
 export const ESTABLISHMENTS_ENDPOINT = "/api/v1/establishments";
 export const ESTABLISHMENTS_EXPORT_ENDPOINT = "/api/v1/establishments/export";
 export const ESTABLISHMENTS_MAP_ENDPOINT = "/api/v1/establishments/map";
+export const ESTABLISHMENT_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}`;
 export const ESTABLISHMENT_DASHBOARD_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/dashboard`;
 export const ESTABLISHMENT_SUBJECTS_ENDPOINT = (establishmentId: string) =>

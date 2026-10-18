@@ -5,6 +5,7 @@ import { getEstablishmentDashboardAction } from "@/services/establishment.servic
 import {
   EstablishmentCharacterizationResponse,
   EstablishmentDashboardResponse,
+  EstablishmentResponse,
 } from "@/types/establishment";
 import { ApiError } from "@/lib/apiError";
 import { ESTABLISHMENT_DASHBOARD_PAGE } from "@/constants/establishments";
@@ -71,6 +72,18 @@ export function useEstablishmentDashboard(establishmentId: string) {
       ),
     [],
   );
+  const applyEstablishment = useCallback(
+    (updated: EstablishmentResponse) =>
+      setDashboard((current) =>
+        current
+          ? {
+              ...current,
+              establishment: { ...current.establishment, ...updated },
+            }
+          : current,
+      ),
+    [],
+  );
 
   return {
     dashboard,
@@ -80,5 +93,6 @@ export function useEstablishmentDashboard(establishmentId: string) {
     forbidden: status === StatusCodes.FORBIDDEN,
     refetch: fetchDashboard,
     applyCharacterization,
+    applyEstablishment,
   };
 }

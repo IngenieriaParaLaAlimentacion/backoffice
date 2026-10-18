@@ -10,6 +10,7 @@ import { ESTABLISHMENT_DASHBOARD_PAGE as COPY } from "@/constants/establishments
 import { ArrowLeft } from "lucide-react";
 import ProfilePendingBadge from "@/components/establishments/ProfilePendingBadge";
 import { locationDetail, profileSummary } from "./profileDisplay";
+import EditEstablishmentDialog from "./EditEstablishmentDialog";
 
 const PANEL_HREF = "/dashboard/establishments";
 
@@ -24,11 +25,14 @@ export default function EstablishmentHeader({
   establishment,
   characterization,
   completeProfileHref,
+  onEstablishmentSaved,
 }: {
   establishment: EstablishmentResponse;
   characterization: EstablishmentCharacterization;
   /** Where "Perfil pendiente" links to; omitted for read-only viewers. */
   completeProfileHref?: string;
+  /** Shows "Editar datos"; omitted for whoever can't edit name/address. */
+  onEstablishmentSaved?: (updated: EstablishmentResponse) => void;
 }) {
   const router = useRouter();
 
@@ -56,7 +60,17 @@ export default function EstablishmentHeader({
       </Button>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">{establishment.name}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+          <h1 className="min-w-0 text-3xl font-semibold break-words">
+            {establishment.name}
+          </h1>
+          {onEstablishmentSaved && (
+            <EditEstablishmentDialog
+              establishment={establishment}
+              onSaved={onEstablishmentSaved}
+            />
+          )}
+        </div>
         {establishment.characterization_status === "pending" ? (
           <div className="mb-1">
             <ProfilePendingBadge href={completeProfileHref} />

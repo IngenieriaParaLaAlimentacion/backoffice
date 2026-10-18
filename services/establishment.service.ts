@@ -2,6 +2,7 @@ import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
   ESTABLISHMENT_CHARACTERIZATION_ENDPOINT,
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
+  ESTABLISHMENT_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
   ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT,
   ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT,
@@ -20,6 +21,7 @@ import {
   EstablishmentCharacterization,
   EstablishmentCharacterizationResponse,
   EstablishmentDashboardResponse,
+  UpdateEstablishmentRequest,
   EstablishmentSubjectSortOrder,
   FoodMovementDetail,
   FoodMovementDirection,
@@ -192,6 +194,23 @@ export const getEstablishmentDashboardAction = async (
   if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as EstablishmentDashboardResponse;
+};
+
+/** Admin-only; 409 (`establishment-already-exists`) when the new address is
+ * another establishment's. */
+export const updateEstablishmentAction = async (
+  dispatcher: AuthDispatcher,
+  establishmentId: string,
+  body: UpdateEstablishmentRequest,
+) => {
+  const res = await dispatcher<
+    UpdateEstablishmentRequest,
+    EstablishmentResponse
+  >(ESTABLISHMENT_ENDPOINT(establishmentId), { method: "PATCH", body });
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as EstablishmentResponse;
 };
 
 /** Replaces the whole profile: an empty field clears what was stored. */

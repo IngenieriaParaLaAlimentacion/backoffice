@@ -808,6 +808,25 @@ export const CREATE_ESTABLISHMENT_PAGE = {
   submitButton: "Crear establecimiento",
 } as const;
 
+export const EDIT_ESTABLISHMENT_DIALOG = {
+  button: "Editar datos",
+  title: "Editar datos del establecimiento",
+  description:
+    "El nombre y la dirección se ven en el listado, el mapa y esta ficha.",
+  currentAddress: "Dirección actual",
+  changeAddress: "Cambiar dirección",
+  keepAddress: "Mantener la dirección actual",
+  newAddress: "Nueva dirección",
+  pickAddress: "Elegí una dirección de la lista",
+  cancel: "Cancelar",
+  save: "Guardar",
+  saving: "Guardando…",
+  noChanges: "No hay cambios para guardar",
+  saveError: "No se pudieron guardar los cambios. Intentá de nuevo.",
+  addressTaken:
+    "Ya hay otro establecimiento cargado en esa dirección. Elegí otra o revisá el listado.",
+} as const;
+
 export const PROPOSE_ESTABLISHMENT_PAGE = {
   title: "Proponer establecimiento",
   subtitle:

@@ -188,6 +188,29 @@ export const DEFAULT_ESTABLISHMENTS_MAP_RESPONSE: EstablishmentMapResponse = {
   establishments: MOCK_ESTABLISHMENT_MAP_ITEMS,
 };
 
+// --- Establishment edits (name / address) ---
+
+/** Name/address edits, so a saved change survives navigating under MSW. */
+const establishmentEdits = new Map<string, Partial<EstablishmentResponse>>();
+
+export function currentEstablishment(
+  establishment: EstablishmentResponse,
+): EstablishmentResponse {
+  return { ...establishment, ...establishmentEdits.get(establishment.id) };
+}
+
+export function storeEstablishmentEdit(
+  id: string,
+  edit: Partial<EstablishmentResponse>,
+) {
+  establishmentEdits.set(id, { ...establishmentEdits.get(id), ...edit });
+}
+
+/** For tests: forget edits saved by a previous test. */
+export function resetEstablishmentEdits() {
+  establishmentEdits.clear();
+}
+
 // --- Establishment characterization ---
 
 /** A profile answered in part — identidad cultural is left blank on purpose,

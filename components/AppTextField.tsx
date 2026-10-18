@@ -8,7 +8,7 @@ import {
   useController,
   UseControllerProps,
 } from "react-hook-form";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 type AppTextFieldProps<
   T extends FieldValues,
@@ -33,6 +33,9 @@ export default function AppTextField<
   ...props
 }: AppTextFieldProps<T, TName>) {
   const [showPassword, setShowPassword] = useState(false);
+  // Ties the label to the input, so it names the field for screen readers
+  // (and for `getByRole(..., { name })` in tests).
+  const inputId = useId();
   const { field, fieldState } = useController({ control, name });
   const isSecure = type === "password";
   const hasError = fieldState.invalid && fieldState.isTouched;
@@ -40,13 +43,17 @@ export default function AppTextField<
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label className="text-sm font-medium text-foreground">
+        <label
+          htmlFor={inputId}
+          className="text-sm font-medium text-foreground"
+        >
           {label}
           {props.required && <span className="text-destructive ml-0.5">*</span>}
         </label>
       )}
       <div className="relative">
         <Input
+          id={inputId}
           {...props}
           {...field}
           onChange={(e) => {

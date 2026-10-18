@@ -32,6 +32,7 @@ import {
   makeExportEstablishmentStockHandler,
   makeListEstablishmentsHandler,
   makeUpdateEstablishmentCharacterizationHandler,
+  makeUpdateEstablishmentHandler,
 } from "@/mocks/handlers/establishment";
 import {
   makeListFoodCategoriesHandler,
@@ -78,6 +79,7 @@ export const handlers = [
   makeRejectEstablishmentRequestHandler(),
   makeEstablishmentDashboardHandler(),
   makeUpdateEstablishmentCharacterizationHandler(),
+  makeUpdateEstablishmentHandler(),
   makeEstablishmentSubjectsHandler(),
   makeEstablishmentFieldWorkersHandler(),
   makeEstablishmentFoodMovementsHandler(),

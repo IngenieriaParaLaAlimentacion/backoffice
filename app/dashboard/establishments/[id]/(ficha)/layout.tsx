@@ -60,6 +60,7 @@ export default function EstablishmentLayout({
     notFound,
     forbidden,
     applyCharacterization,
+    applyEstablishment,
   } = useEstablishmentDashboard(id);
   const { can } = useSession();
 
@@ -144,6 +145,9 @@ export default function EstablishmentLayout({
                 can("establishments.characterization.edit")
                   ? establishmentProfileHref(id, true)
                   : undefined
+              }
+              onEstablishmentSaved={
+                can("establishments.edit") ? applyEstablishment : undefined
               }
             />
 

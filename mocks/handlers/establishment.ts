@@ -4,6 +4,7 @@ import {
   CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
   ESTABLISHMENT_CHARACTERIZATION_ENDPOINT,
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
+  ESTABLISHMENT_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
   ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT,
   ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT,
@@ -28,11 +29,14 @@ import {
   characterizationStatusOf,
   currentCharacterization,
   storeCharacterization,
+  currentEstablishment,
+  storeEstablishmentEdit,
 } from "@/mocks/fixtures/establishment";
 import { OTHER_TEXT_MAX_LENGTH } from "@/schemas/establishmentCharacterization.schema";
 import {
   EstablishmentCharacterization,
   EstablishmentDashboardResponse,
+  UpdateEstablishmentRequest,
 } from "@/types/establishment";
 import { availableMillis } from "@/lib/foodMovementQuantity";
 
@@ -48,7 +52,7 @@ export function makeListEstablishmentsHandler(
       HttpResponse.json({
         ...DEFAULT_ESTABLISHMENTS_RESPONSE,
         items: DEFAULT_ESTABLISHMENTS_RESPONSE.items.map((item) => ({
-          ...item,
+          ...currentEstablishment(item),
           characterization_status: characterizationStatusOf(item.id),
         })),
       }),
@@ -134,11 +138,53 @@ function withCharacterization(
   return {
     ...dashboard,
     establishment: {
-      ...dashboard.establishment,
+      ...currentEstablishment(dashboard.establishment),
       characterization_status: characterizationStatusOf(id),
     },
     characterization: currentCharacterization(id),
   };
+}
+
+/** Partial update, admin-only in the real backend. 409 when the new
+ * `place_id` is another mock establishment's. */
+export function makeUpdateEstablishmentHandler() {
+  return http.patch<{ id: string }>(
+    ESTABLISHMENT_ENDPOINT(":id"),
+    async ({ params, request }) => {
+      const path = new URL(request.url).pathname;
+      const establishment = MOCK_ESTABLISHMENTS.find((e) => e.id === params.id);
+      if (!establishment) return notFound(path);
+
+      const body = (await request.json()) as UpdateEstablishmentRequest;
+      const taken =
+        body.place_id &&
+        MOCK_ESTABLISHMENTS.some(
+          (e) =>
+            e.id !== params.id &&
+            currentEstablishment(e).place_id === body.place_id,
+        );
+      if (taken)
+        return HttpResponse.json(
+          {
+            type: "/errors/establishment-already-exists",
+            title: "Establishment already exists",
+            status: 409,
+            detail: "Establishment already exists",
+            instance: path,
+          },
+          {
+            status: 409,
+            headers: { "Content-Type": "application/problem+json" },
+          },
+        );
+
+      storeEstablishmentEdit(params.id, body);
+      return HttpResponse.json({
+        ...currentEstablishment(establishment),
+        characterization_status: characterizationStatusOf(params.id),
+      });
+    },
+  );
 }
 
 const OTHER_FIELDS = [
