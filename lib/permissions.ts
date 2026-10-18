@@ -19,6 +19,8 @@ export type Permission =
   | "users.view"
   /** Creating an establishment outright (button + `/establishments/create`). */
   | "establishments.create"
+  /** Editing an establishment's profile (its characterization). */
+  | "establishments.characterization.edit"
   /** Inviting admins/analysts from the Usuarios screen. */
   | "users.invite"
   /** Revoking a field worker's access to an establishment. */
@@ -30,6 +32,7 @@ const ALL_PERMISSIONS = [
   "requests.view",
   "users.view",
   "establishments.create",
+  "establishments.characterization.edit",
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",

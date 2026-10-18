@@ -70,6 +70,9 @@ export const ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT = (
   establishmentId: string,
   movementId: string,
 ) => `/api/v1/establishments/${establishmentId}/food-movements/${movementId}`;
+export const ESTABLISHMENT_CHARACTERIZATION_ENDPOINT = (
+  establishmentId: string,
+) => `/api/v1/establishments/${establishmentId}/characterization`;
 export const CREATE_ESTABLISHMENT_REQUEST_ENDPOINT =
   "/api/v1/establishments/requests";
 

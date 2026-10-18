@@ -141,6 +141,7 @@ export const DEFAULT_ESTABLISHMENT_APPROVAL_RESPONSE: EstablishmentApprovalRespo
     place_id: "mock-place-id-0001",
     city: "Córdoba",
     province: "Córdoba",
+    characterization_status: "pending",
     reused: false,
   };
 

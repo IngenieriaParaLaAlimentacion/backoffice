@@ -6,6 +6,7 @@ const ADMIN_ONLY: Permission[] = [
   "requests.view",
   "users.view",
   "establishments.create",
+  "establishments.characterization.edit",
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",

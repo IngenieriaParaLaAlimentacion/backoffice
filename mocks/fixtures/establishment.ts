@@ -1,5 +1,7 @@
 import {
+  CharacterizationStatus,
   CreatedFoodMovement,
+  EstablishmentCharacterization,
   EstablishmentMapItem,
   EstablishmentMapResponse,
   EstablishmentResponse,
@@ -13,6 +15,10 @@ import {
   PaginatedFoodStockResponse,
 } from "@/types/establishment";
 import { MOCK_FOOD_CATEGORIES } from "@/mocks/fixtures/foodCatalog";
+import {
+  EMPTY_CHARACTERIZATION,
+  isCharacterizationEmpty,
+} from "@/schemas/establishmentCharacterization.schema";
 
 export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
   {
@@ -24,6 +30,7 @@ export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
     place_id: "ChIJW3nVgx-3vJURyNO4FWJALhA",
     city: "Buenos Aires",
     province: "CABA",
+    characterization_status: "complete",
   },
   {
     id: "e1000000-0000-0000-0000-000000000002",
@@ -34,6 +41,7 @@ export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
     place_id: "ChIJW3nVgx-3vJURyNO4FWJALhB",
     city: "Buenos Aires",
     province: "CABA",
+    characterization_status: "pending",
   },
   {
     id: "e1000000-0000-0000-0000-000000000003",
@@ -44,6 +52,7 @@ export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
     place_id: "ChIJW3nVgx-3vJURyNO4FWJALhC",
     city: "Rosario",
     province: "Santa Fe",
+    characterization_status: "pending",
   },
   {
     id: "e1000000-0000-0000-0000-000000000004",
@@ -54,6 +63,7 @@ export const MOCK_ESTABLISHMENTS: EstablishmentResponse[] = [
     place_id: "ChIJW3nVgx-3vJURyNO4FWJALhD",
     city: "Córdoba",
     province: "Córdoba",
+    characterization_status: "pending",
   },
 ];
 
@@ -178,11 +188,80 @@ export const DEFAULT_ESTABLISHMENTS_MAP_RESPONSE: EstablishmentMapResponse = {
   establishments: MOCK_ESTABLISHMENT_MAP_ITEMS,
 };
 
+// --- Establishment characterization ---
+
+/** A profile answered in part — identidad cultural is left blank on purpose,
+ * so the "Sin responder" state is visible in the dev preview. */
+export const MOCK_CHARACTERIZATION: EstablishmentCharacterization = {
+  ...EMPTY_CHARACTERIZATION,
+  district: "Comuna 3",
+  neighborhood: "Balvanera",
+  cross_streets: "Uriburu y Azcuénaga",
+  contact_phone: "11 4567-8901",
+  contact_email: "comedor.norte@example.com",
+  opening_hours: [
+    {
+      days: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      opens_at: "11:30",
+      closes_at: "14:30",
+    },
+    { days: ["saturday"], opens_at: "16:00", closes_at: "18:00" },
+  ],
+  space_types: ["community_kitchen", "school_support"],
+  care_tasks: ["food_assistance", "school_support", "other"],
+  care_tasks_other: "Ropero comunitario",
+  premises: "lent_space",
+  bathroom: "exclusive",
+  utilities: ["running_water", "electricity", "gas_cylinder", "sewer"],
+  affiliations: ["social_movement", "local_government"],
+  daily_attendance: 85,
+  attendee_ages: ["early_childhood", "children", "adults"],
+  meals: ["lunch", "snack"],
+  service_types: ["on_site", "takeaway"],
+  food_reception_frequency: "weekly",
+  cooks_per_service: 4,
+  kitchen_equipment: ["stove", "fridge", "large_pots"],
+};
+
+/** Saved profiles, so an edit survives navigating away under MSW. */
+const characterizationById = new Map<string, EstablishmentCharacterization>();
+
+export function currentCharacterization(
+  establishmentId: string,
+): EstablishmentCharacterization {
+  return (
+    characterizationById.get(establishmentId) ??
+    (establishmentId === MOCK_ESTABLISHMENTS[0].id
+      ? MOCK_CHARACTERIZATION
+      : EMPTY_CHARACTERIZATION)
+  );
+}
+
+export function storeCharacterization(
+  establishmentId: string,
+  characterization: EstablishmentCharacterization,
+) {
+  characterizationById.set(establishmentId, structuredClone(characterization));
+}
+
+/** For tests: forget profiles saved by a previous test. */
+export function resetCharacterizations() {
+  characterizationById.clear();
+}
+
+export const characterizationStatusOf = (
+  establishmentId: string,
+): CharacterizationStatus =>
+  isCharacterizationEmpty(currentCharacterization(establishmentId))
+    ? "pending"
+    : "complete";
+
 // --- Establishment dashboard ---
 
 /** Comedor with data: worst severity is `critical` while most subjects are normal. */
 export const DEFAULT_ESTABLISHMENT_DASHBOARD: EstablishmentDashboardResponse = {
   establishment: MOCK_ESTABLISHMENTS[0],
+  characterization: MOCK_CHARACTERIZATION,
   has_data: true,
   metrics: {
     subject_count: 42,
@@ -216,6 +295,7 @@ export const DEFAULT_ESTABLISHMENT_DASHBOARD: EstablishmentDashboardResponse = {
 /** Empty state: every average is `null`, not 0 — see CA6. */
 export const EMPTY_ESTABLISHMENT_DASHBOARD: EstablishmentDashboardResponse = {
   establishment: MOCK_ESTABLISHMENTS[1],
+  characterization: EMPTY_CHARACTERIZATION,
   has_data: false,
   metrics: {
     subject_count: 0,

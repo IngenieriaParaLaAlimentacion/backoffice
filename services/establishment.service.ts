@@ -1,5 +1,6 @@
 import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
+  ESTABLISHMENT_CHARACTERIZATION_ENDPOINT,
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
   ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT,
@@ -16,6 +17,8 @@ import {
   EstablishmentMapResponse,
   EstablishmentResponse,
   EstablishmentSortOrder,
+  EstablishmentCharacterization,
+  EstablishmentCharacterizationResponse,
   EstablishmentDashboardResponse,
   EstablishmentSubjectSortOrder,
   FoodMovementDetail,
@@ -189,6 +192,25 @@ export const getEstablishmentDashboardAction = async (
   if (!res.ok) throw toApiError(res.data, res.status);
 
   return res.data as EstablishmentDashboardResponse;
+};
+
+/** Replaces the whole profile: an empty field clears what was stored. */
+export const updateEstablishmentCharacterizationAction = async (
+  dispatcher: AuthDispatcher,
+  establishmentId: string,
+  body: EstablishmentCharacterization,
+) => {
+  const res = await dispatcher<
+    EstablishmentCharacterization,
+    EstablishmentCharacterizationResponse
+  >(ESTABLISHMENT_CHARACTERIZATION_ENDPOINT(establishmentId), {
+    method: "PUT",
+    body,
+  });
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as EstablishmentCharacterizationResponse;
 };
 
 export const listEstablishmentSubjectsAction = async (

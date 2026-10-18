@@ -15,6 +15,180 @@ export type EstablishmentResponse = {
   place_id: string;
   city: string;
   province: string;
+  /** Computed by the backend, never sent: `pending` while no field of the
+   * profile has data, `complete` as soon as one does. */
+  characterization_status: CharacterizationStatus;
+};
+
+// --- Characterization ("Perfil" in the UI) ---
+// Options follow the Mapa Nacional de Espacios Comunitarios de Cuidados form
+// the referents shared, plus the food fields backend#196 needs for recipes.
+
+export type CharacterizationStatus = "pending" | "complete";
+
+export type Weekday =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+/**
+ * One opening slot: the same hours on every day listed. A list of slots
+ * covers "lunes a viernes de 12 a 14 y sábados de 10 a 12". Times are
+ * wall-clock `"HH:MM"` in the establishment's own time — not UTC instants,
+ * so they never go through `formatTimestamp*`.
+ */
+export type OpeningHoursSlot = {
+  days: Weekday[];
+  opens_at: string;
+  closes_at: string;
+};
+
+export type SpaceType =
+  | "community_kitchen"
+  | "school_support"
+  | "community_health"
+  | "childcare"
+  | "ive_counseling"
+  | "gender_violence_counseling"
+  | "addiction_support"
+  | "homeless_support"
+  | "older_adults_center"
+  | "neighborhood_association"
+  | "arts_culture"
+  | "disability_care"
+  | "fines"
+  | "environmental"
+  | "popular_economy"
+  | "sports_club"
+  | "other";
+export type CareTask =
+  | "food_assistance"
+  | "school_support"
+  | "primary_health"
+  | "childcare"
+  | "ive_counseling"
+  | "gender_violence_support"
+  | "addiction_support"
+  | "homeless_support"
+  | "sports"
+  | "older_adults"
+  | "cultural"
+  | "disability"
+  | "fines_tutoring"
+  | "environmental"
+  | "popular_economy"
+  | "other";
+export type Premises =
+  | "street"
+  | "worker_home"
+  | "lent_space"
+  | "rented_space"
+  | "other";
+export type Bathroom = "exclusive" | "shared_with_household" | "none" | "other";
+export type Utility =
+  | "running_water"
+  | "motor_pump_well"
+  | "electricity"
+  | "natural_gas"
+  | "gas_cylinder"
+  | "sewer"
+  | "septic_tank"
+  | "internet";
+export type Affiliation =
+  | "ngo"
+  | "social_movement"
+  | "legal_status"
+  | "independent"
+  | "local_government"
+  | "church"
+  | "other";
+export type AttendeeAge =
+  | "early_childhood"
+  | "children"
+  | "adolescents"
+  | "adults"
+  | "older_adults";
+export type Meal = "breakfast" | "lunch" | "snack" | "dinner";
+/** What the kitchen can do decides which recipes are possible at all. */
+export type KitchenEquipment =
+  | "stove"
+  | "oven"
+  | "fridge"
+  | "freezer"
+  | "large_pots"
+  | "blender"
+  | "other";
+export type ServiceType = "on_site" | "takeaway" | "grocery_bag" | "other";
+export type FoodReceptionFrequency =
+  | "daily"
+  | "weekly"
+  | "biweekly"
+  | "monthly"
+  | "irregular";
+/** Provisional catalog: backend#196 leaves it to be validated with community
+ * referents, and may turn it into an editable table. */
+export type CulturalIdentity =
+  | "indigenous"
+  | "andean"
+  | "guarani"
+  | "migrant"
+  | "criollo"
+  | "other";
+
+/**
+ * Every field is optional: `null` / `[]` means "not answered", which is not
+ * the same as "does not apply". An `*_other` text is only accepted while
+ * `"other"` is among the chosen values (422 otherwise), max 100 chars.
+ *
+ * Localidad is the establishment's own `city`, not repeated here.
+ * `contact_phone` is private: fine in the backoffice, never on a public map.
+ *
+ * Saving replaces the whole profile — an empty field clears what was there.
+ */
+export type EstablishmentCharacterization = {
+  district: string | null;
+  neighborhood: string | null;
+  cross_streets: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  opening_hours: OpeningHoursSlot[];
+
+  space_types: SpaceType[];
+  space_types_other: string | null;
+  care_tasks: CareTask[];
+  care_tasks_other: string | null;
+  premises: Premises | null;
+  premises_other: string | null;
+  bathroom: Bathroom | null;
+  bathroom_other: string | null;
+  utilities: Utility[];
+  affiliations: Affiliation[];
+  affiliations_other: string | null;
+
+  /** People the space receives on a normal working day, in total. */
+  daily_attendance: number | null;
+  attendee_ages: AttendeeAge[];
+
+  meals: Meal[];
+  service_types: ServiceType[];
+  service_types_other: string | null;
+  food_reception_frequency: FoodReceptionFrequency | null;
+  /** People cooking on a normal service — the labour a recipe can count on. */
+  cooks_per_service: number | null;
+  kitchen_equipment: KitchenEquipment[];
+  kitchen_equipment_other: string | null;
+
+  cultural_identities: CulturalIdentity[];
+  cultural_identities_other: string | null;
+};
+
+export type EstablishmentCharacterizationResponse = {
+  characterization_status: CharacterizationStatus;
+  characterization: EstablishmentCharacterization;
 };
 
 /**
@@ -112,6 +286,7 @@ export type EstablishmentAlertStatus = {
 
 export type EstablishmentDashboardResponse = {
   establishment: EstablishmentResponse;
+  characterization: EstablishmentCharacterization;
   has_data: boolean;
   metrics: EstablishmentMetrics;
   alert_status: EstablishmentAlertStatus;
