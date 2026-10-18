@@ -10,6 +10,7 @@ import {
   PaginatedEstablishmentRequestsResponse,
 } from "@/types/admin";
 import {
+  EstablishmentCharacterization,
   EstablishmentRequestCreationResponse,
   EstablishmentRequestSortOrder,
   EstablishmentRequestStatus,
@@ -24,6 +25,8 @@ export type CreateEstablishmentRequestData = {
   formatted_address: string;
   city?: string;
   province?: string;
+  /** Optional proposed profile; the admin sees it read-only when reviewing. */
+  characterization?: EstablishmentCharacterization;
 };
 
 /**
@@ -41,6 +44,7 @@ export const createEstablishmentRequestAction = async (
     formatted_address: data.formatted_address,
     city: data.city || undefined,
     province: data.province || undefined,
+    characterization: data.characterization,
   };
 
   const res = await dispatcher<

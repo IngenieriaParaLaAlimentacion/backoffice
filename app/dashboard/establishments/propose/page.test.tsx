@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ProposeEstablishmentPage from "./page";
 import {
   ESTABLISHMENT_FORM_FIELDS,
+  ESTABLISHMENT_PROFILE,
   PROPOSE_ESTABLISHMENT_PAGE,
 } from "@/constants/establishments";
 import { renderWithProviders } from "@/test-utils";
@@ -78,5 +79,70 @@ describe("ProposeEstablishmentPage", () => {
       await screen.findByText(PROPOSE_ESTABLISHMENT_PAGE.submitError),
     ).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
+  });
+
+  describe("optional profile", () => {
+    const captureBody = () => {
+      const sent: { body?: Record<string, unknown> } = {};
+      server.events.on("request:start", async ({ request }) => {
+        if (request.method === "POST") sent.body = await request.clone().json();
+      });
+      return sent;
+    };
+
+    afterEach(() => server.events.removeAllListeners());
+
+    it("sends no profile when the section is left closed", async () => {
+      const sent = captureBody();
+      await renderWithProviders(<ProposeEstablishmentPage />);
+
+      await fillRequiredFields();
+      await submit();
+
+      await waitFor(() => expect(push).toHaveBeenCalled());
+      expect(sent.body).not.toHaveProperty("characterization");
+    });
+
+    it("sends what was answered in the profile section", async () => {
+      const sent = captureBody();
+      await renderWithProviders(<ProposeEstablishmentPage />);
+      const user = userEvent.setup();
+
+      await fillRequiredFields();
+      await user.click(screen.getByText(ESTABLISHMENT_PROFILE.optionalSection));
+      const meals = screen.getByRole("group", {
+        name: ESTABLISHMENT_PROFILE.fields.meals,
+      });
+      await user.click(within(meals).getByRole("button", { name: "Almuerzo" }));
+      await submit();
+
+      await waitFor(() => expect(push).toHaveBeenCalled());
+      expect(sent.body?.characterization).toMatchObject({
+        meals: ["lunch"],
+        space_types: [],
+      });
+    });
+
+    it("opens the section to show a profile error instead of submitting", async () => {
+      await renderWithProviders(<ProposeEstablishmentPage />);
+      const user = userEvent.setup();
+
+      await fillRequiredFields();
+      await user.click(screen.getByText(ESTABLISHMENT_PROFILE.optionalSection));
+      await user.type(
+        screen.getByRole("textbox", {
+          name: ESTABLISHMENT_PROFILE.fields.contactEmail,
+        }),
+        "no-es-un-mail",
+      );
+      // Closed again: the error must still be shown, not hidden inside it.
+      await user.click(screen.getByText(ESTABLISHMENT_PROFILE.optionalSection));
+      await submit();
+
+      expect(
+        await screen.findByText(ESTABLISHMENT_PROFILE.invalidEmail),
+      ).toBeVisible();
+      expect(push).not.toHaveBeenCalled();
+    });
   });
 });

@@ -65,6 +65,8 @@ export type CreateEstablishmentData = {
   place_id: string;
   city: string;
   province: string;
+  /** Optional profile, stored with the establishment in the same call. */
+  characterization?: EstablishmentCharacterization;
 };
 
 export type EstablishmentSubjectFilters = {

@@ -401,6 +401,7 @@ export const ESTABLISHMENT_PROFILE = {
   emptyBodyReader: "Todavía nadie cargó cómo funciona ni a quién atiende.",
   formHint:
     "Todos los campos son opcionales: completá lo que sepas y dejá el resto para después.",
+  optionalSection: "Agregar perfil (opcional)",
   sections: {
     location: "Ubicación y contacto",
     space: "El espacio",
