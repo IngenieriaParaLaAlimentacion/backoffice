@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
+import MeasurementObservation from "./MeasurementObservation";
 import { useAuth } from "@/context/AuthContext";
 import {
   exportMeasurementsAction,
@@ -492,6 +493,9 @@ export default function AnthropometricMeasurementsPage() {
                     <th className="px-4 py-3 font-medium">
                       {MEASUREMENTS_PAGE.columns.alerts}
                     </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.observation}
+                    </th>
                     <ChevronHeaderCell />
                   </tr>
                 </thead>
@@ -526,6 +530,9 @@ export default function AnthropometricMeasurementsPage() {
                         </td>
                         <td className="px-4 py-3">
                           <AlertBadgeList alerts={m.alerts} />
+                        </td>
+                        <td className="min-w-48 max-w-xs px-4 py-3">
+                          <MeasurementObservation observation={m.observation} />
                         </td>
                         <ChevronCell />
                       </tr>
@@ -587,6 +594,13 @@ export default function AnthropometricMeasurementsPage() {
 
                     <div className="w-fit">
                       <AlertBadgeList alerts={m.alerts} />
+                    </div>
+
+                    <div className="min-w-0 text-xs">
+                      <span className="text-muted-foreground">
+                        {MEASUREMENTS_PAGE.columns.observation}
+                      </span>
+                      <MeasurementObservation observation={m.observation} />
                     </div>
                   </div>
                 );

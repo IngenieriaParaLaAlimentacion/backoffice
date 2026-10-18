@@ -61,6 +61,7 @@ export type MeasurementResponsible = {
 };
 
 export type MeasurementListItem = {
+  observation?: string | null;
   id: string;
   measured_at: string;
   weight_kg: number;
