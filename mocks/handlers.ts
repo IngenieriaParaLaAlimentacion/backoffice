@@ -1,4 +1,9 @@
 import {
+  makeListMeasurementsHandler,
+  makeSubjectEvolutionHandler,
+  makeExportMeasurementsHandler,
+} from "@/mocks/handlers/measurement";
+import {
   makeForgotPasswordHandler,
   makeLoginHandler,
   makeLogoutHandler,
@@ -58,6 +63,9 @@ import {
 } from "@/mocks/handlers/foodMovement";
 
 export const handlers = [
+  makeListMeasurementsHandler(),
+  makeSubjectEvolutionHandler(),
+  makeExportMeasurementsHandler(),
   makeLoginHandler(),
   makeRefreshHandler(),
   makeResetPasswordHandler(),

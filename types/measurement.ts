@@ -61,7 +61,6 @@ export type MeasurementResponsible = {
 };
 
 export type MeasurementListItem = {
-  observation?: string | null;
   id: string;
   measured_at: string;
   weight_kg: number;
@@ -71,6 +70,7 @@ export type MeasurementListItem = {
   establishment: MeasurementEstablishment;
   responsible: MeasurementResponsible;
   alerts: MeasurementAlert[];
+  observation: string | null;
 };
 
 export type PaginatedMeasurementsResponse = {
@@ -95,6 +95,8 @@ export type EvolutionPoint = {
   height_cm: number;
   bmi: number;
   alerts: MeasurementAlert[];
+  // Older API deployments do not expose observations in evolution yet.
+  observation?: string | null;
 };
 
 export type SubjectEvolutionResponse = {

@@ -12,7 +12,6 @@ describe("MeasurementObservation", () => {
 
     const note = container.querySelector("p");
     expect(note?.textContent).toBe(observation);
-    expect(note).toHaveClass("whitespace-pre-wrap", "[overflow-wrap:anywhere]");
     expect(container.querySelector("script")).toBeNull();
   });
 

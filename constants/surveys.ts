@@ -1,3 +1,4 @@
+import { NOT_AVAILABLE } from "@/constants/common";
 import {
   ResponseType,
   SurveyResponseSortOrder,
@@ -201,11 +202,11 @@ export const DASHBOARD_INDICATORS = {
   establishmentsCount: "Comedores participantes",
   lastEvent: "Último relevamiento",
   noData: "Sin datos disponibles",
-  noDate: "—",
+  noDate: NOT_AVAILABLE,
   pendingUserRegistrations: "Registros pendientes",
   pendingEstablishmentAccess: "Accesos pendientes",
   pendingEstablishmentCreations: "Establecimientos faltantes",
-  notAvailable: "—",
+  notAvailable: NOT_AVAILABLE,
 } as const;
 
 /** A survey is either running or it is not — two tones, one place. */

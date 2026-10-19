@@ -5,6 +5,7 @@ import {
   SUBJECT_EVOLUTION_ENDPOINT,
 } from "@/constants/api";
 import {
+  MeasurementListItem,
   MeasurementSortOrder,
   PaginatedMeasurementsResponse,
   SubjectEvolutionResponse,
@@ -61,11 +62,24 @@ export const listMeasurementsAction = async (
     ? `${MEASUREMENTS_ENDPOINT}?${query.toString()}`
     : MEASUREMENTS_ENDPOINT;
 
-  const res = await dispatcher<undefined, PaginatedMeasurementsResponse>(path);
+  // Normalize older API responses at the boundary; UI items always carry a nullable note.
+  type ApiResponse = Omit<PaginatedMeasurementsResponse, "items"> & {
+    items: (Omit<MeasurementListItem, "observation"> & {
+      observation?: string | null;
+    })[];
+  };
+  const res = await dispatcher<undefined, ApiResponse>(path);
 
   if (!res.ok) throw toApiError(res.data, res.status);
 
-  return res.data as PaginatedMeasurementsResponse;
+  const data = res.data as ApiResponse;
+  return {
+    ...data,
+    items: data.items.map((item) => ({
+      ...item,
+      observation: item.observation ?? null,
+    })),
+  } satisfies PaginatedMeasurementsResponse;
 };
 
 /** Downloads every measurement matching the filters as a CSV file. */

@@ -1,11 +1,24 @@
 import { MEASUREMENTS_PAGE } from "@/constants/measurements";
-import type { MeasurementListItem } from "@/types/measurement";
+import { cn } from "@/lib/utils";
+
+type Props = {
+  observation?: string | null;
+  compact?: boolean;
+};
 
 export default function MeasurementObservation({
   observation,
-}: Pick<MeasurementListItem, "observation">) {
+  compact = true,
+}: Props) {
+  // Long reference strings without spaces must wrap instead of widening the table/card.
+  // Lists show a three-line preview; the evolution panel exposes the complete note.
   return (
-    <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">
+    <p
+      className={cn(
+        "whitespace-pre-wrap [overflow-wrap:anywhere]",
+        compact && "line-clamp-3",
+      )}
+    >
       {observation?.trim() ? observation : MEASUREMENTS_PAGE.noObservation}
     </p>
   );

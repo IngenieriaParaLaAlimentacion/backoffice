@@ -1,3 +1,4 @@
+import { NOT_AVAILABLE } from "@/constants/common";
 import { MeasurementSortOrder } from "@/types/measurement";
 
 export const MEASUREMENT_SORT_LABELS: Record<MeasurementSortOrder, string> = {
@@ -19,7 +20,8 @@ export const MEASUREMENTS_PAGE = {
   refresh: "Actualizar",
   sortLabel: "Ordenar por",
   noMeasurements: "No hay mediciones",
-  noObservation: "—",
+  listLabel: "Mediciones",
+  noObservation: NOT_AVAILABLE,
   minAgeGreaterThanMaxError: "La edad mínima no puede ser mayor que la máxima.",
   invalidAgeError: `La edad debe ser un número entero entre ${MIN_AGE} y ${MAX_AGE}.`,
   measuredFromAfterToError:
@@ -56,5 +58,6 @@ export const MEASUREMENTS_PAGE = {
     birthDate: "Fecha de nacimiento",
     measurementsCount: "Mediciones",
     chartTitle: "Evolución de peso y talla",
+    observationsTitle: "Observaciones del relevamiento",
   },
 } as const;
