@@ -1,10 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { EstablishmentResponse } from "@/types/establishment";
+import {
+  EstablishmentCharacterization,
+  EstablishmentResponse,
+} from "@/types/establishment";
 import { Button } from "@/components/ui/button";
 import { ESTABLISHMENT_DASHBOARD_PAGE as COPY } from "@/constants/establishments";
 import { ArrowLeft } from "lucide-react";
+import ProfilePendingBadge from "@/components/establishments/ProfilePendingBadge";
+import { locationDetail, profileSummary } from "@/lib/characterizationDisplay";
+import EditEstablishmentDialog from "./EditEstablishmentDialog";
 
 const PANEL_HREF = "/dashboard/establishments";
 
@@ -17,8 +23,16 @@ const PANEL_HREF = "/dashboard/establishments";
  */
 export default function EstablishmentHeader({
   establishment,
+  characterization,
+  completeProfileHref,
+  onEstablishmentSaved,
 }: {
   establishment: EstablishmentResponse;
+  characterization: EstablishmentCharacterization;
+  /** Where "Perfil pendiente" links to; omitted for read-only viewers. */
+  completeProfileHref?: string;
+  /** Shows "Editar datos"; omitted for whoever can't edit name/address. */
+  onEstablishmentSaved?: (updated: EstablishmentResponse) => void;
 }) {
   const router = useRouter();
 
@@ -29,6 +43,9 @@ export default function EstablishmentHeader({
       router.back();
     else router.push(PANEL_HREF);
   };
+
+  const summary = profileSummary(characterization);
+  const detail = locationDetail(characterization);
 
   return (
     <div className="flex flex-col gap-3">
@@ -43,12 +60,27 @@ export default function EstablishmentHeader({
       </Button>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">{establishment.name}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+          <h1 className="min-w-0 text-3xl font-semibold break-words">
+            {establishment.name}
+          </h1>
+          {onEstablishmentSaved && (
+            <EditEstablishmentDialog
+              establishment={establishment}
+              onSaved={onEstablishmentSaved}
+            />
+          )}
+        </div>
+        {establishment.characterization_status === "pending" ? (
+          <div className="mb-1">
+            <ProfilePendingBadge href={completeProfileHref} />
+          </div>
+        ) : (
+          summary && <p className="text-sm font-medium">{summary}</p>
+        )}
         <p className="text-muted-foreground text-sm">
           {establishment.formatted_address}
-        </p>
-        <p className="text-muted-foreground text-sm">
-          {establishment.city}, {establishment.province}
+          {detail && ` · ${detail}`}
         </p>
       </div>
     </div>

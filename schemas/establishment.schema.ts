@@ -27,6 +27,13 @@ export type CreateEstablishmentInput = z.infer<
   typeof createEstablishmentSchema
 >;
 
+/** Same rules as creating one. The address isn't a form field: it is either
+ * kept as is or replaced by a place picked in the autocomplete. */
+export const editEstablishmentSchema = createEstablishmentSchema.omit({
+  formatted_address: true,
+});
+export type EditEstablishmentInput = z.infer<typeof editEstablishmentSchema>;
+
 // city/province are optional here, unlike createEstablishmentSchema above —
 // the requester may not know them. Kept as plain (optional) strings, not
 // transformed to undefined here: an empty "" is a valid form value while the

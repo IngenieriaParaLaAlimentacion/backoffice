@@ -52,7 +52,7 @@ function AuthenticatedTree({ children }: { children: ReactNode }) {
 }
 
 type ProvidersOptions = Omit<RenderOptions, "wrapper"> & {
-  /** Role `GET /users/me` answers with. Defaults to the handler's superadmin. */
+  /** Role `GET /users/me` answers with. Defaults to the handler's admin. */
   role?: UserRole;
 };
 

@@ -2,7 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import { getEstablishmentDashboardAction } from "@/services/establishment.service";
-import { EstablishmentDashboardResponse } from "@/types/establishment";
+import {
+  EstablishmentCharacterizationResponse,
+  EstablishmentDashboardResponse,
+  EstablishmentResponse,
+} from "@/types/establishment";
 import { ApiError } from "@/lib/apiError";
 import { ESTABLISHMENT_DASHBOARD_PAGE } from "@/constants/establishments";
 import { getErrorMessage } from "@/lib/errorMessages";
@@ -46,6 +50,41 @@ export function useEstablishmentDashboard(establishmentId: string) {
     fetchDashboard();
   }, [fetchDashboard]);
 
+  // A saved profile is patched in place rather than refetched: the PUT already
+  // answers the stored profile and its recomputed status, and a refetch would
+  // flash the whole ficha back to its spinner.
+  const applyCharacterization = useCallback(
+    ({
+      characterization,
+      characterization_status,
+    }: EstablishmentCharacterizationResponse) =>
+      setDashboard((current) =>
+        current
+          ? {
+              ...current,
+              characterization,
+              establishment: {
+                ...current.establishment,
+                characterization_status,
+              },
+            }
+          : current,
+      ),
+    [],
+  );
+  const applyEstablishment = useCallback(
+    (updated: EstablishmentResponse) =>
+      setDashboard((current) =>
+        current
+          ? {
+              ...current,
+              establishment: { ...current.establishment, ...updated },
+            }
+          : current,
+      ),
+    [],
+  );
+
   return {
     dashboard,
     isLoading,
@@ -53,5 +92,7 @@ export function useEstablishmentDashboard(establishmentId: string) {
     notFound: status === StatusCodes.NOT_FOUND,
     forbidden: status === StatusCodes.FORBIDDEN,
     refetch: fetchDashboard,
+    applyCharacterization,
+    applyEstablishment,
   };
 }

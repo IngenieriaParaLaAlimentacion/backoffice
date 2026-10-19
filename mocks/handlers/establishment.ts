@@ -2,7 +2,9 @@ import { http, HttpResponse } from "msw";
 import { baseHandler, HandlerOptions } from "@/mocks/handlers/base";
 import {
   CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
+  ESTABLISHMENT_CHARACTERIZATION_ENDPOINT,
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
+  ESTABLISHMENT_ENDPOINT,
   ESTABLISHMENT_FIELD_WORKERS_ENDPOINT,
   ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT,
   ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT,
@@ -24,14 +26,37 @@ import {
   MOCK_ESTABLISHMENTS,
   currentStock,
   currentMovements,
+  characterizationStatusOf,
+  currentCharacterization,
+  storeCharacterization,
+  currentEstablishment,
+  storeEstablishmentEdit,
 } from "@/mocks/fixtures/establishment";
+import { OTHER_TEXT_MAX_LENGTH } from "@/schemas/establishmentCharacterization.schema";
+import {
+  EstablishmentCharacterization,
+  EstablishmentDashboardResponse,
+  UpdateEstablishmentRequest,
+} from "@/types/establishment";
 import { availableMillis } from "@/lib/foodMovementQuantity";
 
 type PaginatedEstablishmentsResponse = typeof DEFAULT_ESTABLISHMENTS_RESPONSE;
 
+/** Without options it answers each establishment's live profile status, so a
+ * profile saved under MSW drops its "Perfil pendiente" badge from the list. */
 export function makeListEstablishmentsHandler(
   options?: HandlerOptions<PaginatedEstablishmentsResponse>,
 ) {
+  if (!options)
+    return http.get(ESTABLISHMENTS_ENDPOINT, () =>
+      HttpResponse.json({
+        ...DEFAULT_ESTABLISHMENTS_RESPONSE,
+        items: DEFAULT_ESTABLISHMENTS_RESPONSE.items.map((item) => ({
+          ...currentEstablishment(item),
+          characterization_status: characterizationStatusOf(item.id),
+        })),
+      }),
+    );
   return baseHandler(ESTABLISHMENTS_ENDPOINT, {
     ...options,
     method: "get",
@@ -94,10 +119,130 @@ export function makeEstablishmentDashboardHandler() {
     ESTABLISHMENT_DASHBOARD_ENDPOINT(":id"),
     ({ params, request }) => {
       if (params.id === WITH_DATA_ID)
-        return HttpResponse.json(DEFAULT_ESTABLISHMENT_DASHBOARD);
+        return HttpResponse.json(
+          withCharacterization(DEFAULT_ESTABLISHMENT_DASHBOARD),
+        );
       if (params.id === WITHOUT_DATA_ID)
-        return HttpResponse.json(EMPTY_ESTABLISHMENT_DASHBOARD);
+        return HttpResponse.json(
+          withCharacterization(EMPTY_ESTABLISHMENT_DASHBOARD),
+        );
       return notFound(new URL(request.url).pathname);
+    },
+  );
+}
+
+function withCharacterization(
+  dashboard: EstablishmentDashboardResponse,
+): EstablishmentDashboardResponse {
+  const id = dashboard.establishment.id;
+  return {
+    ...dashboard,
+    establishment: {
+      ...currentEstablishment(dashboard.establishment),
+      characterization_status: characterizationStatusOf(id),
+    },
+    characterization: currentCharacterization(id),
+  };
+}
+
+/** Partial update, admin-only in the real backend. 409 when the new
+ * `place_id` is another mock establishment's. */
+export function makeUpdateEstablishmentHandler() {
+  return http.patch<{ id: string }>(
+    ESTABLISHMENT_ENDPOINT(":id"),
+    async ({ params, request }) => {
+      const path = new URL(request.url).pathname;
+      const establishment = MOCK_ESTABLISHMENTS.find((e) => e.id === params.id);
+      if (!establishment) return notFound(path);
+
+      const body = (await request.json()) as UpdateEstablishmentRequest;
+      const taken =
+        body.place_id &&
+        MOCK_ESTABLISHMENTS.some(
+          (e) =>
+            e.id !== params.id &&
+            currentEstablishment(e).place_id === body.place_id,
+        );
+      if (taken)
+        return HttpResponse.json(
+          {
+            type: "/errors/establishment-already-exists",
+            title: "Establishment already exists",
+            status: 409,
+            detail: "Establishment already exists",
+            instance: path,
+          },
+          {
+            status: 409,
+            headers: { "Content-Type": "application/problem+json" },
+          },
+        );
+
+      storeEstablishmentEdit(params.id, body);
+      return HttpResponse.json({
+        ...currentEstablishment(establishment),
+        characterization_status: characterizationStatusOf(params.id),
+      });
+    },
+  );
+}
+
+const OTHER_FIELDS = [
+  ["space_types", "space_types_other"],
+  ["care_tasks", "care_tasks_other"],
+  ["premises", "premises_other"],
+  ["bathroom", "bathroom_other"],
+  ["affiliations", "affiliations_other"],
+  ["service_types", "service_types_other"],
+  ["kitchen_equipment", "kitchen_equipment_other"],
+  ["cultural_identities", "cultural_identities_other"],
+] as const;
+
+/** The two 422s backend#196 defines: "Otro" text without "Otro" chosen, and
+ * a text over the length bound. Option values themselves are trusted. */
+function invalidOtherField(body: EstablishmentCharacterization) {
+  return OTHER_FIELDS.find(([choice, other]) => {
+    const text = body[other];
+    if (text === null) return false;
+    const value = body[choice];
+    const chosen = Array.isArray(value)
+      ? (value as string[]).includes("other")
+      : value === "other";
+    return !chosen || text.length > OTHER_TEXT_MAX_LENGTH;
+  });
+}
+
+export function makeUpdateEstablishmentCharacterizationHandler() {
+  return http.put<{ id: string }>(
+    ESTABLISHMENT_CHARACTERIZATION_ENDPOINT(":id"),
+    async ({ params, request }) => {
+      const path = new URL(request.url).pathname;
+      if (params.id !== WITH_DATA_ID && params.id !== WITHOUT_DATA_ID)
+        return notFound(path);
+
+      const body = (await request.json()) as EstablishmentCharacterization;
+      const invalid = invalidOtherField(body);
+      if (invalid)
+        return HttpResponse.json(
+          {
+            type: "/errors/validation-failed",
+            title: "Validation failed",
+            status: 422,
+            detail: "Validation failed",
+            instance: path,
+            field: invalid[1],
+          },
+          {
+            status: 422,
+            headers: { "Content-Type": "application/problem+json" },
+          },
+        );
+
+      storeCharacterization(params.id, body);
+      return HttpResponse.json({
+        characterization_status: characterizationStatusOf(params.id),
+        characterization: currentCharacterization(params.id),
+      });
     },
   );
 }

@@ -77,6 +77,8 @@ export const ERROR_TYPES = {
    *  backend hides that distinction on purpose, so this is never a 403. */
   FOOD_MOVEMENT_NOT_FOUND: "/errors/food-movement-not-found",
   INSUFFICIENT_STOCK: "/errors/insufficient-stock",
+  /** The address (its `place_id`) already belongs to another establishment. */
+  ESTABLISHMENT_ALREADY_EXISTS: "/errors/establishment-already-exists",
   CONCURRENT_UPDATE: "/errors/concurrent-update",
 
   VALIDATION_FAILED: "/errors/validation-failed",

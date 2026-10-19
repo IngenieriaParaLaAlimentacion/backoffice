@@ -1,4 +1,17 @@
 import {
+  Affiliation,
+  AttendeeAge,
+  Bathroom,
+  CareTask,
+  CulturalIdentity,
+  FoodReceptionFrequency,
+  KitchenEquipment,
+  Meal,
+  Premises,
+  ServiceType,
+  SpaceType,
+  Utility,
+  Weekday,
   EstablishmentRequestSortOrder,
   EstablishmentSortOrder,
   EstablishmentSubjectSortOrder,
@@ -151,6 +164,273 @@ export const ESTABLISHMENT_DETAIL_TABS = {
   subjects: "Sujetos",
   fieldWorkers: "Relevadores",
   stock: "Stock",
+  profile: "Perfil",
+} as const;
+
+// --- Establishment profile (characterization) ---
+// Option lists follow the referents' form (Mapa Nacional de Espacios
+// Comunitarios de Cuidados) in neutral wording, plus the food fields of
+// backend#196. They still need sign-off — adjust them here only.
+
+const toOptions = <T extends string>(labels: Record<T, string>) =>
+  (Object.entries(labels) as [T, string][]).map(([value, label]) => ({
+    value,
+    label,
+  }));
+
+export const WEEKDAY_LABELS: Record<Weekday, string> = {
+  monday: "Lunes",
+  tuesday: "Martes",
+  wednesday: "Miércoles",
+  thursday: "Jueves",
+  friday: "Viernes",
+  saturday: "Sábado",
+  sunday: "Domingo",
+};
+export const WEEKDAY_SHORT_LABELS: Record<Weekday, string> = {
+  monday: "Lun",
+  tuesday: "Mar",
+  wednesday: "Mié",
+  thursday: "Jue",
+  friday: "Vie",
+  saturday: "Sáb",
+  sunday: "Dom",
+};
+/** One letter per day, for the day toggles. Read with the full name as its
+ * accessible label: "M" alone is both martes and miércoles. */
+export const WEEKDAY_INITIALS: Record<Weekday, string> = {
+  monday: "L",
+  tuesday: "M",
+  wednesday: "M",
+  thursday: "J",
+  friday: "V",
+  saturday: "S",
+  sunday: "D",
+};
+export const WEEKDAY_OPTIONS = toOptions(WEEKDAY_LABELS);
+
+export const SPACE_TYPE_LABELS: Record<SpaceType, string> = {
+  community_kitchen: "Olla popular / merendero / comedor / copa de leche",
+  school_support: "Espacio comunitario de apoyo escolar",
+  community_health:
+    "Posta sanitaria / salud comunitaria / promoción de la salud",
+  childcare: "Espacio de cuidado comunitario de las infancias",
+  ive_counseling: "Consejería en interrupción voluntaria del embarazo",
+  gender_violence_counseling:
+    "Consejería en situaciones de violencia de género",
+  addiction_support: "CAAC / acompañamiento en consumo problemático",
+  homeless_support: "Acompañamiento a personas en situación de calle",
+  older_adults_center: "Centro de jubilados y personas mayores",
+  neighborhood_association: "Sociedad de fomento",
+  arts_culture: "Espacio artístico / cultural",
+  disability_care: "Centro de cuidados para personas con discapacidad",
+  fines: "FinES",
+  environmental: "Promoción del ambiente / ecologismo popular",
+  popular_economy: "Espacio productivo de la economía popular",
+  sports_club: "Club social / deportivo",
+  other: "Otro",
+};
+export const SPACE_TYPE_OPTIONS = toOptions(SPACE_TYPE_LABELS);
+
+export const CARE_TASK_LABELS: Record<CareTask, string> = {
+  food_assistance: "Asistencia alimentaria",
+  school_support: "Apoyo escolar",
+  primary_health: "Atención primaria / promoción y prevención de la salud",
+  childcare: "Cuidado comunitario de las infancias",
+  ive_counseling: "Asesoramiento en interrupción voluntaria del embarazo",
+  gender_violence_support: "Atención a situaciones de violencia de género",
+  addiction_support: "Acompañamiento en consumo problemático",
+  homeless_support: "Acompañamiento a personas en situación de calle",
+  sports: "Actividades deportivas",
+  older_adults: "Actividades y acompañamiento de personas mayores",
+  cultural: "Actividades culturales",
+  disability: "Actividades y acompañamiento para personas con discapacidad",
+  fines_tutoring: "Tutorías y acompañamiento de FinES",
+  environmental: "Promoción ambiental",
+  popular_economy: "Elaboración de productos de la economía popular",
+  other: "Otro",
+};
+export const CARE_TASK_OPTIONS = toOptions(CARE_TASK_LABELS);
+
+export const PREMISES_LABELS: Record<Premises, string> = {
+  street: "En la calle",
+  worker_home: "En la casa de una persona trabajadora",
+  lent_space: "En un espacio prestado",
+  rented_space: "En un espacio alquilado",
+  other: "Otro",
+};
+export const PREMISES_OPTIONS = toOptions(PREMISES_LABELS);
+
+export const BATHROOM_LABELS: Record<Bathroom, string> = {
+  exclusive: "Sí, de uso exclusivo del espacio",
+  shared_with_household: "Sí, compartido con quienes viven ahí",
+  none: "No tiene",
+  other: "Otro",
+};
+export const BATHROOM_OPTIONS = toOptions(BATHROOM_LABELS);
+
+export const UTILITY_LABELS: Record<Utility, string> = {
+  running_water: "Red de agua corriente",
+  motor_pump_well: "Perforación con bomba a motor",
+  electricity: "Red eléctrica",
+  natural_gas: "Red de gas",
+  gas_cylinder: "Garrafa",
+  sewer: "Cloaca",
+  septic_tank: "Pozo ciego",
+  internet: "Internet",
+};
+export const UTILITY_OPTIONS = toOptions(UTILITY_LABELS);
+
+export const AFFILIATION_LABELS: Record<Affiliation, string> = {
+  ngo: "Pertenece a una ONG",
+  social_movement: "Pertenece a un movimiento social",
+  legal_status: "Tiene personería o está reconocido como institución",
+  independent: "Trabaja de forma independiente",
+  local_government: "Trabaja articuladamente con el gobierno local",
+  church: "Pertenece a una iglesia",
+  other: "Otro",
+};
+export const AFFILIATION_OPTIONS = toOptions(AFFILIATION_LABELS);
+
+export const ATTENDEE_AGE_LABELS: Record<AttendeeAge, string> = {
+  early_childhood: "Primera infancia (0 a 5 años)",
+  children: "Niñas y niños (6 a 14 años)",
+  adolescents: "Adolescentes (15 a 21 años)",
+  adults: "Personas adultas",
+  older_adults: "Personas mayores",
+};
+export const ATTENDEE_AGE_OPTIONS = toOptions(ATTENDEE_AGE_LABELS);
+
+export const MEAL_LABELS: Record<Meal, string> = {
+  breakfast: "Desayuno",
+  lunch: "Almuerzo",
+  snack: "Merienda",
+  dinner: "Cena",
+};
+export const MEAL_OPTIONS = toOptions(MEAL_LABELS);
+
+export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
+  on_site: "Se come en el lugar",
+  takeaway: "Vianda para llevar",
+  grocery_bag: "Bolsón de mercadería",
+  other: "Otro",
+};
+export const SERVICE_TYPE_OPTIONS = toOptions(SERVICE_TYPE_LABELS);
+
+export const FOOD_RECEPTION_FREQUENCY_LABELS: Record<
+  FoodReceptionFrequency,
+  string
+> = {
+  daily: "Diaria",
+  weekly: "Semanal",
+  biweekly: "Quincenal",
+  monthly: "Mensual",
+  irregular: "Irregular",
+};
+export const FOOD_RECEPTION_FREQUENCY_OPTIONS = toOptions(
+  FOOD_RECEPTION_FREQUENCY_LABELS,
+);
+
+export const KITCHEN_EQUIPMENT_LABELS: Record<KitchenEquipment, string> = {
+  stove: "Cocina / hornallas",
+  oven: "Horno",
+  fridge: "Heladera",
+  freezer: "Freezer",
+  large_pots: "Ollas de gran capacidad",
+  blender: "Procesadora o licuadora",
+  other: "Otro",
+};
+export const KITCHEN_EQUIPMENT_OPTIONS = toOptions(KITCHEN_EQUIPMENT_LABELS);
+
+/** Placeholder catalog — see `CulturalIdentity`. */
+export const CULTURAL_IDENTITY_LABELS: Record<CulturalIdentity, string> = {
+  indigenous: "Pueblos originarios",
+  andean: "Andina / del norte",
+  guarani: "Guaraní / litoraleña",
+  migrant: "Comunidad migrante",
+  criollo: "Criolla / rural",
+  other: "Otro",
+};
+export const CULTURAL_IDENTITY_OPTIONS = toOptions(CULTURAL_IDENTITY_LABELS);
+
+/** `?edit=1` opens the Perfil tab straight in its form — where the
+ * "Perfil pendiente" badge sends whoever can complete it. */
+export const PROFILE_EDIT_PARAM = "edit";
+export const establishmentProfileHref = (id: string, edit = false) =>
+  `/dashboard/establishments/${id}/profile${edit ? `?${PROFILE_EDIT_PARAM}=1` : ""}`;
+
+export const ESTABLISHMENT_PROFILE = {
+  pendingBadge: "Perfil pendiente",
+  completeAction: "Completar perfil",
+  edit: "Editar perfil",
+  save: "Guardar perfil",
+  saving: "Guardando…",
+  cancel: "Cancelar",
+  saveError:
+    "No se pudo guardar el perfil. Revisá los datos e intentá de nuevo.",
+  unanswered: "Sin responder",
+  other: "Otro",
+  otherWithText: (text: string) => `Otro: ${text}`,
+  otherPlaceholder: "¿Cuál? (opcional)",
+  textMaxLength: (max: number) => `Máximo ${max} caracteres`,
+  invalidField: "Este valor no es válido. Revisalo y volvé a guardar.",
+  invalidEmail: "Ingresá un mail válido",
+  invalidPhone: "Usá solo números, espacios, guiones, paréntesis o +",
+  invalidWholeNumber: "Ingresá un número entero, sin puntos ni comas",
+  privateHint: "No se publica: solo lo ve el equipo",
+  crossStreets: (text: string) => `entre ${text}`,
+  peoplePerDay: (n: number) =>
+    `${n.toLocaleString("es-AR")} ${n === 1 ? "persona" : "personas"} por día`,
+  moreCount: (n: number) => `+${n}`,
+  hours: {
+    addSlot: "Agregar horario",
+    removeSlot: "Quitar horario",
+    opensAt: "Desde",
+    closesAt: "Hasta",
+    slotLabel: (n: number) => `Horario ${n}`,
+    range: (from: string, to: string) => `${from} a ${to}`,
+    daysRequired: "Elegí al menos un día",
+    timesRequired: "Completá el horario de apertura y de cierre",
+    closesBeforeOpens: "El cierre tiene que ser después de la apertura",
+    hint: "Si los horarios cambian según el día, agregá un horario por cada franja.",
+  },
+  emptyTitle: "Este establecimiento todavía no tiene perfil",
+  emptyBodyEditor:
+    "Contar dónde está, cómo funciona y a quién atiende nos permite sugerir recetas pensadas para este lugar. Todos los campos son opcionales.",
+  emptyBodyReader: "Todavía nadie cargó cómo funciona ni a quién atiende.",
+  formHint:
+    "Todos los campos son opcionales: completá lo que sepas y dejá el resto para después.",
+  optionalSection: "Agregar perfil (opcional)",
+  sections: {
+    location: "Ubicación y contacto",
+    space: "El espacio",
+    attendees: "Quiénes asisten",
+    food: "Alimentación",
+    community: "Comunidad",
+  },
+  fields: {
+    district: "Distrito / partido",
+    neighborhood: "Barrio",
+    crossStreets: "Entrecalles",
+    crossStreetsPlaceholder: "Ej.: Belgrano y Moreno",
+    contactPhone: "Teléfono de contacto",
+    contactEmail: "Mail de contacto",
+    openingHours: "Días y horarios de funcionamiento",
+    spaceTypes: "Tipo de espacio",
+    careTasks: "Tareas de cuidado que se realizan",
+    premises: "Dónde funciona",
+    bathroom: "Baño",
+    utilities: "Servicios con los que cuenta",
+    affiliations: "Organización",
+    dailyAttendance: "Personas que recibe en un día normal",
+    attendeeAges: "Edades de quienes asisten",
+    meals: "Comidas que se sirven",
+    serviceTypes: "Modalidad del servicio de comida",
+    foodReceptionFrequency: "Frecuencia de recepción de alimentos",
+    cooksPerService: "Personas que cocinan en un servicio normal",
+    kitchenEquipment: "Equipamiento de cocina",
+    culturalIdentities: "Identidad cultural de la comunidad",
+  },
 } as const;
 
 // Shared by the create-establishment form, the request review form and the
@@ -516,6 +796,10 @@ export const ESTABLISHMENT_REQUEST_REVIEW_PANEL = {
   cancelLabel: "Cancelar",
   namePlaceholder: "Ej: Establecimiento Central Norte",
   approveError: "Error al aprobar la solicitud",
+  proposedProfile: "Perfil propuesto",
+  noProposedProfile: "Quien propuso el establecimiento no completó el perfil.",
+  proposedProfileHint:
+    "Se guarda tal como fue propuesto. Para corregirlo o completarlo, hacelo desde la pestaña Perfil del establecimiento una vez aprobado.",
   rejectError: "Error al rechazar la solicitud",
 } as const;
 
@@ -526,6 +810,28 @@ export const CREATE_ESTABLISHMENT_PAGE = {
   namePlaceholder: "Ej: Comedor Central Norte",
   submitError: "Error al crear el establecimiento",
   submitButton: "Crear establecimiento",
+} as const;
+
+export const EDIT_ESTABLISHMENT_DIALOG = {
+  button: "Editar datos",
+  title: "Editar datos del establecimiento",
+  description:
+    "El nombre y la dirección se ven en el listado, el mapa y esta ficha.",
+  currentAddress: "Dirección actual",
+  changeAddress: "Cambiar dirección",
+  keepAddress: "Mantener la dirección actual",
+  newAddress: "Nueva dirección",
+  pickAddress: "Elegí una dirección de la lista",
+  localityPrefilled:
+    "Completamos ciudad y provincia según la nueva dirección. Revisalas antes de guardar.",
+  checkLocality:
+    "Revisá que ciudad y provincia correspondan a la nueva dirección.",
+  cancel: "Cancelar",
+  save: "Guardar",
+  saving: "Guardando…",
+  saveError: "No se pudieron guardar los cambios. Intentá de nuevo.",
+  addressTaken:
+    "Ya hay otro establecimiento cargado en esa dirección. Elegí otra o revisá el listado.",
 } as const;
 
 export const PROPOSE_ESTABLISHMENT_PAGE = {

@@ -7,7 +7,7 @@ const DEFAULT_PROFILE: ProfileResponse = {
   email: "admin@example.com",
   name: "Admin",
   last_name: "User",
-  role: "analyst",
+  role: "admin",
   establishments: [],
 };
 
