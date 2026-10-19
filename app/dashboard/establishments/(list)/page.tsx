@@ -450,19 +450,32 @@ function EstablishmentsContent() {
             </div>
 
             <div className="flex flex-col gap-2 md:hidden">
+              {/* The card is a <div> whose name link stretches over it (::after)
+                  rather than one big <Link>, so the badge can be its own link
+                  without nesting <a>s; `relative z-10` lifts it above the overlay. */}
               {establishments.map((est) => (
-                <Link
+                <div
                   key={est.id}
-                  href={detailHref(est.id)}
-                  className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} bg-card`}
+                  className={`relative flex items-center justify-between gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} bg-card focus-within:ring-2 focus-within:ring-ring`}
                 >
                   <span className="flex flex-col gap-1">
-                    <RowLink>
-                      <span className="text-sm font-medium">{est.name}</span>
-                    </RowLink>
+                    <Link
+                      href={detailHref(est.id)}
+                      className="after:absolute after:inset-0 after:rounded-lg focus-visible:outline-none"
+                    >
+                      <RowLink>
+                        <span className="text-sm font-medium">{est.name}</span>
+                      </RowLink>
+                    </Link>
                     {est.characterization_status === "pending" && (
-                      <span>
-                        <ProfilePendingBadge />
+                      <span className="relative z-10">
+                        <ProfilePendingBadge
+                          href={
+                            canEditProfile
+                              ? establishmentProfileHref(est.id, true)
+                              : undefined
+                          }
+                        />
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground">
@@ -473,7 +486,7 @@ function EstablishmentsContent() {
                     </span>
                   </span>
                   <RowChevron className="shrink-0" />
-                </Link>
+                </div>
               ))}
             </div>
 
