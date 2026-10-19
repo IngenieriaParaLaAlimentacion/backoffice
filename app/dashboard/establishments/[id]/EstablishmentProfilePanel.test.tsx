@@ -36,7 +36,7 @@ function renderPanel({
   onSaved = vi.fn(),
 }: {
   characterization?: EstablishmentCharacterization;
-  role?: "admin" | "analyst";
+  role?: "admin" | "analyst" | "field_worker";
   editing?: boolean;
   onSaved?: ReturnType<typeof vi.fn>;
 } = {}) {
@@ -75,8 +75,8 @@ describe("EstablishmentProfilePanel", () => {
     expect(screen.getByText(COPY.unanswered)).toBeInTheDocument();
   });
 
-  it("is read-only for an analyst, even with ?edit=1 in the URL", async () => {
-    await renderPanel({ role: "analyst", editing: true });
+  it("is read-only without the edit permission, even with ?edit=1 in the URL", async () => {
+    await renderPanel({ role: "field_worker", editing: true });
 
     expect(
       screen.queryByRole("button", { name: COPY.edit }),
@@ -86,19 +86,22 @@ describe("EstablishmentProfilePanel", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("enters edit mode through the URL for an admin", async () => {
-    await renderPanel({ role: "admin" });
+  it.each(["admin", "analyst"] as const)(
+    "enters edit mode through the URL for an %s",
+    async (role) => {
+      await renderPanel({ role });
 
-    await userEvent.click(screen.getByRole("button", { name: COPY.edit }));
-    expect(nav.replace).toHaveBeenCalledWith(`${PATH}?edit=1`, {
-      scroll: false,
-    });
-  });
+      await userEvent.click(screen.getByRole("button", { name: COPY.edit }));
+      expect(nav.replace).toHaveBeenCalledWith(`${PATH}?edit=1`, {
+        scroll: false,
+      });
+    },
+  );
 
   it("offers to complete a pending profile only to whoever can edit it", async () => {
     const { unmount } = await renderPanel({
       characterization: EMPTY_CHARACTERIZATION,
-      role: "analyst",
+      role: "field_worker",
     });
     expect(screen.getByText(COPY.emptyBodyReader)).toBeInTheDocument();
     expect(

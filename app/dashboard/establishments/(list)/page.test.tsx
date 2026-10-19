@@ -55,25 +55,28 @@ describe("EstablishmentsPage pending-profile badge", () => {
   );
   const badgeName = new RegExp(ESTABLISHMENT_PROFILE.pendingBadge);
 
-  it("links straight to the profile editor in both the table and the mobile cards for an admin", async () => {
-    const { container } = await renderWithProviders(<EstablishmentsPage />, {
-      role: "admin",
-    });
+  it.each(["admin", "analyst"] as const)(
+    "links straight to the profile editor in both the table and the mobile cards for an %s",
+    async (role) => {
+      const { container } = await renderWithProviders(<EstablishmentsPage />, {
+        role,
+      });
 
-    const badges = await screen.findAllByRole("link", { name: badgeName });
-    // One per pending establishment in the desktop table, one in its card.
-    expect(badges).toHaveLength(pending.length * 2);
-    for (const est of pending) {
-      const href = establishmentProfileHref(est.id, true);
-      expect(
-        badges.filter((b) => b.getAttribute("href") === href),
-      ).toHaveLength(2);
-    }
-    expect(container.querySelector("a a")).toBeNull();
-  });
+      const badges = await screen.findAllByRole("link", { name: badgeName });
+      // One per pending establishment in the desktop table, one in its card.
+      expect(badges).toHaveLength(pending.length * 2);
+      for (const est of pending) {
+        const href = establishmentProfileHref(est.id, true);
+        expect(
+          badges.filter((b) => b.getAttribute("href") === href),
+        ).toHaveLength(2);
+      }
+      expect(container.querySelector("a a")).toBeNull();
+    },
+  );
 
   it("shows a plain label, not a link, to someone who can't edit the profile", async () => {
-    await renderWithProviders(<EstablishmentsPage />, { role: "analyst" });
+    await renderWithProviders(<EstablishmentsPage />, { role: "field_worker" });
 
     expect(
       await screen.findAllByText(ESTABLISHMENT_PROFILE.pendingBadge),

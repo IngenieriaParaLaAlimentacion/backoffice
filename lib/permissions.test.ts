@@ -7,7 +7,6 @@ const ADMIN_ONLY: Permission[] = [
   "users.view",
   "establishments.create",
   "establishments.edit",
-  "establishments.characterization.edit",
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",
@@ -27,6 +26,15 @@ describe("can", () => {
     for (const permission of ADMIN_ONLY) {
       expect(can("analyst", permission)).toBe(false);
     }
+  });
+
+  it("lets admins and analysts, not field workers, edit a profile", () => {
+    for (const role of ["superadmin", "admin", "analyst"] as const) {
+      expect(can(role, "establishments.characterization.edit")).toBe(true);
+    }
+    expect(can("field_worker", "establishments.characterization.edit")).toBe(
+      false,
+    );
   });
 
   // Backoffice access for field workers is scoped to its own issue; until

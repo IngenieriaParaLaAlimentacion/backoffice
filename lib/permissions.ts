@@ -45,7 +45,8 @@ const ALL_PERMISSIONS = [
 /**
  * An analyst sees every screen except the ones that grant access or
  * permissions, and can do everything on the ones it does see except grant
- * access, create establishments outright or delete surveys.
+ * access, create or edit establishments outright or delete surveys. It can
+ * edit any establishment's profile, like a field worker can in the app.
  *
  * `field_worker` has no backoffice permissions yet — its access is scoped to
  * its own issue.
@@ -53,7 +54,7 @@ const ALL_PERMISSIONS = [
 const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   superadmin: ALL_PERMISSIONS,
   admin: ALL_PERMISSIONS,
-  analyst: [],
+  analyst: ["establishments.characterization.edit"],
   field_worker: [],
 };
 
