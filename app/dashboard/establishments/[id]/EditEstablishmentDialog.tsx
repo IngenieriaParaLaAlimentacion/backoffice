@@ -71,7 +71,6 @@ export default function EditEstablishmentDialog({
   const [open, setOpen] = useState(false);
   const [changingAddress, setChangingAddress] = useState(false);
   const [place, setPlace] = useState<PlaceDetails | null>(null);
-  const [noChanges, setNoChanges] = useState(false);
   const { save, isSaving, error, reset } = useUpdateEstablishment(
     establishment.id,
   );
@@ -79,6 +78,7 @@ export default function EditEstablishmentDialog({
     control,
     handleSubmit,
     setValue,
+    formState: { isDirty },
     reset: resetForm,
   } = useForm<EditEstablishmentInput>({
     resolver: zodResolver(editEstablishmentSchema),
@@ -91,19 +91,19 @@ export default function EditEstablishmentDialog({
       resetForm(toInput(establishment));
       setChangingAddress(false);
       setPlace(null);
-      setNoChanges(false);
       reset();
     }
   }
 
   const onSubmit = async (values: EditEstablishmentInput) => {
     const body = changes(establishment, values, place);
-    // The backend 422s an empty PATCH; nothing to send is not an error.
+    // "Guardar" is off until something changes, but re-picking the current
+    // address still yields nothing to send, and the backend 422s an empty
+    // PATCH: there is nothing to save, so just close.
     if (Object.keys(body).length === 0) {
-      setNoChanges(true);
+      setOpen(false);
       return;
     }
-    setNoChanges(false);
     const updated = await save(body);
     if (!updated) return;
     setOpen(false);
@@ -120,6 +120,7 @@ export default function EditEstablishmentDialog({
   };
 
   const addressPending = changingAddress && !place;
+  const hasChanges = isDirty || place !== null;
   const localityHint = place
     ? place.city || place.province
       ? COPY.localityPrefilled
@@ -237,9 +238,9 @@ export default function EditEstablishmentDialog({
               </div>
             </fieldset>
 
-            {(error || noChanges) && (
-              <Alert variant={error ? "destructive" : "default"}>
-                <AlertDescription>{error ?? COPY.noChanges}</AlertDescription>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
@@ -247,7 +248,10 @@ export default function EditEstablishmentDialog({
               <Dialog.Close render={<Button type="button" variant="ghost" />}>
                 {COPY.cancel}
               </Dialog.Close>
-              <Button type="submit" disabled={isSaving || addressPending}>
+              <Button
+                type="submit"
+                disabled={isSaving || addressPending || !hasChanges}
+              >
                 {isSaving ? COPY.saving : COPY.save}
               </Button>
             </div>

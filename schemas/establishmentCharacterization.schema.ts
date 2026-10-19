@@ -27,7 +27,9 @@ export const COOKS_PER_SERVICE_MAX = 1_000;
 
 const COPY = ESTABLISHMENT_PROFILE;
 
-const otherText = z.string().max(OTHER_TEXT_MAX_LENGTH, COPY.otherMaxLength);
+const otherText = z
+  .string()
+  .max(OTHER_TEXT_MAX_LENGTH, COPY.textMaxLength(OTHER_TEXT_MAX_LENGTH));
 const placeText = z
   .string()
   .max(PLACE_TEXT_MAX_LENGTH, COPY.textMaxLength(PLACE_TEXT_MAX_LENGTH));

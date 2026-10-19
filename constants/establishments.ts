@@ -372,7 +372,6 @@ export const ESTABLISHMENT_PROFILE = {
   other: "Otro",
   otherWithText: (text: string) => `Otro: ${text}`,
   otherPlaceholder: "¿Cuál? (opcional)",
-  otherMaxLength: "Máximo 100 caracteres",
   textMaxLength: (max: number) => `Máximo ${max} caracteres`,
   invalidField: "Este valor no es válido. Revisalo y volvé a guardar.",
   invalidEmail: "Ingresá un mail válido",
@@ -830,7 +829,6 @@ export const EDIT_ESTABLISHMENT_DIALOG = {
   cancel: "Cancelar",
   save: "Guardar",
   saving: "Guardando…",
-  noChanges: "No hay cambios para guardar",
   saveError: "No se pudieron guardar los cambios. Intentá de nuevo.",
   addressTaken:
     "Ya hay otro establecimiento cargado en esa dirección. Elegí otra o revisá el listado.",

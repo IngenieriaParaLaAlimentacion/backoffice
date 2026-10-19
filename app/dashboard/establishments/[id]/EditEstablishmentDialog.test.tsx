@@ -86,15 +86,18 @@ describe("EditEstablishmentDialog", () => {
     expect(onSaved.mock.calls[0][0].name).toBe("Comedor Norte Renovado");
   });
 
-  it("says there is nothing to save instead of sending an empty PATCH", async () => {
-    const sent = captureBody();
-    const { user, onSaved } = await openDialog();
+  it("keeps Guardar disabled until something changes", async () => {
+    const { user } = await openDialog();
+    const save = screen.getByRole("button", { name: COPY.save });
+    expect(save).toBeDisabled();
 
-    await user.click(screen.getByRole("button", { name: COPY.save }));
+    const name = screen.getByRole("textbox", { name: /Nombre/ });
+    await user.type(name, "!");
+    expect(save).toBeEnabled();
 
-    expect(await screen.findByText(COPY.noChanges)).toBeInTheDocument();
-    expect(sent.body).toBeUndefined();
-    expect(onSaved).not.toHaveBeenCalled();
+    // Typing it back to what it was is no change either.
+    await user.type(name, "{Backspace}");
+    expect(save).toBeDisabled();
   });
 
   it("sends a new address whole, with its place, coordinates and locality", async () => {
