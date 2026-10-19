@@ -19,6 +19,8 @@ const PLACES = vi.hoisted(() => ({
     formattedAddress: "Av. Belgrano 100, CABA",
     lat: -34.61,
     lng: -58.37,
+    city: "Ciudad Autónoma de Buenos Aires",
+    province: "Ciudad Autónoma de Buenos Aires",
   },
 }));
 vi.mock("@/lib/geo", () => ({
@@ -95,7 +97,7 @@ describe("EditEstablishmentDialog", () => {
     expect(onSaved).not.toHaveBeenCalled();
   });
 
-  it("sends a new address whole, with its place and coordinates", async () => {
+  it("sends a new address whole, with its place, coordinates and locality", async () => {
     const sent = captureBody();
     const { user, onSaved } = await openDialog();
 
@@ -105,6 +107,7 @@ describe("EditEstablishmentDialog", () => {
     await user.click(
       screen.getByRole("button", { name: PLACES.fresh.formattedAddress }),
     );
+    expect(screen.getByText(COPY.localityPrefilled)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: COPY.save }));
 
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
@@ -113,7 +116,23 @@ describe("EditEstablishmentDialog", () => {
       place_id: PLACES.fresh.id,
       latitude: PLACES.fresh.lat,
       longitude: PLACES.fresh.lng,
+      city: PLACES.fresh.city,
+      province: PLACES.fresh.province,
     });
+  });
+
+  it("asks to check city and province when the place doesn't carry them", async () => {
+    const { user } = await openDialog();
+
+    await user.click(screen.getByRole("button", { name: COPY.changeAddress }));
+    await user.click(
+      screen.getByRole("button", { name: "Av. Rivadavia 5678, CABA" }),
+    );
+
+    expect(screen.getByText(COPY.checkLocality)).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /Ciudad/ })).toHaveValue(
+      ESTABLISHMENT.city,
+    );
   });
 
   it("explains a 409 and keeps the dialog open with what was typed", async () => {

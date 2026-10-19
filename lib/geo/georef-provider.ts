@@ -20,7 +20,8 @@ type GeorefAddress = {
   calle: { id: string | null };
   altura: { valor: number | null };
   departamento: { id: string };
-  provincia: { id: string };
+  provincia: { id: string; nombre: string };
+  localidad_censal: { nombre: string | null } | null;
   ubicacion: { lat: number; lon: number };
 };
 
@@ -40,6 +41,8 @@ function toPlaceDetails(address: GeorefAddress): PlaceDetails {
     formattedAddress: address.nomenclatura,
     lat: address.ubicacion.lat,
     lng: address.ubicacion.lon,
+    city: address.localidad_censal?.nombre ?? undefined,
+    province: address.provincia.nombre,
   };
 }
 

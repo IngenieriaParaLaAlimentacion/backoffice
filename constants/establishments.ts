@@ -823,6 +823,10 @@ export const EDIT_ESTABLISHMENT_DIALOG = {
   keepAddress: "Mantener la dirección actual",
   newAddress: "Nueva dirección",
   pickAddress: "Elegí una dirección de la lista",
+  localityPrefilled:
+    "Completamos ciudad y provincia según la nueva dirección. Revisalas antes de guardar.",
+  checkLocality:
+    "Revisá que ciudad y provincia correspondan a la nueva dirección.",
   cancel: "Cancelar",
   save: "Guardar",
   saving: "Guardando…",

@@ -282,6 +282,12 @@ export default function EstablishmentRequestReviewPanel({
                     shouldValidate: true,
                     shouldTouch: true,
                   });
+                  if (place.city)
+                    setValue("city", place.city, { shouldValidate: true });
+                  if (place.province)
+                    setValue("province", place.province, {
+                      shouldValidate: true,
+                    });
                 }}
                 onInvalidate={() => {
                   setSelectedPlace(null);

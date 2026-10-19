@@ -135,6 +135,11 @@ in `lib/geo/index.ts` (`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` would need to be set). 
 rationale in `docs/adr/0001-geo-location-provider-adapter.md` — read it before touching
 this adapter or adding a third provider.
 
+`PlaceDetails` may also carry `city` and `province` when the provider resolves them (Georef
+does, from `localidad_censal` and `provincia`; the Google provider doesn't ask for them yet).
+The establishment forms prefill their own city/province from them on pick and keep both
+editable, so a new address can't silently leave the old locality behind.
+
 This adapter only finds an address. It has nothing to do with the establishments map
 below, which draws a map and uses a different library; don't extend `GeoLocationProvider`
 to serve it.

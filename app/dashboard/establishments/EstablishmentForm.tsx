@@ -192,6 +192,12 @@ export default function EstablishmentForm({
                     shouldValidate: true,
                     shouldTouch: true,
                   });
+                  if (place.city)
+                    setValue("city", place.city, { shouldValidate: true });
+                  if (place.province)
+                    setValue("province", place.province, {
+                      shouldValidate: true,
+                    });
                 }}
                 onInvalidate={() => {
                   setSelectedPlace(null);

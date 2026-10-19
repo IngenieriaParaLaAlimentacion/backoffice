@@ -78,6 +78,7 @@ export default function EditEstablishmentDialog({
   const {
     control,
     handleSubmit,
+    setValue,
     reset: resetForm,
   } = useForm<EditEstablishmentInput>({
     resolver: zodResolver(editEstablishmentSchema),
@@ -109,7 +110,21 @@ export default function EditEstablishmentDialog({
     onSaved(updated);
   };
 
+  // A new address may sit in another city: prefill city and province when the
+  // provider resolves them, and either way ask to check them before saving.
+  const selectPlace = (picked: PlaceDetails) => {
+    setPlace(picked);
+    if (picked.city) setValue("city", picked.city, { shouldValidate: true });
+    if (picked.province)
+      setValue("province", picked.province, { shouldValidate: true });
+  };
+
   const addressPending = changingAddress && !place;
+  const localityHint = place
+    ? place.city || place.province
+      ? COPY.localityPrefilled
+      : COPY.checkLocality
+    : null;
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
@@ -165,7 +180,7 @@ export default function EditEstablishmentDialog({
                     label={COPY.newAddress}
                     required
                     error={addressPending ? COPY.pickAddress : undefined}
-                    onSelect={setPlace}
+                    onSelect={selectPlace}
                     onInvalidate={() => setPlace(null)}
                   />
                   <Button
@@ -214,6 +229,11 @@ export default function EditEstablishmentDialog({
                   label={FIELDS.province.label}
                   required
                 />
+                {localityHint && (
+                  <p className="text-xs text-muted-foreground sm:col-span-2">
+                    {localityHint}
+                  </p>
+                )}
               </div>
             </fieldset>
 

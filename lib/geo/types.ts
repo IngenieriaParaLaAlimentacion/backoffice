@@ -3,6 +3,10 @@ export type PlaceDetails = {
   formattedAddress: string;
   lat: number;
   lng: number;
+  /** Locality and province, when the provider resolves them. Forms prefill
+   * their own city/province from these and leave them editable. */
+  city?: string;
+  province?: string;
 };
 
 export type GeoLocationProviderCallbacks = {
