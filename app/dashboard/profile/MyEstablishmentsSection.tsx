@@ -15,7 +15,8 @@ import {
 } from "@/services/user.service";
 import { ProfileEstablishment } from "@/types/user";
 import { EstablishmentResponse } from "@/types/establishment";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Building2,
@@ -124,7 +125,7 @@ export default function MyEstablishmentsSection({
       setSearchResults(response.items ?? []);
     } catch (err) {
       setSearchError(
-        getErrorMessage(err, { fallback: "Error al buscar establecimientos" }),
+        getErrorMessage(err, { fallback: MY_ESTABLISHMENTS.errors.search }),
       );
     } finally {
       setIsSearching(false);
@@ -153,7 +154,9 @@ export default function MyEstablishmentsSection({
       setIsSearchOpen(false);
     } catch (err) {
       setSearchError(
-        getErrorMessage(err, { fallback: "Error al solicitar acceso" }),
+        getErrorMessage(err, {
+          fallback: MY_ESTABLISHMENTS.errors.requestAccess,
+        }),
       );
     } finally {
       setSubmittingId(null);
@@ -175,7 +178,7 @@ export default function MyEstablishmentsSection({
     } catch (err) {
       setSearchError(
         getErrorMessage(err, {
-          fallback: "Error al suscribirse al establecimiento",
+          fallback: MY_ESTABLISHMENTS.errors.subscribe,
         }),
       );
     } finally {
@@ -198,7 +201,7 @@ export default function MyEstablishmentsSection({
       onUpdate?.();
     } catch (err) {
       setWithdrawError(
-        getErrorMessage(err, { fallback: "Error al retirar el acceso" }),
+        getErrorMessage(err, { fallback: MY_ESTABLISHMENTS.errors.withdraw }),
       );
     } finally {
       setIsWithdrawing(false);
@@ -220,7 +223,9 @@ export default function MyEstablishmentsSection({
       onUpdate?.();
     } catch (err) {
       setUnsubscribeError(
-        getErrorMessage(err, { fallback: "Error al desuscribirse" }),
+        getErrorMessage(err, {
+          fallback: MY_ESTABLISHMENTS.errors.unsubscribe,
+        }),
       );
     } finally {
       setIsUnsubscribing(false);
@@ -254,9 +259,9 @@ export default function MyEstablishmentsSection({
       </div>
 
       {error && (
-        <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {isLoading ? (
@@ -264,19 +269,20 @@ export default function MyEstablishmentsSection({
           <Loader2 className="animate-spin text-muted-foreground" size={24} />
         </div>
       ) : establishments.length === 0 ? (
-        <div className="rounded-lg border border-border border-dashed p-6 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
-          <Building2 size={32} className="text-muted-foreground/60" />
-          <p>{MY_ESTABLISHMENTS.empty}</p>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border px-6 py-10 text-center">
+          <div className="flex size-11 items-center justify-center rounded-full bg-muted">
+            <Building2 size={20} className="text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {MY_ESTABLISHMENTS.empty}
+          </p>
           {canRequestAccess && (
-            <p className="text-xs">
-              ¿No encontrás tu establecimiento?{" "}
-              <Link
-                href="/dashboard/establishments/propose"
-                className="text-primary hover:underline font-medium"
-              >
-                {MY_ESTABLISHMENTS.dialogs.proposeLink}
-              </Link>
-            </p>
+            <Link
+              href="/dashboard/establishments/propose"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              {MY_ESTABLISHMENTS.dialogs.proposeLink}
+            </Link>
           )}
         </div>
       ) : (
@@ -299,58 +305,55 @@ export default function MyEstablishmentsSection({
             return (
               <div
                 key={est.id}
-                className="flex flex-col justify-between rounded-lg border border-border p-4 gap-3 bg-card"
+                className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {est.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground line-clamp-2">
-                      {location}
-                    </span>
-                  </div>
-                  <span
-                    className={cn(
-                      "shrink-0",
-                      PILL_CLASS,
-                      TONE_PILL_CLASS[tone],
-                    )}
-                  >
-                    {statusLabel}
-                  </span>
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                  <Building2 size={18} className="text-muted-foreground" />
                 </div>
-
-                {(canWithdrawThis || canUnsubscribeThis) && (
-                  <div className="flex items-center justify-end pt-2 border-t border-border">
-                    {canWithdrawThis && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          setWithdrawError(null);
-                          setWithdrawTarget(est);
-                        }}
-                      >
-                        {MY_ESTABLISHMENTS.actions.withdraw}
-                      </Button>
-                    )}
-                    {canUnsubscribeThis && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          setUnsubscribeError(null);
-                          setUnsubscribeTarget(est);
-                        }}
-                      >
-                        {MY_ESTABLISHMENTS.actions.unsubscribe}
-                      </Button>
-                    )}
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {est.name}
+                      </span>
+                      <span className="line-clamp-2 text-xs text-muted-foreground">
+                        {location}
+                      </span>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0",
+                        PILL_CLASS,
+                        TONE_PILL_CLASS[tone],
+                      )}
+                    >
+                      {statusLabel}
+                    </span>
                   </div>
-                )}
+
+                  {(canWithdrawThis || canUnsubscribeThis) && (
+                    <div className="-mb-1 -ml-2 flex">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => {
+                          if (canWithdrawThis) {
+                            setWithdrawError(null);
+                            setWithdrawTarget(est);
+                          } else {
+                            setUnsubscribeError(null);
+                            setUnsubscribeTarget(est);
+                          }
+                        }}
+                      >
+                        {canWithdrawThis
+                          ? MY_ESTABLISHMENTS.actions.withdraw
+                          : MY_ESTABLISHMENTS.actions.unsubscribe}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -363,7 +366,7 @@ export default function MyEstablishmentsSection({
           <Dialog.Backdrop
             className={cn("fixed inset-0 z-40", OVERLAY_CLASS)}
           />
-          <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4 max-h-[90vh] overflow-hidden">
+          <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-lg rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4 max-h-[90vh] overflow-hidden">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-1">
                 <Dialog.Title className="text-lg font-semibold text-foreground">
@@ -402,9 +405,9 @@ export default function MyEstablishmentsSection({
             </form>
 
             {searchError && (
-              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-3 py-2 text-xs">
-                {searchError}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{searchError}</AlertDescription>
+              </Alert>
             )}
 
             <div className="flex-1 overflow-y-auto flex flex-col gap-2 min-h-[140px] max-h-[340px]">
@@ -415,25 +418,18 @@ export default function MyEstablishmentsSection({
                     size={24}
                   />
                 </div>
-              ) : hasSearched && searchResults.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+              ) : !hasSearched ? (
+                <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-muted-foreground">
+                  <Search size={20} className="text-muted-foreground/60" />
+                  <p className="text-sm">
+                    {MY_ESTABLISHMENTS.dialogs.searchHint}
+                  </p>
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="flex items-center justify-center py-8 text-center">
                   <p className="text-sm text-muted-foreground">
                     {MY_ESTABLISHMENTS.dialogs.noResults}
                   </p>
-                  {canRequestAccess && (
-                    <Link
-                      href="/dashboard/establishments/propose"
-                      onClick={() => setIsSearchOpen(false)}
-                      className={buttonVariants({
-                        variant: "outline",
-                        size: "sm",
-                        className: "gap-1.5 text-xs",
-                      })}
-                    >
-                      <ExternalLink size={14} />
-                      {MY_ESTABLISHMENTS.dialogs.proposeLink}
-                    </Link>
-                  )}
                 </div>
               ) : (
                 searchResults.map((est) => {
@@ -446,7 +442,7 @@ export default function MyEstablishmentsSection({
                   return (
                     <div
                       key={est.id}
-                      className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-card"
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/40"
                     >
                       <div className="flex flex-col min-w-0">
                         <span className="text-sm font-medium text-foreground truncate">
@@ -464,10 +460,11 @@ export default function MyEstablishmentsSection({
                             ? handleRequestAccess(est.id)
                             : handleSubscribe(est.id)
                         }
-                        className="shrink-0 text-xs"
+                        variant="outline"
+                        className="shrink-0"
                       >
                         {isActing && (
-                          <Loader2 size={12} className="animate-spin mr-1" />
+                          <Loader2 size={12} className="animate-spin" />
                         )}
                         {canRequestAccess
                           ? MY_ESTABLISHMENTS.actions.requestAccess
@@ -480,13 +477,13 @@ export default function MyEstablishmentsSection({
             </div>
 
             {canRequestAccess && (
-              <div className="pt-2 border-t border-border flex justify-between items-center text-xs text-muted-foreground">
+              <div className="flex items-center border-t border-border pt-3 text-sm">
                 <Link
                   href="/dashboard/establishments/propose"
                   onClick={() => setIsSearchOpen(false)}
                   className="text-primary hover:underline font-medium inline-flex items-center gap-1"
                 >
-                  <ExternalLink size={12} />
+                  <ExternalLink size={14} />
                   {MY_ESTABLISHMENTS.dialogs.proposeLink}
                 </Link>
               </div>
@@ -509,7 +506,7 @@ export default function MyEstablishmentsSection({
           <Dialog.Backdrop
             className={cn("fixed inset-0 z-40", OVERLAY_CLASS)}
           />
-          <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4">
+          <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-sm rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="text-lg font-semibold text-foreground">
                 {MY_ESTABLISHMENTS.dialogs.withdrawTitle}
@@ -523,9 +520,9 @@ export default function MyEstablishmentsSection({
             </div>
 
             {withdrawError && (
-              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-3 py-2 text-xs">
-                {withdrawError}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{withdrawError}</AlertDescription>
+              </Alert>
             )}
 
             <div className="flex justify-end gap-2 pt-2">
@@ -567,7 +564,7 @@ export default function MyEstablishmentsSection({
           <Dialog.Backdrop
             className={cn("fixed inset-0 z-40", OVERLAY_CLASS)}
           />
-          <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4">
+          <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-sm rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="text-lg font-semibold text-foreground">
                 {MY_ESTABLISHMENTS.dialogs.unsubscribeTitle}
@@ -581,9 +578,9 @@ export default function MyEstablishmentsSection({
             </div>
 
             {unsubscribeError && (
-              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-3 py-2 text-xs">
-                {unsubscribeError}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{unsubscribeError}</AlertDescription>
+              </Alert>
             )}
 
             <div className="flex justify-end gap-2 pt-2">

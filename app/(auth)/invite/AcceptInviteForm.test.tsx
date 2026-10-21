@@ -86,7 +86,7 @@ describe("AcceptInviteForm", () => {
     expect(submitBtn).toBeEnabled();
   });
 
-  it("submits full payload conforming to contract and displays 204 success screen with /login link", async () => {
+  it("submits full payload conforming to contract and displays 204 success screen with /signin link", async () => {
     const user = userEvent.setup();
     const bodies: unknown[] = [];
 
@@ -144,7 +144,7 @@ describe("AcceptInviteForm", () => {
 
     const loginLink = screen.getByRole("link", { name: "Iniciar sesión" });
     expect(loginLink).toBeInTheDocument();
-    expect(loginLink).toHaveAttribute("href", "/login");
+    expect(loginLink).toHaveAttribute("href", "/signin");
   });
 
   it("omits empty optional fields from payload when submitting", async () => {

@@ -1,4 +1,5 @@
 import { Check, Circle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type PasswordRequirement = {
   id: string;
@@ -41,11 +42,14 @@ export type PasswordRequirementsProps = {
 
 export default function PasswordRequirements({
   password = "",
-  className = "",
+  className,
 }: PasswordRequirementsProps) {
   return (
     <ul
-      className={`flex flex-col gap-1 py-1 ${className}`.trim()}
+      className={cn(
+        "-mt-1 flex flex-col gap-1 rounded-lg bg-muted/60 px-3 py-2.5",
+        className,
+      )}
       aria-label="Requisitos de seguridad de la contraseña"
     >
       {PASSWORD_REQUIREMENTS.map((req) => {
@@ -59,20 +63,17 @@ export default function PasswordRequirements({
           >
             {isMet ? (
               <Check
-                className="size-3.5 text-success shrink-0"
+                className="size-3.5 shrink-0 text-success"
+                strokeWidth={3}
                 aria-hidden="true"
               />
             ) : (
               <Circle
-                className="size-3.5 text-muted-foreground/60 shrink-0"
+                className="size-3.5 shrink-0 text-muted-foreground/50"
                 aria-hidden="true"
               />
             )}
-            <span
-              className={
-                isMet ? "text-success font-medium" : "text-muted-foreground"
-              }
-            >
+            <span className={isMet ? "text-success" : "text-muted-foreground"}>
               {req.label}
             </span>
           </li>

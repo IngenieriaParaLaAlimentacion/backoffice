@@ -6,6 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import AppTextField from "@/components/AppTextField";
 import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import {
@@ -51,6 +52,7 @@ export default function AcceptInviteForm({
   });
 
   const password = useWatch({ control, name: "password" }) ?? "";
+  const descriptionField = register("description");
 
   async function handleAcceptInvite(data: AcceptInviteInput) {
     setFormError(null);
@@ -94,18 +96,12 @@ export default function AcceptInviteForm({
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-semibold">¡Cuenta activada!</h1>
           <p className="text-sm text-muted-foreground">
-            Tu contraseña y perfil fueron guardados correctamente. Ya podés
-            iniciar sesión en el panel.
+            ¡Invitación aceptada con éxito! Tu contraseña y perfil fueron
+            guardados; ya podés iniciar sesión en el panel.
           </p>
         </div>
-        <Alert className="border-success/30 bg-success-container text-success">
-          <AlertDescription>
-            ¡Invitación aceptada con éxito! Ya podés iniciar sesión con tu
-            cuenta.
-          </AlertDescription>
-        </Alert>
         <Link
-          href="/login"
+          href="/signin"
           className={buttonVariants({ size: "lg", className: "w-full" })}
         >
           Iniciar sesión
@@ -125,15 +121,18 @@ export default function AcceptInviteForm({
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(handleAcceptInvite)}>
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <form
+        onSubmit={handleSubmit(handleAcceptInvite)}
+        className="flex flex-col gap-6"
+      >
+        <FormSection title="Tus datos">
+          <div className="grid grid-cols-2 gap-3">
             <AppTextField
               name="name"
               control={control}
               label="Nombre"
               required
-              placeholder="Ingresá tu nombre"
+              placeholder="Tu nombre"
               onChange={() => setFormError(null)}
             />
             <AppTextField
@@ -141,11 +140,13 @@ export default function AcceptInviteForm({
               control={control}
               label="Apellido"
               required
-              placeholder="Ingresá tu apellido"
+              placeholder="Tu apellido"
               onChange={() => setFormError(null)}
             />
           </div>
+        </FormSection>
 
+        <FormSection title="Contraseña">
           <AppTextField
             name="password"
             control={control}
@@ -155,9 +156,7 @@ export default function AcceptInviteForm({
             type="password"
             onChange={() => setFormError(null)}
           />
-
           <PasswordRequirements password={password} />
-
           <AppTextField
             name="confirmPassword"
             control={control}
@@ -167,24 +166,23 @@ export default function AcceptInviteForm({
             type="password"
             onChange={() => setFormError(null)}
           />
+        </FormSection>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <AppTextField
-              name="locality"
-              control={control}
-              label="Localidad"
-              placeholder="Ej: Rosario"
-              onChange={() => setFormError(null)}
-            />
-            <AppTextField
-              name="contact_phone"
-              control={control}
-              label="Teléfono de contacto"
-              placeholder="Ej: +54 9 341 555-1234"
-              onChange={() => setFormError(null)}
-            />
-          </div>
-
+        <FormSection title="Contacto" hint="Opcional">
+          <AppTextField
+            name="locality"
+            control={control}
+            label="Localidad"
+            placeholder="Ej: Rosario"
+            onChange={() => setFormError(null)}
+          />
+          <AppTextField
+            name="contact_phone"
+            control={control}
+            label="Teléfono de contacto"
+            placeholder="Ej: +54 9 341 555-1234"
+            onChange={() => setFormError(null)}
+          />
           <div className="flex flex-col gap-1">
             <label
               htmlFor={descriptionId}
@@ -192,14 +190,14 @@ export default function AcceptInviteForm({
             >
               Descripción
             </label>
-            <textarea
+            <Textarea
               id={descriptionId}
-              {...register("description")}
-              placeholder="Breve descripción personal o profesional (opcional)"
+              {...descriptionField}
+              placeholder="Contanos brevemente a qué te dedicás"
               rows={3}
-              className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+              aria-invalid={Boolean(errors.description)}
               onChange={(e) => {
-                register("description").onChange(e);
+                descriptionField.onChange(e);
                 setFormError(null);
               }}
             />
@@ -209,17 +207,18 @@ export default function AcceptInviteForm({
               </p>
             )}
           </div>
+        </FormSection>
 
+        <div className="flex flex-col gap-3">
           {formError && (
             <Alert variant="destructive">
               <AlertDescription>{formError}</AlertDescription>
             </Alert>
           )}
-
           <Button
             type="submit"
             disabled={isSubmitting || !isValid}
-            className="w-full mt-2"
+            className="w-full"
             size="lg"
           >
             {isSubmitting ? "Guardando..." : "Aceptar invitación"}
@@ -227,5 +226,30 @@ export default function AcceptInviteForm({
         </div>
       </form>
     </div>
+  );
+}
+
+function FormSection({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="flex w-full items-center gap-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        {title}
+        {hint && (
+          <span className="font-normal tracking-normal normal-case">
+            ({hint})
+          </span>
+        )}
+        <span className="h-px flex-1 bg-border" aria-hidden="true" />
+      </h2>
+      {children}
+    </section>
   );
 }

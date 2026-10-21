@@ -13,9 +13,11 @@ import {
   editProfileSchema,
   EditProfileInput,
 } from "@/schemas/editProfile.schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import AppTextField from "@/components/AppTextField";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { PROFILE_EDIT_PAGE } from "@/constants/users";
@@ -23,11 +25,9 @@ import { getErrorMessage } from "@/lib/errorMessages";
 
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-foreground">{label}</label>
-      <p className="text-sm text-muted-foreground border border-input rounded-md px-3 py-2 bg-muted/40">
-        {value}
-      </p>
+    <div className="flex min-w-0 flex-col gap-1">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="truncate text-sm">{value}</dd>
     </div>
   );
 }
@@ -142,83 +142,94 @@ export default function EditProfilePage() {
         ) : (
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 max-w-md"
+            className="flex max-w-2xl flex-col gap-6"
           >
-            <AppTextField
-              control={control}
-              name="name"
-              label={PROFILE_EDIT_PAGE.fields.name}
-              placeholder={PROFILE_EDIT_PAGE.fields.namePlaceholder}
-              required
-            />
-            <AppTextField
-              control={control}
-              name="last_name"
-              label={PROFILE_EDIT_PAGE.fields.lastName}
-              placeholder={PROFILE_EDIT_PAGE.fields.lastNamePlaceholder}
-              required
-            />
-            <AppTextField
-              control={control}
-              name="locality"
-              label={PROFILE_EDIT_PAGE.fields.locality}
-              placeholder={PROFILE_EDIT_PAGE.fields.localityPlaceholder}
-            />
-            <AppTextField
-              control={control}
-              name="contact_phone"
-              label={PROFILE_EDIT_PAGE.fields.contactPhone}
-              placeholder={PROFILE_EDIT_PAGE.fields.contactPhonePlaceholder}
-            />
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="profile-description"
-                className="text-sm font-medium text-foreground"
-              >
-                {PROFILE_EDIT_PAGE.fields.description}
-              </label>
-              <textarea
-                id="profile-description"
-                {...register("description")}
-                placeholder={PROFILE_EDIT_PAGE.fields.descriptionPlaceholder}
-                rows={3}
-                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              {errors.description && (
-                <p className="text-xs text-destructive">
-                  {errors.description.message}
+            {readOnlyFields && (
+              <section className="flex flex-col gap-3 rounded-xl bg-muted/60 p-4">
+                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <ReadOnlyField
+                    label={PROFILE_EDIT_PAGE.fields.email}
+                    value={readOnlyFields.email}
+                  />
+                  <ReadOnlyField
+                    label={PROFILE_EDIT_PAGE.fields.role}
+                    value={readOnlyFields.role}
+                  />
+                </dl>
+                <p className="text-xs text-muted-foreground">
+                  {PROFILE_EDIT_PAGE.readOnlyHint}
                 </p>
-              )}
+              </section>
+            )}
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <AppTextField
+                control={control}
+                name="name"
+                label={PROFILE_EDIT_PAGE.fields.name}
+                placeholder={PROFILE_EDIT_PAGE.fields.namePlaceholder}
+                required
+              />
+              <AppTextField
+                control={control}
+                name="last_name"
+                label={PROFILE_EDIT_PAGE.fields.lastName}
+                placeholder={PROFILE_EDIT_PAGE.fields.lastNamePlaceholder}
+                required
+              />
+              <AppTextField
+                control={control}
+                name="locality"
+                label={PROFILE_EDIT_PAGE.fields.locality}
+                placeholder={PROFILE_EDIT_PAGE.fields.localityPlaceholder}
+              />
+              <AppTextField
+                control={control}
+                name="contact_phone"
+                label={PROFILE_EDIT_PAGE.fields.contactPhone}
+                placeholder={PROFILE_EDIT_PAGE.fields.contactPhonePlaceholder}
+              />
+
+              <div className="flex flex-col gap-1 sm:col-span-2">
+                <label
+                  htmlFor="profile-description"
+                  className="text-sm font-medium text-foreground"
+                >
+                  {PROFILE_EDIT_PAGE.fields.description}
+                </label>
+                <Textarea
+                  id="profile-description"
+                  {...register("description")}
+                  placeholder={PROFILE_EDIT_PAGE.fields.descriptionPlaceholder}
+                  rows={4}
+                  aria-invalid={Boolean(errors.description)}
+                />
+                {errors.description && (
+                  <p className="text-xs text-destructive">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
             </div>
 
-            {readOnlyFields && (
-              <>
-                <ReadOnlyField
-                  label={PROFILE_EDIT_PAGE.fields.email}
-                  value={readOnlyFields.email}
-                />
-                <ReadOnlyField
-                  label={PROFILE_EDIT_PAGE.fields.role}
-                  value={readOnlyFields.role}
-                />
-              </>
-            )}
-
             {apiError && (
-              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-                {apiError}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{apiError}</AlertDescription>
+              </Alert>
             )}
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="self-start"
-            >
-              {isSubmitting && <Loader2 className="animate-spin" size={14} />}
-              {PROFILE_EDIT_PAGE.save}
-            </Button>
+            <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+              <Link
+                href="/dashboard/profile"
+                className={buttonVariants({ variant: "outline" })}
+              >
+                {PROFILE_EDIT_PAGE.cancel}
+              </Link>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="animate-spin" size={14} />}
+                {PROFILE_EDIT_PAGE.save}
+              </Button>
+            </div>
           </form>
         )}
       </Card>

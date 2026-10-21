@@ -119,6 +119,10 @@ export const PROFILE_PAGE = {
   subtitle: "Mi información personal",
   editProfile: "Editar perfil",
   loadError: "Error al cargar el perfil",
+  sections: {
+    personal: "Datos personales",
+    account: "Cuenta",
+  },
   fields: {
     name: "Nombre",
     lastName: "Apellido",
@@ -153,6 +157,9 @@ export const PROFILE_EDIT_PAGE = {
     descriptionPlaceholder: "Breve descripción personal o profesional",
   },
   save: "Guardar cambios",
+  cancel: "Cancelar",
+  readOnlyHint:
+    "El email y el rol no se pueden editar desde acá. Si necesitás cambiarlos, contactá a un administrador.",
 } as const;
 
 export const MY_ESTABLISHMENTS = {
@@ -175,6 +182,7 @@ export const MY_ESTABLISHMENTS = {
     searchDescription: "Buscá un establecimiento activo en el catálogo.",
     searchPlaceholder: "Buscar por nombre, dirección o localidad...",
     searchButton: "Buscar",
+    searchHint: "Ingresá un nombre o una dirección y presioná Buscar.",
     searching: "Buscando...",
     noResults: "No se encontraron establecimientos activos.",
     proposeLink: "¿No encontrás tu establecimiento? Proponé uno nuevo",
@@ -193,6 +201,13 @@ export const MY_ESTABLISHMENTS = {
     rejected: "Rechazado",
     withdrawn: "Retirado",
     revoked: "Revocado",
+  },
+  errors: {
+    search: "Error al buscar establecimientos",
+    requestAccess: "Error al solicitar acceso",
+    subscribe: "Error al suscribirse al establecimiento",
+    withdraw: "Error al retirar el acceso",
+    unsubscribe: "Error al desuscribirse",
   },
 } as const;
 
