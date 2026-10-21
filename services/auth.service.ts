@@ -1,5 +1,6 @@
 import { SigninInput } from "@/schemas/signin.schema";
 import {
+  AcceptInviteRequest,
   AuthTokensResponse,
   ForgotPasswordRequest,
   LoginRequest,
@@ -80,19 +81,14 @@ export const resetPasswordAction = async (
   clearTokens();
 };
 
-export const acceptInviteAction = async (
-  newPassword: string,
-  token: string,
-) => {
-  const payload: ResetPasswordRequest = {
-    new_password: newPassword,
-    token,
-  };
-
-  const res = await apiRequest(ACCEPT_INVITE_ENDPOINT, {
-    method: "POST",
-    body: payload,
-  });
+export const acceptInviteAction = async (payload: AcceptInviteRequest) => {
+  const res = await apiRequest<AcceptInviteRequest, null>(
+    ACCEPT_INVITE_ENDPOINT,
+    {
+      method: "POST",
+      body: payload,
+    },
+  );
 
   if (!res.ok) throw toApiError(res.data, res.status);
 };

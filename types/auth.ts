@@ -28,6 +28,16 @@ export type ResetPasswordRequest = {
   token: string;
 };
 
+export type AcceptInviteRequest = {
+  token: string;
+  new_password: string;
+  name: string;
+  last_name: string;
+  locality?: string | null;
+  contact_phone?: string | null;
+  description?: string | null;
+};
+
 export type VerifyEmailRequest = {
   token: string;
 };

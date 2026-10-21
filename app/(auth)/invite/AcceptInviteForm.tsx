@@ -1,19 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useId, useState } from "react";
+import Link from "next/link";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import AppTextField from "@/components/AppTextField";
+import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import {
-  resetPasswordSchema,
-  ResetPasswordInput,
-} from "@/schemas/resetPassword.schema";
+  acceptInviteSchema,
+  AcceptInviteInput,
+} from "@/schemas/acceptInvite.schema";
 import { acceptInviteAction } from "@/services/auth.service";
+import { AcceptInviteRequest } from "@/types/auth";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { ACCEPT_INVITE_FORM } from "@/constants/auth";
+import { ERROR_TYPES } from "@/lib/apiError";
 
 type AcceptInviteFormProps = {
   token: string;
@@ -24,97 +27,137 @@ export default function AcceptInviteForm({
   token,
   roleLabel,
 }: AcceptInviteFormProps) {
-  const [accepted, setAccepted] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [countdown, setCountdown] = useState(3);
-  const router = useRouter();
+  const [formError, setFormError] = useState<string | null>(null);
+  const descriptionId = useId();
 
   const {
     formState: { isSubmitting, isValid, errors },
     control,
+    register,
     handleSubmit,
-    setError,
-    clearErrors,
-  } = useForm<ResetPasswordInput>({
-    resolver: zodResolver(resetPasswordSchema),
+  } = useForm<AcceptInviteInput>({
+    resolver: zodResolver(acceptInviteSchema),
     mode: "all",
     defaultValues: {
+      name: "",
+      last_name: "",
       password: "",
       confirmPassword: "",
+      locality: "",
+      contact_phone: "",
+      description: "",
     },
   });
 
-  useEffect(() => {
-    if (!isSuccess) return;
-    const id = setInterval(() => setCountdown((c) => c - 1), 1000);
-    return () => clearInterval(id);
-  }, [isSuccess]);
+  const password = useWatch({ control, name: "password" }) ?? "";
 
-  useEffect(() => {
-    if (countdown === 0) router.replace("/signin");
-  }, [countdown, router]);
-
-  async function handleAcceptInvite({ password }: ResetPasswordInput) {
+  async function handleAcceptInvite(data: AcceptInviteInput) {
+    setFormError(null);
     try {
-      await acceptInviteAction(password, token);
+      const payload: AcceptInviteRequest = {
+        token,
+        new_password: data.password,
+        name: data.name.trim(),
+        last_name: data.last_name.trim(),
+        locality: data.locality?.trim() || undefined,
+        contact_phone: data.contact_phone?.trim() || undefined,
+        description: data.description?.trim() || undefined,
+      };
+      await acceptInviteAction(payload);
       setIsSuccess(true);
     } catch (err) {
-      setError("form" as never, {
-        message: getErrorMessage(err, {
-          overrides: ACCEPT_INVITE_FORM.errors,
-          fallback: ACCEPT_INVITE_FORM.submitError,
-        }),
+      const message = getErrorMessage(err, {
+        overrides: ACCEPT_INVITE_FORM.errors,
+        fallback:
+          ACCEPT_INVITE_FORM.errors[ERROR_TYPES.INVALID_RECOVERY_TOKEN] ??
+          ACCEPT_INVITE_FORM.submitError,
       });
+      setFormError(message);
     }
+  }
+
+  if (!token) {
+    return (
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-semibold">Enlace inválido</h1>
+        <p className="text-sm text-muted-foreground">
+          El enlace de invitación no es válido o ha expirado.
+        </p>
+      </div>
+    );
   }
 
   if (isSuccess) {
     return (
-      <Alert>
-        <AlertDescription>
-          ¡Contraseña creada! Redirigiendo en {countdown}...
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (!accepted) {
-    return (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-semibold">
-            Te invitaron a ser {roleLabel}
-          </h1>
+          <h1 className="text-3xl font-semibold">¡Cuenta activada!</h1>
           <p className="text-sm text-muted-foreground">
-            Aceptá la invitación para crear tu contraseña y acceder al panel.
+            Tu contraseña y perfil fueron guardados correctamente. Ya podés
+            iniciar sesión en el panel.
           </p>
         </div>
-        <Button size="lg" className="w-full" onClick={() => setAccepted(true)}>
-          Aceptar invitación
-        </Button>
+        <Alert className="border-success/30 bg-success-container text-success">
+          <AlertDescription>
+            ¡Invitación aceptada con éxito! Ya podés iniciar sesión con tu
+            cuenta.
+          </AlertDescription>
+        </Alert>
+        <Link
+          href="/login"
+          className={buttonVariants({ size: "lg", className: "w-full" })}
+        >
+          Iniciar sesión
+        </Link>
       </div>
     );
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">Creá tu contraseña</h1>
+        <h1 className="text-3xl font-semibold">
+          Te invitaron a ser {roleLabel}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Elegí una contraseña segura para tu cuenta de {roleLabel}.
+          Completá tus datos y creá tu contraseña para activar tu cuenta.
         </p>
       </div>
+
       <form onSubmit={handleSubmit(handleAcceptInvite)}>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AppTextField
+              name="name"
+              control={control}
+              label="Nombre"
+              required
+              placeholder="Ingresá tu nombre"
+              onChange={() => setFormError(null)}
+            />
+            <AppTextField
+              name="last_name"
+              control={control}
+              label="Apellido"
+              required
+              placeholder="Ingresá tu apellido"
+              onChange={() => setFormError(null)}
+            />
+          </div>
+
           <AppTextField
             name="password"
             control={control}
             label="Contraseña"
             required
-            placeholder="Ingresá tu nueva contraseña"
+            placeholder="Ingresá tu contraseña"
             type="password"
-            onChange={() => clearErrors("form" as never)}
+            onChange={() => setFormError(null)}
           />
+
+          <PasswordRequirements password={password} />
+
           <AppTextField
             name="confirmPassword"
             control={control}
@@ -122,25 +165,67 @@ export default function AcceptInviteForm({
             required
             placeholder="Volvé a ingresar tu contraseña"
             type="password"
-            onChange={() => clearErrors("form" as never)}
+            onChange={() => setFormError(null)}
           />
-          {(errors as Record<string, { message?: string }>).form && (
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AppTextField
+              name="locality"
+              control={control}
+              label="Localidad"
+              placeholder="Ej: Rosario"
+              onChange={() => setFormError(null)}
+            />
+            <AppTextField
+              name="contact_phone"
+              control={control}
+              label="Teléfono de contacto"
+              placeholder="Ej: +54 9 341 555-1234"
+              onChange={() => setFormError(null)}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={descriptionId}
+              className="text-sm font-medium text-foreground"
+            >
+              Descripción
+            </label>
+            <textarea
+              id={descriptionId}
+              {...register("description")}
+              placeholder="Breve descripción personal o profesional (opcional)"
+              rows={3}
+              className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+              onChange={(e) => {
+                register("description").onChange(e);
+                setFormError(null);
+              }}
+            />
+            {errors.description?.message && (
+              <p className="text-xs text-destructive">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
+
+          {formError && (
             <Alert variant="destructive">
-              <AlertDescription>
-                {(errors as Record<string, { message?: string }>).form?.message}
-              </AlertDescription>
+              <AlertDescription>{formError}</AlertDescription>
             </Alert>
           )}
+
           <Button
             type="submit"
             disabled={isSubmitting || !isValid}
-            className="w-full"
+            className="w-full mt-2"
             size="lg"
           >
-            {isSubmitting ? "Guardando..." : "Crear contraseña"}
+            {isSubmitting ? "Guardando..." : "Aceptar invitación"}
           </Button>
         </div>
       </form>
-    </>
+    </div>
   );
 }
