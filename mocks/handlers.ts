@@ -53,7 +53,15 @@ import {
   makeDashboardIndicatorsHandler,
 } from "@/mocks/handlers/surveyResponse";
 import { makeExportSubjectsHandler } from "@/mocks/handlers/csvExport";
-import { makeMeHandler } from "@/mocks/handlers/user";
+import {
+  makeMeHandler,
+  makeMyEstablishmentsHandler,
+  makeRequestEstablishmentAccessHandler,
+  makeSubscribeEstablishmentsHandler,
+  makeUnsubscribeEstablishmentsHandler,
+  makeUpdateMeHandler,
+  makeWithdrawEstablishmentAccessHandler,
+} from "@/mocks/handlers/user";
 import {
   makeFoodIntakeHandler,
   makeFoodOutflowHandler,
@@ -106,4 +114,10 @@ export const handlers = [
   makeDashboardIndicatorsHandler(),
   makeExportSubjectsHandler(),
   makeMeHandler(),
+  makeUpdateMeHandler(),
+  makeMyEstablishmentsHandler(),
+  makeRequestEstablishmentAccessHandler(),
+  makeWithdrawEstablishmentAccessHandler(),
+  makeSubscribeEstablishmentsHandler(),
+  makeUnsubscribeEstablishmentsHandler(),
 ];

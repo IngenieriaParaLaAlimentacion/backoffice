@@ -12,6 +12,8 @@ import { Loader2, SquarePen } from "lucide-react";
 import { PROFILE_PAGE } from "@/constants/users";
 import { getErrorMessage } from "@/lib/errorMessages";
 
+import MyEstablishmentsSection from "./MyEstablishmentsSection";
+
 function ProfileField({
   label,
   value,
@@ -87,26 +89,47 @@ export default function ProfilePage() {
             <Loader2 className="animate-spin text-muted-foreground" size={28} />
           </div>
         ) : profile ? (
-          <div className="flex flex-col gap-4 max-w-md">
-            <ProfileField
-              label={PROFILE_PAGE.fields.name}
-              value={profile.name}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.lastName}
-              value={profile.last_name}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.email}
-              value={profile.email}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.role}
-              value={ROLE_LABELS[profile.role] ?? profile.role}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.accountStatus}
-              value={PROFILE_PAGE.active}
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 max-w-md">
+              <ProfileField
+                label={PROFILE_PAGE.fields.name}
+                value={profile.name}
+              />
+              <ProfileField
+                label={PROFILE_PAGE.fields.lastName}
+                value={profile.last_name}
+              />
+              <ProfileField
+                label={PROFILE_PAGE.fields.email}
+                value={profile.email}
+              />
+              <ProfileField
+                label={PROFILE_PAGE.fields.role}
+                value={ROLE_LABELS[profile.role] ?? profile.role}
+              />
+              <ProfileField
+                label={PROFILE_PAGE.fields.accountStatus}
+                value={PROFILE_PAGE.active}
+              />
+              <ProfileField
+                label={PROFILE_PAGE.fields.locality}
+                value={profile.locality || "-"}
+              />
+              <ProfileField
+                label={PROFILE_PAGE.fields.contactPhone}
+                value={profile.contact_phone || "-"}
+              />
+              <ProfileField
+                label={PROFILE_PAGE.fields.description}
+                value={profile.description || "-"}
+              />
+            </div>
+
+            <Separator />
+
+            <MyEstablishmentsSection
+              initialEstablishments={profile.establishments ?? undefined}
+              onUpdate={fetchProfile}
             />
           </div>
         ) : null}

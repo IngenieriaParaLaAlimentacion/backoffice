@@ -125,6 +125,9 @@ export const PROFILE_PAGE = {
     email: "Email",
     role: "Rol",
     accountStatus: "Estado de la cuenta",
+    locality: "Localidad",
+    contactPhone: "Teléfono de contacto",
+    description: "Descripción",
   },
   active: "Activo",
 } as const;
@@ -142,8 +145,55 @@ export const PROFILE_EDIT_PAGE = {
     lastNamePlaceholder: "Tu apellido",
     email: "Email",
     role: "Rol",
+    locality: "Localidad",
+    localityPlaceholder: "Tu localidad",
+    contactPhone: "Teléfono de contacto",
+    contactPhonePlaceholder: "+54 11 1234-5678",
+    description: "Descripción",
+    descriptionPlaceholder: "Breve descripción personal o profesional",
   },
   save: "Guardar cambios",
+} as const;
+
+export const MY_ESTABLISHMENTS = {
+  title: "Mis establecimientos",
+  subtitle: "Establecimientos vinculados a tu cuenta",
+  empty: "No tenés establecimientos vinculados.",
+  loadError: "Error al cargar los establecimientos",
+  actions: {
+    requestAccess: "Solicitar acceso",
+    subscribe: "Suscribirme",
+    withdraw: "Retirar acceso",
+    unsubscribe: "Desuscribirme",
+    cancel: "Cancelar",
+    confirmWithdraw: "Confirmar retiro",
+    confirmUnsubscribe: "Confirmar desuscripción",
+  },
+  dialogs: {
+    searchTitleRequest: "Solicitar acceso a establecimiento",
+    searchTitleSubscribe: "Suscribirse a establecimiento",
+    searchDescription: "Buscá un establecimiento activo en el catálogo.",
+    searchPlaceholder: "Buscar por nombre, dirección o localidad...",
+    searchButton: "Buscar",
+    searching: "Buscando...",
+    noResults: "No se encontraron establecimientos activos.",
+    proposeLink: "¿No encontrás tu establecimiento? Proponé uno nuevo",
+    withdrawTitle: "Retirar acceso",
+    withdrawDescription: (name: string) =>
+      `¿Confirmás que deseás retirar tu solicitud de acceso a ${name}?`,
+    unsubscribeTitle: "Desuscribirse",
+    unsubscribeDescription: (name: string) =>
+      `¿Confirmás que deseás desuscribirte de ${name}?`,
+    withdrawing: "Retirando...",
+    unsubscribing: "Desuscribiendo...",
+  },
+  status: {
+    approved: "Aprobado",
+    pending: "Pendiente",
+    rejected: "Rechazado",
+    withdrawn: "Retirado",
+    revoked: "Revocado",
+  },
 } as const;
 
 export const INVITE_USER_DIALOG = {

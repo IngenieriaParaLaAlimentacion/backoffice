@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
+import { useSession } from "@/context/SessionContext";
 import { getMeAction, updateMeAction } from "@/services/user.service";
-import { ROLE_LABELS } from "@/types/user";
+import { ROLE_LABELS, UpdateProfilePayload } from "@/types/user";
 import {
   editProfileSchema,
   EditProfileInput,
@@ -34,6 +35,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
 export default function EditProfilePage() {
   const router = useRouter();
   const { makeAuthorizedRequest } = useAuth();
+  const { refetch } = useSession();
 
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -46,16 +48,29 @@ export default function EditProfilePage() {
     control,
     handleSubmit,
     reset,
-    formState: { isSubmitting },
+    register,
+    formState: { isSubmitting, errors },
   } = useForm<EditProfileInput>({
     resolver: zodResolver(editProfileSchema),
-    defaultValues: { name: "", last_name: "" },
+    defaultValues: {
+      name: "",
+      last_name: "",
+      locality: "",
+      contact_phone: "",
+      description: "",
+    },
   });
 
   const fetchProfile = useCallback(async () => {
     try {
       const profile = await getMeAction(makeAuthorizedRequest);
-      reset({ name: profile.name, last_name: profile.last_name });
+      reset({
+        name: profile.name,
+        last_name: profile.last_name,
+        locality: profile.locality ?? "",
+        contact_phone: profile.contact_phone ?? "",
+        description: profile.description ?? "",
+      });
       setReadOnlyFields({
         email: profile.email,
         role: ROLE_LABELS[profile.role] ?? profile.role,
@@ -76,7 +91,15 @@ export default function EditProfilePage() {
   const onSubmit = async (data: EditProfileInput) => {
     setApiError(null);
     try {
-      await updateMeAction(makeAuthorizedRequest, data);
+      const payload: UpdateProfilePayload = {
+        name: data.name.trim(),
+        last_name: data.last_name.trim(),
+        locality: data.locality?.trim() || null,
+        contact_phone: data.contact_phone?.trim() || null,
+        description: data.description?.trim() || null,
+      };
+      await updateMeAction(makeAuthorizedRequest, payload);
+      refetch();
       router.push("/dashboard/profile");
     } catch (err) {
       setApiError(
@@ -135,6 +158,39 @@ export default function EditProfilePage() {
               placeholder={PROFILE_EDIT_PAGE.fields.lastNamePlaceholder}
               required
             />
+            <AppTextField
+              control={control}
+              name="locality"
+              label={PROFILE_EDIT_PAGE.fields.locality}
+              placeholder={PROFILE_EDIT_PAGE.fields.localityPlaceholder}
+            />
+            <AppTextField
+              control={control}
+              name="contact_phone"
+              label={PROFILE_EDIT_PAGE.fields.contactPhone}
+              placeholder={PROFILE_EDIT_PAGE.fields.contactPhonePlaceholder}
+            />
+
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="profile-description"
+                className="text-sm font-medium text-foreground"
+              >
+                {PROFILE_EDIT_PAGE.fields.description}
+              </label>
+              <textarea
+                id="profile-description"
+                {...register("description")}
+                placeholder={PROFILE_EDIT_PAGE.fields.descriptionPlaceholder}
+                rows={3}
+                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {errors.description && (
+                <p className="text-xs text-destructive">
+                  {errors.description.message}
+                </p>
+              )}
+            </div>
 
             {readOnlyFields && (
               <>
