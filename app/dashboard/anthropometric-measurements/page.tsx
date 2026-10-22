@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
+import MeasurementObservation from "./MeasurementObservation";
 import { useAuth } from "@/context/AuthContext";
 import {
   exportMeasurementsAction,
@@ -56,6 +57,9 @@ import { getErrorMessage } from "@/lib/errorMessages";
 
 const PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 300;
+
+// Keep note previews readable without letting a 500-character note dominate the table.
+const OBSERVATION_CELL_CLASS = "min-w-48 max-w-xs px-4 py-3";
 
 const SELECT_CLASS =
   "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -492,6 +496,9 @@ export default function AnthropometricMeasurementsPage() {
                     <th className="px-4 py-3 font-medium">
                       {MEASUREMENTS_PAGE.columns.alerts}
                     </th>
+                    <th className="px-4 py-3 font-medium">
+                      {MEASUREMENTS_PAGE.columns.observation}
+                    </th>
                     <ChevronHeaderCell />
                   </tr>
                 </thead>
@@ -527,6 +534,9 @@ export default function AnthropometricMeasurementsPage() {
                         <td className="px-4 py-3">
                           <AlertBadgeList alerts={m.alerts} />
                         </td>
+                        <td className={OBSERVATION_CELL_CLASS}>
+                          <MeasurementObservation observation={m.observation} />
+                        </td>
                         <ChevronCell />
                       </tr>
                     );
@@ -535,13 +545,18 @@ export default function AnthropometricMeasurementsPage() {
               </table>
             </div>
 
-            <div className="flex flex-col gap-2 md:hidden">
+            <div
+              role="list"
+              aria-label={MEASUREMENTS_PAGE.listLabel}
+              className="flex flex-col gap-2 md:hidden"
+            >
               {measurements.map((m) => {
                 const severity = topSeverity(m.alerts);
                 const isSelected = selectedSubjectId === m.subject.id;
                 return (
                   <div
                     key={m.id}
+                    role="listitem"
                     onClick={() => openEvolution(m.subject.id)}
                     className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                   >
@@ -587,6 +602,13 @@ export default function AnthropometricMeasurementsPage() {
 
                     <div className="w-fit">
                       <AlertBadgeList alerts={m.alerts} />
+                    </div>
+
+                    <div className="flex min-w-0 flex-col gap-1 text-xs">
+                      <span className="text-muted-foreground">
+                        {MEASUREMENTS_PAGE.columns.observation}
+                      </span>
+                      <MeasurementObservation observation={m.observation} />
                     </div>
                   </div>
                 );
@@ -674,6 +696,40 @@ export default function AnthropometricMeasurementsPage() {
                   </span>
                   <MeasurementEvolutionChart points={evolution.points} />
                 </div>
+
+                <section
+                  aria-label={MEASUREMENTS_PAGE.detail.observationsTitle}
+                  className="flex flex-col gap-3"
+                >
+                  <h2 className="text-sm font-medium">
+                    {MEASUREMENTS_PAGE.detail.observationsTitle}
+                  </h2>
+                  {evolution.points.some((point) =>
+                    point.observation?.trim(),
+                  ) ? (
+                    evolution.points
+                      .filter((point) => point.observation?.trim())
+                      .map((point, index) => (
+                        <div
+                          key={`${point.measured_at}-${index}`}
+                          className="flex min-w-0 flex-col gap-1 text-sm"
+                        >
+                          <span className="text-xs text-muted-foreground">
+                            {formatTimestampDate(point.measured_at)}
+                          </span>
+                          <MeasurementObservation
+                            observation={point.observation}
+                            compact={false}
+                          />
+                        </div>
+                      ))
+                  ) : (
+                    <MeasurementObservation
+                      observation={null}
+                      compact={false}
+                    />
+                  )}
+                </section>
               </div>
             ) : null}
           </Dialog.Popup>

@@ -1,5 +1,7 @@
 "use client";
 
+import { NOT_AVAILABLE } from "@/constants/common";
+
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -354,12 +356,12 @@ export default function EstablishmentMovementsHistoryPage({
                         <td className="px-4 py-3 text-muted-foreground">
                           {movement.direction === "in"
                             ? FOOD_INTAKE_ORIGIN_LABELS[movement.origin_type]
-                            : "—"}
+                            : NOT_AVAILABLE}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {movement.direction === "in"
                             ? recurrenceLabel(movement.is_recurring)
-                            : "—"}
+                            : NOT_AVAILABLE}
                         </td>
                         <ChevronCell />
                       </tr>
