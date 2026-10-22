@@ -117,6 +117,23 @@ describe("food movement form", () => {
     ).toBe(false);
   });
 
+  it.each([
+    ["private_donation", true],
+    ["collection_event", true],
+    ["social_organization", false],
+  ])("origin %s is valid: %s", (origin_type, valid) => {
+    const result = foodMovementSchema.safeParse({
+      direction: "in",
+      category: "",
+      date: "2026-09-30",
+      comments: "",
+      origin_type,
+      is_recurring: "false",
+      lines: [{ food, quantity: "1" }],
+    });
+    expect(result.success).toBe(valid);
+  });
+
   it("requires explicit origin and recurrence for an intake", () => {
     const draft = {
       direction: "in",
