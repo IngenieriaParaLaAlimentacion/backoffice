@@ -2,7 +2,10 @@ import { z } from "zod";
 import { FoodListItem } from "@/types/foodCatalog";
 import { FoodIntakeOriginType, FoodStockItem } from "@/types/establishment";
 import { availableMillis, quantityMillis } from "@/lib/foodMovementQuantity";
-import { FOOD_MOVEMENT_FORM } from "@/constants/establishments";
+import {
+  FOOD_INTAKE_ORIGIN_LABELS,
+  FOOD_MOVEMENT_FORM,
+} from "@/constants/establishments";
 
 export type MovementFood = FoodListItem | FoodStockItem;
 export const OUTFLOW_EXCEEDS_STOCK = "La cantidad supera el stock disponible";
@@ -10,16 +13,10 @@ const foodMovementLineSchema = z.object({
   food: z.custom<MovementFood | null>((value) => typeof value === "object"),
   quantity: z.string(),
 });
-export const FOOD_INTAKE_ORIGIN_VALUES = [
-  "national_government",
-  "provincial_government",
-  "municipal_government",
-  "private_company",
-  "foundation",
-  "social_organization",
-  "church",
-  "other",
-] as const satisfies readonly FoodIntakeOriginType[];
+// Derived from the labels so a new origin only needs adding in one place.
+export const FOOD_INTAKE_ORIGIN_VALUES = Object.keys(
+  FOOD_INTAKE_ORIGIN_LABELS,
+) as [FoodIntakeOriginType, ...FoodIntakeOriginType[]];
 export const foodMovementSchema = z
   .object({
     direction: z.enum(["in", "out"]),

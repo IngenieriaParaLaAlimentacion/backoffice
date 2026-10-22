@@ -620,9 +620,10 @@ export const FOOD_INTAKE_ORIGIN_LABELS: Record<FoodIntakeOriginType, string> = {
   provincial_government: "Gobierno provincial",
   municipal_government: "Gobierno municipal",
   private_company: "Empresa privada",
-  foundation: "Fundación",
-  social_organization: "Organización social",
+  foundation: "Fundación / ONG",
   church: "Iglesia",
+  private_donation: "Donación particular",
+  collection_event: "Colecta / evento",
   other: "Otro",
 };
 export const FOOD_INTAKE_ORIGIN_OPTIONS = Object.entries(

@@ -440,8 +440,9 @@ export type FoodIntakeOriginType =
   | "municipal_government"
   | "private_company"
   | "foundation"
-  | "social_organization"
   | "church"
+  | "private_donation"
+  | "collection_event"
   | "other";
 
 type MovementOrigin =
