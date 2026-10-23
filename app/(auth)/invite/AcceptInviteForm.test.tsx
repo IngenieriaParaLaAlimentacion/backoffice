@@ -260,6 +260,33 @@ describe("AcceptInviteForm", () => {
     expect(await screen.findByText(expectedError)).toBeInTheDocument();
   });
 
+  it("shows the generic error, not the invalid-link one, when the server fails", async () => {
+    const user = userEvent.setup();
+    server.use(makeAcceptInviteHandler({ status: 500 }));
+
+    render(<AcceptInviteForm token={TOKEN} roleLabel="analista" />);
+
+    await user.type(screen.getByLabelText(/^Nombre/i), "Mariana");
+    await user.type(screen.getByLabelText(/^Apellido/i), "López");
+    await user.type(screen.getByLabelText(/^Contraseña/i), "SecurePass123!");
+    await user.type(
+      screen.getByLabelText(/^Confirmar contraseña/i),
+      "SecurePass123!",
+    );
+    await user.click(
+      screen.getByRole("button", { name: /Aceptar invitación/i }),
+    );
+
+    expect(
+      await screen.findByText(ACCEPT_INVITE_FORM.submitError),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        ACCEPT_INVITE_FORM.errors[ERROR_TYPES.INVALID_RECOVERY_TOKEN],
+      ),
+    ).not.toBeInTheDocument();
+  });
+
   it("clears the error message when user modifies a field after submission failure", async () => {
     const user = userEvent.setup();
 
