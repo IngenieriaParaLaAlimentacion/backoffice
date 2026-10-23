@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import {
   Building,
   Building2,
@@ -46,7 +47,7 @@ function IndicatorCard({
   icon: React.ReactNode;
   value: React.ReactNode;
   label: string;
-  href?: string;
+  href?: Route;
   /** Draws attention with the app's destructive styling — use when there's at least 1 pending item. */
   emphasize?: boolean;
 }) {

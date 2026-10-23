@@ -117,7 +117,7 @@ export default function EstablishmentMovementsHistoryPage({
     setFoodFilterKey((key) => key + 1);
   };
 
-  const stockHref = `/dashboard/establishments/${id}/stock`;
+  const stockHref = `/dashboard/establishments/${id}/stock` as const;
   const columns = COPY.columns;
 
   if (notFound) {

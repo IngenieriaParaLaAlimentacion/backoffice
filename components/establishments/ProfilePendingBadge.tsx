@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { ArrowRight, ClipboardList } from "lucide-react";
 import { PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
 import { ESTABLISHMENT_PROFILE as COPY } from "@/constants/establishments";
@@ -15,11 +16,11 @@ const BADGE_CLASS = cn(
  * the listing. With `href` (only for whoever can edit the profile) it links
  * straight to the profile form; without it, it's a plain label.
  */
-export default function ProfilePendingBadge({
+export default function ProfilePendingBadge<T extends string>({
   href,
   onClick,
 }: {
-  href?: string;
+  href?: Route<T>;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }) {
   if (!href)

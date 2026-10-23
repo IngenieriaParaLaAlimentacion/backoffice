@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import {
   EstablishmentCharacterization,
@@ -21,7 +22,7 @@ const PANEL_HREF = "/dashboard/establishments";
  * The establishment has no `responsable` column in the data model; the field
  * workers list below is the closest available context for "who runs this".
  */
-export default function EstablishmentHeader({
+export default function EstablishmentHeader<T extends string>({
   establishment,
   characterization,
   completeProfileHref,
@@ -30,7 +31,7 @@ export default function EstablishmentHeader({
   establishment: EstablishmentResponse;
   characterization: EstablishmentCharacterization;
   /** Where "Perfil pendiente" links to; omitted for read-only viewers. */
-  completeProfileHref?: string;
+  completeProfileHref?: Route<T>;
   /** Shows "Editar datos"; omitted for whoever can't edit name/address. */
   onEstablishmentSaved?: (updated: EstablishmentResponse) => void;
 }) {

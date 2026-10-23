@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -114,9 +115,13 @@ export default function EstablishmentProfilePanel({
   // `replace`, like the tab links: entering or leaving the form must not add
   // a step to "Volver".
   const setEditing = (editing: boolean) =>
-    router.replace(editing ? `${pathname}?${PROFILE_EDIT_PARAM}=1` : pathname, {
-      scroll: false,
-    });
+    // The current page with new search params, so it always exists.
+    router.replace(
+      (editing ? `${pathname}?${PROFILE_EDIT_PARAM}=1` : pathname) as Route,
+      {
+        scroll: false,
+      },
+    );
 
   if (isEditing)
     return (
