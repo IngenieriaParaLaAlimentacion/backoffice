@@ -48,15 +48,33 @@ export function makeListEstablishmentsHandler(
   options?: HandlerOptions<PaginatedEstablishmentsResponse>,
 ) {
   if (!options)
-    return http.get(ESTABLISHMENTS_ENDPOINT, () =>
-      HttpResponse.json({
-        ...DEFAULT_ESTABLISHMENTS_RESPONSE,
-        items: DEFAULT_ESTABLISHMENTS_RESPONSE.items.map((item) => ({
+    return http.get(ESTABLISHMENTS_ENDPOINT, ({ request }) => {
+      // Like the backend, `search` matches the name or the address.
+      const search = new URL(request.url).searchParams
+        .get("search")
+        ?.trim()
+        .toLowerCase();
+      const items = DEFAULT_ESTABLISHMENTS_RESPONSE.items
+        .map((item) => ({
           ...currentEstablishment(item),
           characterization_status: characterizationStatusOf(item.id),
-        })),
-      }),
-    );
+        }))
+        .filter(
+          (item) =>
+            !search ||
+            item.name.toLowerCase().includes(search) ||
+            item.formatted_address.toLowerCase().includes(search),
+        );
+      return HttpResponse.json({
+        ...DEFAULT_ESTABLISHMENTS_RESPONSE,
+        items,
+        total: items.length,
+        total_pages: Math.max(
+          1,
+          Math.ceil(items.length / DEFAULT_ESTABLISHMENTS_RESPONSE.page_size),
+        ),
+      });
+    });
   return baseHandler(ESTABLISHMENTS_ENDPOINT, {
     ...options,
     method: "get",
