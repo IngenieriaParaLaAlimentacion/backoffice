@@ -75,17 +75,6 @@ export default function AcceptInviteForm({
     }
   }
 
-  if (!token) {
-    return (
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">Enlace inválido</h1>
-        <p className="text-sm text-muted-foreground">
-          El enlace de invitación no es válido o ha expirado.
-        </p>
-      </div>
-    );
-  }
-
   if (isSuccess) {
     return (
       <div className="flex flex-col gap-6">

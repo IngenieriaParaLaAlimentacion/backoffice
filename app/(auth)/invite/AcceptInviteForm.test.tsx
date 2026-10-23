@@ -295,18 +295,4 @@ describe("AcceptInviteForm", () => {
     await user.type(screen.getByLabelText(/^Nombre/i), "a");
     expect(screen.queryByText(expectedError)).not.toBeInTheDocument();
   });
-
-  it("renders invalid link state if token is empty", () => {
-    render(<AcceptInviteForm token="" roleLabel="administrador" />);
-
-    expect(
-      screen.getByRole("heading", { name: "Enlace inválido" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("El enlace de invitación no es válido o ha expirado."),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Aceptar invitación/i }),
-    ).not.toBeInTheDocument();
-  });
 });

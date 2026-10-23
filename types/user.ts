@@ -12,16 +12,10 @@ export type ProfileEstablishment = {
   name: string;
   address?: string;
   formatted_address?: string;
-  latitude?: number;
-  longitude?: number;
-  place_id?: string;
   city?: string;
   province?: string;
-  characterization_status?: string;
   status: RelationStatus;
 };
-
-export type EstablishmentWithStatus = ProfileEstablishment;
 
 export type ProfileResponse = {
   id: string;
