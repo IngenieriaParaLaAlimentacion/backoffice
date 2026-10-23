@@ -49,6 +49,23 @@ describe("editProfileSchema", () => {
     expect(resultUndefined.success).toBe(true);
   });
 
+  it("outputs trimmed values and null for blank optional fields", () => {
+    const result = editProfileSchema.parse({
+      name: "  Juan ",
+      last_name: "Pérez",
+      locality: "   ",
+      contact_phone: "",
+      description: undefined,
+    });
+    expect(result).toEqual({
+      name: "Juan",
+      last_name: "Pérez",
+      locality: null,
+      contact_phone: null,
+      description: null,
+    });
+  });
+
   it("rejects empty name", () => {
     const result = editProfileSchema.safeParse({
       ...VALID_DATA,

@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+/** Blank optional fields reach the API as `null`, so the forms never normalize. */
+const optionalText = (field: z.ZodString) =>
+  field.nullish().transform((value) => value || null);
+
 export const editProfileSchema = z.object({
   name: z
     .string()
@@ -11,28 +15,18 @@ export const editProfileSchema = z.object({
     .trim()
     .min(1, "El apellido es requerido")
     .max(100, "Máximo 100 caracteres"),
-  locality: z
-    .string()
-    .trim()
-    .max(100, "Máximo 100 caracteres")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  contact_phone: z
-    .string()
-    .trim()
-    .max(20, "Máximo 20 caracteres")
-    .regex(/^[0-9+\-\s()]+$/, "Formato de teléfono inválido")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  description: z
-    .string()
-    .trim()
-    .max(500, "Máximo 500 caracteres")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
+  locality: optionalText(z.string().trim().max(100, "Máximo 100 caracteres")),
+  contact_phone: optionalText(
+    z
+      .string()
+      .trim()
+      .max(20, "Máximo 20 caracteres")
+      .regex(/^[0-9+\-\s()]*$/, "Formato de teléfono inválido"),
+  ),
+  description: optionalText(
+    z.string().trim().max(500, "Máximo 500 caracteres"),
+  ),
 });
 
-export type EditProfileInput = z.infer<typeof editProfileSchema>;
+export type EditProfileInput = z.input<typeof editProfileSchema>;
+export type EditProfileOutput = z.output<typeof editProfileSchema>;

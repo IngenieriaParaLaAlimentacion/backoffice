@@ -1,39 +1,6 @@
 import { Check, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-export type PasswordRequirement = {
-  id: string;
-  label: string;
-  test: (password: string) => boolean;
-};
-
-export const PASSWORD_REQUIREMENTS: readonly PasswordRequirement[] = [
-  {
-    id: "length",
-    label: "Al menos 8 caracteres",
-    test: (p: string) => p.length >= 8,
-  },
-  {
-    id: "uppercase",
-    label: "Al menos una letra mayúscula",
-    test: (p: string) => /[A-Z]/.test(p),
-  },
-  {
-    id: "lowercase",
-    label: "Al menos una letra minúscula",
-    test: (p: string) => /[a-z]/.test(p),
-  },
-  {
-    id: "number",
-    label: "Al menos un número",
-    test: (p: string) => /[0-9]/.test(p),
-  },
-  {
-    id: "special",
-    label: "Al menos un caracter especial",
-    test: (p: string) => /[^a-zA-Z0-9]/.test(p),
-  },
-] as const;
+import { PASSWORD_REQUIREMENTS } from "@/schemas/password.schema";
 
 export type PasswordRequirementsProps = {
   password?: string;

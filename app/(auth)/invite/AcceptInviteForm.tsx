@@ -12,9 +12,9 @@ import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import {
   acceptInviteSchema,
   AcceptInviteInput,
+  AcceptInviteOutput,
 } from "@/schemas/acceptInvite.schema";
 import { acceptInviteAction } from "@/services/auth.service";
-import { AcceptInviteRequest } from "@/types/auth";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { ACCEPT_INVITE_FORM } from "@/constants/auth";
 
@@ -36,7 +36,7 @@ export default function AcceptInviteForm({
     control,
     register,
     handleSubmit,
-  } = useForm<AcceptInviteInput>({
+  } = useForm<AcceptInviteInput, unknown, AcceptInviteOutput>({
     resolver: zodResolver(acceptInviteSchema),
     mode: "all",
     defaultValues: {
@@ -53,19 +53,18 @@ export default function AcceptInviteForm({
   const password = useWatch({ control, name: "password" }) ?? "";
   const descriptionField = register("description");
 
-  async function handleAcceptInvite(data: AcceptInviteInput) {
+  async function handleAcceptInvite(data: AcceptInviteOutput) {
     setFormError(null);
     try {
-      const payload: AcceptInviteRequest = {
+      await acceptInviteAction({
         token,
         new_password: data.password,
-        name: data.name.trim(),
-        last_name: data.last_name.trim(),
-        locality: data.locality?.trim() || undefined,
-        contact_phone: data.contact_phone?.trim() || undefined,
-        description: data.description?.trim() || undefined,
-      };
-      await acceptInviteAction(payload);
+        name: data.name,
+        last_name: data.last_name,
+        locality: data.locality,
+        contact_phone: data.contact_phone,
+        description: data.description,
+      });
       setIsSuccess(true);
     } catch (err) {
       const message = getErrorMessage(err, {

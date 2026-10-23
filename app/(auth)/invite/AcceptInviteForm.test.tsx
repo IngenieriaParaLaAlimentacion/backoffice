@@ -39,7 +39,7 @@ describe("AcceptInviteForm", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Al menos un número")).toBeInTheDocument();
     expect(
-      screen.getByText("Al menos un caracter especial"),
+      screen.getByText("Al menos un carácter especial"),
     ).toBeInTheDocument();
 
     const submitBtn = screen.getByRole("button", {
@@ -147,7 +147,7 @@ describe("AcceptInviteForm", () => {
     expect(loginLink).toHaveAttribute("href", "/signin");
   });
 
-  it("omits empty optional fields from payload when submitting", async () => {
+  it("sends null for empty optional fields", async () => {
     const user = userEvent.setup();
     const bodies: Record<string, unknown>[] = [];
 
@@ -179,10 +179,10 @@ describe("AcceptInviteForm", () => {
       new_password: "StrongPass123!",
       name: "Carlos",
       last_name: "Gómez",
+      locality: null,
+      contact_phone: null,
+      description: null,
     });
-    expect(bodies[0].locality).toBeUndefined();
-    expect(bodies[0].contact_phone).toBeUndefined();
-    expect(bodies[0].description).toBeUndefined();
 
     expect(
       await screen.findByRole("heading", { name: "¡Cuenta activada!" }),

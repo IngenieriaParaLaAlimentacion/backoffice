@@ -26,33 +26,9 @@ export const updateMeAction = async (
   dispatcher: AuthDispatcher,
   data: UpdateProfilePayload,
 ) => {
-  const payload: Record<string, string | null> = {
-    name: data.name.trim(),
-    last_name: data.last_name.trim(),
-  };
-
-  if ("locality" in data) {
-    payload.locality =
-      data.locality && data.locality.trim() !== ""
-        ? data.locality.trim()
-        : null;
-  }
-  if ("contact_phone" in data) {
-    payload.contact_phone =
-      data.contact_phone && data.contact_phone.trim() !== ""
-        ? data.contact_phone.trim()
-        : null;
-  }
-  if ("description" in data) {
-    payload.description =
-      data.description && data.description.trim() !== ""
-        ? data.description.trim()
-        : null;
-  }
-
-  const res = await dispatcher<Record<string, string | null>, ProfileResponse>(
+  const res = await dispatcher<UpdateProfilePayload, ProfileResponse>(
     ME_ENDPOINT,
-    { method: "PATCH", body: payload },
+    { method: "PATCH", body: data },
   );
 
   if (!res.ok) throw toApiError(res.data, res.status);

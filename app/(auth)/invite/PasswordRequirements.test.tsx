@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import PasswordRequirements, {
-  PASSWORD_REQUIREMENTS,
-} from "@/components/auth/PasswordRequirements";
+import PasswordRequirements from "@/components/auth/PasswordRequirements";
+import { PASSWORD_REQUIREMENTS } from "@/schemas/password.schema";
 
 describe("PasswordRequirements", () => {
   it("renders all five password requirements", () => {

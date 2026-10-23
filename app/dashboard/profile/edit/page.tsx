@@ -7,10 +7,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { getMeAction, updateMeAction } from "@/services/user.service";
-import { ROLE_LABELS, UpdateProfilePayload } from "@/types/user";
+import { ROLE_LABELS } from "@/types/user";
 import {
   editProfileSchema,
   EditProfileInput,
+  EditProfileOutput,
 } from "@/schemas/editProfile.schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
@@ -48,7 +49,7 @@ export default function EditProfilePage() {
     reset,
     register,
     formState: { isSubmitting, errors },
-  } = useForm<EditProfileInput>({
+  } = useForm<EditProfileInput, unknown, EditProfileOutput>({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
       name: "",
@@ -86,17 +87,10 @@ export default function EditProfilePage() {
     fetchProfile();
   }, [fetchProfile]);
 
-  const onSubmit = async (data: EditProfileInput) => {
+  const onSubmit = async (data: EditProfileOutput) => {
     setApiError(null);
     try {
-      const payload: UpdateProfilePayload = {
-        name: data.name.trim(),
-        last_name: data.last_name.trim(),
-        locality: data.locality?.trim() || null,
-        contact_phone: data.contact_phone?.trim() || null,
-        description: data.description?.trim() || null,
-      };
-      await updateMeAction(makeAuthorizedRequest, payload);
+      await updateMeAction(makeAuthorizedRequest, data);
       router.push("/dashboard/profile");
     } catch (err) {
       setApiError(
