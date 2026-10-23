@@ -365,7 +365,12 @@ export type EstablishmentSubjectSortOrder =
 
 export type UserStatus = "active" | "inactive" | "pending_validation";
 
-export type RelationStatus = "approved" | "pending" | "rejected" | "revoked";
+export type RelationStatus =
+  | "approved"
+  | "pending"
+  | "rejected"
+  | "revoked"
+  | "withdrawn";
 
 /**
  * Enrollment-based, not activity-based: an approved user with zero measurements

@@ -1,6 +1,5 @@
 import { AuthDispatcher } from "@/context/AuthContext";
 import {
-  ESTABLISHMENTS_ENDPOINT,
   ME_ENDPOINT,
   ME_ESTABLISHMENTS_ENDPOINT,
   ME_ESTABLISHMENTS_SUBSCRIPTIONS_ENDPOINT,
@@ -11,7 +10,6 @@ import {
   ProfileResponse,
   UpdateProfilePayload,
 } from "@/types/user";
-import { PaginatedEstablishmentsResponse } from "@/types/establishment";
 import { toApiError } from "@/lib/apiError";
 
 export const getMeAction = async (dispatcher: AuthDispatcher) => {
@@ -112,24 +110,4 @@ export const unsubscribeEstablishmentsAction = async (
   });
 
   if (!res.ok) throw toApiError(res.data, res.status);
-};
-
-export const searchCatalogEstablishmentsAction = async (
-  dispatcher: AuthDispatcher,
-  query?: string,
-) => {
-  const params = new URLSearchParams();
-  params.set("available", "true");
-  if (query && query.trim() !== "") {
-    params.set("search", query.trim());
-  }
-  const endpoint = `${ESTABLISHMENTS_ENDPOINT}?${params.toString()}`;
-
-  const res = await dispatcher<undefined, PaginatedEstablishmentsResponse>(
-    endpoint,
-  );
-
-  if (!res.ok) throw toApiError(res.data, res.status);
-
-  return res.data as PaginatedEstablishmentsResponse;
 };

@@ -116,7 +116,7 @@ describe("ProfilePage", () => {
   it("renders linked establishments with status badges", async () => {
     await renderWithProviders(<ProfilePage />);
 
-    expect(screen.getByText("Comedor Los Bajitos")).toBeInTheDocument();
+    expect(await screen.findByText("Comedor Los Bajitos")).toBeInTheDocument();
     expect(screen.getByText("Calle Falsa 123, Rosario")).toBeInTheDocument();
     expect(screen.getByText("Aprobado")).toBeInTheDocument();
 
@@ -133,6 +133,7 @@ describe("ProfilePage", () => {
   describe("Analyst role (can request and withdraw access)", () => {
     it("renders request access button and withdraw button on pending/approved establishments", async () => {
       await renderWithProviders(<ProfilePage />);
+      await screen.findByText("Comedor Los Bajitos");
 
       // Request access button at section level
       const requestBtns = screen.getAllByRole("button", {
@@ -147,7 +148,7 @@ describe("ProfilePage", () => {
 
       // Withdraw buttons exist on approved/pending rows
       const withdrawBtns = screen.getAllByRole("button", {
-        name: MY_ESTABLISHMENTS.actions.withdraw,
+        name: MY_ESTABLISHMENTS.request.remove,
       });
       expect(withdrawBtns.length).toBe(2); // for est-1 (approved) and est-2 (pending)
     });
@@ -200,18 +201,18 @@ describe("ProfilePage", () => {
 
       expect(
         screen.getByRole("heading", {
-          name: MY_ESTABLISHMENTS.dialogs.searchTitleRequest,
+          name: MY_ESTABLISHMENTS.request.searchTitle,
         }),
       ).toBeInTheDocument();
 
       // Type and search
       const searchInput = screen.getByPlaceholderText(
-        MY_ESTABLISHMENTS.dialogs.searchPlaceholder,
+        MY_ESTABLISHMENTS.search.placeholder,
       );
       await user.type(searchInput, "Buscado");
 
       const submitSearchBtn = screen.getByRole("button", {
-        name: MY_ESTABLISHMENTS.dialogs.searchButton,
+        name: MY_ESTABLISHMENTS.search.button,
       });
       await user.click(submitSearchBtn);
 
@@ -220,7 +221,7 @@ describe("ProfilePage", () => {
 
       // Click request button inside modal
       const requestInModalBtn = screen.getByRole("button", {
-        name: MY_ESTABLISHMENTS.actions.requestAccess,
+        name: MY_ESTABLISHMENTS.request.add,
       });
       await user.click(requestInModalBtn);
 
@@ -246,12 +247,12 @@ describe("ProfilePage", () => {
       await user.click(openSearchBtn);
 
       const submitSearchBtn = screen.getByRole("button", {
-        name: MY_ESTABLISHMENTS.dialogs.searchButton,
+        name: MY_ESTABLISHMENTS.search.button,
       });
       await user.click(submitSearchBtn);
 
       expect(
-        await screen.findByText(MY_ESTABLISHMENTS.dialogs.noResults),
+        await screen.findByText(MY_ESTABLISHMENTS.search.noResults),
       ).toBeInTheDocument();
 
       const proposeLinks = screen.getAllByRole("link", {
@@ -287,15 +288,15 @@ describe("ProfilePage", () => {
 
       await renderWithProviders(<ProfilePage />);
 
-      const withdrawBtns = screen.getAllByRole("button", {
-        name: MY_ESTABLISHMENTS.actions.withdraw,
+      const withdrawBtns = await screen.findAllByRole("button", {
+        name: MY_ESTABLISHMENTS.request.remove,
       });
       await user.click(withdrawBtns[0]); // Click withdraw for "Comedor Los Bajitos"
 
       // Confirmation dialog should be visible
       expect(
         screen.getByRole("heading", {
-          name: MY_ESTABLISHMENTS.dialogs.withdrawTitle,
+          name: MY_ESTABLISHMENTS.request.removeTitle,
         }),
       ).toBeInTheDocument();
       expect(
@@ -309,7 +310,7 @@ describe("ProfilePage", () => {
 
       // Confirm withdrawal
       const confirmBtn = screen.getByRole("button", {
-        name: MY_ESTABLISHMENTS.actions.confirmWithdraw,
+        name: MY_ESTABLISHMENTS.request.confirmRemove,
       });
       await user.click(confirmBtn);
 
@@ -346,13 +347,13 @@ describe("ProfilePage", () => {
       // Analyst withdraw button is NOT visible
       expect(
         screen.queryByRole("button", {
-          name: MY_ESTABLISHMENTS.actions.withdraw,
+          name: MY_ESTABLISHMENTS.request.remove,
         }),
       ).not.toBeInTheDocument();
 
       // Admin unsubscribe buttons are visible
       const unsubscribeBtns = screen.getAllByRole("button", {
-        name: MY_ESTABLISHMENTS.actions.unsubscribe,
+        name: MY_ESTABLISHMENTS.subscribe.remove,
       });
       expect(unsubscribeBtns.length).toBe(sampleEstablishments.length);
     });
@@ -380,20 +381,20 @@ describe("ProfilePage", () => {
       await screen.findByText("Comedor Los Bajitos");
 
       const unsubscribeBtns = screen.getAllByRole("button", {
-        name: MY_ESTABLISHMENTS.actions.unsubscribe,
+        name: MY_ESTABLISHMENTS.subscribe.remove,
       });
       await user.click(unsubscribeBtns[0]); // Click unsubscribe for first establishment
 
       // Confirmation dialog should be visible
       expect(
         screen.getByRole("heading", {
-          name: MY_ESTABLISHMENTS.dialogs.unsubscribeTitle,
+          name: MY_ESTABLISHMENTS.subscribe.removeTitle,
         }),
       ).toBeInTheDocument();
 
       // Confirm unsubscription
       const confirmBtn = screen.getByRole("button", {
-        name: MY_ESTABLISHMENTS.actions.confirmUnsubscribe,
+        name: MY_ESTABLISHMENTS.subscribe.confirmRemove,
       });
       await user.click(confirmBtn);
 
@@ -428,12 +429,12 @@ describe("ProfilePage", () => {
       ).not.toBeInTheDocument();
       expect(
         screen.queryByRole("button", {
-          name: MY_ESTABLISHMENTS.actions.withdraw,
+          name: MY_ESTABLISHMENTS.request.remove,
         }),
       ).not.toBeInTheDocument();
       expect(
         screen.queryByRole("button", {
-          name: MY_ESTABLISHMENTS.actions.unsubscribe,
+          name: MY_ESTABLISHMENTS.subscribe.remove,
         }),
       ).not.toBeInTheDocument();
     });

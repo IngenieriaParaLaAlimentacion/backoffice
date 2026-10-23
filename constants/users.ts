@@ -167,47 +167,39 @@ export const MY_ESTABLISHMENTS = {
   subtitle: "Establecimientos vinculados a tu cuenta",
   empty: "No tenés establecimientos vinculados.",
   loadError: "Error al cargar los establecimientos",
-  actions: {
-    requestAccess: "Solicitar acceso",
-    subscribe: "Suscribirme",
-    withdraw: "Retirar acceso",
-    unsubscribe: "Desuscribirme",
-    cancel: "Cancelar",
-    confirmWithdraw: "Confirmar retiro",
-    confirmUnsubscribe: "Confirmar desuscripción",
-  },
-  dialogs: {
-    searchTitleRequest: "Solicitar acceso a establecimiento",
-    searchTitleSubscribe: "Suscribirse a establecimiento",
-    searchDescription: "Buscá un establecimiento activo en el catálogo.",
-    searchPlaceholder: "Buscar por nombre, dirección o localidad...",
-    searchButton: "Buscar",
-    searchHint: "Ingresá un nombre o una dirección y presioná Buscar.",
-    searching: "Buscando...",
+  cancel: "Cancelar",
+  proposeLink: "¿No encontrás tu establecimiento? Proponé uno nuevo",
+  search: {
+    description: "Buscá un establecimiento activo en el catálogo.",
+    placeholder: "Buscar por nombre, dirección o localidad...",
+    button: "Buscar",
+    hint: "Ingresá un nombre o una dirección y presioná Buscar.",
     noResults: "No se encontraron establecimientos activos.",
-    proposeLink: "¿No encontrás tu establecimiento? Proponé uno nuevo",
-    withdrawTitle: "Retirar acceso",
-    withdrawDescription: (name: string) =>
+    error: "Error al buscar establecimientos",
+  },
+  // One block per way of linking an establishment: analysts request access,
+  // admins subscribe. The section picks one from the viewer's permissions.
+  request: {
+    add: "Solicitar acceso",
+    searchTitle: "Solicitar acceso a establecimiento",
+    addError: "Error al solicitar acceso",
+    remove: "Retirar acceso",
+    removeTitle: "Retirar acceso",
+    removeDescription: (name: string) =>
       `¿Confirmás que deseás retirar tu solicitud de acceso a ${name}?`,
-    unsubscribeTitle: "Desuscribirse",
-    unsubscribeDescription: (name: string) =>
+    confirmRemove: "Confirmar retiro",
+    removeError: "Error al retirar el acceso",
+  },
+  subscribe: {
+    add: "Suscribirme",
+    searchTitle: "Suscribirse a establecimiento",
+    addError: "Error al suscribirse al establecimiento",
+    remove: "Desuscribirme",
+    removeTitle: "Desuscribirse",
+    removeDescription: (name: string) =>
       `¿Confirmás que deseás desuscribirte de ${name}?`,
-    withdrawing: "Retirando...",
-    unsubscribing: "Desuscribiendo...",
-  },
-  status: {
-    approved: "Aprobado",
-    pending: "Pendiente",
-    rejected: "Rechazado",
-    withdrawn: "Retirado",
-    revoked: "Revocado",
-  },
-  errors: {
-    search: "Error al buscar establecimientos",
-    requestAccess: "Error al solicitar acceso",
-    subscribe: "Error al suscribirse al establecimiento",
-    withdraw: "Error al retirar el acceso",
-    unsubscribe: "Error al desuscribirse",
+    confirmRemove: "Confirmar desuscripción",
+    removeError: "Error al desuscribirse",
   },
 } as const;
 

@@ -1,16 +1,11 @@
+import { RelationStatus } from "@/types/establishment";
+
 /**
  * The roles the backend assigns. `superadmin` and `admin` differ in backend
  * capabilities but not in what the backoffice shows, so `lib/permissions.ts`
  * grants them the same set.
  */
 export type UserRole = "superadmin" | "admin" | "analyst" | "field_worker";
-
-export type EstablishmentRelationStatus =
-  | "approved"
-  | "pending"
-  | "rejected"
-  | "revoked"
-  | "withdrawn";
 
 export type ProfileEstablishment = {
   id: string;
@@ -23,7 +18,7 @@ export type ProfileEstablishment = {
   city?: string;
   province?: string;
   characterization_status?: string;
-  status: string;
+  status: RelationStatus;
 };
 
 export type EstablishmentWithStatus = ProfileEstablishment;

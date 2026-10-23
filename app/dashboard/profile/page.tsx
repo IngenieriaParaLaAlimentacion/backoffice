@@ -166,10 +166,7 @@ export default function ProfilePage() {
               </ProfileSection>
             </div>
 
-            <MyEstablishmentsSection
-              initialEstablishments={profile.establishments ?? undefined}
-              onUpdate={fetchProfile}
-            />
+            <MyEstablishmentsSection />
           </div>
         ) : null}
       </Card>
