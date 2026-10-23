@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
-import { useSession } from "@/context/SessionContext";
 import { getMeAction, updateMeAction } from "@/services/user.service";
 import { ROLE_LABELS, UpdateProfilePayload } from "@/types/user";
 import {
@@ -35,7 +34,6 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
 export default function EditProfilePage() {
   const router = useRouter();
   const { makeAuthorizedRequest } = useAuth();
-  const { refetch } = useSession();
 
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -99,7 +97,6 @@ export default function EditProfilePage() {
         description: data.description?.trim() || null,
       };
       await updateMeAction(makeAuthorizedRequest, payload);
-      refetch();
       router.push("/dashboard/profile");
     } catch (err) {
       setApiError(

@@ -62,7 +62,7 @@ export default function MyEstablishmentsSection({
   onUpdate,
 }: MyEstablishmentsSectionProps) {
   const { makeAuthorizedRequest } = useAuth();
-  const { can, refetch: refetchSession } = useSession();
+  const { can } = useSession();
 
   const canRequestAccess = can("establishments.requestAccess");
   const canSubscribe = can("establishments.subscribe");
@@ -149,7 +149,6 @@ export default function MyEstablishmentsSection({
         establishmentId,
       ]);
       await fetchEstablishments();
-      refetchSession();
       onUpdate?.();
       setIsSearchOpen(false);
     } catch (err) {
@@ -172,7 +171,6 @@ export default function MyEstablishmentsSection({
         establishmentId,
       ]);
       await fetchEstablishments();
-      refetchSession();
       onUpdate?.();
       setIsSearchOpen(false);
     } catch (err) {
@@ -197,7 +195,6 @@ export default function MyEstablishmentsSection({
       ]);
       setWithdrawTarget(null);
       await fetchEstablishments();
-      refetchSession();
       onUpdate?.();
     } catch (err) {
       setWithdrawError(
@@ -219,7 +216,6 @@ export default function MyEstablishmentsSection({
       ]);
       setUnsubscribeTarget(null);
       await fetchEstablishments();
-      refetchSession();
       onUpdate?.();
     } catch (err) {
       setUnsubscribeError(

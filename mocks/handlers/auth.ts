@@ -1,4 +1,3 @@
-import { http, HttpResponse } from "msw";
 import { baseHandler, HandlerOptions } from "@/mocks/handlers/base";
 import { RefreshTokenResponse } from "@/lib/types";
 import {
@@ -10,7 +9,6 @@ import {
   RESET_PASSWORD_ENDPOINT,
   VERIFY_EMAIL_ENDPOINT,
 } from "@/constants/api";
-import { ERROR_TYPES } from "@/lib/apiError";
 import { AuthTokensResponse } from "@/types/auth";
 import {
   DEFAULT_AUTH_RESPONSE,
@@ -65,62 +63,11 @@ export function makeLogoutHandler(options?: HandlerOptions<undefined>) {
   });
 }
 
-/**
- * Handles POST /api/v1/auth/invite/accept.
- * Answers 204 on valid token, 400 on invalid or expired token.
- */
+/** Answers 204 with no body, like the backend; pass `status` + `error` to fail. */
 export function makeAcceptInviteHandler(options?: HandlerOptions<undefined>) {
-  return http.post(
-    ACCEPT_INVITE_ENDPOINT,
-    async ({ request }) => {
-      await options?.onRequest?.(request);
-
-      if (options?.status) {
-        if (options.status === 204) {
-          return new HttpResponse(null, { status: 204 });
-        }
-        return HttpResponse.json(
-          {
-            type: options.error?.type || ERROR_TYPES.INVALID_RECOVERY_TOKEN,
-            status: options.status,
-            title: options.error?.title || "Error",
-            detail: options.error?.detail || "An error occurred",
-            instance: ACCEPT_INVITE_ENDPOINT,
-          },
-          {
-            status: options.status,
-            headers: { "Content-Type": "application/problem+json" },
-          },
-        );
-      }
-
-      try {
-        const body = (await request.clone().json()) as { token?: string };
-        if (
-          !body.token ||
-          body.token === "invalid-token" ||
-          body.token === "expired-token"
-        ) {
-          return HttpResponse.json(
-            {
-              type: ERROR_TYPES.INVALID_RECOVERY_TOKEN,
-              status: 400,
-              title: "Invalid Recovery Token",
-              detail: "The recovery token is invalid or expired",
-              instance: ACCEPT_INVITE_ENDPOINT,
-            },
-            {
-              status: 400,
-              headers: { "Content-Type": "application/problem+json" },
-            },
-          );
-        }
-      } catch {
-        // Fall through to 204
-      }
-
-      return new HttpResponse(null, { status: 204 });
-    },
-    { once: options?.once },
-  );
+  return baseHandler(ACCEPT_INVITE_ENDPOINT, {
+    ...options,
+    status: options?.status ?? 204,
+    method: "post",
+  });
 }

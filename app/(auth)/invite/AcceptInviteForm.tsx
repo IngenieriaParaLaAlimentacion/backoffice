@@ -17,7 +17,6 @@ import { acceptInviteAction } from "@/services/auth.service";
 import { AcceptInviteRequest } from "@/types/auth";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { ACCEPT_INVITE_FORM } from "@/constants/auth";
-import { ERROR_TYPES } from "@/lib/apiError";
 
 type AcceptInviteFormProps = {
   token: string;
@@ -71,9 +70,7 @@ export default function AcceptInviteForm({
     } catch (err) {
       const message = getErrorMessage(err, {
         overrides: ACCEPT_INVITE_FORM.errors,
-        fallback:
-          ACCEPT_INVITE_FORM.errors[ERROR_TYPES.INVALID_RECOVERY_TOKEN] ??
-          ACCEPT_INVITE_FORM.submitError,
+        fallback: ACCEPT_INVITE_FORM.submitError,
       });
       setFormError(message);
     }
