@@ -45,6 +45,9 @@ export type EstablishmentFilters = {
 type ListEstablishmentsParams = EstablishmentFilters & {
   page?: number;
   page_size?: number;
+  /** Only the establishments the caller can still request or subscribe to
+   * (no approved/pending relation yet). Listing-only: the export ignores it. */
+  available?: boolean;
 };
 
 /** The listing and its CSV export must ask for the same rows: one builder. */
@@ -122,6 +125,7 @@ export const listEstablishmentsAction = async (
   const query = establishmentFilterQuery(params);
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
+  if (params?.available) query.set("available", "true");
 
   const path = query.size
     ? `${ESTABLISHMENTS_ENDPOINT}?${query.toString()}`

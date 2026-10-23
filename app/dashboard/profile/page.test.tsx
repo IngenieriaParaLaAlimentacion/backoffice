@@ -208,9 +208,11 @@ describe("ProfilePage", () => {
       let meCalls = 0;
       let listCalls = 0;
 
+      let searchParams: URLSearchParams | null = null;
       server.use(
-        http.get(ESTABLISHMENTS_ENDPOINT, () =>
-          HttpResponse.json({
+        http.get(ESTABLISHMENTS_ENDPOINT, ({ request }) => {
+          searchParams = new URL(request.url).searchParams;
+          return HttpResponse.json({
             items: [
               {
                 id: "est-search-1",
@@ -220,8 +222,8 @@ describe("ProfilePage", () => {
             ],
             total: 1,
             page: 1,
-          }),
-        ),
+          });
+        }),
         addHandler((ids) => (addedIds = ids)),
       );
       server.events.on("request:start", ({ request }) => {
@@ -248,6 +250,9 @@ describe("ProfilePage", () => {
         screen.getByRole("button", { name: MY_ESTABLISHMENTS.search.button }),
       );
       await screen.findByText("Comedor Buscado 1");
+      // Only establishments the user isn't already linked to.
+      expect(searchParams!.get("available")).toBe("true");
+      expect(searchParams!.get("search")).toBe("Buscado");
       await user.click(screen.getByRole("button", { name: copy.add }));
 
       await waitFor(() => expect(addedIds).toEqual(["est-search-1"]));

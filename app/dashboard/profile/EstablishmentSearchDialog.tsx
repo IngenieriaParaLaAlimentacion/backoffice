@@ -49,6 +49,7 @@ export default function EstablishmentSearchDialog({
     try {
       const response = await listEstablishmentsAction(makeAuthorizedRequest, {
         search: query.trim() || undefined,
+        available: true,
       });
       setResults(response.items ?? []);
     } catch (err) {
