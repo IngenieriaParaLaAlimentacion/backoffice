@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import AcceptInviteForm from "./AcceptInviteForm";
 import { server } from "@/mocks/server";
 import { makeAcceptInviteHandler } from "@/mocks/handlers/auth";
+import { PASSWORD_REQUIREMENTS } from "@/schemas/password.schema";
 import { ERROR_TYPES } from "@/lib/apiError";
 import { ACCEPT_INVITE_FORM } from "@/constants/auth";
 
@@ -29,23 +30,36 @@ describe("AcceptInviteForm", () => {
     expect(screen.getByLabelText(/^Teléfono de contacto/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Descripción/i)).toBeInTheDocument();
 
-    // Password requirements visual checklist
-    expect(screen.getByText("Al menos 8 caracteres")).toBeInTheDocument();
+    // The checklist stays hidden until the password gets its first character.
     expect(
-      screen.getByText("Al menos una letra mayúscula"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Al menos una letra minúscula"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Al menos un número")).toBeInTheDocument();
-    expect(
-      screen.getByText("Al menos un carácter especial"),
-    ).toBeInTheDocument();
+      screen.queryByRole("list", {
+        name: "Requisitos de seguridad de la contraseña",
+      }),
+    ).not.toBeInTheDocument();
 
     const submitBtn = screen.getByRole("button", {
       name: /Aceptar invitación/i,
     });
     expect(submitBtn).toBeDisabled();
+  });
+
+  it("opens the password checklist on the first keystroke and closes it when cleared", async () => {
+    const user = userEvent.setup();
+    render(<AcceptInviteForm token={TOKEN} roleLabel="analista" />);
+    const checklist = () =>
+      screen.queryByRole("list", {
+        name: "Requisitos de seguridad de la contraseña",
+      });
+
+    const passwordInput = screen.getByLabelText(/^Contraseña/i);
+    await user.type(passwordInput, "a");
+    expect(checklist()).toBeInTheDocument();
+    for (const req of PASSWORD_REQUIREMENTS) {
+      expect(screen.getByText(req.label)).toBeInTheDocument();
+    }
+
+    await user.clear(passwordInput);
+    expect(checklist()).not.toBeInTheDocument();
   });
 
   it("enables submit button only when all required fields satisfy constraints", async () => {

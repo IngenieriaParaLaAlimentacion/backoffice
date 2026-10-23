@@ -27,6 +27,49 @@ export const RECOVERY_LINK_ERRORS = {
 } as const;
 
 export const ACCEPT_INVITE_FORM = {
+  // How each invite page names the role in the title.
+  roleLabels: {
+    admin: "administrador",
+    analyst: "analista",
+  },
+  title: (roleLabel: string) => `Te invitaron a ser ${roleLabel}`,
+  subtitle: "Completá tus datos y creá tu contraseña para activar tu cuenta.",
+  sections: {
+    personal: "Tus datos",
+    password: "Contraseña",
+    contact: "Contacto",
+    optional: "Opcional",
+  },
+  fields: {
+    name: { label: "Nombre", placeholder: "Tu nombre" },
+    lastName: { label: "Apellido", placeholder: "Tu apellido" },
+    password: { label: "Contraseña", placeholder: "Ingresá tu contraseña" },
+    confirmPassword: {
+      label: "Confirmar contraseña",
+      placeholder: "Volvé a ingresar tu contraseña",
+    },
+    locality: { label: "Localidad", placeholder: "Ej: Rosario" },
+    contactPhone: {
+      label: "Teléfono de contacto",
+      placeholder: "Ej: +54 9 341 555-1234",
+    },
+    description: {
+      label: "Descripción",
+      placeholder: "Contanos brevemente a qué te dedicás",
+    },
+  },
+  submit: "Aceptar invitación",
+  submitting: "Guardando...",
+  success: {
+    title: "¡Cuenta activada!",
+    body: "¡Invitación aceptada con éxito! Tu contraseña y perfil fueron guardados; ya podés iniciar sesión en el panel.",
+    signIn: "Iniciar sesión",
+  },
+  // A link that arrives without its token (truncated or hand-typed).
+  invalidLink: {
+    title: "Enlace inválido",
+    body: "El enlace de invitación no es válido o ha expirado.",
+  },
   submitError:
     "No pudimos crear tu contraseña. Volvé a intentar en unos minutos.",
   errors: RECOVERY_LINK_ERRORS,

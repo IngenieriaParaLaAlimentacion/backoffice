@@ -18,6 +18,8 @@ import { acceptInviteAction } from "@/services/auth.service";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { ACCEPT_INVITE_FORM } from "@/constants/auth";
 
+const COPY = ACCEPT_INVITE_FORM;
+
 type AcceptInviteFormProps = {
   token: string;
   roleLabel: string;
@@ -68,8 +70,8 @@ export default function AcceptInviteForm({
       setIsSuccess(true);
     } catch (err) {
       const message = getErrorMessage(err, {
-        overrides: ACCEPT_INVITE_FORM.errors,
-        fallback: ACCEPT_INVITE_FORM.submitError,
+        overrides: COPY.errors,
+        fallback: COPY.submitError,
       });
       setFormError(message);
     }
@@ -79,120 +81,128 @@ export default function AcceptInviteForm({
     return (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-semibold">¡Cuenta activada!</h1>
-          <p className="text-sm text-muted-foreground">
-            ¡Invitación aceptada con éxito! Tu contraseña y perfil fueron
-            guardados; ya podés iniciar sesión en el panel.
-          </p>
+          <h1 className="text-3xl font-semibold">{COPY.success.title}</h1>
+          <p className="text-sm text-muted-foreground">{COPY.success.body}</p>
         </div>
         <Link
           href="/signin"
           className={buttonVariants({ size: "lg", className: "w-full" })}
         >
-          Iniciar sesión
+          {COPY.success.signIn}
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">
-          Te invitaron a ser {roleLabel}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Completá tus datos y creá tu contraseña para activar tu cuenta.
-        </p>
+    <div data-auth-wide className="flex flex-col gap-6">
+      <div className="flex flex-col items-center gap-1 text-center">
+        <h1 className="text-3xl font-semibold">{COPY.title(roleLabel)}</h1>
+        <p className="text-sm text-muted-foreground">{COPY.subtitle}</p>
       </div>
 
       <form
         onSubmit={handleSubmit(handleAcceptInvite)}
         className="flex flex-col gap-6"
       >
-        <FormSection title="Tus datos">
-          <div className="grid grid-cols-2 gap-3">
+        {/* Desktop: required fields on the left, optional contact on the right. */}
+        <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:items-start md:gap-x-8">
+          <div className="flex flex-col gap-6">
+            <FormSection title={COPY.sections.personal}>
+              <div className="grid grid-cols-2 gap-3">
+                <AppTextField
+                  name="name"
+                  control={control}
+                  label={COPY.fields.name.label}
+                  required
+                  placeholder={COPY.fields.name.placeholder}
+                  onChange={() => setFormError(null)}
+                />
+                <AppTextField
+                  name="last_name"
+                  control={control}
+                  label={COPY.fields.lastName.label}
+                  required
+                  placeholder={COPY.fields.lastName.placeholder}
+                  onChange={() => setFormError(null)}
+                />
+              </div>
+            </FormSection>
+
+            <FormSection title={COPY.sections.password}>
+              <AppTextField
+                name="password"
+                control={control}
+                label={COPY.fields.password.label}
+                required
+                placeholder={COPY.fields.password.placeholder}
+                type="password"
+                onChange={() => setFormError(null)}
+              />
+              {/* Opens on the first keystroke so the empty form stays short. */}
+              {password && (
+                <PasswordRequirements
+                  password={password}
+                  className="animate-in fade-in slide-in-from-top-1 duration-200"
+                />
+              )}
+              <AppTextField
+                name="confirmPassword"
+                control={control}
+                label={COPY.fields.confirmPassword.label}
+                required
+                placeholder={COPY.fields.confirmPassword.placeholder}
+                type="password"
+                onChange={() => setFormError(null)}
+              />
+            </FormSection>
+          </div>
+
+          <FormSection
+            title={COPY.sections.contact}
+            hint={COPY.sections.optional}
+          >
             <AppTextField
-              name="name"
+              name="locality"
               control={control}
-              label="Nombre"
-              required
-              placeholder="Tu nombre"
+              label={COPY.fields.locality.label}
+              placeholder={COPY.fields.locality.placeholder}
               onChange={() => setFormError(null)}
             />
             <AppTextField
-              name="last_name"
+              name="contact_phone"
               control={control}
-              label="Apellido"
-              required
-              placeholder="Tu apellido"
+              label={COPY.fields.contactPhone.label}
+              placeholder={COPY.fields.contactPhone.placeholder}
               onChange={() => setFormError(null)}
             />
-          </div>
-        </FormSection>
-
-        <FormSection title="Contraseña">
-          <AppTextField
-            name="password"
-            control={control}
-            label="Contraseña"
-            required
-            placeholder="Ingresá tu contraseña"
-            type="password"
-            onChange={() => setFormError(null)}
-          />
-          <PasswordRequirements password={password} />
-          <AppTextField
-            name="confirmPassword"
-            control={control}
-            label="Confirmar contraseña"
-            required
-            placeholder="Volvé a ingresar tu contraseña"
-            type="password"
-            onChange={() => setFormError(null)}
-          />
-        </FormSection>
-
-        <FormSection title="Contacto" hint="Opcional">
-          <AppTextField
-            name="locality"
-            control={control}
-            label="Localidad"
-            placeholder="Ej: Rosario"
-            onChange={() => setFormError(null)}
-          />
-          <AppTextField
-            name="contact_phone"
-            control={control}
-            label="Teléfono de contacto"
-            placeholder="Ej: +54 9 341 555-1234"
-            onChange={() => setFormError(null)}
-          />
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor={descriptionId}
-              className="text-sm font-medium text-foreground"
-            >
-              Descripción
-            </label>
-            <Textarea
-              id={descriptionId}
-              {...descriptionField}
-              placeholder="Contanos brevemente a qué te dedicás"
-              rows={3}
-              aria-invalid={Boolean(errors.description)}
-              onChange={(e) => {
-                descriptionField.onChange(e);
-                setFormError(null);
-              }}
-            />
-            {errors.description?.message && (
-              <p className="text-xs text-destructive">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
-        </FormSection>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor={descriptionId}
+                className="text-sm font-medium text-foreground"
+              >
+                {COPY.fields.description.label}
+              </label>
+              <Textarea
+                id={descriptionId}
+                {...descriptionField}
+                placeholder={COPY.fields.description.placeholder}
+                rows={3}
+                className="md:min-h-36"
+                aria-invalid={Boolean(errors.description)}
+                onChange={(e) => {
+                  descriptionField.onChange(e);
+                  setFormError(null);
+                }}
+              />
+              {errors.description?.message && (
+                <p className="text-xs text-destructive">
+                  {errors.description.message}
+                </p>
+              )}
+            </div>
+          </FormSection>
+        </div>
 
         <div className="flex flex-col gap-3">
           {formError && (
@@ -206,7 +216,7 @@ export default function AcceptInviteForm({
             className="w-full"
             size="lg"
           >
-            {isSubmitting ? "Guardando..." : "Aceptar invitación"}
+            {isSubmitting ? COPY.submitting : COPY.submit}
           </Button>
         </div>
       </form>
