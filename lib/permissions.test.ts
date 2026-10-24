@@ -10,6 +10,7 @@ const ADMIN_ONLY: Permission[] = [
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",
+  "establishments.subscribe",
 ];
 
 describe("can", () => {
@@ -26,6 +27,22 @@ describe("can", () => {
     for (const permission of ADMIN_ONLY) {
       expect(can("analyst", permission)).toBe(false);
     }
+  });
+
+  it("lets analysts request establishment access, denying admins and field workers", () => {
+    expect(can("analyst", "establishments.requestAccess")).toBe(true);
+    expect(can("admin", "establishments.requestAccess")).toBe(false);
+    expect(can("superadmin", "establishments.requestAccess")).toBe(false);
+    expect(can("field_worker", "establishments.requestAccess")).toBe(false);
+    expect(can(null, "establishments.requestAccess")).toBe(false);
+  });
+
+  it("lets admins and superadmins subscribe to establishments, denying analysts and field workers", () => {
+    expect(can("admin", "establishments.subscribe")).toBe(true);
+    expect(can("superadmin", "establishments.subscribe")).toBe(true);
+    expect(can("analyst", "establishments.subscribe")).toBe(false);
+    expect(can("field_worker", "establishments.subscribe")).toBe(false);
+    expect(can(null, "establishments.subscribe")).toBe(false);
   });
 
   it("lets admins and analysts, not field workers, edit a profile", () => {

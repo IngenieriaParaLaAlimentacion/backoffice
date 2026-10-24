@@ -29,7 +29,11 @@ export type Permission =
   /** Revoking a field worker's access to an establishment. */
   | "users.revokeAccess"
   /** Deleting a survey. */
-  | "surveys.delete";
+  | "surveys.delete"
+  /** Requesting or withdrawing own establishment access (analyst). */
+  | "establishments.requestAccess"
+  /** Subscribing or unsubscribing from establishments (admin/superadmin). */
+  | "establishments.subscribe";
 
 const ALL_PERMISSIONS = [
   "requests.view",
@@ -40,6 +44,7 @@ const ALL_PERMISSIONS = [
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",
+  "establishments.subscribe",
 ] as const satisfies readonly Permission[];
 
 /**
@@ -54,7 +59,10 @@ const ALL_PERMISSIONS = [
 const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   superadmin: ALL_PERMISSIONS,
   admin: ALL_PERMISSIONS,
-  analyst: ["establishments.characterization.edit"],
+  analyst: [
+    "establishments.characterization.edit",
+    "establishments.requestAccess",
+  ],
   field_worker: [],
 };
 

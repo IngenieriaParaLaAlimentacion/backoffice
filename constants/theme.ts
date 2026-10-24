@@ -96,6 +96,10 @@ export const MAP_OVERLAY_CLASS = "z-1000";
 /** Scrim behind every dialog and drawer. Warm ink, never black. */
 export const OVERLAY_CLASS = "bg-overlay/45";
 
+/** A centered dialog's card; add its `max-w-*` at the call site. */
+export const DIALOG_POPUP_CLASS =
+  "fixed top-1/2 left-1/2 z-50 flex w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-xl border bg-background p-6 shadow-xl";
+
 /**
  * Numbers read as data — counters, measurements, stamped dates — take the mono
  * role. Numbers inside a sentence do not.

@@ -62,6 +62,7 @@ export const RELATION_STATUS_LABELS: Record<RelationStatus, string> = {
   pending: "Pendiente",
   rejected: "Rechazado",
   revoked: "Revocado",
+  withdrawn: "Retirado",
 };
 
 /** Which tone each enrollment status reads as; the colors are in `constants/theme.ts`. */
@@ -70,7 +71,14 @@ export const RELATION_STATUS_TONE: Record<RelationStatus, Tone> = {
   pending: "warning",
   rejected: "danger",
   revoked: "neutral",
+  withdrawn: "neutral",
 };
+
+/** Relations a user can withdraw themselves; the backend answers 409 for the rest. */
+export const WITHDRAWABLE_RELATION_STATUSES: readonly RelationStatus[] = [
+  "pending",
+  "approved",
+];
 
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   active: "Activo",

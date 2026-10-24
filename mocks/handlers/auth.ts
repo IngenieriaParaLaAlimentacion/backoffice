@@ -1,6 +1,7 @@
 import { baseHandler, HandlerOptions } from "@/mocks/handlers/base";
 import { RefreshTokenResponse } from "@/lib/types";
 import {
+  ACCEPT_INVITE_ENDPOINT,
   ADMIN_LOGIN_ENDPOINT,
   FORGOT_PASSWORD_ENDPOINT,
   LOGOUT_ENDPOINT,
@@ -58,6 +59,15 @@ export function makeVerifyEmailHandler(options?: HandlerOptions<undefined>) {
 export function makeLogoutHandler(options?: HandlerOptions<undefined>) {
   return baseHandler(LOGOUT_ENDPOINT, {
     ...options,
+    method: "post",
+  });
+}
+
+/** Answers 204 with no body, like the backend; pass `status` + `error` to fail. */
+export function makeAcceptInviteHandler(options?: HandlerOptions<undefined>) {
+  return baseHandler(ACCEPT_INVITE_ENDPOINT, {
+    ...options,
+    status: options?.status ?? 204,
     method: "post",
   });
 }

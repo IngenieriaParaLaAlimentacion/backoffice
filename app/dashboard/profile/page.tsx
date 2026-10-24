@@ -5,25 +5,33 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getMeAction } from "@/services/user.service";
 import { ProfileResponse, ROLE_LABELS } from "@/types/user";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, SquarePen } from "lucide-react";
-import { PROFILE_PAGE } from "@/constants/users";
+import { PROFILE_FIELDS, PROFILE_PAGE } from "@/constants/users";
+import { PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { cn } from "@/lib/utils";
 
-function ProfileField({
-  label,
-  value,
+import MyEstablishmentsSection from "./MyEstablishmentsSection";
+import ProfileField from "./ProfileField";
+
+function ProfileSection({
+  title,
+  children,
 }: {
-  label: string;
-  value: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm">{value}</span>
-    </div>
+    <section className="flex flex-col gap-4 rounded-xl border border-border p-4 md:p-5">
+      <h2 className="text-lg">{title}</h2>
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+        {children}
+      </dl>
+    </section>
   );
 }
 
@@ -77,9 +85,9 @@ export default function ProfilePage() {
         <Separator />
 
         {error && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {isLoading ? (
@@ -87,27 +95,54 @@ export default function ProfilePage() {
             <Loader2 className="animate-spin text-muted-foreground" size={28} />
           </div>
         ) : profile ? (
-          <div className="flex flex-col gap-4 max-w-md">
-            <ProfileField
-              label={PROFILE_PAGE.fields.name}
-              value={profile.name}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.lastName}
-              value={profile.last_name}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.email}
-              value={profile.email}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.role}
-              value={ROLE_LABELS[profile.role] ?? profile.role}
-            />
-            <ProfileField
-              label={PROFILE_PAGE.fields.accountStatus}
-              value={PROFILE_PAGE.active}
-            />
+          <div className="flex flex-col gap-8">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr]">
+              <ProfileSection title={PROFILE_PAGE.sections.personal}>
+                <ProfileField
+                  label={PROFILE_FIELDS.name.label}
+                  value={profile.name}
+                />
+                <ProfileField
+                  label={PROFILE_FIELDS.lastName.label}
+                  value={profile.last_name}
+                />
+                <ProfileField
+                  label={PROFILE_FIELDS.locality.label}
+                  value={profile.locality}
+                />
+                <ProfileField
+                  label={PROFILE_FIELDS.contactPhone.label}
+                  value={profile.contact_phone}
+                />
+                <ProfileField
+                  label={PROFILE_FIELDS.description.label}
+                  value={profile.description}
+                  className="sm:col-span-2"
+                />
+              </ProfileSection>
+
+              <ProfileSection title={PROFILE_PAGE.sections.account}>
+                <ProfileField
+                  label={PROFILE_PAGE.fields.email}
+                  value={profile.email}
+                  className="sm:col-span-2"
+                />
+                <ProfileField
+                  label={PROFILE_PAGE.fields.role}
+                  value={ROLE_LABELS[profile.role] ?? profile.role}
+                />
+                <ProfileField
+                  label={PROFILE_PAGE.fields.accountStatus}
+                  value={
+                    <span className={cn(PILL_CLASS, TONE_PILL_CLASS.success)}>
+                      {PROFILE_PAGE.active}
+                    </span>
+                  }
+                />
+              </ProfileSection>
+            </div>
+
+            <MyEstablishmentsSection />
           </div>
         ) : null}
       </Card>

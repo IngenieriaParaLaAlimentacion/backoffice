@@ -10,6 +10,7 @@ import {
   makeRefreshHandler,
   makeResetPasswordHandler,
   makeVerifyEmailHandler,
+  makeAcceptInviteHandler,
 } from "@/mocks/handlers/auth";
 import {
   makeApproveEstablishmentRequestHandler,
@@ -58,7 +59,15 @@ import {
   makeDashboardIndicatorsHandler,
 } from "@/mocks/handlers/surveyResponse";
 import { makeExportSubjectsHandler } from "@/mocks/handlers/csvExport";
-import { makeMeHandler } from "@/mocks/handlers/user";
+import {
+  makeMeHandler,
+  makeMyEstablishmentsHandler,
+  makeRequestEstablishmentAccessHandler,
+  makeSubscribeEstablishmentsHandler,
+  makeUnsubscribeEstablishmentsHandler,
+  makeUpdateMeHandler,
+  makeWithdrawEstablishmentAccessHandler,
+} from "@/mocks/handlers/user";
 import {
   makeFoodIntakeHandler,
   makeFoodOutflowHandler,
@@ -73,6 +82,7 @@ export const handlers = [
   makeResetPasswordHandler(),
   makeForgotPasswordHandler(),
   makeVerifyEmailHandler(),
+  makeAcceptInviteHandler(),
   makeLogoutHandler(),
   makeListUsersHandler(),
   makeGetUserHandler(),
@@ -114,4 +124,10 @@ export const handlers = [
   makeDashboardIndicatorsHandler(),
   makeExportSubjectsHandler(),
   makeMeHandler(),
+  makeUpdateMeHandler(),
+  makeMyEstablishmentsHandler(),
+  makeRequestEstablishmentAccessHandler(),
+  makeWithdrawEstablishmentAccessHandler(),
+  makeSubscribeEstablishmentsHandler(),
+  makeUnsubscribeEstablishmentsHandler(),
 ];

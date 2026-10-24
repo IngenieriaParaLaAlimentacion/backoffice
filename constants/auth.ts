@@ -1,4 +1,5 @@
 import { ERROR_TYPES } from "@/lib/apiError";
+import { PROFILE_FIELDS } from "@/constants/users";
 
 export const SIGN_IN_FORM = {
   submitError: "No pudimos iniciar sesión. Volvé a intentar en unos minutos.",
@@ -26,7 +27,69 @@ export const RECOVERY_LINK_ERRORS = {
     "Este enlace no es válido. Revisá que lo hayas copiado completo o pedí uno nuevo.",
 } as const;
 
+/** Copy for the password rules in `schemas/password.schema.ts`, keyed by rule id. */
+export const PASSWORD_COPY = {
+  requirements: {
+    length: {
+      label: "Al menos 8 caracteres",
+      message: "La contraseña debe tener al menos 8 caracteres",
+    },
+    lowercase: {
+      label: "Al menos una letra minúscula",
+      message: "La contraseña debe contener al menos una minúscula",
+    },
+    uppercase: {
+      label: "Al menos una letra mayúscula",
+      message: "La contraseña debe contener al menos una mayúscula",
+    },
+    number: {
+      label: "Al menos un número",
+      message: "La contraseña debe contener al menos un número",
+    },
+    special: {
+      label: "Al menos un carácter especial",
+      message: "La contraseña debe contener al menos un carácter especial",
+    },
+  },
+  requirementsAria: "Requisitos de seguridad de la contraseña",
+  confirmRequired: "La confirmación de contraseña es requerida",
+  mismatch: "Las contraseñas no coinciden",
+} as const;
+
 export const ACCEPT_INVITE_FORM = {
+  // How each invite page names the role in the title.
+  roleLabels: {
+    admin: "administrador",
+    analyst: "analista",
+  },
+  title: (roleLabel: string) => `Te invitaron a ser ${roleLabel}`,
+  subtitle: "Completá tus datos y creá tu contraseña para activar tu cuenta.",
+  sections: {
+    personal: "Tus datos",
+    password: "Contraseña",
+    contact: "Contacto",
+    optional: "Opcional",
+  },
+  fields: {
+    ...PROFILE_FIELDS,
+    password: { label: "Contraseña", placeholder: "Ingresá tu contraseña" },
+    confirmPassword: {
+      label: "Confirmar contraseña",
+      placeholder: "Volvé a ingresar tu contraseña",
+    },
+  },
+  submit: "Aceptar invitación",
+  submitting: "Guardando...",
+  success: {
+    title: "¡Cuenta activada!",
+    body: "¡Invitación aceptada con éxito! Tu contraseña y perfil fueron guardados; ya podés iniciar sesión en el panel.",
+    signIn: "Iniciar sesión",
+  },
+  // A link that arrives without its token (truncated or hand-typed).
+  invalidLink: {
+    title: "Enlace inválido",
+    body: "El enlace de invitación no es válido o ha expirado.",
+  },
   submitError:
     "No pudimos crear tu contraseña. Volvé a intentar en unos minutos.",
   errors: RECOVERY_LINK_ERRORS,

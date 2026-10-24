@@ -1,3 +1,5 @@
+import { RelationStatus } from "@/types/establishment";
+
 /**
  * The roles the backend assigns. `superadmin` and `admin` differ in backend
  * capabilities but not in what the backoffice shows, so `lib/permissions.ts`
@@ -8,8 +10,11 @@ export type UserRole = "superadmin" | "admin" | "analyst" | "field_worker";
 export type ProfileEstablishment = {
   id: string;
   name: string;
-  address: string;
-  status: string;
+  address?: string;
+  formatted_address?: string;
+  city?: string;
+  province?: string;
+  status: RelationStatus;
 };
 
 export type ProfileResponse = {
@@ -18,7 +23,18 @@ export type ProfileResponse = {
   name: string;
   last_name: string;
   role: UserRole;
+  locality?: string | null;
+  contact_phone?: string | null;
+  description?: string | null;
   establishments?: ProfileEstablishment[] | null;
+};
+
+export type UpdateProfilePayload = {
+  name: string;
+  last_name: string;
+  locality?: string | null;
+  contact_phone?: string | null;
+  description?: string | null;
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {

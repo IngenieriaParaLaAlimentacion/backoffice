@@ -1,5 +1,6 @@
 import { UserRole } from "@/types/user";
 import { ERROR_TYPES } from "@/lib/apiError";
+import { ESTABLISHMENT_PROFILE } from "@/constants/establishments";
 
 /**
  * The role listings the Usuarios screen renders, in display order. Plural
@@ -119,14 +120,40 @@ export const PROFILE_PAGE = {
   subtitle: "Mi información personal",
   editProfile: "Editar perfil",
   loadError: "Error al cargar el perfil",
+  sections: {
+    personal: "Datos personales",
+    account: "Cuenta",
+  },
+  // The editable fields are named by `PROFILE_FIELDS`.
   fields: {
-    name: "Nombre",
-    lastName: "Apellido",
     email: "Email",
     role: "Rol",
     accountStatus: "Estado de la cuenta",
   },
   active: "Activo",
+} as const;
+
+/** The editable profile fields, as the profile, edit-profile and accept-invite screens name them. */
+export const PROFILE_FIELDS = {
+  name: { label: "Nombre", placeholder: "Tu nombre" },
+  lastName: { label: "Apellido", placeholder: "Tu apellido" },
+  locality: { label: "Localidad", placeholder: "Ej: Rosario" },
+  contactPhone: {
+    label: "Teléfono de contacto",
+    placeholder: "Ej: +54 9 341 555-1234",
+  },
+  description: {
+    label: "Descripción",
+    placeholder: "Contanos brevemente a qué te dedicás",
+  },
+} as const;
+
+/** Validation copy for the profile fields, shared by edit-profile and accept-invite. */
+export const PROFILE_FORM = {
+  nameRequired: "El nombre es requerido",
+  lastNameRequired: "El apellido es requerido",
+  textMaxLength: ESTABLISHMENT_PROFILE.textMaxLength,
+  invalidPhone: ESTABLISHMENT_PROFILE.invalidPhone,
 } as const;
 
 export const PROFILE_EDIT_PAGE = {
@@ -135,15 +162,56 @@ export const PROFILE_EDIT_PAGE = {
   back: "Volver",
   loadError: "Error al cargar el perfil",
   saveError: "Error al guardar los cambios",
+  // Read-only here; the editable fields are named by `PROFILE_FIELDS`.
   fields: {
-    name: "Nombre",
-    namePlaceholder: "Tu nombre",
-    lastName: "Apellido",
-    lastNamePlaceholder: "Tu apellido",
     email: "Email",
     role: "Rol",
   },
   save: "Guardar cambios",
+  cancel: "Cancelar",
+  readOnlyHint:
+    "El email y el rol no se pueden editar desde acá. Si necesitás cambiarlos, contactá a un administrador.",
+} as const;
+
+export const MY_ESTABLISHMENTS = {
+  title: "Mis establecimientos",
+  subtitle: "Establecimientos vinculados a tu cuenta",
+  empty: "No tenés establecimientos vinculados.",
+  loadError: "Error al cargar los establecimientos",
+  cancel: "Cancelar",
+  proposeLink: "¿No encontrás tu establecimiento? Proponé uno nuevo",
+  search: {
+    description: "Buscá un establecimiento activo en el catálogo.",
+    placeholder: "Buscar por nombre, dirección o localidad...",
+    button: "Buscar",
+    hint: "Ingresá un nombre o una dirección y presioná Buscar.",
+    noResults: "No se encontraron establecimientos activos.",
+    error: "Error al buscar establecimientos",
+  },
+  // One block per way of linking an establishment: analysts request access,
+  // admins subscribe. The section picks one from the viewer's permissions.
+  request: {
+    add: "Solicitar acceso",
+    searchTitle: "Solicitar acceso a establecimiento",
+    addError: "Error al solicitar acceso",
+    remove: "Retirar acceso",
+    removeTitle: "Retirar acceso",
+    removeDescription: (name: string) =>
+      `¿Confirmás que deseás retirar tu solicitud de acceso a ${name}?`,
+    confirmRemove: "Confirmar retiro",
+    removeError: "Error al retirar el acceso",
+  },
+  subscribe: {
+    add: "Suscribirme",
+    searchTitle: "Suscribirse a establecimiento",
+    addError: "Error al suscribirse al establecimiento",
+    remove: "Desuscribirme",
+    removeTitle: "Desuscribirse",
+    removeDescription: (name: string) =>
+      `¿Confirmás que deseás desuscribirte de ${name}?`,
+    confirmRemove: "Confirmar desuscripción",
+    removeError: "Error al desuscribirse",
+  },
 } as const;
 
 export const INVITE_USER_DIALOG = {

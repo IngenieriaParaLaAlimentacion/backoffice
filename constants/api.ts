@@ -3,7 +3,7 @@ export const API_BASE_URL = "";
 // --- Auth Endpoints ---
 
 export const ADMIN_LOGIN_ENDPOINT = "/api/v1/auth/login";
-export const ACCEPT_INVITE_ENDPOINT = "/api/v1/auth/password-recovery/confirm";
+export const ACCEPT_INVITE_ENDPOINT = "/api/v1/auth/invite/accept";
 export const REFRESH_ENDPOINT = "/api/v1/auth/refresh";
 export const RESET_PASSWORD_ENDPOINT = "/api/v1/auth/password-recovery/confirm";
 export const FORGOT_PASSWORD_ENDPOINT =
@@ -134,3 +134,8 @@ export const DASHBOARD_INDICATORS_ENDPOINT =
 // --- Users Endpoints ---
 
 export const ME_ENDPOINT = "/api/v1/users/me";
+export const ME_ESTABLISHMENTS_ENDPOINT = "/api/v1/users/me/establishments";
+export const ME_ESTABLISHMENTS_WITHDRAW_ENDPOINT =
+  "/api/v1/users/me/establishments/withdraw";
+export const ME_ESTABLISHMENTS_SUBSCRIPTIONS_ENDPOINT =
+  "/api/v1/users/me/establishments/subscriptions";

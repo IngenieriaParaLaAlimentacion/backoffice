@@ -149,6 +149,21 @@ export function argentineDayEndUtc(day: string) {
 /** Em dash placeholder for absent data. Never render `null` as 0. */
 export const EMPTY_VALUE = "—";
 
+/** The most precise address an establishment has: geocoded, then city/province, then raw. */
+export function formatEstablishmentLocation(est: {
+  formatted_address?: string;
+  city?: string;
+  province?: string;
+  address?: string;
+}) {
+  return (
+    est.formatted_address ||
+    [est.city, est.province].filter(Boolean).join(", ") ||
+    est.address ||
+    EMPTY_VALUE
+  );
+}
+
 /**
  * Formats a metric that the API returns as `null` when there is nothing to
  * average. Deliberately does NOT coerce `null` to 0 — "0 kg" for an unmeasured

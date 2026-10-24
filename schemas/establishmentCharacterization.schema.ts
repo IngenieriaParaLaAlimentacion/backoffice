@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ESTABLISHMENT_PROFILE } from "@/constants/establishments";
+import { PHONE_PATTERN } from "@/schemas/common";
 import {
   Affiliation,
   AttendeeAge,
@@ -88,7 +89,7 @@ export const characterizationSchema = z.object({
   contact_phone: z
     .string()
     .max(PHONE_MAX_LENGTH, COPY.textMaxLength(PHONE_MAX_LENGTH))
-    .regex(/^[\d\s()+-]*$/, COPY.invalidPhone),
+    .regex(PHONE_PATTERN, COPY.invalidPhone),
   contact_email: z.union([z.literal(""), z.email(COPY.invalidEmail)]),
   opening_hours: z.array(openingHoursSlotSchema),
 
