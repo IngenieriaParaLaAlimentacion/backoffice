@@ -16,7 +16,12 @@ import { ProfileEstablishment } from "@/types/user";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Building2, Loader2, Plus } from "lucide-react";
-import { OVERLAY_CLASS, PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
+import {
+  DIALOG_POPUP_CLASS,
+  OVERLAY_CLASS,
+  PILL_CLASS,
+  TONE_PILL_CLASS,
+} from "@/constants/theme";
 import {
   RELATION_STATUS_LABELS,
   RELATION_STATUS_TONE,
@@ -234,7 +239,7 @@ export default function MyEstablishmentsSection() {
             <Dialog.Backdrop
               className={cn("fixed inset-0 z-40", OVERLAY_CLASS)}
             />
-            <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-sm rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4">
+            <Dialog.Popup className={cn(DIALOG_POPUP_CLASS, "max-w-sm")}>
               <div className="flex flex-col gap-1">
                 <Dialog.Title className="text-lg font-semibold text-foreground">
                   {config.copy.removeTitle}

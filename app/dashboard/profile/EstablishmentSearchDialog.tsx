@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ExternalLink, Loader2, Search, X } from "lucide-react";
-import { OVERLAY_CLASS } from "@/constants/theme";
+import { DIALOG_POPUP_CLASS, OVERLAY_CLASS } from "@/constants/theme";
 import { MY_ESTABLISHMENTS } from "@/constants/users";
 import { formatEstablishmentLocation } from "@/lib/format";
 import { getErrorMessage } from "@/lib/errorMessages";
@@ -77,7 +77,12 @@ export default function EstablishmentSearchDialog({
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Backdrop className={cn("fixed inset-0 z-40", OVERLAY_CLASS)} />
-        <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-lg rounded-xl border bg-background p-6 shadow-xl flex flex-col gap-4 max-h-[90vh] overflow-hidden">
+        <Dialog.Popup
+          className={cn(
+            DIALOG_POPUP_CLASS,
+            "max-w-lg max-h-[90vh] overflow-hidden",
+          )}
+        >
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="text-lg font-semibold text-foreground">
