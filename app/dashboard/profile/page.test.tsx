@@ -21,6 +21,7 @@ import {
   makeWithdrawEstablishmentAccessHandler,
 } from "@/mocks/handlers/user";
 import { MY_ESTABLISHMENTS, PROFILE_PAGE } from "@/constants/users";
+import { EMPTY_VALUE } from "@/lib/format";
 import { ProfileEstablishment, ProfileResponse } from "@/types/user";
 
 type IdsBody = { establishment_ids: string[] };
@@ -112,7 +113,7 @@ describe("ProfilePage", () => {
 
     await renderWithProviders(<ProfilePage />);
 
-    const dashes = screen.getAllByText("-");
+    const dashes = screen.getAllByText(EMPTY_VALUE);
     expect(dashes.length).toBeGreaterThanOrEqual(3);
   });
 

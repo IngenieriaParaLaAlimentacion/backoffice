@@ -124,17 +124,28 @@ export const PROFILE_PAGE = {
     personal: "Datos personales",
     account: "Cuenta",
   },
+  // The editable fields are named by `PROFILE_FIELDS`.
   fields: {
-    name: "Nombre",
-    lastName: "Apellido",
     email: "Email",
     role: "Rol",
     accountStatus: "Estado de la cuenta",
-    locality: "Localidad",
-    contactPhone: "Teléfono de contacto",
-    description: "Descripción",
   },
   active: "Activo",
+} as const;
+
+/** The editable profile fields, as the profile, edit-profile and accept-invite screens name them. */
+export const PROFILE_FIELDS = {
+  name: { label: "Nombre", placeholder: "Tu nombre" },
+  lastName: { label: "Apellido", placeholder: "Tu apellido" },
+  locality: { label: "Localidad", placeholder: "Ej: Rosario" },
+  contactPhone: {
+    label: "Teléfono de contacto",
+    placeholder: "Ej: +54 9 341 555-1234",
+  },
+  description: {
+    label: "Descripción",
+    placeholder: "Contanos brevemente a qué te dedicás",
+  },
 } as const;
 
 /** Validation copy for the profile fields, shared by edit-profile and accept-invite. */
@@ -151,19 +162,10 @@ export const PROFILE_EDIT_PAGE = {
   back: "Volver",
   loadError: "Error al cargar el perfil",
   saveError: "Error al guardar los cambios",
+  // Read-only here; the editable fields are named by `PROFILE_FIELDS`.
   fields: {
-    name: "Nombre",
-    namePlaceholder: "Tu nombre",
-    lastName: "Apellido",
-    lastNamePlaceholder: "Tu apellido",
     email: "Email",
     role: "Rol",
-    locality: "Localidad",
-    localityPlaceholder: "Tu localidad",
-    contactPhone: "Teléfono de contacto",
-    contactPhonePlaceholder: "+54 11 1234-5678",
-    description: "Descripción",
-    descriptionPlaceholder: "Breve descripción personal o profesional",
   },
   save: "Guardar cambios",
   cancel: "Cancelar",

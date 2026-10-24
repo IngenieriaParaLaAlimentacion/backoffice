@@ -17,20 +17,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import AppTextField from "@/components/AppTextField";
+import AppTextAreaField from "@/components/AppTextAreaField";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { PROFILE_EDIT_PAGE } from "@/constants/users";
+import { PROFILE_EDIT_PAGE, PROFILE_FIELDS } from "@/constants/users";
 import { getErrorMessage } from "@/lib/errorMessages";
-
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="truncate text-sm">{value}</dd>
-    </div>
-  );
-}
+import ProfileField from "../ProfileField";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -47,8 +39,7 @@ export default function EditProfilePage() {
     control,
     handleSubmit,
     reset,
-    register,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting },
   } = useForm<EditProfileInput, unknown, EditProfileOutput>({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
@@ -138,11 +129,13 @@ export default function EditProfilePage() {
             {readOnlyFields && (
               <section className="flex flex-col gap-3 rounded-xl bg-muted/60 p-4">
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <ReadOnlyField
+                  <ProfileField
+                    truncate
                     label={PROFILE_EDIT_PAGE.fields.email}
                     value={readOnlyFields.email}
                   />
-                  <ReadOnlyField
+                  <ProfileField
+                    truncate
                     label={PROFILE_EDIT_PAGE.fields.role}
                     value={readOnlyFields.role}
                   />
@@ -157,49 +150,38 @@ export default function EditProfilePage() {
               <AppTextField
                 control={control}
                 name="name"
-                label={PROFILE_EDIT_PAGE.fields.name}
-                placeholder={PROFILE_EDIT_PAGE.fields.namePlaceholder}
+                label={PROFILE_FIELDS.name.label}
+                placeholder={PROFILE_FIELDS.name.placeholder}
                 required
               />
               <AppTextField
                 control={control}
                 name="last_name"
-                label={PROFILE_EDIT_PAGE.fields.lastName}
-                placeholder={PROFILE_EDIT_PAGE.fields.lastNamePlaceholder}
+                label={PROFILE_FIELDS.lastName.label}
+                placeholder={PROFILE_FIELDS.lastName.placeholder}
                 required
               />
               <AppTextField
                 control={control}
                 name="locality"
-                label={PROFILE_EDIT_PAGE.fields.locality}
-                placeholder={PROFILE_EDIT_PAGE.fields.localityPlaceholder}
+                label={PROFILE_FIELDS.locality.label}
+                placeholder={PROFILE_FIELDS.locality.placeholder}
               />
               <AppTextField
                 control={control}
                 name="contact_phone"
-                label={PROFILE_EDIT_PAGE.fields.contactPhone}
-                placeholder={PROFILE_EDIT_PAGE.fields.contactPhonePlaceholder}
+                label={PROFILE_FIELDS.contactPhone.label}
+                placeholder={PROFILE_FIELDS.contactPhone.placeholder}
               />
 
-              <div className="flex flex-col gap-1 sm:col-span-2">
-                <label
-                  htmlFor="profile-description"
-                  className="text-sm font-medium text-foreground"
-                >
-                  {PROFILE_EDIT_PAGE.fields.description}
-                </label>
-                <Textarea
-                  id="profile-description"
-                  {...register("description")}
-                  placeholder={PROFILE_EDIT_PAGE.fields.descriptionPlaceholder}
+              <div className="sm:col-span-2">
+                <AppTextAreaField
+                  control={control}
+                  name="description"
+                  label={PROFILE_FIELDS.description.label}
+                  placeholder={PROFILE_FIELDS.description.placeholder}
                   rows={4}
-                  aria-invalid={Boolean(errors.description)}
                 />
-                {errors.description && (
-                  <p className="text-xs text-destructive">
-                    {errors.description.message}
-                  </p>
-                )}
               </div>
             </div>
 

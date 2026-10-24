@@ -10,37 +10,13 @@ import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, SquarePen } from "lucide-react";
-import { PROFILE_PAGE } from "@/constants/users";
+import { PROFILE_FIELDS, PROFILE_PAGE } from "@/constants/users";
 import { PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { cn } from "@/lib/utils";
 
 import MyEstablishmentsSection from "./MyEstablishmentsSection";
-
-function ProfileField({
-  label,
-  value,
-  className,
-}: {
-  label: string;
-  value: React.ReactNode;
-  className?: string;
-}) {
-  const isEmpty = value === null || value === undefined || value === "";
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd
-        className={cn(
-          "text-sm break-words whitespace-pre-line",
-          isEmpty && "text-muted-foreground",
-        )}
-      >
-        {isEmpty ? "-" : value}
-      </dd>
-    </div>
-  );
-}
+import ProfileField from "./ProfileField";
 
 function ProfileSection({
   title,
@@ -123,23 +99,23 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr]">
               <ProfileSection title={PROFILE_PAGE.sections.personal}>
                 <ProfileField
-                  label={PROFILE_PAGE.fields.name}
+                  label={PROFILE_FIELDS.name.label}
                   value={profile.name}
                 />
                 <ProfileField
-                  label={PROFILE_PAGE.fields.lastName}
+                  label={PROFILE_FIELDS.lastName.label}
                   value={profile.last_name}
                 />
                 <ProfileField
-                  label={PROFILE_PAGE.fields.locality}
+                  label={PROFILE_FIELDS.locality.label}
                   value={profile.locality}
                 />
                 <ProfileField
-                  label={PROFILE_PAGE.fields.contactPhone}
+                  label={PROFILE_FIELDS.contactPhone.label}
                   value={profile.contact_phone}
                 />
                 <ProfileField
-                  label={PROFILE_PAGE.fields.description}
+                  label={PROFILE_FIELDS.description.label}
                   value={profile.description}
                   className="sm:col-span-2"
                 />

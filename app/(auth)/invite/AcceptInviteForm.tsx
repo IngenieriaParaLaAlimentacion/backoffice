@@ -1,13 +1,13 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import AppTextField from "@/components/AppTextField";
+import AppTextAreaField from "@/components/AppTextAreaField";
 import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import {
   acceptInviteSchema,
@@ -31,12 +31,10 @@ export default function AcceptInviteForm({
 }: AcceptInviteFormProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const descriptionId = useId();
 
   const {
-    formState: { isSubmitting, isValid, errors },
+    formState: { isSubmitting, isValid },
     control,
-    register,
     handleSubmit,
   } = useForm<AcceptInviteInput, unknown, AcceptInviteOutput>({
     resolver: zodResolver(acceptInviteSchema),
@@ -53,7 +51,7 @@ export default function AcceptInviteForm({
   });
 
   const password = useWatch({ control, name: "password" }) ?? "";
-  const descriptionField = register("description");
+  const clearFormError = () => setFormError(null);
 
   async function handleAcceptInvite(data: AcceptInviteOutput) {
     setFormError(null);
@@ -116,7 +114,7 @@ export default function AcceptInviteForm({
                   label={COPY.fields.name.label}
                   required
                   placeholder={COPY.fields.name.placeholder}
-                  onChange={() => setFormError(null)}
+                  onChange={clearFormError}
                 />
                 <AppTextField
                   name="last_name"
@@ -124,7 +122,7 @@ export default function AcceptInviteForm({
                   label={COPY.fields.lastName.label}
                   required
                   placeholder={COPY.fields.lastName.placeholder}
-                  onChange={() => setFormError(null)}
+                  onChange={clearFormError}
                 />
               </div>
             </FormSection>
@@ -137,7 +135,7 @@ export default function AcceptInviteForm({
                 required
                 placeholder={COPY.fields.password.placeholder}
                 type="password"
-                onChange={() => setFormError(null)}
+                onChange={clearFormError}
               />
               {/* Opens on the first keystroke so the empty form stays short. */}
               {password && (
@@ -153,7 +151,7 @@ export default function AcceptInviteForm({
                 required
                 placeholder={COPY.fields.confirmPassword.placeholder}
                 type="password"
-                onChange={() => setFormError(null)}
+                onChange={clearFormError}
               />
             </FormSection>
           </div>
@@ -167,40 +165,24 @@ export default function AcceptInviteForm({
               control={control}
               label={COPY.fields.locality.label}
               placeholder={COPY.fields.locality.placeholder}
-              onChange={() => setFormError(null)}
+              onChange={clearFormError}
             />
             <AppTextField
               name="contact_phone"
               control={control}
               label={COPY.fields.contactPhone.label}
               placeholder={COPY.fields.contactPhone.placeholder}
-              onChange={() => setFormError(null)}
+              onChange={clearFormError}
             />
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor={descriptionId}
-                className="text-sm font-medium text-foreground"
-              >
-                {COPY.fields.description.label}
-              </label>
-              <Textarea
-                id={descriptionId}
-                {...descriptionField}
-                placeholder={COPY.fields.description.placeholder}
-                rows={3}
-                className="md:min-h-36"
-                aria-invalid={Boolean(errors.description)}
-                onChange={(e) => {
-                  descriptionField.onChange(e);
-                  setFormError(null);
-                }}
-              />
-              {errors.description?.message && (
-                <p className="text-xs text-destructive">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
+            <AppTextAreaField
+              name="description"
+              control={control}
+              label={COPY.fields.description.label}
+              placeholder={COPY.fields.description.placeholder}
+              rows={3}
+              className="md:min-h-36"
+              onChange={clearFormError}
+            />
           </FormSection>
         </div>
 

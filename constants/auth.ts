@@ -1,4 +1,5 @@
 import { ERROR_TYPES } from "@/lib/apiError";
+import { PROFILE_FIELDS } from "@/constants/users";
 
 export const SIGN_IN_FORM = {
   submitError: "No pudimos iniciar sesión. Volvé a intentar en unos minutos.",
@@ -70,21 +71,11 @@ export const ACCEPT_INVITE_FORM = {
     optional: "Opcional",
   },
   fields: {
-    name: { label: "Nombre", placeholder: "Tu nombre" },
-    lastName: { label: "Apellido", placeholder: "Tu apellido" },
+    ...PROFILE_FIELDS,
     password: { label: "Contraseña", placeholder: "Ingresá tu contraseña" },
     confirmPassword: {
       label: "Confirmar contraseña",
       placeholder: "Volvé a ingresar tu contraseña",
-    },
-    locality: { label: "Localidad", placeholder: "Ej: Rosario" },
-    contactPhone: {
-      label: "Teléfono de contacto",
-      placeholder: "Ej: +54 9 341 555-1234",
-    },
-    description: {
-      label: "Descripción",
-      placeholder: "Contanos brevemente a qué te dedicás",
     },
   },
   submit: "Aceptar invitación",
