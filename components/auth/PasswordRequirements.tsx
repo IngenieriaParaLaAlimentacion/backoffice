@@ -1,5 +1,6 @@
 import { Check, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PASSWORD_COPY } from "@/constants/auth";
 import { PASSWORD_REQUIREMENTS } from "@/schemas/password.schema";
 
 export type PasswordRequirementsProps = {
@@ -17,7 +18,7 @@ export default function PasswordRequirements({
         "-mt-1 flex flex-col gap-1 rounded-lg bg-muted/60 px-3 py-2.5",
         className,
       )}
-      aria-label="Requisitos de seguridad de la contraseña"
+      aria-label={PASSWORD_COPY.requirementsAria}
     >
       {PASSWORD_REQUIREMENTS.map((req) => {
         const isMet = req.test(password);

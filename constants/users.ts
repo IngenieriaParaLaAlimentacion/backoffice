@@ -1,5 +1,6 @@
 import { UserRole } from "@/types/user";
 import { ERROR_TYPES } from "@/lib/apiError";
+import { ESTABLISHMENT_PROFILE } from "@/constants/establishments";
 
 /**
  * The role listings the Usuarios screen renders, in display order. Plural
@@ -134,6 +135,14 @@ export const PROFILE_PAGE = {
     description: "Descripción",
   },
   active: "Activo",
+} as const;
+
+/** Validation copy for the profile fields, shared by edit-profile and accept-invite. */
+export const PROFILE_FORM = {
+  nameRequired: "El nombre es requerido",
+  lastNameRequired: "El apellido es requerido",
+  textMaxLength: ESTABLISHMENT_PROFILE.textMaxLength,
+  invalidPhone: ESTABLISHMENT_PROFILE.invalidPhone,
 } as const;
 
 export const PROFILE_EDIT_PAGE = {

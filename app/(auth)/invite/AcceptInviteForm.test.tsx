@@ -6,7 +6,7 @@ import { server } from "@/mocks/server";
 import { makeAcceptInviteHandler } from "@/mocks/handlers/auth";
 import { PASSWORD_REQUIREMENTS } from "@/schemas/password.schema";
 import { ERROR_TYPES } from "@/lib/apiError";
-import { ACCEPT_INVITE_FORM } from "@/constants/auth";
+import { ACCEPT_INVITE_FORM, PASSWORD_COPY } from "@/constants/auth";
 
 const TOKEN = "valid-invite-token-123";
 
@@ -33,7 +33,7 @@ describe("AcceptInviteForm", () => {
     // The checklist stays hidden until the password gets its first character.
     expect(
       screen.queryByRole("list", {
-        name: "Requisitos de seguridad de la contraseña",
+        name: PASSWORD_COPY.requirementsAria,
       }),
     ).not.toBeInTheDocument();
 
@@ -48,7 +48,7 @@ describe("AcceptInviteForm", () => {
     render(<AcceptInviteForm token={TOKEN} roleLabel="analista" />);
     const checklist = () =>
       screen.queryByRole("list", {
-        name: "Requisitos de seguridad de la contraseña",
+        name: PASSWORD_COPY.requirementsAria,
       });
 
     const passwordInput = screen.getByLabelText(/^Contraseña/i);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { acceptInviteSchema } from "@/schemas/acceptInvite.schema";
 import { PASSWORD_REQUIREMENTS } from "@/schemas/password.schema";
+import { PASSWORD_COPY } from "@/constants/auth";
 
 // Profile fields are covered by editProfile.schema.test.ts; this schema extends it.
 const VALID_DATA = {
@@ -58,7 +59,7 @@ describe("acceptInviteSchema", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0]).toMatchObject({
-        message: "Las contraseñas no coinciden",
+        message: PASSWORD_COPY.mismatch,
         path: ["confirmPassword"],
       });
     }

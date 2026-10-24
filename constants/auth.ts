@@ -26,6 +26,35 @@ export const RECOVERY_LINK_ERRORS = {
     "Este enlace no es válido. Revisá que lo hayas copiado completo o pedí uno nuevo.",
 } as const;
 
+/** Copy for the password rules in `schemas/password.schema.ts`, keyed by rule id. */
+export const PASSWORD_COPY = {
+  requirements: {
+    length: {
+      label: "Al menos 8 caracteres",
+      message: "La contraseña debe tener al menos 8 caracteres",
+    },
+    lowercase: {
+      label: "Al menos una letra minúscula",
+      message: "La contraseña debe contener al menos una minúscula",
+    },
+    uppercase: {
+      label: "Al menos una letra mayúscula",
+      message: "La contraseña debe contener al menos una mayúscula",
+    },
+    number: {
+      label: "Al menos un número",
+      message: "La contraseña debe contener al menos un número",
+    },
+    special: {
+      label: "Al menos un carácter especial",
+      message: "La contraseña debe contener al menos un carácter especial",
+    },
+  },
+  requirementsAria: "Requisitos de seguridad de la contraseña",
+  confirmRequired: "La confirmación de contraseña es requerida",
+  mismatch: "Las contraseñas no coinciden",
+} as const;
+
 export const ACCEPT_INVITE_FORM = {
   // How each invite page names the role in the title.
   roleLabels: {

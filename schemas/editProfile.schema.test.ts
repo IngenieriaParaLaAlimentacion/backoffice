@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { editProfileSchema } from "@/schemas/editProfile.schema";
+import {
+  editProfileSchema,
+  PROFILE_DESCRIPTION_MAX_LENGTH,
+  PROFILE_PHONE_MAX_LENGTH,
+  PROFILE_TEXT_MAX_LENGTH,
+} from "@/schemas/editProfile.schema";
+import { PROFILE_FORM } from "@/constants/users";
+
+const TEXT_MAX = PROFILE_FORM.textMaxLength(PROFILE_TEXT_MAX_LENGTH);
 
 describe("editProfileSchema", () => {
   const VALID_DATA = {
@@ -73,18 +81,18 @@ describe("editProfileSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("El nombre es requerido");
+      expect(result.error.issues[0].message).toBe(PROFILE_FORM.nameRequired);
     }
   });
 
   it("rejects name longer than 100 characters", () => {
     const result = editProfileSchema.safeParse({
       ...VALID_DATA,
-      name: "a".repeat(101),
+      name: "a".repeat(PROFILE_TEXT_MAX_LENGTH + 1),
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("Máximo 100 caracteres");
+      expect(result.error.issues[0].message).toBe(TEXT_MAX);
     }
   });
 
@@ -95,29 +103,31 @@ describe("editProfileSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("El apellido es requerido");
+      expect(result.error.issues[0].message).toBe(
+        PROFILE_FORM.lastNameRequired,
+      );
     }
   });
 
   it("rejects last_name longer than 100 characters", () => {
     const result = editProfileSchema.safeParse({
       ...VALID_DATA,
-      last_name: "b".repeat(101),
+      last_name: "b".repeat(PROFILE_TEXT_MAX_LENGTH + 1),
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("Máximo 100 caracteres");
+      expect(result.error.issues[0].message).toBe(TEXT_MAX);
     }
   });
 
   it("rejects locality longer than 100 characters", () => {
     const result = editProfileSchema.safeParse({
       ...VALID_DATA,
-      locality: "c".repeat(101),
+      locality: "c".repeat(PROFILE_TEXT_MAX_LENGTH + 1),
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("Máximo 100 caracteres");
+      expect(result.error.issues[0].message).toBe(TEXT_MAX);
     }
   });
 
@@ -148,8 +158,8 @@ describe("editProfileSchema", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(
-          result.error.issues.some((i) =>
-            i.message.includes("Formato de teléfono inválido"),
+          result.error.issues.some(
+            (i) => i.message === PROFILE_FORM.invalidPhone,
           ),
         ).toBe(true);
       }
@@ -159,13 +169,14 @@ describe("editProfileSchema", () => {
   it("rejects contact_phone longer than 20 characters", () => {
     const result = editProfileSchema.safeParse({
       ...VALID_DATA,
-      contact_phone: "1".repeat(21),
+      contact_phone: "1".repeat(PROFILE_PHONE_MAX_LENGTH + 1),
     });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(
-        result.error.issues.some((i) =>
-          i.message.includes("Máximo 20 caracteres"),
+        result.error.issues.some(
+          (i) =>
+            i.message === PROFILE_FORM.textMaxLength(PROFILE_PHONE_MAX_LENGTH),
         ),
       ).toBe(true);
     }
@@ -174,13 +185,15 @@ describe("editProfileSchema", () => {
   it("rejects description longer than 500 characters", () => {
     const result = editProfileSchema.safeParse({
       ...VALID_DATA,
-      description: "d".repeat(501),
+      description: "d".repeat(PROFILE_DESCRIPTION_MAX_LENGTH + 1),
     });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(
-        result.error.issues.some((i) =>
-          i.message.includes("Máximo 500 caracteres"),
+        result.error.issues.some(
+          (i) =>
+            i.message ===
+            PROFILE_FORM.textMaxLength(PROFILE_DESCRIPTION_MAX_LENGTH),
         ),
       ).toBe(true);
     }
