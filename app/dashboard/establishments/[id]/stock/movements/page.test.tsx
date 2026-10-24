@@ -186,7 +186,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     await userEvent.click(rows[2]);
     const dialog = await screen.findByRole("dialog");
     expect(await within(dialog).findByText("Único")).toBeInTheDocument();
-    expect(within(dialog).getByText("Fundación")).toBeInTheDocument();
+    expect(within(dialog).getByText("Fundación / ONG")).toBeInTheDocument();
   });
 
   it("hides intake metadata on an egreso but still shows its comments", async () => {

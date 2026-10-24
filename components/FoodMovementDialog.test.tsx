@@ -165,6 +165,52 @@ describe("FoodMovementDialog", () => {
     });
   });
 
+  it.each([
+    ["Donación particular", "private_donation"],
+    ["Colecta / evento", "collection_event"],
+  ])("sends %s as the origin of an intake", async (label, value) => {
+    const user = userEvent.setup();
+    let submitted: CreateFoodMovementRequest | null = null;
+    server.use(
+      http.post(FOOD_INTAKES_ENDPOINT, async ({ request }) => {
+        submitted = (await request.json()) as CreateFoodMovementRequest;
+        return HttpResponse.json(
+          {
+            ...submitted,
+            responsible_id: "f1000000-0000-0000-0000-000000000001",
+            created_at: new Date().toISOString(),
+            items: [],
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    const onSaved = await openDialog();
+    await user.click(screen.getByRole("combobox", { name: "Alimento" }));
+    await user.click(await screen.findByRole("option", { name: /Arroz/ }));
+    await user.type(screen.getByRole("textbox", { name: "Cantidad 1" }), "1");
+    await user.selectOptions(
+      screen.getByLabelText("Origen del alimento"),
+      label,
+    );
+    await user.selectOptions(screen.getByLabelText("Tipo de aporte"), "false");
+    await user.click(
+      screen.getByRole("button", { name: "Guardar movimiento" }),
+    );
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(submitted).toMatchObject({ origin_type: value });
+  });
+
+  it("no longer offers Organización social as an origin", async () => {
+    await openDialog();
+    expect(
+      screen.queryByRole("option", { name: "Organización social" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "Fundación / ONG" }),
+    ).toBeInTheDocument();
+  });
+
   it("shows a Spanish validation message for an empty date", async () => {
     const user = userEvent.setup();
     await openDialog();
