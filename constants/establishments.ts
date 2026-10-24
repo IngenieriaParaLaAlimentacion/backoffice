@@ -74,6 +74,12 @@ export const RELATION_STATUS_TONE: Record<RelationStatus, Tone> = {
   withdrawn: "neutral",
 };
 
+/** Relations a user can withdraw themselves; the backend answers 409 for the rest. */
+export const WITHDRAWABLE_RELATION_STATUSES: readonly RelationStatus[] = [
+  "pending",
+  "approved",
+];
+
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   active: "Activo",
   inactive: "Inactivo",

@@ -20,6 +20,7 @@ import { OVERLAY_CLASS, PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
 import {
   RELATION_STATUS_LABELS,
   RELATION_STATUS_TONE,
+  WITHDRAWABLE_RELATION_STATUSES,
 } from "@/constants/establishments";
 import { MY_ESTABLISHMENTS } from "@/constants/users";
 import { formatEstablishmentLocation } from "@/lib/format";
@@ -33,9 +34,8 @@ const MODES = {
   request: {
     add: requestEstablishmentAccessAction,
     remove: withdrawEstablishmentAccessAction,
-    // Only a live request can be withdrawn.
     canRemove: (est: ProfileEstablishment) =>
-      est.status === "pending" || est.status === "approved",
+      WITHDRAWABLE_RELATION_STATUSES.includes(est.status),
     showProposeLink: true,
     copy: MY_ESTABLISHMENTS.request,
   },
