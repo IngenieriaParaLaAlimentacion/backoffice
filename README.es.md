@@ -95,6 +95,15 @@ commit vía Husky.
 
 ---
 
+## Auditoría de dependencias
+
+```bash
+# Falla ante vulnerabilidades altas o críticas (también corre en CI)
+npm run audit
+```
+
+---
+
 ## Tecnologías
 
 | Tecnología  | Versión |
