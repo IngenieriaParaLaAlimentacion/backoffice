@@ -1,6 +1,7 @@
 "use client";
 
 import RequirePermission from "@/components/RequirePermission";
+import type { Route } from "next";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -117,7 +118,8 @@ function EstablishmentRequestsContent() {
       }
 
       const query = params.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, {
+      // The current page with new search params, so it always exists.
+      router.replace((query ? `${pathname}?${query}` : pathname) as Route, {
         scroll: false,
       });
     },

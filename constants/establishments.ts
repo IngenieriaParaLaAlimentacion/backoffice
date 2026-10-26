@@ -365,7 +365,9 @@ export const CULTURAL_IDENTITY_OPTIONS = toOptions(CULTURAL_IDENTITY_LABELS);
  * "Perfil pendiente" badge sends whoever can complete it. */
 export const PROFILE_EDIT_PARAM = "edit";
 export const establishmentProfileHref = (id: string, edit = false) =>
-  `/dashboard/establishments/${id}/profile${edit ? `?${PROFILE_EDIT_PARAM}=1` : ""}`;
+  edit
+    ? (`/dashboard/establishments/${id}/profile?${PROFILE_EDIT_PARAM}=1` as const)
+    : (`/dashboard/establishments/${id}/profile` as const);
 
 export const ESTABLISHMENT_PROFILE = {
   pendingBadge: "Perfil pendiente",
