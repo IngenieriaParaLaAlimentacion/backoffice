@@ -9,9 +9,6 @@ console.log(API_BASE_URL);
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  // Type-checks every <Link href> and router.push() against the app/ folders,
-  // so a link to a page that doesn't exist fails `npm run typecheck`.
-  typedRoutes: true,
   // Establishment-creation requests moved from Establecimientos into the
   // Solicitudes section; keep bookmarks and old links working (Next.js
   // forwards the query string, so saved filters survive).

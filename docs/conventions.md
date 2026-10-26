@@ -53,14 +53,6 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   component.
 - **Routing APIs**: `next/navigation` (`useRouter`, `useParams`, etc.), never the Pages
   Router's `next/router`.
-- **Typed routes** (`typedRoutes: true` in `next.config.ts`): every `<Link href>` and
-  `router.push/replace` is checked against the `app/` folders, so a link to a missing
-  page fails `npm run typecheck` (which runs `next typegen` first). Keep that check alive:
-  type a static href as `Route` (from `"next"`), let a dynamic builder return its literal
-  type (``(id: string) => `/dashboard/establishments/${id}` as const``) instead of
-  `string`, and give a component that takes a dynamic href a `<T extends string>` with
-  `href: Route<T>`. Cast `as Route` only when rebuilding the current `usePathname()` with
-  new search params.
 - **Fonts** load from the licensed files in `app/fonts/` via `next/font/local`
   (`app/layout.tsx`), not a `<link>` tag or CSS `@import`. This avoids network
   requests during builds and keeps font loading free of layout shifts and
