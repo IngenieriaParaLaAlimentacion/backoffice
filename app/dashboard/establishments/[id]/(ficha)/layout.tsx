@@ -112,17 +112,14 @@ export default function EstablishmentLayout({
     );
   }
 
-  const baseHref = `/dashboard/establishments/${id}` as const;
+  const baseHref = `/dashboard/establishments/${id}`;
   const tabs = [
     { label: ESTABLISHMENT_DETAIL_TABS.subjects, href: baseHref },
     {
       label: ESTABLISHMENT_DETAIL_TABS.fieldWorkers,
-      href: `${baseHref}/field-workers` as const,
+      href: `${baseHref}/field-workers`,
     },
-    {
-      label: ESTABLISHMENT_DETAIL_TABS.stock,
-      href: `${baseHref}/stock` as const,
-    },
+    { label: ESTABLISHMENT_DETAIL_TABS.stock, href: `${baseHref}/stock` },
     {
       label: ESTABLISHMENT_DETAIL_TABS.profile,
       href: establishmentProfileHref(id),

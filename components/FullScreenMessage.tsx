@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { Route } from "next";
 import { Card } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 
@@ -18,7 +17,7 @@ export default function FullScreenMessage({
   title: string;
   body: string;
   /** Renders a link when set; pair with `actionLabel`. */
-  actionHref?: Route;
+  actionHref?: string;
   actionLabel?: string;
   /** Renders a button instead of a link; pair with `actionLabel`. */
   onAction?: () => void;

@@ -7,13 +7,12 @@ import {
   Ruler,
   Users,
 } from "lucide-react";
-import type { Route } from "next";
 import { can, Permission } from "@/lib/permissions";
 import { UserRole } from "@/types/user";
 
 export type NavItem = {
   label: string;
-  href: Route;
+  href: string;
   /** The icon component, not an element — keeps this file plain `.ts`. */
   icon: LucideIcon;
   /** When set, the item only shows for roles holding this permission. */

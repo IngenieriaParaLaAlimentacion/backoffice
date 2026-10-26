@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -14,9 +13,9 @@ import { usePendingCount } from "@/hooks/usePendingCount";
 import { REQUEST_TABS } from "@/constants/users";
 import RequirePermission from "@/components/RequirePermission";
 
-const USERS_TAB_HREF: Route = "/dashboard/requests";
-const ESTABLISHMENTS_TAB_HREF: Route = "/dashboard/requests/establishments";
-const CREATIONS_TAB_HREF: Route = "/dashboard/requests/establishment-creations";
+const USERS_TAB_HREF = "/dashboard/requests";
+const ESTABLISHMENTS_TAB_HREF = "/dashboard/requests/establishments";
+const CREATIONS_TAB_HREF = "/dashboard/requests/establishment-creations";
 
 const COUNT_ONLY_QUERY = { page: 1, page_size: 1 } as const;
 
