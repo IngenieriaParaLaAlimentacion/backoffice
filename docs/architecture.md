@@ -427,12 +427,8 @@ a test would be handed the previous test's response.
 PR) and once on each merge into `develop` or `main`; a newer push cancels the PR's run in
 progress. It has two parallel jobs: `audit` (dependency audit) and `test` (lint, typecheck,
 tests via `npm run test:ci`, a Codecov upload of `coverage/lcov.info`, build, Semgrep, and
-a Docker build that is not pushed). Coverage targets and ignored paths live in `codecov.yml`,
-which mirrors the backend's. Keeping
-the audit separate means a new advisory shows up as its own red check without hiding whether
-the PR's own code passes.
+a Docker build that is not pushed).
 
 The audit (`npm run audit` = `npm audit --audit-level=high`) fails on **high or critical**
-advisories only; moderate and low ones are printed in the log but don't fail the job. It
-covers devDependencies too. A new advisory can turn CI red with no code change. Fix it with
+advisories only. A new advisory can turn CI red with no code change. Fix it with
 `npm audit fix` or a version bump; don't lower the threshold.
