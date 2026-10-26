@@ -14,6 +14,11 @@ export default defineConfig({
       "playwright.config.ts",
       ".context/**",
     ],
+    coverage: {
+      provider: "v8",
+      // lcov → coverage/lcov.info, the file CI uploads to Codecov.
+      reporter: ["text", "html", "lcov"],
+    },
   },
   resolve: {
     alias: {

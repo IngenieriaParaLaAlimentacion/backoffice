@@ -426,7 +426,9 @@ a test would be handed the previous test's response.
 `.github/workflows/ci.yml` runs on every pull request (each push to a branch with an open
 PR) and once on each merge into `develop` or `main`; a newer push cancels the PR's run in
 progress. It has two parallel jobs: `audit` (dependency audit) and `test` (lint, typecheck,
-tests via `npm run test:ci`, build, Semgrep, and a Docker build that is not pushed). Keeping
+tests via `npm run test:ci`, a Codecov upload of `coverage/lcov.info`, build, Semgrep, and
+a Docker build that is not pushed). Coverage targets and ignored paths live in `codecov.yml`,
+which mirrors the backend's. Keeping
 the audit separate means a new advisory shows up as its own red check without hiding whether
 the PR's own code passes.
 

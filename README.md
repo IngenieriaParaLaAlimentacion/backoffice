@@ -2,6 +2,7 @@
 
 [![es](https://img.shields.io/badge/lang-es-yellow.svg)](README.es.md)
 [![Node](https://img.shields.io/badge/node-24%20LTS-green.svg)](package.json)
+[![codecov](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice/graph/badge.svg)](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice)
 
 Admin backoffice for the **Food Engineering** project (Ingeniería Para La
 Alimentación), developed with Next.js (App Router), TypeScript, and shadcn/ui.

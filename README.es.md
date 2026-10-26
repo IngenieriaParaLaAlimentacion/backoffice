@@ -2,6 +2,7 @@
 
 [![en](https://img.shields.io/badge/lang-en-blue.svg)](README.md)
 [![Node](https://img.shields.io/badge/node-24%20LTS-green.svg)](package.json)
+[![codecov](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice/graph/badge.svg)](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice)
 
 Panel de administración para el proyecto **Ingeniería Para La Alimentación**,
 desarrollado con Next.js (App Router), TypeScript y shadcn/ui.
