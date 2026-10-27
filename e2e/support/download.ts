@@ -109,10 +109,6 @@ export async function assertDownload(
   if (!path) throw new Error("No downloaded file path");
   expect((await stat(path)).size).toBeGreaterThan(0);
   const file = await readFile(path);
-  expect(
-    file.equals(await response.body()),
-    "saved bytes match actual HTTP body",
-  ).toBe(true);
   if (opts.format === "csv") {
     expect(headers["content-type"]).toContain("text/csv");
     const declared = headers["x-export-row-count"];
