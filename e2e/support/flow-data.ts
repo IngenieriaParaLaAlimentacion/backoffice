@@ -9,6 +9,7 @@ import {
   CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
   FIES_TEMPLATE_ENDPOINT,
+  FOODS_ENDPOINT,
   REGISTER_FIELD_WORKER_ENDPOINT,
   SURVEYS_ENDPOINT,
   SURVEY_ENDPOINT,
@@ -20,12 +21,18 @@ import type {
   EstablishmentResponse,
 } from "../../types/establishment";
 import type {
+  FoodListItem,
+  PaginatedFoodsResponse,
+} from "../../types/foodCatalog";
+import type {
   SurveyCreateRequest,
   SurveyResponse,
   SurveyTemplateResponse,
 } from "../../types/survey";
 import { e2eEnv } from "./env";
 import { currentTokens } from "./session";
+
+type OwnedFood = Pick<FoodListItem, "id" | "name" | "base_unit">;
 
 type OwnedWorker = {
   id: string;
@@ -241,5 +248,16 @@ export class FlowData {
     );
     expect(stored.response_count).toBe(count);
     return { survey: stored, total: count };
+  }
+
+  async food(): Promise<OwnedFood> {
+    const result = await this.json<PaginatedFoodsResponse>(
+      "GET",
+      `${FOODS_ENDPOINT}?page=1&page_size=1&sort_order=name_asc`,
+      200,
+    );
+    expect(result.items).toHaveLength(1);
+    const { id, name, base_unit } = result.items[0];
+    return { id, name, base_unit };
   }
 }
