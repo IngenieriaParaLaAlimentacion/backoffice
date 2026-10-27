@@ -5,11 +5,26 @@ import {
   type BrowserContext,
   type TestInfo,
 } from "@playwright/test";
-import { ESTABLISHMENTS_ENDPOINT } from "../../constants/api";
+import {
+  CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
+  ESTABLISHMENTS_ENDPOINT,
+  REGISTER_FIELD_WORKER_ENDPOINT,
+} from "../../constants/api";
 import type { ApiMethod } from "../../lib/types";
-import type { EstablishmentResponse } from "../../types/establishment";
+import type {
+  EstablishmentRequestCreationResponse,
+  EstablishmentResponse,
+} from "../../types/establishment";
 import { e2eEnv } from "./env";
 import { currentTokens } from "./session";
+
+type OwnedWorker = {
+  id: string;
+  email: string;
+  name: string;
+  last_name: string;
+  password: string;
+};
 
 export class FlowData {
   private readonly prefix: string;
@@ -84,5 +99,65 @@ export class FlowData {
     expect(created.place_id).toBe(body.place_id);
     expect(created.id).toBeTruthy();
     return created;
+  }
+
+  async establishmentRequest(
+    label = "request",
+  ): Promise<
+    Pick<
+      EstablishmentRequestCreationResponse,
+      "id" | "name" | "formatted_address"
+    >
+  > {
+    const body = {
+      name: this.name(label),
+      formatted_address: this.name("declared-address"),
+      city: "Ciudad Autónoma de Buenos Aires",
+      province: "Ciudad Autónoma de Buenos Aires",
+    };
+    const created = await this.json<EstablishmentRequestCreationResponse>(
+      "POST",
+      CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
+      201,
+      body,
+    );
+    expect(created.status).toBe("pending");
+    expect(created.name).toBe(body.name);
+    return created;
+  }
+
+  async fieldWorker(establishmentIds: string[]): Promise<OwnedWorker> {
+    const body = {
+      email: `${this.name("worker", 60)}@example.com`.toLowerCase(),
+      password: "Fictional-E2e-123!",
+      name: this.name("Worker"),
+      last_name: "E2E",
+      establishments: establishmentIds,
+    };
+    const response = await this.adminContext.request.post(
+      new URL(REGISTER_FIELD_WORKER_ENDPOINT, e2eEnv.apiURL).toString(),
+      { data: body },
+    );
+    expect(response.status(), "public pending field-worker registration").toBe(
+      201,
+    );
+    const created = (await response.json()) as Omit<OwnedWorker, "password"> & {
+      role: string;
+      status: string;
+      establishments: string[];
+    };
+    expect(created.role).toBe("field_worker");
+    expect(created.status).toBe("pending_validation");
+    expect(created.email).toBe(body.email);
+    expect([...created.establishments].sort()).toEqual(
+      [...establishmentIds].sort(),
+    );
+    return {
+      id: created.id,
+      email: created.email,
+      name: created.name,
+      last_name: created.last_name,
+      password: body.password,
+    };
   }
 }

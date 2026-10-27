@@ -9,6 +9,7 @@ services:
 
   backend:
     environment:
+      ENVIRONMENT: development
       RATE_LIMIT_REDIS_URL: redis://redis:6379/0
     depends_on:
       redis:
