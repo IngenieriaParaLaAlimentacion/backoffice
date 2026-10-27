@@ -99,9 +99,11 @@ test("incorrect password is rejected by the real API", async ({ page }) => {
     password: "intentionally-wrong-e2e-password",
   });
   expect((await response).status()).toBe(401);
-  await expect(page.getByRole("alert")).toContainText(
-    SIGN_IN_FORM.errors[ERROR_TYPES.INVALID_CREDENTIALS],
-  );
+  await expect(
+    page.getByRole("alert").filter({
+      hasText: SIGN_IN_FORM.errors[ERROR_TYPES.INVALID_CREDENTIALS],
+    }),
+  ).toBeVisible();
   await expect(page).toHaveURL(/\/signin$/);
 });
 
