@@ -8,13 +8,22 @@ import {
 import {
   CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
+  FIES_TEMPLATE_ENDPOINT,
   REGISTER_FIELD_WORKER_ENDPOINT,
+  SURVEYS_ENDPOINT,
+  SURVEY_ENDPOINT,
+  SURVEY_RESPONSES_ENDPOINT,
 } from "../../constants/api";
 import type { ApiMethod } from "../../lib/types";
 import type {
   EstablishmentRequestCreationResponse,
   EstablishmentResponse,
 } from "../../types/establishment";
+import type {
+  SurveyCreateRequest,
+  SurveyResponse,
+  SurveyTemplateResponse,
+} from "../../types/survey";
 import { e2eEnv } from "./env";
 import { currentTokens } from "./session";
 
@@ -159,5 +168,78 @@ export class FlowData {
       last_name: created.last_name,
       password: body.password,
     };
+  }
+
+  async fiesWithResponses(
+    count = 3,
+  ): Promise<{ survey: SurveyResponse; total: number }> {
+    if (!Number.isInteger(count) || count < 1 || count > 30) {
+      throw new Error("FIES fixture count must be an integer from 1 to 30");
+    }
+    const template = await this.json<SurveyTemplateResponse>(
+      "GET",
+      FIES_TEMPLATE_ENDPOINT,
+      200,
+    );
+    const body: SurveyCreateRequest & { instrument_type: "fies" } = {
+      name: this.name("fies", 120),
+      description: "Fictional scored responses owned by one E2E test",
+      response_target: template.response_target,
+      requires_response_number: template.requires_response_number,
+      instrument_type: "fies",
+      questions: [...template.questions]
+        .sort((a, b) => a.position - b.position)
+        .map((q) => ({
+          text: q.text,
+          response_type: q.response_type,
+          is_required: q.is_required,
+          options: [...q.options]
+            .sort((a, b) => a.position - b.position)
+            .map((o) => ({ text: o.text })),
+        })),
+    };
+    expect(body.response_target).toBe("anonymous");
+    const survey = await this.json<SurveyResponse>(
+      "POST",
+      SURVEYS_ENDPOINT,
+      201,
+      body,
+    );
+    const questions = [...survey.questions].sort(
+      (a, b) => a.position - b.position,
+    );
+    expect(questions).toHaveLength(8);
+    for (let index = 0; index < count; index += 1) {
+      const score = index % 9;
+      const answers: Record<string, string> = {};
+      for (const [questionIndex, question] of questions.entries()) {
+        const options = [...question.options].sort(
+          (a, b) => a.position - b.position,
+        );
+        expect(options).toHaveLength(2);
+        answers[question.id] = options[questionIndex < score ? 0 : 1].id;
+      }
+      const response = await this.json<{ id: string; score_fies: number }>(
+        "POST",
+        SURVEY_RESPONSES_ENDPOINT(survey.id),
+        201,
+        {
+          id: randomUUID(),
+          answers,
+          response_number: index + 1,
+          event_at: new Date(
+            Date.now() - (index + 1) * 86_400_000,
+          ).toISOString(),
+        },
+      );
+      expect(response.score_fies).toBe(score);
+    }
+    const stored = await this.json<SurveyResponse>(
+      "GET",
+      SURVEY_ENDPOINT(survey.id),
+      200,
+    );
+    expect(stored.response_count).toBe(count);
+    return { survey: stored, total: count };
   }
 }

@@ -36,7 +36,7 @@ The Compose project is derived from this worktree's real path; the command lock 
 ## Baseline, stress and CI
 
 ```sh
-npm run e2e             # Auth, role, establishment and request baseline, production build/start.
+npm run e2e             # Auth, role and business-flow baseline, production build/start.
 npm run e2e:stress      # Five fresh PW processes, ten same-role cases each, two workers.
 npm run e2e:ci          # One build/stack, baseline followed by all five proof passes.
 npm run e2e:quarantine  # Explicit diagnostic selection, outside the baseline.
@@ -52,7 +52,7 @@ The E2E workflow runs on PRs targeting develop/main, pushes to main and manual d
 
 ## Scope and sessions
 
-The baseline covers issue #105 authentication, administrator/analyst permissions and session stability, plus issue #106 CA1 establishment creation, required-name validation, general editing and analyst characterization, and CA2 creation-request review, account/access approval and access revocation. Every mutable establishment, request and field-worker account belongs to one test. API-created questionnaires remain private permission fixtures. Survey CRUD, stock, measurement creation, mobile synchronization, mail delivery and real external provider availability remain outside these journeys.
+The baseline covers issue #105 authentication, administrator/analyst permissions and session stability, plus issue #106 CA1 establishment creation, required-name validation, general editing and analyst characterization, CA2 creation-request review, account/access approval and access revocation, and CA3 FIES-template authoring, status, duplication and analyst response downloads. Every mutable establishment, request, field-worker account and survey belongs to one test. Stock, measurement creation, mobile synchronization, mail delivery and real external provider availability remain outside these journeys.
 
 Authenticated tests import `test` from `e2e/fixtures`. Each worker lazily logs in once per role with its own device UUID. Role accounts come from environment variables; admin must be an actual admin. Each test still has a fresh Playwright context. A storageState fixture supplies the latest worker-owned in-memory credentials, and context teardown waits for refreshes and saves current browser storage before closing. No static authentication file is shared across workers or reused after its refresh token has been consumed.
 
@@ -60,11 +60,15 @@ Each test finishes with an observable UI/API assertion. Do not leave asynchronou
 
 The inherited `api` helper uses the current scenario browser token and never refreshes independently. Business specs import `test` and `expect` from `e2e/flow-fixtures`; its `flow` helper prepares unique establishments and creation requests through a worker-owned admin session, including for analyst scenarios. The analyst case's separate admin context visits the real dashboard so production auth can refresh, then checkpoints the latest state to that worker session. Scenario assertions use the real UI or `api`, preserving the tested role. Do not create per-test admin API logins, sign tokens, mutate SQL or share mutable seed resources.
 
-Names include the invocation, worker, retry and an intact random UUID. Each case creates its own establishments, pending creation requests and pending field-worker accounts as needed. Public registration uses unique `@example.com` emails and requests only the test-owned establishment links; it never logs in the new account. Rerunning the shared seed fills gaps and does not restore modified fixtures; reset/teardown discard the disposable database. No unsupported delete API is used.
+Names include the invocation, worker, retry and an intact random UUID. Each case creates its own establishments, pending creation requests, pending field-worker accounts and surveys/responses as needed. Public registration uses unique `@example.com` emails and requests only the test-owned establishment links; it never logs in the new account. Rerunning the shared seed fills gaps and does not restore modified fixtures; reset/teardown discard the disposable database. No unsupported delete API is used.
 
 The web overlay sets `ENVIRONMENT=development` only for the HTTP backend so newly registered pending field workers are email-verified and visible for admin review. Migration and reference seed retain canonical `e2e`. Email delivery remains disabled and untested.
 
 Only GET requests to `https://apis.datos.gob.ar/georef/api/direcciones` are fulfilled for deterministic address suggestions. Its exact JSON fields drive the real provider; the unique `calle.id` participates in persisted `place_id`. All backend/API calls remain real. List-mode journeys need no map tile interception.
+
+The current FIES-template authoring UI omits `instrument_type`, so the survey it creates persists as `custom`. CA3 checks its template questions, numbering, status and duplication; it does not claim scoring for that UI-created record. A separate private API-created survey explicitly uses canonical `instrument_type=fies` and owns its responses for analyst read/export checks.
+
+Downloads register both real HTTP-response and browser-download waits before clicking. Filename must equal the server's Content-Disposition filename, and the saved nonempty bytes must equal the response body. CSV actual rows must equal both X-Export-Row-Count and the real filtered listing total. Survey XLSX has no count header: the count-only interpretation counts `Respuestas` rows (excluding its header) against the filtered response-list total, without checking cell values or modifying the API. The user explicitly confirmed this count-only interpretation; cell values and backend changes are excluded. The test-only fflate dependency extracts the ZIP; browser-native XML parsing finds the named worksheet.
 
 ## Locators and Page Objects
 
@@ -74,7 +78,7 @@ Wait for a meaningful heading, loaded row, role-specific control or expected API
 
 ## Stability evidence
 
-The baseline contains thirty cases: eight auth, fifteen permission, four CA1 establishment and three CA2 request cases; it excludes stress and quarantine tags. The separate `@session-stress` selection contains exactly ten cases. With two actual workers, each case uses a new context, creates a private API record, reloads the real page, observes at least three successful refreshes, confirms two protected reads and rejects replay of the consumed refresh token. Nonsecret `session-proof` attachments report role, worker/parallel index, login count, refresh count and protected-read count; they never contain tokens or passwords.
+The baseline contains thirty-two cases: eight auth, fifteen permission, four CA1 establishment, three CA2 request and two CA3 survey cases; it excludes stress and quarantine tags. The separate `@session-stress` selection contains exactly ten cases. With two actual workers, each case uses a new context, creates a private API record, reloads the real page, observes at least three successful refreshes, confirms two protected reads and rejects replay of the consumed refresh token. Nonsecret `session-proof` attachments report role, worker/parallel index, login count, refresh count and protected-read count; they never contain tokens or passwords.
 
 Acceptance requires five separate successful runs with no retry, failure, flaky result or skip. A command configured with two workers is not evidence that both workers actually executed cases; the runner checks their result metadata. The default same-role proof uses admin; analyst can be selected explicitly with E2E_STRESS_ROLE.
 
