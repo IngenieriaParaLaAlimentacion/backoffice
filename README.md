@@ -117,3 +117,7 @@ conventions.
 ## License
 
 Academic project — **group-193**.
+
+## Browser E2E tests
+
+Run `npm run e2e` against the disposable backend stack. See [E2E setup and sessions](docs/e2e.md) for credentials, Chromium installation, reset, CI reports and the repeated-session proof.
