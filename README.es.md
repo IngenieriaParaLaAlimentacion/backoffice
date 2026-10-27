@@ -8,6 +8,10 @@ desarrollado con Next.js (App Router), TypeScript y shadcn/ui.
 
 ---
 
+## Manual de usuario
+
+Guía para administradores y analistas: [HTML](docs/manual-usuario/index.html) · [PDF](docs/manual-usuario/manual.pdf) · [Fuentes editables](docs/manual-usuario/README.md).
+
 ## Requisitos previos
 
 | Herramienta | Versión mínima         |

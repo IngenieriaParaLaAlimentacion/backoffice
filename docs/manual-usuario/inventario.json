@@ -1,0 +1,458 @@
+{
+  "revisions": {
+    "backend": "99a1acbfee78b021558155bbae13c2aa882b6bf2",
+    "backoffice": "6d79a177742391443dc9560444be2d10f620b439"
+  },
+  "screens": [
+    {
+      "repository": "backoffice",
+      "source": "app/(auth)/forgot-password/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "e24021959534b2fb26b8257d609268a1f4e69b2db3b07f9108262ee6727c4874",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/(auth)/forgot-password/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/(auth)/invite/admin/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "531a7782ca93c4eca25b68ab497e3460b7c3fca2e00e10d9a181969ebfda31c9",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/(auth)/invite/admin/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/(auth)/invite/analyst/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "992c00ebd9003adc752ca6a5e160938c3f8765d3533f17c763430c997ea81c91",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/(auth)/invite/analyst/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/(auth)/invite/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "d36b4de570365d94ff8f6d3b238d23fd78e38315fadb15831e4cfdf852532d81",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/(auth)/invite/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/(auth)/reset-password/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "0e151a32100a58e496ee0d43d244be012d8405ecda448f536da78b0633d50fb2",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/(auth)/reset-password/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/(auth)/signin/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "a2e23c9e6ea303ec34f72be6678edc58d8cf79b2464b5c314578e24e8c975915",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/(auth)/signin/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/(auth)/verify-email/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "a6c3f697ffca13e993b1de1e1ae5e91dfe9184c24369c5b1062212b5a5f27de4",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/(auth)/verify-email/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/anthropometric-measurements/page.tsx",
+      "chapter": "02-talla-y-peso.md",
+      "sha256": "6fe8351bb184edc60d6aa43d31b8898e25f78446b4c037aeab6472f54084fe1b",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/anthropometric-measurements/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/(list)/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "b842a0570a1b3bf3e4ecb716c6a841baa333079ce91cfd609cde6b050b124753",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/(list)/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/[id]/(ficha)/field-workers/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "555ddf01845bfc0f6553ed1f420f4d196b1282e06dc3c89cb333eb6b65549fdf",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/[id]/(ficha)/field-workers/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/[id]/(ficha)/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "f1d22cccb853224c0ab50ad355d97cdeec9bfdac5b2fd91026a52a8fa1472c13",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/[id]/(ficha)/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/[id]/(ficha)/profile/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "d8deac419b8b5d7e95d67ad999be80e51fda8a194f89a44e1434d870ebd64317",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/[id]/(ficha)/profile/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/[id]/(ficha)/stock/page.tsx",
+      "chapter": "04-nutrir.md",
+      "sha256": "a84221716637578bb4eb9c9add8f967cf1f76eb695e759161f5faa0edecf570a",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/[id]/(ficha)/stock/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/[id]/stock/movements/page.tsx",
+      "chapter": "04-nutrir.md",
+      "sha256": "7f21362e30947afa039d5c64948720d4962bf4e5feb74fca42ed27ebaa1fc7b2",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/[id]/stock/movements/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/create/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "17bf3c93cfe57a5d64a1795a154c089f4d439d6519fdc2c476671c20d2ff862f",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/create/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/establishments/propose/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "90421f97ad7f4ca6dd72c9580b99b43b6b6f3658f8045266947c3a21e9d781fc",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/establishments/propose/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "19c131de4cdbef2d3589fecafb190fb5742aa71790a38d3f6fa097b916417eb5",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/profile/edit/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "be001d25c4e8741c182aa011384785ff5beae79e1d7deb4f208238d016aea197",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/profile/edit/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/profile/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "cb672b74e7a485a44e3e46e9f746412f52993a5cb046f39871070a386c618a7c",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/profile/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/requests/establishment-creations/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "039d7d839f809bf0a85610289d6b9ab6b8d29e208d99c1576b19eb36ae9fe4c0",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/requests/establishment-creations/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/requests/establishments/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "36ad5e9c8ea189fc52d9b5024dc60c5f4fc817b6fe94ae2b4665f415cde75316",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/requests/establishments/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/requests/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "9659dc75d7fff0839c2e91be621ee5b983c81bc15f293b667e05453fca4542b9",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/requests/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/subjects/page.tsx",
+      "chapter": "02-talla-y-peso.md",
+      "sha256": "2a852eabc97fb99acb831ff75407445754cd7b6588a4eee99ad0941473d49c5a",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/subjects/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/surveys/[id]/page.tsx",
+      "chapter": "03-encuestas.md",
+      "sha256": "8863769c1badbff31fa303578e9b88c2686602958ba1087ad16aa59fb9d027de",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/surveys/[id]/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/surveys/[id]/responses/page.tsx",
+      "chapter": "03-encuestas.md",
+      "sha256": "c2156eb87e481d7226247f7142055b92fce41b501d9c867c543efc3cadeb8439",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/surveys/[id]/responses/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/surveys/new/page.tsx",
+      "chapter": "03-encuestas.md",
+      "sha256": "e076d1936db1fafa5f56b5d15e52774b77e9b2a5359a13e45b966f2ed59325ef",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/surveys/new/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/surveys/page.tsx",
+      "chapter": "03-encuestas.md",
+      "sha256": "027a2fd8e124f05f05f36a0d243b00ea270958475d9e0ab446460e5af100d186",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/surveys/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/users/[role]/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "e62ba5b640ce363d7fbc42ba697a254d56264103f788a545983602a0210173ae",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/users/[role]/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/dashboard/users/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "3557dbbf67260c856550ab6bc3abc8d168f8d1d1f530e77aaf3face2e16b5c40",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/dashboard/users/page.tsx"
+    },
+    {
+      "repository": "backoffice",
+      "source": "app/page.tsx",
+      "chapter": "01-acceso.md",
+      "sha256": "9c1b88f00487cb4114e0b0f5f9c4c20685f58cd32421c738d7a63235e9fd6246",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/6d79a177742391443dc9560444be2d10f620b439/app/page.tsx"
+    }
+  ],
+  "captures": [
+    {
+      "id": "web-establecimientos",
+      "surface": "backoffice",
+      "file": "web-establecimientos.png",
+      "expected": "Establecimientos registrados",
+      "capturedAt": "2026-10-25T18:24:36.471Z"
+    },
+    {
+      "id": "web-establecimiento-alta",
+      "surface": "backoffice",
+      "file": "web-establecimiento-alta.png",
+      "expected": "Nombre",
+      "capturedAt": "2026-10-25T18:24:37.123Z"
+    },
+    {
+      "id": "web-comedor",
+      "surface": "backoffice",
+      "file": "web-comedor.png",
+      "expected": "Sujetos que asisten",
+      "capturedAt": "2026-10-25T18:24:37.868Z"
+    },
+    {
+      "id": "web-comedor-relevadores",
+      "surface": "backoffice",
+      "file": "web-comedor-relevadores.png",
+      "expected": "Relevadores",
+      "capturedAt": "2026-10-25T18:24:38.632Z"
+    },
+    {
+      "id": "web-comedor-perfil",
+      "surface": "backoffice",
+      "file": "web-comedor-perfil.png",
+      "expected": "Perfil",
+      "capturedAt": "2026-10-25T18:24:39.346Z"
+    },
+    {
+      "id": "web-comedor-perfil-editar",
+      "surface": "backoffice",
+      "file": "web-comedor-perfil-editar.png",
+      "expected": "Guardar perfil",
+      "capturedAt": "2026-10-25T18:24:40.099Z"
+    },
+    {
+      "id": "web-sujetos",
+      "surface": "backoffice",
+      "file": "web-sujetos.png",
+      "expected": "Sujetos registrados",
+      "capturedAt": "2026-10-25T18:24:40.803Z"
+    },
+    {
+      "id": "web-mediciones",
+      "surface": "backoffice",
+      "file": "web-mediciones.png",
+      "expected": "Mediciones antropométricas",
+      "capturedAt": "2026-10-25T18:24:41.539Z"
+    },
+    {
+      "id": "web-encuestas",
+      "surface": "backoffice",
+      "file": "web-encuestas.png",
+      "expected": "Relevamientos FIES",
+      "capturedAt": "2026-10-25T18:24:42.262Z"
+    },
+    {
+      "id": "web-encuesta-nueva",
+      "surface": "backoffice",
+      "file": "web-encuesta-nueva.png",
+      "expected": "Nueva encuesta",
+      "capturedAt": "2026-10-25T18:24:42.923Z"
+    },
+    {
+      "id": "web-encuesta-editar",
+      "surface": "backoffice",
+      "file": "web-encuesta-editar.png",
+      "expected": "Editar encuesta",
+      "capturedAt": "2026-10-25T18:24:43.666Z"
+    },
+    {
+      "id": "web-encuesta-respuestas",
+      "surface": "backoffice",
+      "file": "web-encuesta-respuestas.png",
+      "expected": "Respuestas",
+      "capturedAt": "2026-10-25T18:24:44.410Z"
+    },
+    {
+      "id": "web-fies-respuestas",
+      "surface": "backoffice",
+      "file": "web-fies-respuestas.png",
+      "expected": "Respuestas",
+      "capturedAt": "2026-10-25T18:24:45.457Z"
+    },
+    {
+      "id": "web-stock",
+      "surface": "backoffice",
+      "file": "web-stock.png",
+      "expected": "Stock",
+      "capturedAt": "2026-10-25T18:24:46.235Z"
+    },
+    {
+      "id": "web-movimientos",
+      "surface": "backoffice",
+      "file": "web-movimientos.png",
+      "expected": "Movimientos",
+      "capturedAt": "2026-10-25T18:24:46.958Z"
+    },
+    {
+      "id": "web-solicitudes-registro",
+      "surface": "backoffice",
+      "file": "web-solicitudes-registro.png",
+      "expected": "Solicitudes de usuario",
+      "capturedAt": "2026-10-25T18:24:47.691Z"
+    },
+    {
+      "id": "web-solicitudes-acceso",
+      "surface": "backoffice",
+      "file": "web-solicitudes-acceso.png",
+      "expected": "Solicitudes de establecimiento",
+      "capturedAt": "2026-10-25T18:24:48.387Z"
+    },
+    {
+      "id": "web-solicitudes-alta",
+      "surface": "backoffice",
+      "file": "web-solicitudes-alta.png",
+      "expected": "Solicitudes",
+      "capturedAt": "2026-10-25T18:24:49.130Z"
+    },
+    {
+      "id": "web-usuarios",
+      "surface": "backoffice",
+      "file": "web-usuarios.png",
+      "expected": "Usuarios",
+      "capturedAt": "2026-10-25T18:24:49.844Z"
+    },
+    {
+      "id": "web-perfil",
+      "surface": "backoffice",
+      "file": "web-perfil.png",
+      "expected": "Mi información personal",
+      "capturedAt": "2026-10-25T18:24:50.561Z"
+    },
+    {
+      "id": "web-perfil-editar",
+      "surface": "backoffice",
+      "file": "web-perfil-editar.png",
+      "expected": "Editar perfil",
+      "capturedAt": "2026-10-25T18:24:51.260Z"
+    },
+    {
+      "id": "web-comedor-solicitud-revisar",
+      "surface": "backoffice",
+      "file": "web-comedor-solicitud-revisar.png",
+      "expected": "Aprobar",
+      "capturedAt": "2026-10-25T18:24:52.026Z"
+    },
+    {
+      "id": "web-solicitud-revisar",
+      "surface": "backoffice",
+      "file": "web-solicitud-revisar.png",
+      "expected": "Aceptar solicitud",
+      "capturedAt": "2026-10-25T18:24:52.776Z"
+    },
+    {
+      "id": "web-encuesta-respuesta-detalle",
+      "surface": "backoffice",
+      "file": "web-encuesta-respuesta-detalle.png",
+      "expected": "Detalle de respuesta",
+      "capturedAt": "2026-10-25T18:24:53.677Z"
+    },
+    {
+      "id": "web-sujeto-detalle",
+      "surface": "backoffice",
+      "file": "web-sujeto-detalle.png",
+      "expected": "Documento de identidad",
+      "capturedAt": "2026-10-25T18:24:54.478Z"
+    },
+    {
+      "id": "web-evolucion",
+      "surface": "backoffice",
+      "file": "web-evolucion.png",
+      "expected": "Evolución de peso y talla",
+      "capturedAt": "2026-10-25T18:24:55.432Z"
+    },
+    {
+      "id": "web-fies-crear",
+      "surface": "backoffice",
+      "file": "web-fies-crear.png",
+      "expected": "8/30",
+      "capturedAt": "2026-10-25T18:24:56.198Z"
+    },
+    {
+      "id": "web-movimiento-registrar",
+      "surface": "backoffice",
+      "file": "web-movimiento-registrar.png",
+      "expected": "Guardar",
+      "capturedAt": "2026-10-25T18:24:56.993Z"
+    },
+    {
+      "id": "web-usuario-invitar",
+      "surface": "backoffice",
+      "file": "web-usuario-invitar.png",
+      "expected": "Enviar invitación",
+      "capturedAt": "2026-10-25T18:24:57.741Z"
+    },
+    {
+      "id": "web-acceso",
+      "surface": "backoffice",
+      "file": "web-acceso.png",
+      "expected": "Iniciar sesión",
+      "capturedAt": "2026-10-25T18:46:12.933Z"
+    },
+    {
+      "id": "web-inicio",
+      "surface": "backoffice",
+      "file": "web-inicio.png",
+      "expected": "Accesos disponibles",
+      "capturedAt": "2026-10-25T18:46:13.358Z"
+    },
+    {
+      "id": "web-encuesta-acciones",
+      "surface": "backoffice",
+      "file": "web-encuesta-acciones.png",
+      "expected": "Duplicar",
+      "capturedAt": "2026-10-25T18:46:14.211Z"
+    },
+    {
+      "id": "web-encuesta-exportar",
+      "surface": "backoffice",
+      "file": "web-encuesta-exportar.png",
+      "expected": "Exportar",
+      "capturedAt": "2026-10-25T18:46:15.022Z"
+    },
+    {
+      "id": "web-recuperar",
+      "surface": "backoffice",
+      "file": "web-recuperar.png",
+      "expected": "Email",
+      "capturedAt": "2026-10-25T18:46:16.697Z"
+    }
+  ]
+}
