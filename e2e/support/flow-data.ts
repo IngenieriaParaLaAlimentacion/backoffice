@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import {
   expect,
   type APIResponse,
@@ -10,7 +10,9 @@ import {
   ESTABLISHMENTS_ENDPOINT,
   FIES_TEMPLATE_ENDPOINT,
   FOODS_ENDPOINT,
+  MEASUREMENTS_ENDPOINT,
   REGISTER_FIELD_WORKER_ENDPOINT,
+  SUBJECTS_ENDPOINT,
   SURVEYS_ENDPOINT,
   SURVEY_ENDPOINT,
   SURVEY_RESPONSES_ENDPOINT,
@@ -24,6 +26,7 @@ import type {
   FoodListItem,
   PaginatedFoodsResponse,
 } from "../../types/foodCatalog";
+import type { SubjectSummary } from "../../types/subject";
 import type {
   SurveyCreateRequest,
   SurveyResponse,
@@ -31,6 +34,11 @@ import type {
 } from "../../types/survey";
 import { e2eEnv } from "./env";
 import { currentTokens } from "./session";
+
+type OwnedSubject = Pick<
+  SubjectSummary,
+  "id" | "dni" | "name" | "last_name" | "birth_date"
+>;
 
 type OwnedFood = Pick<FoodListItem, "id" | "name" | "base_unit">;
 
@@ -259,5 +267,69 @@ export class FlowData {
     expect(result.items).toHaveLength(1);
     const { id, name, base_unit } = result.items[0];
     return { id, name, base_unit };
+  }
+
+  async subject(input: {
+    birthDate: string;
+    name?: string;
+    lastName?: string;
+  }): Promise<OwnedSubject> {
+    const identity = {
+      id: randomUUID(),
+      name: input.name ?? this.name("Subject"),
+      last_name: input.lastName ?? "E2E",
+      birth_date: input.birthDate,
+      sex: "female",
+      is_rural: false,
+      is_indigenous: false,
+    };
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const dni = randomInt(1_000_000, 90_000_000);
+      const response = await this.request("POST", SUBJECTS_ENDPOINT, {
+        ...identity,
+        dni,
+      });
+      if (response.status() === 409) {
+        const problem = (await response.json()) as { type?: string };
+        expect(problem.type, "only duplicate DNI is retried").toBe(
+          "/errors/subject-already-exists",
+        );
+        continue;
+      }
+      expect(response.status(), "create owned subject").toBe(201);
+      const created = (await response.json()) as OwnedSubject;
+      expect(created.id).toBe(identity.id);
+      expect(created.dni).toBe(dni);
+      return created;
+    }
+    throw new Error(
+      "Could not reserve a unique fixture DNI after five collisions",
+    );
+  }
+
+  async measurement(input: {
+    subjectId: string;
+    establishmentId: string;
+    measuredAt: string;
+    weightKg?: number;
+    heightCm?: number;
+  }): Promise<{ id: string }> {
+    const id = randomUUID();
+    const created = await this.json<{ id: string }>(
+      "POST",
+      MEASUREMENTS_ENDPOINT,
+      201,
+      {
+        id,
+        subject_id: input.subjectId,
+        establishment_id: input.establishmentId,
+        measured_at: input.measuredAt,
+        weight_kg: input.weightKg ?? 20,
+        height_cm: input.heightCm ?? 110,
+        observation: "Fictional E2E measurement",
+      },
+    );
+    expect(created.id).toBe(id);
+    return created;
   }
 }
