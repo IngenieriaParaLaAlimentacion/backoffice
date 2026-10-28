@@ -14,7 +14,6 @@ import {
   nutritionReportListHref,
 } from "@/constants/nutritionReport";
 import { formatPercentage, formatReportMonth } from "@/lib/format";
-import { humanizeReportText } from "@/lib/nutritionReportText";
 import { isClosedMonth } from "@/lib/reportMonth";
 import NutritionReportBanner from "./NutritionReportBanner";
 import NutritionReportNoticeDialog from "./NutritionReportNoticeDialog";
@@ -63,9 +62,7 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
       {report.summary && (
         <section className="flex flex-col gap-2">
           <h2 className={SECTION_TITLE_CLASS}>{COPY.overviewTitle}</h2>
-          <p className="text-sm">
-            {humanizeReportText(report.summary.overview)}
-          </p>
+          <p className="text-sm">{report.summary.overview}</p>
         </section>
       )}
 
@@ -73,37 +70,26 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
 
       <NutrientsTable
         nutrients={report.analysis.nutrients}
-        commentary={report.summary?.at_risk_nutrients.map(humanizeReportText)}
+        commentary={report.summary?.at_risk_nutrients}
       />
       <MacrosTable
         macros={report.analysis.macros}
-        commentary={
-          report.summary ? humanizeReportText(report.summary.macros) : undefined
-        }
+        commentary={report.summary?.macros}
       />
       <GapaGroupsTable
         groups={report.analysis.gapa_groups}
-        commentary={
-          report.summary
-            ? humanizeReportText(report.summary.gapa_groups)
-            : undefined
-        }
+        commentary={report.summary?.gapa_groups}
       />
       <SuggestedFoods
         sources={report.analysis.top_sources}
-        commentary={
-          report.summary
-            ? humanizeReportText(report.summary.incorporate)
-            : undefined
-        }
+        nutrients={report.analysis.nutrients}
+        commentary={report.summary?.incorporate}
       />
 
       {report.summary && (
         <section className="flex flex-col gap-2">
           <h2 className={SECTION_TITLE_CLASS}>{COPY.conclusionTitle}</h2>
-          <p className="text-sm">
-            {humanizeReportText(report.summary.conclusion)}
-          </p>
+          <p className="text-sm">{report.summary.conclusion}</p>
         </section>
       )}
     </div>

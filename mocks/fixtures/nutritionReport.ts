@@ -30,6 +30,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
   nutrients: [
     {
       nutrient: "calcio",
+      name: "Calcio",
+      unit: "mg",
       amount_per_1000_kcal: 310,
       reference_per_1000_kcal: 500,
       minimum_per_1000_kcal: 333.33,
@@ -39,6 +41,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       nutrient: "vitamina_a",
+      name: "Vitamina A (RAE)",
+      unit: "µg",
       amount_per_1000_kcal: 260,
       reference_per_1000_kcal: 300,
       minimum_per_1000_kcal: 200.0,
@@ -48,6 +52,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       nutrient: "folato",
+      name: "Folato (EFD)",
+      unit: "µg",
       amount_per_1000_kcal: 150,
       reference_per_1000_kcal: 200,
       minimum_per_1000_kcal: 133.33,
@@ -57,6 +63,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       nutrient: "vitamina_b12",
+      name: "Vitamina B12",
+      unit: "µg",
       amount_per_1000_kcal: 0.5,
       reference_per_1000_kcal: 1.2,
       minimum_per_1000_kcal: 0.8,
@@ -66,6 +74,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       nutrient: "vitamina_c",
+      name: "Vitamina C",
+      unit: "mg",
       amount_per_1000_kcal: 35,
       reference_per_1000_kcal: 30,
       minimum_per_1000_kcal: 20.0,
@@ -75,6 +85,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       nutrient: "hierro",
+      name: "Hierro",
+      unit: "mg",
       amount_per_1000_kcal: 8.4,
       reference_per_1000_kcal: 7,
       minimum_per_1000_kcal: 4.67,
@@ -84,6 +96,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       nutrient: "zinc",
+      name: "Zinc",
+      unit: "mg",
       amount_per_1000_kcal: 4.2,
       reference_per_1000_kcal: 6,
       minimum_per_1000_kcal: 4.0,
@@ -95,6 +109,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
   macros: [
     {
       macro: "proteinas",
+      name: "Proteínas",
+      unit: "%",
       energy_share_percent: 14,
       min_percent: 10,
       max_percent: 15,
@@ -102,6 +118,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       macro: "lipidos",
+      name: "Lípidos",
+      unit: "%",
       energy_share_percent: 38,
       min_percent: 25,
       max_percent: 35,
@@ -109,6 +127,8 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
     {
       macro: "carbohidratos",
+      name: "Carbohidratos",
+      unit: "%",
       energy_share_percent: 48,
       min_percent: 50,
       max_percent: 65,
@@ -118,36 +138,50 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
   gapa_groups: [
     {
       group: "verduras_y_frutas",
+      name: "Verduras y frutas",
+      unit: "%",
       energy_share_percent: 6,
       missing: false,
     },
     {
       group: "legumbres_cereales_papa_pan_y_pastas",
+      name: "Legumbres, cereales, papa, pan y pastas",
+      unit: "%",
       energy_share_percent: 52,
       missing: false,
     },
     {
       group: "leche_yogur_y_quesos",
+      name: "Leche, yogur y quesos",
+      unit: "%",
       energy_share_percent: 0,
       missing: true,
     },
     {
       group: "carnes_y_huevos",
+      name: "Carnes y huevos",
+      unit: "%",
       energy_share_percent: 0,
       missing: true,
     },
     {
       group: "aceites_frutas_secas_y_semillas",
+      name: "Aceites, frutas secas y semillas",
+      unit: "%",
       energy_share_percent: 12,
       missing: false,
     },
     {
       group: "consumo_opcional",
+      name: "Consumo opcional",
+      unit: "%",
       energy_share_percent: 30,
       missing: false,
     },
   ],
-  limits: [{ code: "sodio", amount_per_1000_kcal: 1200 }],
+  limits: [
+    { code: "sodio", name: "Sodio", unit: "mg", amount_per_1000_kcal: 1200 },
+  ],
   top_sources: [
     {
       nutrient: "calcio",
@@ -191,7 +225,7 @@ const SUMMARY: NutritionReportSummary = {
   overview: "El mes dejó el calcio por debajo del mínimo recomendado.",
   at_risk_nutrients: [
     "Calcio: es clave para el crecimiento de los huesos en la infancia.",
-    "Vitamina_b12: su falta afecta la sangre y el sistema nervioso.",
+    "Vitamina B12: su falta afecta la sangre y el sistema nervioso.",
   ],
   macros: "Los lípidos superan el rango y los carbohidratos quedan cortos.",
   gapa_groups: "No ingresaron lácteos ni carnes durante el mes.",

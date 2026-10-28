@@ -1,10 +1,5 @@
 import { ERROR_TYPES } from "@/lib/apiError";
-import {
-  GapaGroup,
-  Macronutrient,
-  NutritionReportSortOrder,
-  PrioritizedNutrient,
-} from "@/types/nutritionReport";
+import { NutritionReportSortOrder } from "@/types/nutritionReport";
 
 /** Backend errors of the nutrition report screen, keyed by `type`. */
 export const NUTRITION_REPORT_ERROR_MESSAGES: Record<string, string> = {
@@ -117,36 +112,6 @@ export const NUTRITION_REPORT_DETAIL = {
   overviewTitle: "Resumen",
   conclusionTitle: "Conclusión",
 } as const;
-
-/** Spanish names and units of the nutrients a report evaluates, as the backend prints them. */
-export const NUTRIENT_LABELS: Record<
-  PrioritizedNutrient,
-  { name: string; unit: string }
-> = {
-  calcio: { name: "Calcio", unit: "mg" },
-  vitamina_a: { name: "Vitamina A (RAE)", unit: "µg" },
-  folato: { name: "Folato (EFD)", unit: "µg" },
-  vitamina_b12: { name: "Vitamina B12", unit: "µg" },
-  vitamina_c: { name: "Vitamina C", unit: "mg" },
-  hierro: { name: "Hierro", unit: "mg" },
-  zinc: { name: "Zinc", unit: "mg" },
-};
-
-export const MACRO_LABELS: Record<Macronutrient, string> = {
-  proteinas: "Proteínas",
-  lipidos: "Lípidos",
-  carbohidratos: "Carbohidratos",
-};
-
-export const GAPA_GROUP_LABELS: Record<GapaGroup, string> = {
-  verduras_y_frutas: "Verduras y frutas",
-  legumbres_cereales_papa_pan_y_pastas:
-    "Legumbres, cereales, papa, pan y pastas",
-  leche_yogur_y_quesos: "Leche, yogur y quesos",
-  carnes_y_huevos: "Carnes y huevos",
-  aceites_frutas_secas_y_semillas: "Aceites, frutas secas y semillas",
-  consumo_opcional: "Consumo opcional",
-};
 
 export const NUTRITION_REPORT_SECTIONS = {
   nutrients: {

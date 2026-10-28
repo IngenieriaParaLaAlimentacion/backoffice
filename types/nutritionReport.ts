@@ -42,7 +42,10 @@ export type PaginatedNutritionReportsResponse = {
 
 export type NutritionReportSortOrder = "month_desc" | "month_asc";
 
-export type ReportNutrient = {
+/** The Spanish name and unit the backend prints next to each code. */
+type Named = { name: string; unit: string };
+
+export type ReportNutrient = Named & {
   nutrient: PrioritizedNutrient;
   amount_per_1000_kcal: number;
   reference_per_1000_kcal: number;
@@ -53,7 +56,7 @@ export type ReportNutrient = {
   at_risk: boolean;
 };
 
-export type ReportMacro = {
+export type ReportMacro = Named & {
   macro: Macronutrient;
   energy_share_percent: number;
   min_percent: number;
@@ -61,13 +64,13 @@ export type ReportMacro = {
   in_range: boolean;
 };
 
-export type ReportGapaGroup = {
+export type ReportGapaGroup = Named & {
   group: GapaGroup;
   energy_share_percent: number;
   missing: boolean;
 };
 
-export type ReportLimit = {
+export type ReportLimit = Named & {
   code: string;
   amount_per_1000_kcal: number;
 };

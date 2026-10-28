@@ -144,15 +144,6 @@ describe("NutritionReportDetail", () => {
     expect(screen.getByText(/Conviene incorporar leche/)).toBeInTheDocument();
   });
 
-  it("reads the codes the AI repeats as the names the tables use", async () => {
-    await renderDetail("2026-09");
-
-    expect(
-      await screen.findByText(/^Vitamina B12: su falta afecta la sangre/),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/vitamina_b12/i)).not.toBeInTheDocument();
-  });
-
   it("warns about the foods left out of the calculation", async () => {
     await renderDetail("2026-09");
 

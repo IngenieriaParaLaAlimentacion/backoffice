@@ -1,8 +1,5 @@
 import { ReactNode } from "react";
 import {
-  GAPA_GROUP_LABELS,
-  MACRO_LABELS,
-  NUTRIENT_LABELS,
   NUTRITION_REPORT_EXTRAS as EXTRAS,
   NUTRITION_REPORT_SECTIONS as COPY,
 } from "@/constants/nutritionReport";
@@ -106,7 +103,7 @@ export function NutrientsTable({
         </thead>
         <tbody className="divide-y divide-border">
           {nutrients.map((item) => {
-            const { name, unit } = NUTRIENT_LABELS[item.nutrient];
+            const { name, unit } = item;
             return (
               <tr
                 key={item.nutrient}
@@ -168,9 +165,7 @@ export function MacrosTable({
         <tbody className="divide-y divide-border">
           {macros.map((item) => (
             <tr key={item.macro} className="bg-card">
-              <td className={`${TD} font-medium`}>
-                {MACRO_LABELS[item.macro]}
-              </td>
+              <td className={`${TD} font-medium`}>{item.name}</td>
               <td className={TD}>
                 {formatPercentage(item.energy_share_percent)}
               </td>
@@ -206,7 +201,7 @@ export function GapaGroupsTable({
   if (groups.length === 0) return null;
   const missing = groups
     .filter((item) => item.missing)
-    .map((item) => GAPA_GROUP_LABELS[item.group]);
+    .map((item) => item.name);
   return (
     <Section
       title={COPY.gapa.title}
@@ -224,9 +219,7 @@ export function GapaGroupsTable({
         <tbody className="divide-y divide-border">
           {groups.map((item) => (
             <tr key={item.group} className="bg-card">
-              <td className={`${TD} font-medium`}>
-                {GAPA_GROUP_LABELS[item.group]}
-              </td>
+              <td className={`${TD} font-medium`}>{item.name}</td>
               <td className={TD}>
                 {formatPercentage(item.energy_share_percent)}
               </td>
@@ -256,9 +249,12 @@ export function GapaGroupsTable({
  */
 export function SuggestedFoods({
   sources,
+  nutrients,
   commentary,
 }: {
   sources: ReportNutrientSources[];
+  /** The report's nutrients, which carry the name and unit of each source's. */
+  nutrients: ReportNutrient[];
   commentary?: string;
 }) {
   const withFoods = sources.filter((item) => item.foods.length > 0);
@@ -274,7 +270,9 @@ export function SuggestedFoods({
       {commentary && <p className="text-sm">{commentary}</p>}
       <div className="grid gap-3 md:grid-cols-2">
         {withFoods.map((item) => {
-          const { name, unit } = NUTRIENT_LABELS[item.nutrient];
+          const nutrient = nutrients.find((n) => n.nutrient === item.nutrient);
+          if (!nutrient) return null;
+          const { name, unit } = nutrient;
           return (
             <div
               key={item.nutrient}
