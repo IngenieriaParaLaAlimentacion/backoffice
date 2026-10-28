@@ -5,7 +5,7 @@ import {
   ESTABLISHMENT_NUTRITION_REPORTS_ENDPOINT,
 } from "@/constants/api";
 import { ERROR_TYPES } from "@/lib/apiError";
-import { argentineToday } from "@/lib/format";
+import { isClosedMonth } from "@/lib/reportMonth";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 import {
   buildNutritionReport,
@@ -38,9 +38,6 @@ function problem(
     },
   );
 }
-
-/** A month is closed once the Argentine calendar has moved past it. */
-const isClosed = (month: string) => month < argentineToday().slice(0, 7);
 
 export function makeListNutritionReportsHandler() {
   return http.get<{ id: string }>(
@@ -101,7 +98,7 @@ export function makeGenerateNutritionReportHandler() {
     ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT(":id", ":month"),
     ({ params, request }) => {
       const path = new URL(request.url).pathname;
-      if (!isClosed(params.month))
+      if (!isClosedMonth(params.month))
         return problem(ERROR_TYPES.NUTRITION_REPORT_MONTH_NOT_OVER, 422, path);
 
       const saved = savedNutritionReports(params.id).find(

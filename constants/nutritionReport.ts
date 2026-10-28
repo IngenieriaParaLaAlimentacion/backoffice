@@ -27,3 +27,10 @@ export const NUTRITION_REPORT_LIMIT_MESSAGE = (wait?: string) =>
 
 export const NUTRITION_REPORT_FALLBACK_ERROR =
   "No se pudo completar la operación con el reporte nutricional. Volvé a intentar en unos minutos.";
+
+/** Rows of the saved-reports list per page. */
+export const NUTRITION_REPORT_LIST_PAGE_SIZE = 12;
+
+/** Used only when the response carries no `Content-Disposition`. */
+export const NUTRITION_REPORT_PDF_FALLBACK_FILENAME = (month: string) =>
+  `reporte-nutricional-${month}.pdf`;

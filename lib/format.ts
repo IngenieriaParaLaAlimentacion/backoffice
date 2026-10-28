@@ -295,3 +295,15 @@ export function formatWaitDuration(seconds: number) {
   if (hours < 24) return plural(hours, "hora", "horas");
   return plural(Math.ceil(hours / 24), "día", "días");
 }
+
+/** A report month "YYYY-MM" as "agosto de 2026". */
+export function formatReportMonth(month: string) {
+  const [year, number] = month.split("-").map(Number);
+  if (!year || !number) return month;
+  return new Intl.DateTimeFormat("es-AR", {
+    month: "long",
+    year: "numeric",
+    // A calendar month, not an instant: no zone may shift it.
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, number - 1, 1)));
+}
