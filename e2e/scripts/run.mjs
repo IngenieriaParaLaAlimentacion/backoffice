@@ -23,31 +23,19 @@ const allowed = new Set([
   "--down",
   "--quarantine",
 ]);
+const MODE = allowed.has(flags[0]) ? flags.shift().slice(2) : "baseline";
 assert(
-  flags.length <= 1 && flags.every((flag) => allowed.has(flag)),
-  "Choose one supported E2E mode",
+  flags.length === 0 || (MODE === "baseline" && !process.env.CI),
+  "Playwright selection arguments are supported only for a local baseline",
 );
-const MODE = flags[0]?.slice(2) ?? "baseline";
-const localGrep = process.env.E2E_GREP;
-const repeatValue = process.env.E2E_REPEAT;
-if (localGrep !== undefined || repeatValue !== undefined) {
-  assert(
-    MODE === "baseline" && !process.env.CI,
-    "E2E_GREP and E2E_REPEAT are supported only for a local baseline",
-  );
-}
-if (localGrep !== undefined) {
-  assert(localGrep.trim().length > 0, "E2E_GREP must not be empty");
-  assert.doesNotThrow(
-    () => new RegExp(localGrep),
-    "E2E_GREP must be a valid regular expression",
-  );
-}
 assert(
-  repeatValue === undefined || /^[1-5]$/.test(repeatValue),
-  "E2E_REPEAT must be an integer from 1 to 5",
+  flags.length % 2 === 0 &&
+    flags.every(
+      (value, index) =>
+        index % 2 === 1 || ["--grep", "--repeat-each"].includes(value),
+    ),
+  "Use --grep <pattern> and/or --repeat-each <count> after the E2E command",
 );
-const localRepeat = Number(repeatValue ?? "1");
 assert(
   Number(process.versions.node.split(".")[0]) >= 24,
   "Use Node24 or later",
@@ -392,10 +380,7 @@ async function playwright(label, mode, summary) {
     "--project=chromium",
   ];
   if (mode === "stress") args.push("--retries=0");
-  if (mode === "baseline" && localGrep !== undefined)
-    args.push("--grep", localGrep);
-  if (mode === "baseline" && localRepeat > 1)
-    args.push("--repeat-each", String(localRepeat));
+  if (mode === "baseline") args.push(...flags);
   await run(process.execPath, args, {
     env: {
       E2E_MODE: mode,
@@ -475,8 +460,6 @@ async function main() {
     backendCommit: manifest.commit,
     backendImage: manifest.image,
     mode: MODE,
-    selection: localGrep ?? null,
-    repeatEach: localRepeat,
     runs: [],
   };
   if (MODE === "baseline" || MODE === "ci")
