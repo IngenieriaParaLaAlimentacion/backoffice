@@ -15,9 +15,11 @@ import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { formatPercentage, formatReportMonth } from "@/lib/format";
 import { isClosedMonth } from "@/lib/reportMonth";
 import {
+  ExcludedFoodsNotice,
   GapaGroupsTable,
   MacrosTable,
   NutrientsTable,
+  SuggestedFoods,
 } from "./NutritionReportSections";
 import { NutritionReportResponse } from "@/types/nutritionReport";
 
@@ -57,9 +59,24 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
         </section>
       )}
 
-      <NutrientsTable nutrients={report.analysis.nutrients} />
-      <MacrosTable macros={report.analysis.macros} />
-      <GapaGroupsTable groups={report.analysis.gapa_groups} />
+      <ExcludedFoodsNotice foods={report.analysis.foods_without_conversion} />
+
+      <NutrientsTable
+        nutrients={report.analysis.nutrients}
+        commentary={report.summary?.at_risk_nutrients}
+      />
+      <MacrosTable
+        macros={report.analysis.macros}
+        commentary={report.summary?.macros}
+      />
+      <GapaGroupsTable
+        groups={report.analysis.gapa_groups}
+        commentary={report.summary?.gapa_groups}
+      />
+      <SuggestedFoods
+        sources={report.analysis.top_sources}
+        commentary={report.summary?.incorporate}
+      />
 
       {report.summary && (
         <section className="flex flex-col gap-1">

@@ -10,6 +10,7 @@ import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutr
 import {
   NUTRITION_REPORT_DETAIL as COPY,
   NUTRITION_REPORT_ERROR_MESSAGES,
+  NUTRITION_REPORT_EXTRAS as EXTRAS,
   NUTRITION_REPORT_SECTIONS as SECTIONS,
 } from "@/constants/nutritionReport";
 import { ERROR_TYPES } from "@/lib/apiError";
@@ -102,6 +103,59 @@ describe("NutritionReportDetail", () => {
         ]),
       ),
     ).toBeInTheDocument();
+  });
+
+  it("suggests foods for each nutrient at risk, with what they give per 100 kcal", async () => {
+    await renderDetail("2026-09");
+
+    const calcium = (
+      await screen.findByRole("heading", { name: "Calcio", level: 3 })
+    ).parentElement as HTMLElement;
+    expect(within(calcium).getByText("Leche entera")).toBeInTheDocument();
+    expect(
+      within(calcium).getByText(EXTRAS.suggested.per100kcal("190 mg")),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Vitamina B-12", level: 3 }),
+    ).toBeInTheDocument();
+    // Iron is not at risk: it gets no suggestions.
+    expect(
+      screen.queryByRole("heading", { name: "Hierro", level: 3 }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the AI's reading under each table", async () => {
+    await renderDetail("2026-09");
+
+    expect(
+      await screen.findByText(/clave para el crecimiento de los huesos/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/lípidos superan el rango y los carbohidratos/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/No ingresaron lácteos ni carnes/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Conviene incorporar leche/)).toBeInTheDocument();
+  });
+
+  it("warns about the foods left out of the calculation", async () => {
+    await renderDetail("2026-09");
+
+    expect(
+      await screen.findByText(EXTRAS.excluded.one("Varios")),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the figures without the AI's reading when its text is unavailable", async () => {
+    await renderDetail("2026-08");
+
+    await screen.findByText(COPY.summaryUnavailable);
+    expect(screen.getByRole("row", { name: /Calcio/ })).toBeInTheDocument();
+    expect(
+      screen.queryByText(/clave para el crecimiento de los huesos/),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(COPY.overviewTitle)).not.toBeInTheDocument();
   });
 
   it("says there is no data for a month without intakes, and still allows the PDF", async () => {

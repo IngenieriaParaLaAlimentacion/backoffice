@@ -3,24 +3,35 @@ import {
   GAPA_GROUP_LABELS,
   MACRO_LABELS,
   NUTRIENT_LABELS,
+  NUTRITION_REPORT_EXTRAS as EXTRAS,
   NUTRITION_REPORT_SECTIONS as COPY,
 } from "@/constants/nutritionReport";
-import { PILL_CLASS, TONE_PILL_CLASS, TONE_ROW_CLASS } from "@/constants/theme";
+import {
+  PILL_CLASS,
+  TONE_BANNER_CLASS,
+  TONE_PILL_CLASS,
+  TONE_ROW_CLASS,
+} from "@/constants/theme";
 import { formatMetric, formatPercentage } from "@/lib/format";
 import {
+  ReportFoodWithoutConversion,
   ReportGapaGroup,
   ReportMacro,
   ReportNutrient,
+  ReportNutrientSources,
 } from "@/types/nutritionReport";
 
 function Section({
   title,
   subtitle,
   children,
+  note,
 }: {
   title: string;
   subtitle: string;
   children: ReactNode;
+  /** The AI's reading of what the table shows, when it wrote one. */
+  note?: ReactNode;
 }) {
   return (
     <section className="flex flex-col gap-2">
@@ -31,6 +42,7 @@ function Section({
       <div className="overflow-x-auto rounded-lg border border-border">
         {children}
       </div>
+      {note}
     </section>
   );
 }
@@ -56,11 +68,30 @@ function Pill({
 }
 
 /** Below 2/3 of the reference a nutrient is at risk: said in words, not only in tone. */
-export function NutrientsTable({ nutrients }: { nutrients: ReportNutrient[] }) {
+export function NutrientsTable({
+  nutrients,
+  commentary = [],
+}: {
+  nutrients: ReportNutrient[];
+  /** One line per nutrient at risk, written by the AI. */
+  commentary?: string[];
+}) {
   const { columns } = COPY.nutrients;
   if (nutrients.length === 0) return null;
   return (
-    <Section title={COPY.nutrients.title} subtitle={COPY.nutrients.subtitle}>
+    <Section
+      title={COPY.nutrients.title}
+      subtitle={COPY.nutrients.subtitle}
+      note={
+        commentary.length > 0 && (
+          <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
+            {commentary.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )
+      }
+    >
       <table className={TABLE}>
         <thead>
           <tr className={HEAD_ROW}>
@@ -109,11 +140,21 @@ export function NutrientsTable({ nutrients }: { nutrients: ReportNutrient[] }) {
   );
 }
 
-export function MacrosTable({ macros }: { macros: ReportMacro[] }) {
+export function MacrosTable({
+  macros,
+  commentary,
+}: {
+  macros: ReportMacro[];
+  commentary?: string;
+}) {
   const { columns } = COPY.macros;
   if (macros.length === 0) return null;
   return (
-    <Section title={COPY.macros.title} subtitle={COPY.macros.subtitle}>
+    <Section
+      title={COPY.macros.title}
+      subtitle={COPY.macros.subtitle}
+      note={commentary && <p className="text-sm">{commentary}</p>}
+    >
       <table className={TABLE}>
         <thead>
           <tr className={HEAD_ROW}>
@@ -153,14 +194,24 @@ export function MacrosTable({ macros }: { macros: ReportMacro[] }) {
   );
 }
 
-export function GapaGroupsTable({ groups }: { groups: ReportGapaGroup[] }) {
+export function GapaGroupsTable({
+  groups,
+  commentary,
+}: {
+  groups: ReportGapaGroup[];
+  commentary?: string;
+}) {
   const { columns } = COPY.gapa;
   if (groups.length === 0) return null;
   const missing = groups
     .filter((item) => item.missing)
     .map((item) => GAPA_GROUP_LABELS[item.group]);
   return (
-    <Section title={COPY.gapa.title} subtitle={COPY.gapa.subtitle}>
+    <Section
+      title={COPY.gapa.title}
+      subtitle={COPY.gapa.subtitle}
+      note={commentary && <p className="text-sm">{commentary}</p>}
+    >
       <table className={TABLE}>
         <thead>
           <tr className={HEAD_ROW}>
@@ -195,5 +246,76 @@ export function GapaGroupsTable({ groups }: { groups: ReportGapaGroup[] }) {
         </p>
       )}
     </Section>
+  );
+}
+
+/**
+ * The foods that best cover each nutrient the intake falls short of, with the
+ * AI's line on what to add. Nothing is shown when no nutrient is at risk.
+ */
+export function SuggestedFoods({
+  sources,
+  commentary,
+}: {
+  sources: ReportNutrientSources[];
+  commentary?: string;
+}) {
+  const withFoods = sources.filter((item) => item.foods.length > 0);
+  if (withFoods.length === 0) return null;
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="flex flex-col gap-0.5">
+        <h2 className="text-sm font-semibold">{EXTRAS.suggested.title}</h2>
+        <p className="text-xs text-muted-foreground">
+          {EXTRAS.suggested.subtitle}
+        </p>
+      </div>
+      {commentary && <p className="text-sm">{commentary}</p>}
+      <div className="grid gap-3 md:grid-cols-2">
+        {withFoods.map((item) => {
+          const { name, unit } = NUTRIENT_LABELS[item.nutrient];
+          return (
+            <div
+              key={item.nutrient}
+              className="flex flex-col gap-1 rounded-lg border border-border bg-card p-4"
+            >
+              <h3 className="text-sm font-medium">{name}</h3>
+              <ul className="flex flex-col gap-0.5 text-sm">
+                {item.foods.map((food) => (
+                  <li key={food.food_id} className="flex justify-between gap-3">
+                    <span>{food.name}</span>
+                    <span className="text-muted-foreground">
+                      {EXTRAS.suggested.per100kcal(
+                        formatMetric(food.amount_per_100_kcal, unit),
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/** Foods the calculation had to leave out, so nobody reads the figures as complete. */
+export function ExcludedFoodsNotice({
+  foods,
+}: {
+  foods: ReportFoodWithoutConversion[];
+}) {
+  if (foods.length === 0) return null;
+  const names = foods.map((food) => food.name);
+  return (
+    <p
+      role="status"
+      className={`rounded-md border px-4 py-3 text-sm ${TONE_BANNER_CLASS.warning}`}
+    >
+      {names.length === 1
+        ? EXTRAS.excluded.one(names[0])
+        : EXTRAS.excluded.many(names)}
+    </p>
   );
 }

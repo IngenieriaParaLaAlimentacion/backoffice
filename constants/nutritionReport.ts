@@ -168,3 +168,18 @@ export const NUTRITION_REPORT_SECTIONS = {
         : `Grupos ausentes: ${groups.join(", ")}.`,
   },
 } as const;
+
+export const NUTRITION_REPORT_EXTRAS = {
+  suggested: {
+    title: "Alimentos sugeridos",
+    subtitle:
+      "Los alimentos que mejor cubren cada nutriente en riesgo, por cada 100 kcal.",
+    per100kcal: (amount: string) => `${amount} cada 100 kcal`,
+  },
+  excluded: {
+    one: (name: string) =>
+      `Un alimento quedó afuera del cálculo porque no se puede convertir a gramos: ${name}.`,
+    many: (names: string[]) =>
+      `Estos alimentos quedaron afuera del cálculo porque no se pueden convertir a gramos: ${names.join(", ")}.`,
+  },
+} as const;

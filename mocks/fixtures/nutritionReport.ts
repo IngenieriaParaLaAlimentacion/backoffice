@@ -157,6 +157,27 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
           name: "Leche entera",
           amount_per_100_kcal: 190,
         },
+        {
+          food_id: "food-yogur",
+          name: "Yogur natural",
+          amount_per_100_kcal: 175,
+        },
+        {
+          food_id: "food-queso",
+          name: "Queso cremoso",
+          amount_per_100_kcal: 60,
+        },
+      ],
+    },
+    {
+      nutrient: "vitamina_b12",
+      foods: [
+        {
+          food_id: "food-higado",
+          name: "Hígado vacuno",
+          amount_per_100_kcal: 38,
+        },
+        { food_id: "food-huevo", name: "Huevo", amount_per_100_kcal: 1.2 },
       ],
     },
   ],
@@ -168,10 +189,13 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
 
 const SUMMARY: NutritionReportSummary = {
   overview: "El mes dejó el calcio por debajo del mínimo recomendado.",
-  at_risk_nutrients: ["calcio"],
+  at_risk_nutrients: [
+    "Calcio: es clave para el crecimiento de los huesos en la infancia.",
+    "Vitamina B-12: su falta afecta la sangre y el sistema nervioso.",
+  ],
   macros: "Los lípidos superan el rango y los carbohidratos quedan cortos.",
-  gapa_groups: "No ingresaron lácteos durante el mes.",
-  incorporate: "Conviene incorporar leche, yogur o quesos.",
+  gapa_groups: "No ingresaron lácteos ni carnes durante el mes.",
+  incorporate: "Conviene incorporar leche, yogur o quesos, e hígado o huevo.",
   conclusion: "El aporte de calcio es el principal punto a mejorar.",
   limitations: [REPORT_SCOPE_NOTE],
 };
