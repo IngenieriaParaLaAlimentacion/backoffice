@@ -5,9 +5,12 @@ import {
   ExportTruncatedError,
 } from "@/lib/download";
 
-const HEADER = "Nombre;Documento;Fecha de nacimiento;Último relevamiento";
-const ROW_A = "Ana Alvarez;20000001;14/03/2015;14/03/2026 07:30";
-const ROW_B = "Beto Benitez;20000002;01/07/2016;01/04/2026 07:00";
+const HEADER =
+  "Nombre;Documento;Fecha de nacimiento;Edad;Último relevamiento;Tiempo desde el último relevamiento";
+const ROW_A =
+  "Ana Alvarez;20000001;14/03/2015;11 a 5 m;14/03/2026 07:30;hace 5 meses";
+const ROW_B =
+  "Beto Benitez;20000002;01/07/2016;10 a 1 m;01/04/2026 07:00;hace 4 meses";
 
 describe("countCsvDataRows", () => {
   it("does not count the header", () => {

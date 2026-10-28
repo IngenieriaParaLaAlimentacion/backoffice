@@ -1,3 +1,5 @@
+import { RELATIVE_MEASUREMENT_TIME } from "@/constants/format";
+
 /**
  * Every timestamp the API returns is a UTC instant ("2026-03-01T10:00:00Z"),
  * and it is rendered in Argentine local time — not the viewer's device zone.
@@ -118,8 +120,9 @@ function argentineDayStartMs(day: string) {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** The current Argentine calendar day as "YYYY-MM-DD". */
-export function argentineToday() {
-  const parts = timestampParts(new Date().toISOString());
+export function argentineToday(now: Date = new Date()) {
+  if (Number.isNaN(now.getTime())) return "";
+  const parts = timestampParts(now.toISOString());
   return parts ? `${parts.year}-${parts.month}-${parts.day}` : "";
 }
 
@@ -203,4 +206,79 @@ export function formatQuantity(value: string) {
   return new Intl.NumberFormat("es-AR", { maximumFractionDigits: 3 }).format(
     parsed,
   );
+}
+
+type CalendarDate = { year: number; month: number; day: number };
+
+function parseCalendarDate(value: string): CalendarDate | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (year < 1 || month < 1 || month > 12) return null;
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = [
+    31,
+    leap ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
+  ];
+  return day >= 1 && day <= daysInMonth[month - 1]
+    ? { year, month, day }
+    : null;
+}
+
+function completedMonths(start: CalendarDate, end: CalendarDate) {
+  const months = (end.year - start.year) * 12 + end.month - start.month;
+  return Math.max(0, months - (end.day < start.day ? 1 : 0));
+}
+
+/** Completed calendar months; future birth dates clamp to zero. */
+export function ageInMonths(
+  birthDate: string,
+  referenceDay = argentineToday(),
+) {
+  const birth = parseCalendarDate(birthDate);
+  const reference = parseCalendarDate(referenceDay);
+  return birth && reference ? completedMonths(birth, reference) : null;
+}
+
+function calendarDayIndex(value: CalendarDate) {
+  const date = new Date(0);
+  date.setUTCFullYear(value.year, value.month - 1, value.day);
+  return date.getTime() / DAY_MS;
+}
+
+/** Elapsed time using Argentina calendar days and completed months. */
+export function formatTimeSinceMeasurement(
+  value: string | null | undefined,
+  now: Date = new Date(),
+) {
+  if (!value || Number.isNaN(now.getTime())) return EMPTY_VALUE;
+  const measured = new Date(value);
+  if (Number.isNaN(measured.getTime()) || measured.getTime() > now.getTime()) {
+    return EMPTY_VALUE;
+  }
+  const parts = timestampParts(value);
+  const start = parts
+    ? parseCalendarDate(`${parts.year}-${parts.month}-${parts.day}`)
+    : null;
+  const end = parseCalendarDate(argentineToday(now));
+  if (!start || !end) return EMPTY_VALUE;
+  const days = calendarDayIndex(end) - calendarDayIndex(start);
+  if (days === 0) return RELATIVE_MEASUREMENT_TIME.today;
+  const months = completedMonths(start, end);
+  if (months >= 12)
+    return RELATIVE_MEASUREMENT_TIME.years(Math.floor(months / 12));
+  if (months >= 1) return RELATIVE_MEASUREMENT_TIME.months(months);
+  return RELATIVE_MEASUREMENT_TIME.days(days);
 }

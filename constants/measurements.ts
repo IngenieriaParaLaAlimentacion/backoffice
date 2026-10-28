@@ -56,6 +56,7 @@ export const MEASUREMENTS_PAGE = {
     sexMale: "Masculino",
     sexFemale: "Femenino",
     birthDate: "Fecha de nacimiento",
+    age: "Edad",
     measurementsCount: "Mediciones",
     chartTitle: "Evolución de peso y talla",
     observationsTitle: "Observaciones del relevamiento",
