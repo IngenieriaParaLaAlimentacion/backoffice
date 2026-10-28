@@ -1,3 +1,4 @@
+import { matchesApiRequest } from "../support/api";
 import type { Request } from "@playwright/test";
 import { test, expect } from "../flow-fixtures";
 import { StockPage } from "../pages/stock.page";
@@ -108,10 +109,7 @@ test.describe("stock", () => {
     );
     const posts: Request[] = [];
     const observe = (request: Request) => {
-      if (
-        request.method() === "POST" &&
-        new URL(request.url()).pathname === FOOD_OUTFLOWS_ENDPOINT
-      )
+      if (matchesApiRequest(request, "POST", FOOD_OUTFLOWS_ENDPOINT))
         posts.push(request);
     };
     page.on("request", observe);
