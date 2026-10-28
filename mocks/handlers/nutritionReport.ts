@@ -104,13 +104,21 @@ export function makeGenerateNutritionReportHandler() {
       const saved = savedNutritionReports(params.id).find(
         (item) => item.month === params.month,
       );
-      if (saved && saved.summary_status !== "unavailable")
+      // A saved report is returned as it is, except a month saved without
+      // intakes (calculated again: they may have been loaded since) and one
+      // whose text failed (the text is written again).
+      if (saved && saved.has_data && saved.summary_status !== "unavailable")
+        return HttpResponse.json(saved, { status: 200 });
+
+      const noData = params.id === WITHOUT_INTAKES_ID;
+      // Still empty: nothing is written.
+      if (saved && !saved.has_data && noData)
         return HttpResponse.json(saved, { status: 200 });
 
       const report = buildNutritionReport({
         establishmentId: params.id,
         month: params.month,
-        noData: params.id === WITHOUT_INTAKES_ID,
+        noData,
       });
       saveNutritionReport(report);
       return HttpResponse.json(report, { status: saved ? 200 : 201 });

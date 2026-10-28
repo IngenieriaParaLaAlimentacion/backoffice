@@ -8,8 +8,10 @@ import Pagination from "@/components/Pagination";
 import { RowChevron } from "@/components/listings/RowAffordance";
 import { useNutritionReportList } from "@/hooks/useNutritionReportList";
 import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
+import { useRecalculateNutritionReport } from "@/hooks/useRecalculateNutritionReport";
 import { SELECT_CLASS } from "@/constants/establishments";
 import {
+  NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_PAGE as COPY,
   nutritionReportHref,
 } from "@/constants/nutritionReport";
@@ -18,6 +20,9 @@ import { formatReportMonth, formatTimestampDate } from "@/lib/format";
 import { NutritionReportSortOrder, ReportMonth } from "@/types/nutritionReport";
 import GenerateNutritionReportDialog from "./GenerateNutritionReportDialog";
 import NutritionReportActionsMenu from "./NutritionReportActionsMenu";
+import NutritionReportNoticeDialog, {
+  ReportNotice,
+} from "./NutritionReportNoticeDialog";
 
 /** The "Reporte nutricional" tab: the comedor's saved reports. */
 export default function NutritionReportPanel({
@@ -42,11 +47,28 @@ export default function NutritionReportPanel({
     refetch,
   } = useNutritionReportList(establishmentId);
   const pdf = useNutritionReportPdf(establishmentId);
+  const recalculation = useRecalculateNutritionReport(establishmentId);
+  const [notice, setNotice] = useState<ReportNotice | null>(null);
 
   const handleDownload = async (month: ReportMonth) => {
     setDownloadingMonth(month);
     await pdf.download(month);
     setDownloadingMonth(null);
+  };
+
+  const handleRecalculate = async (month: ReportMonth) => {
+    setNotice(null);
+    const report = await recalculation.recalculate(month);
+    if (!report) return;
+    const name = formatReportMonth(month);
+    setNotice(
+      report.has_data
+        ? {
+            title: NOTICE.completedTitle,
+            message: COPY.recalculated(name),
+          }
+        : { title: NOTICE.unchangedTitle, message: NOTICE.unchanged(name) },
+    );
   };
 
   return (
@@ -83,14 +105,18 @@ export default function NutritionReportPanel({
         onOpenChange={setDialogOpen}
       />
 
-      {pdf.error && (
+      {(pdf.error ?? recalculation.error) && (
         <p
           role="alert"
           className={`rounded-md border px-4 py-3 text-sm ${TONE_BANNER_CLASS.danger}`}
         >
-          {pdf.error}
+          {pdf.error ?? recalculation.error}
         </p>
       )}
+      <NutritionReportNoticeDialog
+        notice={notice}
+        onClose={() => setNotice(null)}
+      />
 
       {error && (
         <div className="flex flex-col items-start gap-2">
@@ -148,8 +174,12 @@ export default function NutritionReportPanel({
               <NutritionReportActionsMenu
                 establishmentId={establishmentId}
                 report={item}
-                busy={downloadingMonth === item.month}
+                busy={
+                  downloadingMonth === item.month ||
+                  recalculation.recalculatingMonth === item.month
+                }
                 onDownload={() => void handleDownload(item.month)}
+                onRecalculate={() => void handleRecalculate(item.month)}
               />
             </li>
           ))}

@@ -409,6 +409,11 @@ reads, generates and downloads it.
   instead of generated again. The same `PUT` rewrites only the text of a report whose
   AI text had failed ("Regenerar texto"). A `GET` 404 is the normal "not generated yet"
   state (`report === null`), not an error.
+  The one other case the backend recalculates is a month saved **without data**: a month
+  is reportable from the first day of the next one, which can be before its last
+  intakes are loaded, so asking again fills the report in if they have arrived (and
+  writes nothing if not). The report screen offers it as "Volver a calcular", only for
+  such a month, and says so when it came back empty again.
 - **Months** are `YYYY-MM` strings, and only closed ones can be asked for: the month
   before the current one in the Argentine calendar is the newest (`lib/reportMonth.ts`).
   Show one with `formatReportMonth` (`lib/format.ts`), never inline.

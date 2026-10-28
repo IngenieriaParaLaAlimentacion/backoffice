@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,14 @@ import { useNutritionReport } from "@/hooks/useNutritionReport";
 import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
 import {
   NUTRITION_REPORT_DETAIL as COPY,
+  NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_TAB_PATH,
 } from "@/constants/nutritionReport";
 import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { formatPercentage, formatReportMonth } from "@/lib/format";
 import { humanizeReportText } from "@/lib/nutritionReportText";
 import { isClosedMonth } from "@/lib/reportMonth";
+import NutritionReportNoticeDialog from "./NutritionReportNoticeDialog";
 import {
   ExcludedFoodsNotice,
   GapaGroupsTable,
@@ -127,11 +130,20 @@ export default function NutritionReportDetail({
 
   const listHref = `/dashboard/establishments/${establishmentId}/${NUTRITION_REPORT_TAB_PATH}`;
   const textUnavailable = report?.summary_status === "unavailable";
+  // A month saved without intakes may have them now: the backend calculates it
+  // again on request. If it came back empty again nothing on screen changes, so
+  // a dialog says so.
+  const [unchangedNotice, setUnchangedNotice] = useState(false);
+  const noData = report ? !report.has_data : false;
+  const handleRecalculate = async () => {
+    const recalculated = await generate();
+    if (recalculated && !recalculated.has_data) setUnchangedNotice(true);
+  };
   const missing = validMonth === null || report === null;
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="min-w-0 flex-1 p-4 md:p-8 flex flex-col gap-6">
+      <Card className="min-w-0 flex-1 p-4 md:p-8 flex flex-col gap-6 animate-in fade-in duration-300">
         <div className="flex flex-col gap-3">
           <Button
             size="sm"
@@ -160,6 +172,16 @@ export default function NutritionReportDetail({
                     {isGenerating ? COPY.generating : COPY.regenerateText}
                   </Button>
                 )}
+                {noData && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void handleRecalculate()}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? COPY.recalculating : COPY.recalculate}
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   onClick={() => void pdf.download(report.month)}
@@ -170,6 +192,9 @@ export default function NutritionReportDetail({
               </div>
             )}
           </div>
+          {noData && (
+            <p className="text-xs text-muted-foreground">{COPY.noDataHint}</p>
+          )}
           {textUnavailable && (
             <p className="text-xs text-muted-foreground">
               {COPY.pdfBlockedHint}
@@ -184,6 +209,18 @@ export default function NutritionReportDetail({
             {generateError ?? pdf.error}
           </p>
         )}
+
+        <NutritionReportNoticeDialog
+          notice={
+            unchangedNotice
+              ? {
+                  title: NOTICE.unchangedTitle,
+                  message: NOTICE.unchanged(formatReportMonth(month)),
+                }
+              : null
+          }
+          onClose={() => setUnchangedNotice(false)}
+        />
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">

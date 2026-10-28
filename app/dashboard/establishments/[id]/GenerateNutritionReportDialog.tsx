@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
-import { Loader2, X } from "lucide-react";
+import { Check, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNutritionReport } from "@/hooks/useNutritionReport";
 import { SELECT_CLASS } from "@/constants/establishments";
@@ -43,6 +43,8 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
   const isBusy = isGenerating || isOpening;
 
   const handleGenerate = async () => {
+    // Generating takes a while: have the screen ready by the time it is done.
+    router.prefetch(href);
     if (!(await generate())) return;
     setIsOpening(true);
     router.push(href);
@@ -90,10 +92,20 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
         <p className="text-sm text-muted-foreground">{COPY.alreadyExists}</p>
       ) : null}
 
-      {isGenerating && (
-        <p className="text-xs text-muted-foreground" role="status">
-          {COPY.generatingHint}
+      {isOpening ? (
+        <p
+          role="status"
+          className="flex items-center gap-2 text-sm text-success"
+        >
+          <Check size={14} />
+          {COPY.generated}
         </p>
+      ) : (
+        isGenerating && (
+          <p className="text-xs text-muted-foreground" role="status">
+            {COPY.generatingHint}
+          </p>
+        )
       )}
 
       <div className="flex justify-end gap-2">
@@ -117,6 +129,7 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
             disabled={isLoading || isBusy || report === undefined}
             onClick={() => void handleGenerate()}
           >
+            {isBusy && <Loader2 className="animate-spin" size={14} />}
             {isOpening
               ? COPY.opening
               : isGenerating

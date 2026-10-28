@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -12,7 +12,7 @@ import { getNutritionReportErrorMessage } from "@/lib/nutritionReportErrors";
 import { SWR_CONFIG } from "@/lib/swr";
 import {
   nutritionReportKey,
-  nutritionReportsListMatcher,
+  storeGeneratedReport,
 } from "@/hooks/nutritionReportKeys";
 
 type Failure = { month: ReportMonth; message: string };
@@ -77,10 +77,7 @@ export function useNutritionReport(
           establishmentId,
           month,
         );
-        await mutate(nutritionReportKey(establishmentId, month), report, {
-          revalidate: false,
-        });
-        await mutate(nutritionReportsListMatcher(establishmentId));
+        await storeGeneratedReport(report);
         return report;
       } catch (err) {
         setFailure({ month, message: getNutritionReportErrorMessage(err) });

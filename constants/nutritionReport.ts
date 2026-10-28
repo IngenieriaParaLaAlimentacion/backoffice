@@ -52,7 +52,7 @@ export const NUTRITION_REPORT_PAGE = {
   newReport: "Generar nuevo reporte",
   empty:
     "Todavía no se generó ningún reporte para este comedor. Generá el primero con el botón de arriba.",
-  columns: { month: "Mes", status: "Estado", createdAt: "Generado" },
+  columns: { month: "Mes", status: "Estado", createdAt: "Generado el" },
   summaryStatus: {
     generated: "Completo",
     unavailable: "Sin texto",
@@ -67,6 +67,8 @@ export const NUTRITION_REPORT_PAGE = {
   actionsMenuLabel: "Más acciones",
   viewReport: "Ver reporte",
   downloadPdf: "Descargar PDF",
+  recalculate: "Volver a calcular",
+  recalculated: (month: string) => `Se completó el reporte de ${month}.`,
   pdfBlockedHint:
     "El texto del reporte no está disponible: volvé a generarlo para poder descargar el PDF.",
 } as const;
@@ -81,6 +83,7 @@ export const NUTRITION_REPORT_DIALOG = {
   viewExisting: "Ver reporte",
   generate: "Generar reporte",
   generating: "Generando…",
+  generated: "Reporte generado.",
   opening: "Abriendo reporte…",
   generatingHint:
     "Generar el reporte puede tardar un momento. No cierres esta pantalla.",
@@ -93,6 +96,10 @@ export const NUTRITION_REPORT_DETAIL = {
   title: (month: string) => `Reporte nutricional de ${month}`,
   notGenerated: "Todavía no se generó el reporte de este mes.",
   regenerateText: "Regenerar texto",
+  recalculate: "Volver a calcular",
+  recalculating: "Calculando…",
+  noDataHint:
+    "Si se cargaron ingresos de alimentos después de generar este reporte, podés volver a calcularlo.",
   generating: "Generando…",
   noData:
     "Sin datos: el comedor no tuvo ingresos de alimentos en este mes, por eso no hay déficits para mostrar.",
@@ -193,4 +200,13 @@ export const NUTRITION_REPORT_EXTRAS = {
     many: (names: string[]) =>
       `Estos alimentos quedaron afuera del cálculo porque no se pueden convertir a gramos: ${names.join(", ")}.`,
   },
+} as const;
+
+/** Outcomes of calculating a month again, told in a dialog the user closes. */
+export const NUTRITION_REPORT_NOTICE = {
+  completedTitle: "Reporte completado",
+  unchangedTitle: "Sin cambios",
+  unchanged: (month: string) =>
+    `${month} sigue sin ingresos de alimentos, así que el reporte no cambió.`,
+  close: "Entendido",
 } as const;

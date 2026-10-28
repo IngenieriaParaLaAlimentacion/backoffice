@@ -5,21 +5,26 @@ import NutritionReportDetail from "./NutritionReportDetail";
 import { renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
-import { REPORT_PDF_FILENAME } from "@/mocks/fixtures/nutritionReport";
+import {
+  buildNutritionReport,
+  REPORT_PDF_FILENAME,
+  saveNutritionReport,
+} from "@/mocks/fixtures/nutritionReport";
 import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutritionReport";
 import {
   NUTRITION_REPORT_DETAIL as COPY,
   NUTRITION_REPORT_ERROR_MESSAGES,
   NUTRITION_REPORT_EXTRAS as EXTRAS,
+  NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_SECTIONS as SECTIONS,
 } from "@/constants/nutritionReport";
 import { ERROR_TYPES } from "@/lib/apiError";
 
 const ESTABLISHMENT = MOCK_ESTABLISHMENTS[0].id;
 
-const renderDetail = (month: string) =>
+const renderDetail = (month: string, establishmentId = ESTABLISHMENT) =>
   renderWithProviders(
-    <NutritionReportDetail establishmentId={ESTABLISHMENT} month={month} />,
+    <NutritionReportDetail establishmentId={establishmentId} month={month} />,
   );
 
 describe("NutritionReportDetail", () => {
@@ -176,6 +181,59 @@ describe("NutritionReportDetail", () => {
     expect(
       screen.getByRole("button", { name: COPY.downloadPdf }),
     ).toBeEnabled();
+  });
+
+  it("fills in a month saved without data once its intakes were loaded", async () => {
+    await renderDetail("2026-07");
+    expect(await screen.findByText(COPY.noData)).toBeInTheDocument();
+    expect(screen.getByText(COPY.noDataHint)).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: COPY.recalculate }),
+    );
+
+    expect(await screen.findByText(COPY.indicatorLabel)).toBeInTheDocument();
+    expect(screen.queryByText(COPY.noData)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: COPY.recalculate }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("says nothing changed when the month still has no intakes", async () => {
+    const withoutIntakes = MOCK_ESTABLISHMENTS[1].id;
+    saveNutritionReport(
+      buildNutritionReport({
+        establishmentId: withoutIntakes,
+        month: "2026-06",
+        noData: true,
+      }),
+    );
+    await renderDetail("2026-06", withoutIntakes);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.recalculate }),
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent(NOTICE.unchanged("junio de 2026"));
+    expect(screen.getByText(COPY.noData)).toBeInTheDocument();
+
+    // It stays until it is closed, and then it is gone.
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: NOTICE.close }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("only offers to recalculate a month without data", async () => {
+    await renderDetail("2026-09");
+
+    await screen.findByText(COPY.indicatorLabel);
+    expect(
+      screen.queryByRole("button", { name: COPY.recalculate }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps the figures when the AI text is unavailable and lets you regenerate it", async () => {

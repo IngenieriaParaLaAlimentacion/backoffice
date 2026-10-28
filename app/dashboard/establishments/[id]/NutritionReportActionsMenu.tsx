@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { Download, Eye, Loader2, MoreVertical } from "lucide-react";
+import { Download, Eye, Loader2, MoreVertical, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MENU_ITEM_CLASS } from "@/components/ui/menu";
 import {
@@ -14,17 +14,20 @@ import { NutritionReportListItem } from "@/types/nutritionReport";
 /**
  * The "⋮" of a report in the list: open it, or download its PDF without going
  * through the report screen. The PDF is refused while the AI text is missing,
- * so the item is disabled with the reason, as on the report screen.
+ * so the item is disabled with the reason, as on the report screen. A month
+ * saved without data can also be calculated again.
  */
 export default function NutritionReportActionsMenu({
   establishmentId,
   report,
   onDownload,
+  onRecalculate,
   busy,
 }: {
   establishmentId: string;
   report: NutritionReportListItem;
   onDownload: () => void;
+  onRecalculate: () => void;
   busy: boolean;
 }) {
   const textUnavailable = report.summary_status === "unavailable";
@@ -66,6 +69,12 @@ export default function NutritionReportActionsMenu({
               <Download size={14} />
               {COPY.downloadPdf}
             </Menu.Item>
+            {!report.has_data && (
+              <Menu.Item className={MENU_ITEM_CLASS} onClick={onRecalculate}>
+                <RefreshCw size={14} />
+                {COPY.recalculate}
+              </Menu.Item>
+            )}
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>

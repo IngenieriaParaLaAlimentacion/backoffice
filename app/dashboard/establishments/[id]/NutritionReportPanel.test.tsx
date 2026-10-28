@@ -7,7 +7,11 @@ import RequirePermission from "@/components/RequirePermission";
 import { renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
-import { REPORT_PDF_FILENAME } from "@/mocks/fixtures/nutritionReport";
+import {
+  buildNutritionReport,
+  REPORT_PDF_FILENAME,
+  saveNutritionReport,
+} from "@/mocks/fixtures/nutritionReport";
 import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutritionReport";
 import {
   ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT,
@@ -16,15 +20,17 @@ import {
 import {
   NUTRITION_REPORT_DIALOG as DIALOG,
   NUTRITION_REPORT_LIMIT_MESSAGE,
+  NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_PAGE as COPY,
   nutritionReportHref,
 } from "@/constants/nutritionReport";
 import { FORBIDDEN_SCREEN } from "@/constants/permissions";
 
 const push = vi.fn();
+const prefetch = vi.fn();
 vi.mock("next/navigation", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/navigation")>()),
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, prefetch }),
 }));
 
 const ESTABLISHMENT = MOCK_ESTABLISHMENTS[0].id;
@@ -42,6 +48,7 @@ const openDialog = async () => {
 describe("NutritionReportPanel", () => {
   beforeEach(() => {
     push.mockClear();
+    prefetch.mockClear();
     // Pins the default month: today is July 2026, so June is the one offered.
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-07-10T15:00:00Z"));
@@ -149,6 +156,11 @@ describe("NutritionReportPanel", () => {
         nutritionReportHref(ESTABLISHMENT, "2026-06"),
       ),
     );
+    // The screen is fetched ahead, while the report is being generated.
+    expect(prefetch).toHaveBeenCalledWith(
+      nutritionReportHref(ESTABLISHMENT, "2026-06"),
+    );
+    expect(within(dialog).getByText(DIALOG.generated)).toBeInTheDocument();
     // Once saved, the dialog must not flip to "ya existe" before leaving.
     expect(
       within(dialog).getByRole("button", { name: DIALOG.opening }),
@@ -249,6 +261,77 @@ describe("NutritionReportPanel", () => {
     });
     expect(item).toHaveAttribute("aria-disabled", "true");
     expect(item).toHaveAttribute("title", COPY.pdfBlockedHint);
+  });
+
+  it("calculates a month saved without data again from the row menu", async () => {
+    // July is seeded without data and the comedor does have intakes.
+    vi.setSystemTime(new Date("2026-10-27T15:00:00Z"));
+    await renderPanel();
+
+    const menus = await screen.findAllByRole("button", {
+      name: COPY.actionsMenuLabel,
+    });
+    // Rows are newest first: September, August, July (no data).
+    await userEvent.click(menus[2]);
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: COPY.recalculate }),
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent(COPY.recalculated("julio de 2026"));
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: NOTICE.close }),
+    );
+    expect((await screen.findAllByRole("link"))[2]).toHaveTextContent(
+      COPY.summaryStatus.generated,
+    );
+  });
+
+  it("tells in a dialog, until closed, that a month still has no intakes", async () => {
+    const withoutIntakes = MOCK_ESTABLISHMENTS[1].id;
+    saveNutritionReport(
+      buildNutritionReport({
+        establishmentId: withoutIntakes,
+        month: "2026-06",
+        noData: true,
+      }),
+    );
+    await renderWithProviders(
+      <NutritionReportPanel establishmentId={withoutIntakes} />,
+    );
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.actionsMenuLabel }),
+    );
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: COPY.recalculate }),
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent(NOTICE.unchanged("junio de 2026"));
+
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: NOTICE.close }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    // Nothing left behind on the screen.
+    expect(screen.queryByText(/sigue sin ingresos/)).not.toBeInTheDocument();
+  });
+
+  it("does not offer to recalculate a month that has data", async () => {
+    await renderPanel();
+
+    const menus = await screen.findAllByRole("button", {
+      name: COPY.actionsMenuLabel,
+    });
+    await userEvent.click(menus[0]);
+
+    await screen.findByRole("menuitem", { name: COPY.downloadPdf });
+    expect(
+      screen.queryByRole("menuitem", { name: COPY.recalculate }),
+    ).not.toBeInTheDocument();
   });
 
   it("is refused to a role without the permission", async () => {
