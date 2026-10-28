@@ -1,3 +1,4 @@
+import { matchesApiRequest } from "./api";
 import { readFile, stat } from "node:fs/promises";
 import { posix } from "node:path";
 import { unzipSync, strFromU8 } from "fflate";
@@ -83,9 +84,8 @@ export async function assertDownload(
   const responsePromise = page.waitForResponse((response) => {
     const actualURL = new URL(response.url());
     return (
-      response.request().method() === "GET" &&
+      matchesApiRequest(response.request(), "GET", expectedURL.pathname) &&
       actualURL.origin === expectedURL.origin &&
-      actualURL.pathname === expectedURL.pathname &&
       (!expectedURL.search || actualURL.search === expectedURL.search)
     );
   });
