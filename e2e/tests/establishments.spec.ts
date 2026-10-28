@@ -1,4 +1,4 @@
-import { waitForApi } from "../support/api";
+import { waitForApi, matchesApiRequest } from "../support/api";
 import {
   CREATE_ESTABLISHMENT_PAGE,
   EDIT_ESTABLISHMENT_DIALOG,
@@ -52,10 +52,7 @@ test.describe("Administrator establishments", () => {
     await ui.newEstablishment();
     const creations: string[] = [];
     page.on("request", (request) => {
-      if (
-        request.method() === "POST" &&
-        new URL(request.url()).pathname === ESTABLISHMENTS_ENDPOINT
-      )
+      if (matchesApiRequest(request, "POST", ESTABLISHMENTS_ENDPOINT))
         creations.push(request.url());
     });
     const submit = page.getByRole("button", {

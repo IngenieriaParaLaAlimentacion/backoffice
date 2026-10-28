@@ -21,7 +21,7 @@ import {
   PENDING_REQUESTS_PAGE,
 } from "../../constants/users";
 import { EstablishmentsPage } from "./establishments.page";
-import { waitForApi } from "../support/api";
+import { waitForApi, matchesApiRequest } from "../support/api";
 
 export class RequestsPage {
   constructor(readonly page: Page) {}
@@ -107,13 +107,12 @@ export class RequestsPage {
       this.page.waitForResponse((r) => {
         const url = new URL(r.url());
         return (
-          url.pathname === LIST_USERS_ENDPOINT &&
+          matchesApiRequest(r.request(), "GET", LIST_USERS_ENDPOINT) &&
           url.searchParams.get("status") === "pending_validation" &&
           url.searchParams.get("role") === "field_worker" &&
           // The tab badges request page_size=1 from the same endpoint.
           url.searchParams.get("page_size") === "20" &&
-          url.searchParams.get("page") === String(pageNumber) &&
-          r.request().method() === "GET"
+          url.searchParams.get("page") === String(pageNumber)
         );
       });
     let loaded = queueResponse(1);
