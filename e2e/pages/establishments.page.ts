@@ -3,6 +3,12 @@ import {
   ESTABLISHMENT_ENDPOINT,
 } from "../../constants/api";
 import { expect, type Locator, type Page } from "@playwright/test";
+import {
+  CREATE_ESTABLISHMENT_PAGE,
+  EDIT_ESTABLISHMENT_DIALOG,
+  ESTABLISHMENTS_LIST_PAGE,
+} from "../../constants/establishments";
+import { GEOREF_SEARCH_PLACEHOLDER } from "../../constants/georef";
 import type { EstablishmentResponse } from "../../types/establishment";
 
 export class EstablishmentsPage {
@@ -11,7 +17,10 @@ export class EstablishmentsPage {
   async newEstablishment() {
     await this.page.goto("/dashboard/establishments");
     await this.page
-      .getByRole("link", { name: "Nuevo establecimiento", exact: true })
+      .getByRole("link", {
+        name: ESTABLISHMENTS_LIST_PAGE.createButton,
+        exact: true,
+      })
       .click();
     await expect(this.page).toHaveURL(/\/dashboard\/establishments\/create$/);
   }
@@ -20,12 +29,15 @@ export class EstablishmentsPage {
     formattedAddress: string,
     scope: Page | Locator = this.page,
   ) {
-    await scope
-      .getByPlaceholder("Ej: Av. Mitre, Avellaneda Buenos Aires", {
-        exact: true,
-      })
-      .fill(formattedAddress);
-    await scope.locator("li").filter({ hasText: formattedAddress }).click();
+    const input = scope.getByPlaceholder(GEOREF_SEARCH_PLACEHOLDER, {
+      exact: true,
+    });
+    await input.fill(formattedAddress);
+    await input
+      .locator("..")
+      .locator("ul > li")
+      .filter({ hasText: formattedAddress })
+      .click();
   }
 
   async create(
@@ -40,7 +52,10 @@ export class EstablishmentsPage {
         r.request().method() === "POST",
     );
     await this.page
-      .getByRole("button", { name: "Crear establecimiento", exact: true })
+      .getByRole("button", {
+        name: CREATE_ESTABLISHMENT_PAGE.submitButton,
+        exact: true,
+      })
       .click();
     const response = await saved;
     expect(response.status()).toBe(201);
@@ -59,7 +74,9 @@ export class EstablishmentsPage {
       );
     });
     await this.page
-      .getByPlaceholder("Nombre o dirección", { exact: true })
+      .getByPlaceholder(ESTABLISHMENTS_LIST_PAGE.searchPlaceholder, {
+        exact: true,
+      })
       .fill(name);
     expect((await loaded).ok()).toBeTruthy();
   }
@@ -80,14 +97,20 @@ export class EstablishmentsPage {
 
   async edit(id: string, name: string, formattedAddress: string) {
     await this.page
-      .getByRole("button", { name: "Editar datos", exact: true })
+      .getByRole("button", {
+        name: EDIT_ESTABLISHMENT_DIALOG.button,
+        exact: true,
+      })
       .click();
     const dialog = this.page.getByRole("dialog", {
-      name: "Editar datos del establecimiento",
+      name: EDIT_ESTABLISHMENT_DIALOG.title,
     });
     await dialog.getByRole("textbox", { name: /^Nombre\s*\*?$/ }).fill(name);
     await dialog
-      .getByRole("button", { name: "Cambiar dirección", exact: true })
+      .getByRole("button", {
+        name: EDIT_ESTABLISHMENT_DIALOG.changeAddress,
+        exact: true,
+      })
       .click();
     await this.pickAddress(formattedAddress, dialog);
     const saved = this.page.waitForResponse(
@@ -95,7 +118,12 @@ export class EstablishmentsPage {
         new URL(r.url()).pathname === ESTABLISHMENT_ENDPOINT(id) &&
         r.request().method() === "PATCH",
     );
-    await dialog.getByRole("button", { name: "Guardar", exact: true }).click();
+    await dialog
+      .getByRole("button", {
+        name: EDIT_ESTABLISHMENT_DIALOG.save,
+        exact: true,
+      })
+      .click();
     expect((await saved).status()).toBe(200);
     await expect(dialog).toBeHidden();
   }

@@ -16,6 +16,8 @@ import { SignInPage } from "../pages/sign-in.page";
 import { MenuPage } from "../pages/menu.page";
 import { e2eEnv, type TestRole } from "../support/env";
 import { currentTokens } from "../support/session";
+import { waitForApi } from "../support/api";
+import { expectLoaded } from "../support/ui";
 
 for (const role of [
   "admin",
@@ -24,17 +26,11 @@ for (const role of [
   test(`real UI login as ${role}`, async ({ page, context }) => {
     const form = new SignInPage(page);
     await form.open();
-    const login = page.waitForResponse(
-      (r) =>
-        r.request().method() === "POST" &&
-        new URL(r.url()).pathname === ADMIN_LOGIN_ENDPOINT,
-    );
+    const login = waitForApi(page, "POST", ADMIN_LOGIN_ENDPOINT);
     await form.submit(e2eEnv.credentials(role));
     expect((await login).status()).toBe(200);
     await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(
-      page.getByRole("heading", { name: "¡Bienvenido!", exact: true }),
-    ).toBeVisible();
+    await expectLoaded(page);
     const tokens = await currentTokens(context);
     const profile = await context.request.get(
       new URL(ME_ENDPOINT, e2eEnv.apiURL).toString(),
@@ -51,20 +47,14 @@ for (const role of [
     const form = new SignInPage(page);
     await form.open();
     await form.submit(e2eEnv.credentials(role));
-    await expect(
-      page.getByRole("heading", { name: "¡Bienvenido!", exact: true }),
-    ).toBeVisible();
+    await expectLoaded(page);
     const beforeLogout = await currentTokens(context);
     const deviceId = await page.evaluate(
       (key) => localStorage.getItem(key),
       DEVICE_ID_STORAGE_KEY,
     );
     if (!deviceId) throw new Error("Missing owned UI-login device identity");
-    const logout = page.waitForResponse(
-      (r) =>
-        r.request().method() === "POST" &&
-        new URL(r.url()).pathname === LOGOUT_ENDPOINT,
-    );
+    const logout = waitForApi(page, "POST", LOGOUT_ENDPOINT);
     await new MenuPage(page).logout();
     expect((await logout).status()).toBe(204);
     const revokedRefresh = await context.request.post(
@@ -89,11 +79,7 @@ for (const role of [
 test("incorrect password is rejected by the real API", async ({ page }) => {
   const form = new SignInPage(page);
   await form.open();
-  const response = page.waitForResponse(
-    (r) =>
-      r.request().method() === "POST" &&
-      new URL(r.url()).pathname === ADMIN_LOGIN_ENDPOINT,
-  );
+  const response = waitForApi(page, "POST", ADMIN_LOGIN_ENDPOINT);
   await form.submit({
     ...e2eEnv.credentials("admin"),
     password: "intentionally-wrong-e2e-password",
@@ -133,11 +119,7 @@ test("invalid persisted refresh redirects to signin", async ({ page }) => {
       deviceId: randomUUID(),
     },
   );
-  const refresh = page.waitForResponse(
-    (r) =>
-      r.request().method() === "POST" &&
-      new URL(r.url()).pathname === REFRESH_ENDPOINT,
-  );
+  const refresh = waitForApi(page, "POST", REFRESH_ENDPOINT);
   await page.goto("/dashboard");
   expect((await refresh).status()).toBe(401);
   await expect(page).toHaveURL(/\/signin$/);
@@ -154,25 +136,17 @@ test("bad access with valid refresh recovers instead of an invalid-session false
   const form = new SignInPage(page);
   await form.open();
   await form.submit(e2eEnv.credentials("admin"));
-  await expect(
-    page.getByRole("heading", { name: "¡Bienvenido!", exact: true }),
-  ).toBeVisible();
+  await expectLoaded(page);
   const before = await currentTokens(context);
   await page.evaluate((key) => {
     const tokens = JSON.parse(localStorage.getItem(key)!);
     tokens.accessToken = "invalid";
     localStorage.setItem(key, JSON.stringify(tokens));
   }, TOKENS_STORAGE_KEY);
-  const refresh = page.waitForResponse(
-    (r) =>
-      r.request().method() === "POST" &&
-      new URL(r.url()).pathname === REFRESH_ENDPOINT,
-  );
+  const refresh = waitForApi(page, "POST", REFRESH_ENDPOINT);
   await page.goto("/dashboard");
   expect((await refresh).status()).toBe(200);
-  await expect(
-    page.getByRole("heading", { name: "¡Bienvenido!", exact: true }),
-  ).toBeVisible();
+  await expectLoaded(page);
   expect(
     (await currentTokens(context)).refreshToken !== before.refreshToken,
   ).toBe(true);

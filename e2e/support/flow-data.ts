@@ -1,10 +1,5 @@
 import { randomUUID } from "node:crypto";
-import {
-  expect,
-  type APIResponse,
-  type BrowserContext,
-  type TestInfo,
-} from "@playwright/test";
+import { expect } from "@playwright/test";
 import {
   CREATE_ESTABLISHMENT_REQUEST_ENDPOINT,
   ESTABLISHMENTS_ENDPOINT,
@@ -25,7 +20,7 @@ import type {
   SurveyTemplateResponse,
 } from "../../types/survey";
 import { e2eEnv } from "./env";
-import { currentTokens } from "./session";
+import { TestData } from "./api-data";
 
 type OwnedWorker = {
   id: string;
@@ -35,47 +30,7 @@ type OwnedWorker = {
   password: string;
 };
 
-export class FlowData {
-  private readonly prefix: string;
-
-  constructor(
-    private readonly adminContext: BrowserContext,
-    info: TestInfo,
-  ) {
-    const run =
-      (process.env.E2E_RUN_ID ?? "local")
-        .replace(/[^a-zA-Z0-9-]/g, "")
-        .slice(0, 12) || "local";
-    this.prefix = `e2e-${run}-w${info.workerIndex}-r${info.retry}`;
-  }
-
-  name(label: string, limit = 100): string {
-    if (!Number.isInteger(limit) || limit < 40) {
-      throw new Error(
-        "Unique fixture names require an integer limit of at least 40",
-      );
-    }
-    const suffix = randomUUID().replaceAll("-", "");
-    const head = `${this.prefix}-${label.replace(/[^a-zA-Z0-9-]/g, "-")}`;
-    return `${head.slice(0, limit - suffix.length - 1)}-${suffix}`;
-  }
-
-  private async request(
-    method: ApiMethod,
-    path: string,
-    data?: object,
-  ): Promise<APIResponse> {
-    const tokens = await currentTokens(this.adminContext);
-    return this.adminContext.request.fetch(
-      new URL(path, e2eEnv.apiURL).toString(),
-      {
-        method,
-        data,
-        headers: { Authorization: `Bearer ${tokens.accessToken}` },
-      },
-    );
-  }
-
+export class FlowData extends TestData {
   private async json<T>(
     method: ApiMethod,
     path: string,
@@ -143,7 +98,7 @@ export class FlowData {
       last_name: "E2E",
       establishments: establishmentIds,
     };
-    const response = await this.adminContext.request.post(
+    const response = await this.context.request.post(
       new URL(REGISTER_FIELD_WORKER_ENDPOINT, e2eEnv.apiURL).toString(),
       { data: body },
     );

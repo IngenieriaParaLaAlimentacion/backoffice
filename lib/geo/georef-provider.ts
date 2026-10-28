@@ -1,3 +1,4 @@
+import { GEOREF_SEARCH_PLACEHOLDER } from "../../constants/georef";
 import {
   GeoLocationProvider,
   GeoLocationProviderCallbacks,
@@ -81,7 +82,7 @@ export class GeorefProvider implements GeoLocationProvider {
 
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "Ej: Av. Mitre, Avellaneda Buenos Aires";
+    input.placeholder = GEOREF_SEARCH_PLACEHOLDER;
     input.autocomplete = "off";
     input.className = INPUT_CLASS;
 
