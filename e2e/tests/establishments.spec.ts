@@ -1,3 +1,4 @@
+import { waitForApi } from "../support/api";
 import {
   CREATE_ESTABLISHMENT_PAGE,
   EDIT_ESTABLISHMENT_DIALOG,
@@ -137,11 +138,10 @@ test.describe("Analyst establishment characterization", () => {
         exact: true,
       })
       .fill(neighborhood);
-    const saved = page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname ===
-          ESTABLISHMENT_CHARACTERIZATION_ENDPOINT(own.id) &&
-        r.request().method() === "PUT",
+    const saved = waitForApi(
+      page,
+      "PUT",
+      ESTABLISHMENT_CHARACTERIZATION_ENDPOINT(own.id),
     );
     await page
       .getByRole("button", { name: ESTABLISHMENT_PROFILE.save, exact: true })

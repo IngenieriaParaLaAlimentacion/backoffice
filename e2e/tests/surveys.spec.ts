@@ -1,3 +1,4 @@
+import { waitForApi } from "../support/api";
 import {
   SURVEY_ENDPOINT,
   SURVEY_RESPONSES_EXPORT_ENDPOINT,
@@ -11,7 +12,7 @@ import type {
   SurveyTemplateResponse,
   SurveyResponseDetail,
 } from "../../types/survey";
-import { RESPONSES_PAGE } from "../../constants/surveys";
+import { RESPONSES_PAGE, SURVEY_FORM } from "../../constants/surveys";
 
 function structure(
   survey: Pick<SurveyResponse | SurveyTemplateResponse, "questions">,
@@ -50,7 +51,7 @@ test.describe("authoring", () => {
     await ui.rename(survey.id, name);
     await page.goto(`/dashboard/surveys/${survey.id}`);
     await expect(
-      page.getByPlaceholder("Nombre de la encuesta", { exact: true }),
+      page.getByPlaceholder(SURVEY_FORM.namePlaceholder, { exact: true }),
     ).toHaveValue(name);
     await ui.setActive(survey.id, name, false);
     await ui.setActive(survey.id, name, true);
@@ -84,7 +85,7 @@ test.describe("authoring", () => {
     }
     await page.reload();
     await expect(
-      page.getByPlaceholder("Nombre de la encuesta", { exact: true }),
+      page.getByPlaceholder(SURVEY_FORM.namePlaceholder, { exact: true }),
     ).toHaveValue(copy.name);
     const persistedCopy = await api.request("GET", SURVEY_ENDPOINT(copy.id));
     expect(persistedCopy.status()).toBe(200);
@@ -116,11 +117,10 @@ test.describe("analyst responses", () => {
     const first = listing.items[0];
     expect(first.survey.id).toBe(survey.id);
     expect(first.score_fies).not.toBeNull();
-    const detailLoaded = page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname ===
-          SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT(survey.id, first.id) &&
-        r.request().method() === "GET",
+    const detailLoaded = waitForApi(
+      page,
+      "GET",
+      SURVEY_RESPONSE_DASHBOARD_DETAIL_ENDPOINT(survey.id, first.id),
     );
     await page.getByRole("table").locator("tbody tr").first().click();
     const detailResponse = await detailLoaded;
@@ -141,7 +141,9 @@ test.describe("analyst responses", () => {
     await assertDownload(page, {
       path: SURVEY_RESPONSES_EXPORT_ENDPOINT(survey.id),
       click: () =>
-        page.getByRole("button", { name: "Exportar", exact: true }).click(),
+        page
+          .getByRole("button", { name: RESPONSES_PAGE.export, exact: true })
+          .click(),
       format: "xlsx",
       expectedRows: listing.total,
     });
