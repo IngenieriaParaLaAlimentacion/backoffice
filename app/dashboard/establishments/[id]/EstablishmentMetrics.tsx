@@ -32,7 +32,7 @@ export default function EstablishmentMetrics({
 }) {
   if (!hasData) {
     return (
-      <div className="flex flex-col gap-1 rounded-lg border border-dashed border-border py-8 text-center">
+      <div className="flex flex-col gap-1 rounded-lg border border-dashed border-border py-1.5 text-center">
         <span className="text-sm text-muted-foreground">{COPY.noData}</span>
         <span className="mx-auto max-w-md text-xs text-muted-foreground">
           {COPY.noDataHint}
