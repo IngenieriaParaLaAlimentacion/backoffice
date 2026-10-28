@@ -1,0 +1,60 @@
+name: E2E
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: "true"
+      E2E_BASE_URL: http://127.0.0.1:3001
+      E2E_API_URL: http://127.0.0.1:8080
+      E2E_ADMIN_EMAIL: admin.referencia@tpp.com
+      E2E_ADMIN_PASSWORD: Referencia-123!
+      E2E_ANALYST_EMAIL: analista.referencia@tpp.com
+      E2E_ANALYST_PASSWORD: Referencia-123!
+      E2E_STRESS_ROLE: admin
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium and system libraries
+        run: npx playwright install --with-deps chromium
+      - name: Log in to the backend package registry
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Check browser-test types
+        run: npx tsc --noEmit -p e2e/tsconfig.json
+      - name: Run real E2E and repeated-session proof
+        run: npm run e2e:ci
+      - name: Upload reports, traces and isolated-service logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .context/e2e/artifacts/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7

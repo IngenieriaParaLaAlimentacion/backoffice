@@ -1,0 +1,9 @@
+{
+  "repository": "IngenieriaParaLaAlimentacion/backend",
+  "commit": "ca24178b5946ea2dcf25f2ac4699b123a557aed4",
+  "image": "ghcr.io/ingenieriaparalaalimentacion/backend:sha-ca24178b5946ea2dcf25f2ac4699b123a557aed4",
+  "files": {
+    "e2e/compose.yml": "b09579f4077b11c948463214ff652ebf78801939bd3b8f4e91d097331fa88f76",
+    "e2e/.env.e2e": "d6422f95554873bf9d9a7657d8023945e069fe3a2772dee8a15652d931c2b135"
+  }
+}

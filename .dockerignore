@@ -9,3 +9,9 @@ npm-debug.log*
 .env.local
 .env*.local
 README.md
+
+e2e
+playwright.config.ts
+.context
+playwright-report
+test-results

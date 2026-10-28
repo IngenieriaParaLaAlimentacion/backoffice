@@ -120,3 +120,7 @@ arquitectura y las convenciones de código.
 ## Licencia
 
 Proyecto académico — **group-193**.
+
+## Pruebas E2E del navegador
+
+Ejecutá `npm run e2e` contra el entorno descartable del backend. La [guía E2E](docs/e2e.md) explica credenciales, Chromium, reconstrucción de la base, reportes de CI y comprobación de sesiones paralelas.
