@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -189,6 +189,11 @@ export default function NutritionReportDetail({
                   onClick={() => void pdf.download(report.month)}
                   disabled={pdf.isDownloading || textUnavailable}
                 >
+                  {pdf.isDownloading ? (
+                    <Loader2 className="animate-spin" size={14} />
+                  ) : (
+                    <Download size={14} />
+                  )}
                   {pdf.isDownloading ? COPY.downloading : COPY.downloadPdf}
                 </Button>
               </div>
