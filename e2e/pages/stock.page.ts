@@ -1,3 +1,4 @@
+import { matchesApiRequest } from "../support/api";
 import type { Page } from "@playwright/test";
 import { expect } from "../flow-fixtures";
 import {
@@ -36,9 +37,11 @@ export class StockPage {
   async goto(establishmentId: string) {
     const read = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "GET" &&
-        new URL(response.url()).pathname ===
-          ESTABLISHMENT_STOCK_ENDPOINT(establishmentId) &&
+        matchesApiRequest(
+          response.request(),
+          "GET",
+          ESTABLISHMENT_STOCK_ENDPOINT(establishmentId),
+        ) &&
         new URL(response.url()).searchParams.get("only_available") === "true" &&
         response.status() === 200,
     );
@@ -104,10 +107,7 @@ export class StockPage {
     const endpoint =
       direction === "in" ? FOOD_INTAKES_ENDPOINT : FOOD_OUTFLOWS_ENDPOINT;
     const saved = this.page.waitForResponse((response) => {
-      if (
-        response.request().method() !== "POST" ||
-        new URL(response.url()).pathname !== endpoint
-      )
+      if (!matchesApiRequest(response.request(), "POST", endpoint))
         return false;
       return (
         response.request().postDataJSON().establishment_id === establishmentId
@@ -162,13 +162,14 @@ export class StockPage {
   async savedDetail(establishmentId: string, movementId: string) {
     const detail = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "GET" &&
-        new URL(response.url()).pathname ===
+        matchesApiRequest(
+          response.request(),
+          "GET",
           ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT(
             establishmentId,
             movementId,
-          ) &&
-        response.status() === 200,
+          ),
+        ) && response.status() === 200,
     );
     await this.page
       .getByRole("link", { name: STOCK.viewSaved, exact: true })
@@ -183,10 +184,11 @@ export class StockPage {
   async history(establishmentId: string) {
     const listing = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "GET" &&
-        new URL(response.url()).pathname ===
-          ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT(establishmentId) &&
-        response.status() === 200,
+        matchesApiRequest(
+          response.request(),
+          "GET",
+          ESTABLISHMENT_FOOD_MOVEMENTS_ENDPOINT(establishmentId),
+        ) && response.status() === 200,
     );
     await this.page
       .locator(
@@ -207,13 +209,14 @@ export class StockPage {
   ) {
     const detail = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "GET" &&
-        new URL(response.url()).pathname ===
+        matchesApiRequest(
+          response.request(),
+          "GET",
           ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT(
             establishmentId,
             movementId,
-          ) &&
-        response.status() === 200,
+          ),
+        ) && response.status() === 200,
     );
     await this.page
       .locator("table:visible tbody tr")
