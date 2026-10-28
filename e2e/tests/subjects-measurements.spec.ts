@@ -1,3 +1,4 @@
+import { matchesApiRequest } from "../support/api";
 import { test, expect } from "../flow-fixtures";
 import { SubjectsMeasurementsPage } from "../pages/subjects-measurements.page";
 import { assertDownload } from "../support/download";
@@ -60,10 +61,8 @@ test.describe("subjects and measurements", () => {
         clinical.rows.filter({ hasText: String(subject.dni) }),
       ).toHaveCount(1);
     }
-    const exported = page.waitForRequest(
-      (request) =>
-        request.method() === "GET" &&
-        new URL(request.url()).pathname === SUBJECTS_EXPORT_ENDPOINT,
+    const exported = page.waitForRequest((request) =>
+      matchesApiRequest(request, "GET", SUBJECTS_EXPORT_ENDPOINT),
     );
     await assertDownload(page, {
       path: SUBJECTS_EXPORT_ENDPOINT,
