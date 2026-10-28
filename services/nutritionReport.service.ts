@@ -12,7 +12,7 @@ import {
 } from "@/types/nutritionReport";
 import { toApiError } from "@/lib/apiError";
 
-export type ListNutritionReportsParams = {
+type ListNutritionReportsParams = {
   sort_order?: NutritionReportSortOrder;
   page?: number;
   page_size?: number;
@@ -40,7 +40,7 @@ export const listNutritionReportsAction = async (
   return res.data as PaginatedNutritionReportsResponse;
 };
 
-/** Reads a saved report. Never generates one and never spends AI quota. */
+/** Reads a saved report. Never generates one and never counts toward the AI usage limit. */
 export const getNutritionReportAction = async (
   dispatcher: AuthDispatcher,
   establishmentId: string,
@@ -57,9 +57,10 @@ export const getNutritionReportAction = async (
 
 /**
  * Returns the saved report of a month (200) or generates and saves it (201).
- * It counts toward the AI quota even when it returns a saved one, so read
- * with `getNutritionReportAction` and use this only to generate, or to write
- * the text again when the AI had failed.
+ * It counts toward the AI usage limit even when it returns a saved one, so
+ * read with `getNutritionReportAction` and use this only to generate, to write
+ * the text again when the AI had failed or to calculate a month saved without
+ * data again.
  */
 export const generateNutritionReportAction = async (
   dispatcher: AuthDispatcher,
@@ -79,8 +80,8 @@ export const generateNutritionReportAction = async (
 
 /**
  * Downloads a saved report as a PDF, named by the server. It never generates
- * a report or spends AI quota: 404 without a saved report, 409 while its text
- * is unavailable.
+ * a report or counts toward the AI usage limit: 404 without a saved report,
+ * 409 while its text is unavailable.
  */
 export const downloadNutritionReportPdfAction = async (
   download: DownloadDispatcher,

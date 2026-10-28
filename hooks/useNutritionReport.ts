@@ -1,28 +1,22 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import useSWR from "swr";
 import { StatusCodes } from "http-status-codes";
 import { useAuth } from "@/context/AuthContext";
-import {
-  generateNutritionReportAction,
-  getNutritionReportAction,
-} from "@/services/nutritionReport.service";
+import { getNutritionReportAction } from "@/services/nutritionReport.service";
 import { NutritionReportResponse, ReportMonth } from "@/types/nutritionReport";
 import { ApiError } from "@/lib/apiError";
 import { getNutritionReportErrorMessage } from "@/lib/nutritionReportErrors";
 import { SWR_CONFIG } from "@/lib/swr";
-import {
-  nutritionReportKey,
-  storeGeneratedReport,
-} from "@/hooks/nutritionReportKeys";
-
-type Failure = { month: ReportMonth; message: string };
+import { nutritionReportKey } from "@/hooks/nutritionReportKeys";
+import { useGenerateNutritionReport } from "@/hooks/useGenerateNutritionReport";
 
 /**
  * The saved report of one month of a comedor, plus the way to generate it.
  *
- * Reading uses `GET`, which never spends the AI quota; `PUT` always does, so
- * `generate` is only ever called from an explicit user action — to create the
- * report or to write its text again when the AI had failed.
+ * Reading uses `GET`, which never counts toward the AI usage limit; every
+ * `PUT` does, so `generate` is only ever called from an explicit user action —
+ * to create the report, to write its text again when the AI had failed or to
+ * calculate a month saved without data again.
  *
  * `report` is `null` once the backend confirms the month has no saved report
  * (404), and `undefined` while that is still unknown.
@@ -32,10 +26,11 @@ export function useNutritionReport(
   month: ReportMonth | null,
 ) {
   const { makeAuthorizedRequest } = useAuth();
-  const [generatingMonth, setGeneratingMonth] = useState<ReportMonth | null>(
-    null,
-  );
-  const [failure, setFailure] = useState<Failure | null>(null);
+  const {
+    generatingMonth,
+    failure,
+    generate: generateMonth,
+  } = useGenerateNutritionReport(establishmentId);
 
   const key = month ? nutritionReportKey(establishmentId, month) : null;
 
@@ -65,27 +60,10 @@ export function useNutritionReport(
     { ...SWR_CONFIG, keepPreviousData: false, shouldRetryOnError: false },
   );
 
-  /** Resolves to the saved report, or `null` when it could not be generated. */
-  const generate =
-    useCallback(async (): Promise<NutritionReportResponse | null> => {
-      if (!month || generatingMonth) return null;
-      setGeneratingMonth(month);
-      setFailure(null);
-      try {
-        const report = await generateNutritionReportAction(
-          makeAuthorizedRequest,
-          establishmentId,
-          month,
-        );
-        await storeGeneratedReport(report);
-        return report;
-      } catch (err) {
-        setFailure({ month, message: getNutritionReportErrorMessage(err) });
-        return null;
-      } finally {
-        setGeneratingMonth(null);
-      }
-    }, [makeAuthorizedRequest, establishmentId, month, generatingMonth]);
+  const generate = useCallback(
+    () => (month ? generateMonth(month) : Promise.resolve(null)),
+    [generateMonth, month],
+  );
 
   const refetch = useCallback(() => {
     void refetchReport();

@@ -12,7 +12,8 @@ import {
 
 /**
  * Downloads a saved report as a PDF, named by the server. It never generates
- * a report or spends AI quota, so it is safe to offer next to any saved one.
+ * a report or counts toward the AI usage limit, so it is safe to offer next to
+ * any saved one.
  */
 export function useNutritionReportPdf(establishmentId: string) {
   const { makeAuthorizedDownload } = useAuth();

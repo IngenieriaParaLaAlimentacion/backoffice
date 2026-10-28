@@ -8,18 +8,18 @@ import Pagination from "@/components/Pagination";
 import { RowChevron } from "@/components/listings/RowAffordance";
 import { useNutritionReportList } from "@/hooks/useNutritionReportList";
 import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
-import { useRecalculateNutritionReport } from "@/hooks/useRecalculateNutritionReport";
+import { useGenerateNutritionReport } from "@/hooks/useGenerateNutritionReport";
 import { SELECT_CLASS } from "@/constants/establishments";
 import {
   NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_PAGE as COPY,
   nutritionReportHref,
 } from "@/constants/nutritionReport";
-import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { formatReportMonth, formatTimestampDate } from "@/lib/format";
 import { NutritionReportSortOrder, ReportMonth } from "@/types/nutritionReport";
 import GenerateNutritionReportDialog from "./GenerateNutritionReportDialog";
 import NutritionReportActionsMenu from "./NutritionReportActionsMenu";
+import NutritionReportBanner from "./NutritionReportBanner";
 import NutritionReportNoticeDialog, {
   ReportNotice,
 } from "./NutritionReportNoticeDialog";
@@ -47,7 +47,7 @@ export default function NutritionReportPanel({
     refetch,
   } = useNutritionReportList(establishmentId);
   const pdf = useNutritionReportPdf(establishmentId);
-  const recalculation = useRecalculateNutritionReport(establishmentId);
+  const generation = useGenerateNutritionReport(establishmentId);
   const [notice, setNotice] = useState<ReportNotice | null>(null);
 
   const handleDownload = async (month: ReportMonth) => {
@@ -58,7 +58,7 @@ export default function NutritionReportPanel({
 
   const handleRecalculate = async (month: ReportMonth) => {
     setNotice(null);
-    const report = await recalculation.recalculate(month);
+    const report = await generation.generate(month);
     if (!report) return;
     const name = formatReportMonth(month);
     setNotice(
@@ -105,13 +105,10 @@ export default function NutritionReportPanel({
         onOpenChange={setDialogOpen}
       />
 
-      {(pdf.error ?? recalculation.error) && (
-        <p
-          role="alert"
-          className={`rounded-md border px-4 py-3 text-sm ${TONE_BANNER_CLASS.danger}`}
-        >
-          {pdf.error ?? recalculation.error}
-        </p>
+      {(pdf.error ?? generation.failure?.message) && (
+        <NutritionReportBanner tone="danger">
+          {pdf.error ?? generation.failure?.message}
+        </NutritionReportBanner>
       )}
       <NutritionReportNoticeDialog
         notice={notice}
@@ -120,12 +117,9 @@ export default function NutritionReportPanel({
 
       {error && (
         <div className="flex flex-col items-start gap-2">
-          <p
-            role="alert"
-            className={`w-full rounded-md border px-4 py-3 text-sm ${TONE_BANNER_CLASS.danger}`}
-          >
+          <NutritionReportBanner tone="danger" className="w-full">
             {error}
-          </p>
+          </NutritionReportBanner>
           <Button size="sm" variant="outline" onClick={refetch}>
             {COPY.retry}
           </Button>
@@ -160,8 +154,7 @@ export default function NutritionReportPanel({
                     {formatReportMonth(item.month)}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {COPY.columns.createdAt}{" "}
-                    {formatTimestampDate(item.created_at)}
+                    {COPY.createdAt} {formatTimestampDate(item.created_at)}
                   </span>
                 </span>
                 <span className="flex items-center gap-3">
@@ -176,7 +169,7 @@ export default function NutritionReportPanel({
                 report={item}
                 busy={
                   downloadingMonth === item.month ||
-                  recalculation.recalculatingMonth === item.month
+                  generation.generatingMonth === item.month
                 }
                 onDownload={() => void handleDownload(item.month)}
                 onRecalculate={() => void handleRecalculate(item.month)}

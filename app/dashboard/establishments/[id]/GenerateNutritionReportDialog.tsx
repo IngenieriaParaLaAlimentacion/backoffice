@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
@@ -12,14 +12,10 @@ import {
   NUTRITION_REPORT_DIALOG as COPY,
   nutritionReportHref,
 } from "@/constants/nutritionReport";
-import {
-  DIALOG_POPUP_CLASS,
-  OVERLAY_CLASS,
-  TONE_BANNER_CLASS,
-} from "@/constants/theme";
 import { formatReportMonth } from "@/lib/format";
 import { closedMonthOptions, lastClosedMonth } from "@/lib/reportMonth";
-import { cn } from "@/lib/utils";
+import NutritionReportBanner from "./NutritionReportBanner";
+import NutritionReportDialogFrame from "./NutritionReportDialogFrame";
 
 /**
  * Mounted only while the dialog is open, so every opening starts again from
@@ -27,6 +23,7 @@ import { cn } from "@/lib/utils";
  */
 function DialogBody({ establishmentId }: { establishmentId: string }) {
   const router = useRouter();
+  const monthFieldId = useId();
   const [month, setMonth] = useState(() => lastClosedMonth());
   const {
     report,
@@ -53,14 +50,11 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label
-          htmlFor="nutrition-report-month"
-          className="text-xs text-muted-foreground"
-        >
+        <label htmlFor={monthFieldId} className="text-xs text-muted-foreground">
           {COPY.monthLabel}
         </label>
         <select
-          id="nutrition-report-month"
+          id={monthFieldId}
           value={month}
           disabled={isBusy}
           onChange={(e) => setMonth(e.target.value)}
@@ -75,12 +69,9 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
       </div>
 
       {(loadError || generateError) && (
-        <p
-          role="alert"
-          className={`rounded-md border px-4 py-3 text-sm ${TONE_BANNER_CLASS.danger}`}
-        >
+        <NutritionReportBanner tone="danger">
           {generateError ?? loadError}
-        </p>
+        </NutritionReportBanner>
       )}
 
       {isLoading ? (
@@ -120,7 +111,7 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
             nativeButton={false}
             render={<Link href={href} />}
           >
-            {COPY.viewExisting}
+            {COPY.viewReport}
           </Button>
         ) : (
           <Button
@@ -152,31 +143,28 @@ export default function GenerateNutritionReportDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Backdrop
-          className={cn("fixed inset-0 z-[60]", OVERLAY_CLASS)}
-        />
-        <Dialog.Popup className={cn(DIALOG_POPUP_CLASS, "z-[70] max-w-md")}>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <Dialog.Title className="text-lg font-semibold">
-                {COPY.title}
-              </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground">
-                {COPY.description}
-              </Dialog.Description>
-            </div>
-            <Dialog.Close
-              aria-label={COPY.close}
-              className="mt-0.5 text-muted-foreground hover:text-foreground"
-            >
-              <X size={18} />
-            </Dialog.Close>
-          </div>
-          <DialogBody establishmentId={establishmentId} />
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <NutritionReportDialogFrame
+      open={open}
+      onOpenChange={onOpenChange}
+      widthClass="max-w-md"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <Dialog.Title className="text-lg font-semibold">
+            {COPY.title}
+          </Dialog.Title>
+          <Dialog.Description className="text-sm text-muted-foreground">
+            {COPY.description}
+          </Dialog.Description>
+        </div>
+        <Dialog.Close
+          aria-label={COPY.close}
+          className="mt-0.5 text-muted-foreground hover:text-foreground"
+        >
+          <X size={18} />
+        </Dialog.Close>
+      </div>
+      <DialogBody establishmentId={establishmentId} />
+    </NutritionReportDialogFrame>
   );
 }

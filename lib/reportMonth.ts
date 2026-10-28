@@ -2,9 +2,11 @@ import { argentineToday } from "@/lib/format";
 import { ReportMonth } from "@/types/nutritionReport";
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+/** "YYYY-MM": what is left of a "YYYY-MM-DD" day once the day is dropped. */
+const MONTH_KEY_LENGTH = "YYYY-MM".length;
 
 /** How many past months the month picker offers. */
-export const REPORT_MONTH_OPTIONS_COUNT = 24;
+const REPORT_MONTH_OPTIONS_COUNT = 24;
 
 const previousMonth = (month: ReportMonth): ReportMonth => {
   const [year, number] = month.split("-").map(Number);
@@ -18,7 +20,7 @@ const previousMonth = (month: ReportMonth): ReportMonth => {
  * calendar's current month. `today` is "YYYY-MM-DD".
  */
 export function lastClosedMonth(today = argentineToday()): ReportMonth {
-  return previousMonth(today.slice(0, 7));
+  return previousMonth(today.slice(0, MONTH_KEY_LENGTH));
 }
 
 /** A month is closed once the Argentine calendar has moved past it. */

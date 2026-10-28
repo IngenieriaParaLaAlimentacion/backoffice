@@ -138,7 +138,7 @@ describe("NutritionReportPanel", () => {
       within(dialog).queryByRole("button", { name: DIALOG.generate }),
     ).not.toBeInTheDocument();
     expect(
-      within(dialog).getByRole("button", { name: DIALOG.viewExisting }),
+      within(dialog).getByRole("button", { name: DIALOG.viewReport }),
     ).toHaveAttribute("href", nutritionReportHref(ESTABLISHMENT, "2026-09"));
     expect(puts).not.toHaveBeenCalled();
   });

@@ -41,48 +41,56 @@ export const NUTRITION_REPORT_LIST_PAGE_SIZE = 12;
 export const NUTRITION_REPORT_PDF_FALLBACK_FILENAME = (month: string) =>
   `reporte-nutricional-${month}.pdf`;
 
-export const NUTRITION_REPORT_TAB_PATH = "nutrition-report";
+const NUTRITION_REPORT_TAB_PATH = "nutrition-report";
+
+export const nutritionReportListHref = (establishmentId: string) =>
+  `/dashboard/establishments/${establishmentId}/${NUTRITION_REPORT_TAB_PATH}`;
 
 export const nutritionReportHref = (establishmentId: string, month: string) =>
-  `/dashboard/establishments/${establishmentId}/${NUTRITION_REPORT_TAB_PATH}/${month}`;
+  `${nutritionReportListHref(establishmentId)}/${month}`;
+
+/** Wording the list, the dialog and the report screen all use. */
+const SHARED_COPY = {
+  retry: "Reintentar",
+  generating: "Generando…",
+  viewReport: "Ver reporte",
+  downloadPdf: "Descargar PDF",
+  recalculate: "Volver a calcular",
+  pdfBlockedHint:
+    "El texto del reporte no está disponible: volvé a generarlo para poder descargar el PDF.",
+} as const;
 
 export const NUTRITION_REPORT_PAGE = {
+  ...SHARED_COPY,
   subtitle: (total: number) =>
     total === 1 ? "1 reporte generado" : `${total} reportes generados`,
   newReport: "Generar nuevo reporte",
   empty:
     "Todavía no se generó ningún reporte para este comedor. Generá el primero con el botón de arriba.",
-  columns: { month: "Mes", status: "Estado", createdAt: "Generado el" },
+  createdAt: "Generado el",
   summaryStatus: {
     generated: "Completo",
     unavailable: "Sin texto",
     not_applicable: "Sin datos",
   },
-  retry: "Reintentar",
   sortLabel: "Ordenar reportes",
   sortOptions: [
     { value: "month_desc", label: "Más recientes primero" },
     { value: "month_asc", label: "Más antiguos primero" },
   ] as { value: NutritionReportSortOrder; label: string }[],
   actionsMenuLabel: "Más acciones",
-  viewReport: "Ver reporte",
-  downloadPdf: "Descargar PDF",
-  recalculate: "Volver a calcular",
   recalculated: (month: string) => `Se completó el reporte de ${month}.`,
-  pdfBlockedHint:
-    "El texto del reporte no está disponible: volvé a generarlo para poder descargar el PDF.",
 } as const;
 
 export const NUTRITION_REPORT_DIALOG = {
+  ...SHARED_COPY,
   title: "Generar nuevo reporte",
   description: "Elegí el mes del que querés el reporte.",
   monthLabel: "Mes del reporte",
   checking: "Buscando si ya existe un reporte de este mes…",
   alreadyExists:
     "Ya existe un reporte de este mes. Podés abrirlo sin volver a generarlo.",
-  viewExisting: "Ver reporte",
   generate: "Generar reporte",
-  generating: "Generando…",
   generated: "Reporte generado.",
   opening: "Abriendo reporte…",
   generatingHint:
@@ -92,27 +100,22 @@ export const NUTRITION_REPORT_DIALOG = {
 } as const;
 
 export const NUTRITION_REPORT_DETAIL = {
+  ...SHARED_COPY,
   back: "Volver a reportes",
   title: (month: string) => `Reporte nutricional de ${month}`,
   notGenerated: "Todavía no se generó el reporte de este mes.",
   regenerateText: "Regenerar texto",
-  recalculate: "Volver a calcular",
   recalculating: "Calculando…",
   noDataHint:
     "Si se cargaron ingresos de alimentos después de generar este reporte, podés volver a calcularlo.",
-  generating: "Generando…",
   noData:
     "Sin datos: el comedor no tuvo ingresos de alimentos en este mes, por eso no hay déficits para mostrar.",
   summaryUnavailable:
     "El texto redactado por la IA no está disponible. Los datos calculados se muestran igual; podés volver a generar el texto.",
-  downloadPdf: "Descargar PDF",
   downloading: "Descargando…",
-  pdfBlockedHint:
-    "Para descargar el PDF, primero regenerá el texto del reporte.",
   indicatorLabel: "Adecuación media del mes",
   overviewTitle: "Resumen",
   conclusionTitle: "Conclusión",
-  retry: "Reintentar",
 } as const;
 
 /** Spanish names and units of the nutrients a report evaluates, as the backend prints them. */

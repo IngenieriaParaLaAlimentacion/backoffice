@@ -19,7 +19,7 @@ import {
   EstablishmentCharacterizationResponse,
   EstablishmentDashboardResponse,
 } from "@/types/establishment";
-import { NUTRITION_REPORT_TAB_PATH } from "@/constants/nutritionReport";
+import { nutritionReportListHref } from "@/constants/nutritionReport";
 import { useSession } from "@/context/SessionContext";
 import { Loader2 } from "lucide-react";
 
@@ -125,7 +125,7 @@ export default function EstablishmentLayout({
       ? [
           {
             label: ESTABLISHMENT_DETAIL_TABS.nutritionReport,
-            href: `${baseHref}/${NUTRITION_REPORT_TAB_PATH}`,
+            href: nutritionReportListHref(id),
           },
         ]
       : []),

@@ -283,17 +283,22 @@ export function formatTimeSinceMeasurement(
   return RELATIVE_MEASUREMENT_TIME.days(days);
 }
 
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
 /** A wait of `seconds` as "30 segundos", "5 minutos", "2 horas" or "3 días". */
 export function formatWaitDuration(seconds: number) {
   const plural = (count: number, one: string, many: string) =>
     `${count} ${count === 1 ? one : many}`;
   const rounded = Math.ceil(seconds);
-  if (rounded < 60) return plural(rounded, "segundo", "segundos");
-  const minutes = Math.ceil(rounded / 60);
-  if (minutes < 60) return plural(minutes, "minuto", "minutos");
-  const hours = Math.ceil(minutes / 60);
-  if (hours < 24) return plural(hours, "hora", "horas");
-  return plural(Math.ceil(hours / 24), "día", "días");
+  if (rounded < SECONDS_PER_MINUTE)
+    return plural(rounded, "segundo", "segundos");
+  const minutes = Math.ceil(rounded / SECONDS_PER_MINUTE);
+  if (minutes < MINUTES_PER_HOUR) return plural(minutes, "minuto", "minutos");
+  const hours = Math.ceil(minutes / MINUTES_PER_HOUR);
+  if (hours < HOURS_PER_DAY) return plural(hours, "hora", "horas");
+  return plural(Math.ceil(hours / HOURS_PER_DAY), "día", "días");
 }
 
 /** A report month "YYYY-MM" as "agosto de 2026". */

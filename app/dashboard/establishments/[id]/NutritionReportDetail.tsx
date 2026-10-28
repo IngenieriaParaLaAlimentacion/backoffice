@@ -11,12 +11,12 @@ import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
 import {
   NUTRITION_REPORT_DETAIL as COPY,
   NUTRITION_REPORT_NOTICE as NOTICE,
-  NUTRITION_REPORT_TAB_PATH,
+  nutritionReportListHref,
 } from "@/constants/nutritionReport";
-import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { formatPercentage, formatReportMonth } from "@/lib/format";
 import { humanizeReportText } from "@/lib/nutritionReportText";
 import { isClosedMonth } from "@/lib/reportMonth";
+import NutritionReportBanner from "./NutritionReportBanner";
 import NutritionReportNoticeDialog from "./NutritionReportNoticeDialog";
 import {
   ExcludedFoodsNotice,
@@ -29,24 +29,26 @@ import {
 } from "./NutritionReportSections";
 import { NutritionReportResponse } from "@/types/nutritionReport";
 
-const BANNER = "rounded-md border px-4 py-3 text-sm";
+/** Fades in, so arriving from the generate dialog does not cut the screen in. */
+const CARD_CLASS =
+  "min-w-0 flex-1 p-4 md:p-8 flex flex-col gap-6 animate-in fade-in duration-300";
 
 /** The report's content. The detailed sections are added on top of this. The
  * scope note is not part of it: it closes the screen, whatever the sections. */
 function ReportContent({ report }: { report: NutritionReportResponse }) {
   if (!report.has_data)
     return (
-      <p className={`${BANNER} ${TONE_BANNER_CLASS.warning}`} role="status">
+      <NutritionReportBanner tone="warning">
         {COPY.noData}
-      </p>
+      </NutritionReportBanner>
     );
 
   return (
     <div className="flex flex-col gap-8">
       {report.summary_status === "unavailable" && (
-        <p className={`${BANNER} ${TONE_BANNER_CLASS.warning}`} role="status">
+        <NutritionReportBanner tone="warning">
           {COPY.summaryUnavailable}
-        </p>
+        </NutritionReportBanner>
       )}
 
       <div className="flex flex-col gap-1">
@@ -128,7 +130,7 @@ export default function NutritionReportDetail({
   } = useNutritionReport(establishmentId, validMonth);
   const pdf = useNutritionReportPdf(establishmentId);
 
-  const listHref = `/dashboard/establishments/${establishmentId}/${NUTRITION_REPORT_TAB_PATH}`;
+  const listHref = nutritionReportListHref(establishmentId);
   const textUnavailable = report?.summary_status === "unavailable";
   // A month saved without intakes may have them now: the backend calculates it
   // again on request. If it came back empty again nothing on screen changes, so
@@ -143,7 +145,7 @@ export default function NutritionReportDetail({
 
   return (
     <div className="flex flex-1 p-4">
-      <Card className="min-w-0 flex-1 p-4 md:p-8 flex flex-col gap-6 animate-in fade-in duration-300">
+      <Card className={CARD_CLASS}>
         <div className="flex flex-col gap-3">
           <Button
             size="sm"
@@ -205,9 +207,9 @@ export default function NutritionReportDetail({
         <Separator />
 
         {(generateError || pdf.error) && (
-          <p role="alert" className={`${BANNER} ${TONE_BANNER_CLASS.danger}`}>
+          <NutritionReportBanner tone="danger">
             {generateError ?? pdf.error}
-          </p>
+          </NutritionReportBanner>
         )}
 
         <NutritionReportNoticeDialog
@@ -228,12 +230,9 @@ export default function NutritionReportDetail({
           </div>
         ) : loadError ? (
           <div className="flex flex-col items-start gap-2">
-            <p
-              role="alert"
-              className={`${BANNER} ${TONE_BANNER_CLASS.danger} w-full`}
-            >
+            <NutritionReportBanner tone="danger" className="w-full">
               {loadError}
-            </p>
+            </NutritionReportBanner>
             <Button size="sm" variant="outline" onClick={refetch}>
               {COPY.retry}
             </Button>

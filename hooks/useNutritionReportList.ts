@@ -11,7 +11,7 @@ import { SWR_CONFIG } from "@/lib/swr";
 import { NUTRITION_REPORT_LIST_PAGE_SIZE } from "@/constants/nutritionReport";
 import { nutritionReportsListKey } from "@/hooks/nutritionReportKeys";
 
-export const DEFAULT_REPORT_SORT_ORDER: NutritionReportSortOrder = "month_desc";
+const DEFAULT_REPORT_SORT_ORDER: NutritionReportSortOrder = "month_desc";
 
 /**
  * The reports already generated for a comedor, newest month first unless told

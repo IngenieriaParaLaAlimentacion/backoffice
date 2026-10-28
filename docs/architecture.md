@@ -402,8 +402,9 @@ reads, generates and downloads it.
   long, and the ficha's header would only push it down. Both are gated with
   `nutrition_reports.view`; the tab is also hidden in `(ficha)/layout.tsx` by
   `can(...)`.
-- **`GET` reads, `PUT` generates — and `PUT` always spends the AI quota**, even when it
-  answers with the report that was already saved. So nothing calls it on its own:
+- **`GET` reads, `PUT` generates — and every `PUT` counts toward the per-user AI usage
+  limit**, even when it answers with the report that was already saved or does not call
+  the AI at all (the backend's limiter runs before it knows). So nothing calls it on its own:
   `useNutritionReport` reads with `GET`, and `generate()` only runs from a button. The
   dialog looks the chosen month up first, so an existing report is opened for free
   instead of generated again. The same `PUT` rewrites only the text of a report whose

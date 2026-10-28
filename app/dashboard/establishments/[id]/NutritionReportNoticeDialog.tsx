@@ -3,8 +3,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { Button } from "@/components/ui/button";
 import { NUTRITION_REPORT_NOTICE as COPY } from "@/constants/nutritionReport";
-import { DIALOG_POPUP_CLASS, OVERLAY_CLASS } from "@/constants/theme";
-import { cn } from "@/lib/utils";
+import NutritionReportDialogFrame from "./NutritionReportDialogFrame";
 
 export type ReportNotice = { title: string; message: string };
 
@@ -21,28 +20,22 @@ export default function NutritionReportNoticeDialog({
   onClose: () => void;
 }) {
   return (
-    <Dialog.Root
+    <NutritionReportDialogFrame
       open={notice !== null}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
+      widthClass="max-w-sm"
     >
-      <Dialog.Portal>
-        <Dialog.Backdrop
-          className={cn("fixed inset-0 z-[60]", OVERLAY_CLASS)}
-        />
-        <Dialog.Popup className={cn(DIALOG_POPUP_CLASS, "z-[70] max-w-sm")}>
-          <Dialog.Title className="text-lg font-semibold">
-            {notice?.title}
-          </Dialog.Title>
-          <Dialog.Description className="text-sm text-muted-foreground">
-            {notice?.message}
-          </Dialog.Description>
-          <div className="flex justify-end">
-            <Dialog.Close render={<Button />}>{COPY.close}</Dialog.Close>
-          </div>
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+      <Dialog.Title className="text-lg font-semibold">
+        {notice?.title}
+      </Dialog.Title>
+      <Dialog.Description className="text-sm text-muted-foreground">
+        {notice?.message}
+      </Dialog.Description>
+      <div className="flex justify-end">
+        <Dialog.Close render={<Button />}>{COPY.close}</Dialog.Close>
+      </div>
+    </NutritionReportDialogFrame>
   );
 }

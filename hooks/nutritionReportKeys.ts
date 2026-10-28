@@ -20,7 +20,7 @@ export const nutritionReportsListKey = (
   sortOrder: NutritionReportSortOrder,
 ) => ["nutrition-reports", establishmentId, page, sortOrder] as const;
 
-export const nutritionReportsListMatcher =
+const nutritionReportsListMatcher =
   (establishmentId: string) => (key: unknown) =>
     Array.isArray(key) &&
     key[0] === "nutrition-reports" &&
