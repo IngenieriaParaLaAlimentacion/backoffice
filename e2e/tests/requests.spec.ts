@@ -10,9 +10,27 @@ import { RequestsPage } from "../pages/requests.page";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE,
   ESTABLISHMENTS_LIST_PAGE,
+  RELATION_STATUS_LABELS,
 } from "../../constants/establishments";
 import { EstablishmentsPage } from "../pages/establishments.page";
 import { installGeoref } from "../support/georef";
+import type { TestData } from "../support/api-data";
+
+async function expectListed(
+  api: TestData,
+  endpoint: string,
+  filters: Record<string, string>,
+  expected: Record<string, unknown>,
+): Promise<void> {
+  const response = await api.request(
+    "GET",
+    `${endpoint}?${new URLSearchParams(filters)}`,
+  );
+  expect(response.status()).toBe(200);
+  expect((await response.json()).items).toEqual(
+    expect.arrayContaining([expect.objectContaining(expected)]),
+  );
+}
 
 test.use({ role: "admin" });
 
@@ -43,15 +61,11 @@ test("approves an owned pending creation request into a persistent establishment
   await expect(list.row(own.name)).toBeVisible();
   await page.reload();
   await expect(list.row(own.name)).toBeVisible();
-  const reviewed = await api.request(
-    "GET",
-    `${LIST_ESTABLISHMENT_REQUESTS_ENDPOINT}?status=approved&search=${encodeURIComponent(own.name)}`,
-  );
-  expect(reviewed.status()).toBe(200);
-  expect((await reviewed.json()).items).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ id: own.id, status: "approved" }),
-    ]),
+  await expectListed(
+    api,
+    LIST_ESTABLISHMENT_REQUESTS_ENDPOINT,
+    { status: "approved", search: own.name },
+    { id: own.id, status: "approved" },
   );
 });
 
@@ -62,15 +76,11 @@ test("rejects an owned request without creating an establishment", async ({
 }) => {
   const own = await flow.establishmentRequest("reject");
   await new RequestsPage(page).rejectCreation(own.id, own.name);
-  const reviewed = await api.request(
-    "GET",
-    `${LIST_ESTABLISHMENT_REQUESTS_ENDPOINT}?status=rejected&search=${encodeURIComponent(own.name)}`,
-  );
-  expect(reviewed.status()).toBe(200);
-  expect((await reviewed.json()).items).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ id: own.id, status: "rejected" }),
-    ]),
+  await expectListed(
+    api,
+    LIST_ESTABLISHMENT_REQUESTS_ENDPOINT,
+    { status: "rejected", search: own.name },
+    { id: own.id, status: "rejected" },
   );
   const absent = await api.request(
     "GET",
@@ -102,19 +112,17 @@ test("activates a fresh worker, separately approves access, then revokes it from
     id: worker.id,
     status: "active",
   });
-  const pending = await api.request(
-    "GET",
-    `${ESTABLISHMENT_FIELD_WORKERS_ENDPOINT(own.id)}?relation_status=pending&search=${encodeURIComponent(worker.email)}`,
-  );
-  expect(pending.status()).toBe(200);
-  expect((await pending.json()).items).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ id: worker.id, relation_status: "pending" }),
-    ]),
+  await expectListed(
+    api,
+    ESTABLISHMENT_FIELD_WORKERS_ENDPOINT(own.id),
+    { relation_status: "pending", search: worker.email },
+    { id: worker.id, relation_status: "pending" },
   );
   await ui.approveAccess(worker.id, worker.email, own.name);
   await page.goto(`/dashboard/establishments/${own.id}/field-workers`);
-  await expect(ui.row(worker.email)).toContainText("Aprobado");
+  await expect(ui.row(worker.email)).toContainText(
+    RELATION_STATUS_LABELS.approved,
+  );
   await ui.revoke(worker.id, worker.email, own.id);
   await page.reload();
   await expect(
@@ -123,18 +131,10 @@ test("activates a fresh worker, separately approves access, then revokes it from
     }),
   ).toBeVisible();
   await expect(ui.row(worker.email)).toHaveCount(0);
-  const revoked = await api.request(
-    "GET",
-    `${ESTABLISHMENT_FIELD_WORKERS_ENDPOINT(own.id)}?relation_status=revoked&search=${encodeURIComponent(worker.email)}`,
-  );
-  expect(revoked.status()).toBe(200);
-  expect((await revoked.json()).items).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: worker.id,
-        user_status: "active",
-        relation_status: "revoked",
-      }),
-    ]),
+  await expectListed(
+    api,
+    ESTABLISHMENT_FIELD_WORKERS_ENDPOINT(own.id),
+    { relation_status: "revoked", search: worker.email },
+    { id: worker.id, user_status: "active", relation_status: "revoked" },
   );
 });
