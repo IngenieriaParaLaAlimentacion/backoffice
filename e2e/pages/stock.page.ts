@@ -231,7 +231,7 @@ export class StockPage {
     const dialog = this.page.getByRole("dialog");
     await expect(dialog).toContainText(comments);
     const row = dialog.getByRole("row").filter({
-      has: dialog.getByRole("cell", { name: food.name, exact: true }),
+      has: this.page.getByRole("cell", { name: food.name, exact: true }),
     });
     await expect(row).toHaveCount(1);
     await expect(row.getByRole("cell").nth(1)).toHaveText(
