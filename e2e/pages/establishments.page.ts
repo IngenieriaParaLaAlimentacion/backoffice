@@ -1,3 +1,4 @@
+import { waitForApi, matchesApiRequest } from "../support/api";
 import {
   ESTABLISHMENTS_ENDPOINT,
   ESTABLISHMENT_ENDPOINT,
@@ -46,11 +47,7 @@ export class EstablishmentsPage {
   ): Promise<EstablishmentResponse> {
     await this.page.getByRole("textbox", { name: /^Nombre\s*\*?$/ }).fill(name);
     await this.pickAddress(formattedAddress);
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === ESTABLISHMENTS_ENDPOINT &&
-        r.request().method() === "POST",
-    );
+    const saved = waitForApi(this.page, "POST", ESTABLISHMENTS_ENDPOINT);
     await this.page
       .getByRole("button", {
         name: CREATE_ESTABLISHMENT_PAGE.submitButton,
@@ -68,9 +65,8 @@ export class EstablishmentsPage {
     const loaded = this.page.waitForResponse((r) => {
       const url = new URL(r.url());
       return (
-        url.pathname === ESTABLISHMENTS_ENDPOINT &&
-        url.searchParams.get("search") === name &&
-        r.request().method() === "GET"
+        matchesApiRequest(r.request(), "GET", ESTABLISHMENTS_ENDPOINT) &&
+        url.searchParams.get("search") === name
       );
     });
     await this.page
@@ -113,11 +109,7 @@ export class EstablishmentsPage {
       })
       .click();
     await this.pickAddress(formattedAddress, dialog);
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === ESTABLISHMENT_ENDPOINT(id) &&
-        r.request().method() === "PATCH",
-    );
+    const saved = waitForApi(this.page, "PATCH", ESTABLISHMENT_ENDPOINT(id));
     await dialog
       .getByRole("button", {
         name: EDIT_ESTABLISHMENT_DIALOG.save,
