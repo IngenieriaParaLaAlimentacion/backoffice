@@ -7,6 +7,8 @@ import { FORBIDDEN_SCREEN } from "../../constants/permissions";
 import { ESTABLISHMENTS_LIST_PAGE } from "../../constants/establishments";
 import { SURVEYS_PAGE, SURVEY_FORM } from "../../constants/surveys";
 import { MenuPage } from "../pages/menu.page";
+import { SurveyListPage } from "../pages/survey-list.page";
+import { PENDING_REQUESTS_PAGE, USERS_PAGE } from "../../constants/users";
 
 for (const role of ["admin", "analyst"] as const) {
   test.describe(`${role} navigation`, () => {
@@ -20,8 +22,8 @@ for (const role of ["admin", "analyst"] as const) {
 test.describe("administrator controls", () => {
   test.use({ role: "admin" });
   for (const [path, heading] of [
-    ["/dashboard/requests", "Solicitudes de usuario"],
-    ["/dashboard/users", "Usuarios"],
+    ["/dashboard/requests", PENDING_REQUESTS_PAGE.title],
+    ["/dashboard/users", USERS_PAGE.title],
   ] as const) {
     test(`can enter ${path}`, async ({ page }) => {
       await page.goto(path);
@@ -58,18 +60,10 @@ test.describe("administrator controls", () => {
     api,
   }) => {
     const survey = await api.survey("admin-delete-affordance");
-    await page.goto("/dashboard/surveys");
-    await page
-      .getByPlaceholder(SURVEYS_PAGE.searchPlaceholder, { exact: true })
-      .fill(survey.name);
-    const row = page
-      .getByRole("row")
-      .filter({ has: page.getByText(survey.name, { exact: true }) });
-    await expect(row).toBeVisible();
-    await row
-      .getByRole("button", { name: SURVEYS_PAGE.actionsMenuLabel, exact: true })
-      .click();
-    await expect(page.getByRole("menu")).toBeVisible();
+    const list = new SurveyListPage(page);
+    await list.open();
+    await list.search(survey.name);
+    await list.openActions(survey.name);
     await expect(
       page.getByRole("menuitem", { name: SURVEY_FORM.delete, exact: true }),
     ).toBeVisible();
@@ -140,27 +134,16 @@ test.describe("analyst restrictions", () => {
     api,
   }) => {
     const survey = await api.survey("analyst-delete-affordance");
-    await page.goto("/dashboard/surveys");
-    await expect(
-      page.getByRole("heading", { name: SURVEYS_PAGE.title, exact: true }),
-    ).toBeVisible();
+    const list = new SurveyListPage(page);
+    await list.open();
     await expect(
       page.getByRole("button", {
         name: SURVEYS_PAGE.createSurvey,
         exact: true,
       }),
     ).toBeVisible();
-    await page
-      .getByPlaceholder(SURVEYS_PAGE.searchPlaceholder, { exact: true })
-      .fill(survey.name);
-    const row = page
-      .getByRole("row")
-      .filter({ has: page.getByText(survey.name, { exact: true }) });
-    await expect(row).toBeVisible();
-    await row
-      .getByRole("button", { name: SURVEYS_PAGE.actionsMenuLabel, exact: true })
-      .click();
-    await expect(page.getByRole("menu")).toBeVisible();
+    await list.search(survey.name);
+    await list.openActions(survey.name);
     await expect(
       page.getByRole("menuitem", { name: SURVEYS_PAGE.edit, exact: true }),
     ).toBeVisible();

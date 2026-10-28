@@ -52,7 +52,7 @@ let interrupted = null;
 let stackTouched = false;
 let lockOwned = false;
 let keepBackend = false;
-let composeFiles;
+let composeFile;
 
 const childEnv = {
   ...process.env,
@@ -264,26 +264,14 @@ async function backendSource() {
     2,
     "Exactly the two canonical files are required",
   );
-  composeFiles = [
-    path.join(upstream, "e2e/compose.yml"),
-    path.join(ROOT, "e2e/backend.override.yml"),
-  ];
+  composeFile = path.join(upstream, "e2e/compose.yml");
 }
 
 async function compose(args, options = {}) {
-  assert(composeFiles, "Canonical Compose was not resolved");
+  assert(composeFile, "Canonical Compose was not resolved");
   return run(
     "docker",
-    [
-      "compose",
-      "--project-name",
-      PROJECT,
-      "-f",
-      composeFiles[0],
-      "-f",
-      composeFiles[1],
-      ...args,
-    ],
+    ["compose", "--project-name", PROJECT, "-f", composeFile, ...args],
     options,
   );
 }

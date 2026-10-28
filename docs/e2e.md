@@ -4,7 +4,7 @@ The suite controls real Chromium against production Next and the real isolated b
 
 ## Setup
 
-Requirements: Node24, npm, Docker with Compose v2 (`up --wait` and multiple Compose files), private GHCR package-read access and available localhost ports8080/3001. The backend source repository is public; no source PAT is needed.
+Requirements: Node24, npm, Docker with Compose v2 (`up --wait`), private GHCR package-read access and available localhost ports8080/3001. The backend source repository is public; no source PAT is needed.
 
 ```sh
 npm ci
@@ -15,13 +15,29 @@ npm run e2e
 
 Before the first run, authenticate Docker to GHCR with an account permitted to read the backend package. Use a read:packages credential via Docker's documented stdin/credential helper, never commit it into `.env.e2e.local`. In Actions the consuming repository needs package Actions access and `packages:read`; the standard job token authenticates the registry. The immutable image/source pair in `e2e/backend.json` is the contract. An image-pull failure is a prerequisite failure, not successful browser coverage.
 
-The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/Redis/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
+The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
+
+The runner uses the canonical Compose file without a local overlay. Its environment selects `memory://` rate-limit storage, which is sufficient for the single backend process in this isolated stack.
+
+## Updating the backend version
+
+`e2e/backend.json` deliberately pins the published image and both canonical source files to one full backend commit. A moving `develop` image could change between runs while the Compose/environment files remain at an older revision. Keeping the image, source commit and SHA256 hashes together makes failures reproducible and exposes backend upgrades in review.
+
+After the backend image publication workflow succeeds for the intended commit, authenticate Docker to the registry and run:
+
+```sh
+node e2e/scripts/update-backend.mjs <full-40-character-backend-commit-sha>
+git diff -- e2e/backend.json
+npm run e2e:ci
+```
+
+The update command validates the full SHA, verifies that its published image manifest is readable, downloads `e2e/compose.yml` and `e2e/.env.e2e` from that exact commit, and computes their SHA256 hashes. It writes the manifest only after all checks succeed; it does not pull or start containers. Review the canonical Compose/environment changes between the old and new commits as well as the generated manifest, then commit the upgrade with its complete suite evidence. Do not substitute the moving `develop` tag or guess hashes. Normal test runs keep using the reviewed pin and reject mismatched source bytes.
 
 ## Reset and stop
 
 ```sh
 npm run e2e:reset
-# Leaves only this worktree's clean, seeded backend+PostgreSQL+Redis ready on8080.
+# Leaves only this worktree's clean, seeded backend+PostgreSQL ready on8080.
 npm run e2e:down
 ```
 
@@ -48,7 +64,7 @@ The E2E workflow runs on PRs targeting develop/main, pushes to main and manual d
 
 ## Scope and sessions
 
-The initial suite covers issue #105: real authentication, administrator/analyst permissions and session stability. API-created questionnaires are private test fixtures for permissions and authenticated reads; this suite does not claim survey CRUD, stock, measurement creation, mobile offline synchronization, mail delivery or third-party-provider coverage.
+The suite covers real authentication, administrator/analyst permissions and session stability. API-created questionnaires are private test fixtures for permissions and authenticated reads; this suite does not claim survey CRUD, stock, measurement creation, mobile offline synchronization, mail delivery or third-party-provider coverage.
 
 Authenticated tests import `test` from `e2e/fixtures`. Each worker lazily logs in once per role with its own device UUID. Role accounts come from environment variables; admin must be an actual admin. Each test still has a fresh Playwright context. A storageState fixture supplies the latest worker-owned in-memory credentials, and context teardown waits for refreshes and saves current browser storage before closing. No static authentication file is shared across workers or reused after its refresh token has been consumed.
 
@@ -58,7 +74,7 @@ API setup uses the current browser access token without refreshing. New test res
 
 ## Locators and Page Objects
 
-Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; this issue needs no new IDs or production-component edits. Use the shared `SignInPage` and `MenuPage` objects instead of duplicating login/menu mechanics.
+Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; these tests need no new IDs or production-component edits. Use the shared `SignInPage` and `MenuPage` objects instead of duplicating login/menu mechanics.
 
 Wait for a meaningful heading, loaded row, role-specific control or expected API result. Do not use fixed sleeps, `networkidle`, broad CSS classes or a negative assertion before proving the containing UI has loaded. Distinguish native `window.confirm` from app dialogs. A forbidden backoffice screen is rendered UI, while the backend independently returns HTTP403.
 
@@ -70,7 +86,7 @@ Acceptance requires five separate successful runs with no retry, failure, flaky 
 
 ## Quarantine and promotion
 
-Tag a documented unstable test with `@quarantine`; the baseline run excludes that tag and `@session-stress`. Session stress is selected explicitly by its separate proof/CI mode. The same PR must link the tracking issue, name the owner, record the reproduction and explain the temporary exclusion in the test comment. Do not quarantine any authentication/permission/stability acceptance case to call this issue complete. Do not add an intentionally failing example, `test.fixme`, silent skip or expected failure to manufacture a green baseline.
+Tag a documented unstable test with `@quarantine`; the baseline run excludes that tag and `@session-stress`. Session stress is selected explicitly by its separate proof/CI mode. The same PR must link the tracking issue, name the owner, record the reproduction and explain the temporary exclusion in the test comment. Do not quarantine any authentication/permission/stability acceptance case to claim complete coverage. Do not add an intentionally failing example, `test.fixme`, silent skip or expected failure to manufacture a green baseline.
 
 The initial suite adds no quarantined cases. Use the quarantine command when a real tagged case exists; an empty selection reports Playwright's no-tests-found result rather than acceptance coverage. Run quarantined cases separately using the documented quarantine command; its failures remain visible in that job/report. Remove the tag once the cause is fixed and the case passes repeatedly under the same parallel mode.
 
