@@ -71,7 +71,8 @@ export const generateNutritionReportAction = async (
     { method: "PUT" },
   );
 
-  if (!res.ok) throw toApiError(res.data, res.status);
+  // Only the 429s carry `Retry-After`, and only this call can produce them.
+  if (!res.ok) throw toApiError(res.data, res.status, res.headers);
 
   return res.data as NutritionReportResponse;
 };

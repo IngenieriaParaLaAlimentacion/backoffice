@@ -282,3 +282,16 @@ export function formatTimeSinceMeasurement(
   if (months >= 1) return RELATIVE_MEASUREMENT_TIME.months(months);
   return RELATIVE_MEASUREMENT_TIME.days(days);
 }
+
+/** A wait of `seconds` as "30 segundos", "5 minutos", "2 horas" or "3 días". */
+export function formatWaitDuration(seconds: number) {
+  const plural = (count: number, one: string, many: string) =>
+    `${count} ${count === 1 ? one : many}`;
+  const rounded = Math.ceil(seconds);
+  if (rounded < 60) return plural(rounded, "segundo", "segundos");
+  const minutes = Math.ceil(rounded / 60);
+  if (minutes < 60) return plural(minutes, "minuto", "minutos");
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return plural(hours, "hora", "horas");
+  return plural(Math.ceil(hours / 24), "día", "días");
+}
