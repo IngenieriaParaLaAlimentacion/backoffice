@@ -11,7 +11,17 @@ import type {
   EstablishmentApprovalResponse,
   PaginatedUsersResponse,
 } from "../../types/admin";
-import { ESTABLISHMENT_DASHBOARD_PAGE } from "../../constants/establishments";
+import {
+  ESTABLISHMENT_DASHBOARD_PAGE,
+  ESTABLISHMENT_REQUESTS_PAGE,
+  ESTABLISHMENT_REQUEST_REVIEW_PANEL as REVIEW_PANEL,
+} from "../../constants/establishments";
+import {
+  ESTABLISHMENT_ACCESS_REQUESTS_PAGE,
+  PENDING_REQUESTS_PAGE,
+} from "../../constants/users";
+import { EstablishmentsPage } from "./establishments.page";
+import { waitForApi } from "../support/api";
 
 export class RequestsPage {
   constructor(readonly page: Page) {}
@@ -30,7 +40,10 @@ export class RequestsPage {
       `/dashboard/requests/establishment-creations?search=${encodeURIComponent(name)}`,
     );
     await this.row(name)
-      .getByRole("button", { name: "Revisar", exact: true })
+      .getByRole("button", {
+        name: ESTABLISHMENT_REQUESTS_PAGE.reviewButton,
+        exact: true,
+      })
       .click();
     return this.page.getByRole("dialog");
   }
@@ -41,21 +54,20 @@ export class RequestsPage {
     address: string,
   ): Promise<EstablishmentApprovalResponse> {
     const dialog = await this.creation(name);
+    await new EstablishmentsPage(this.page).pickAddress(address, dialog);
     await dialog
-      .getByPlaceholder("Ej: Av. Mitre, Avellaneda Buenos Aires", {
-        exact: true,
-      })
-      .fill(address);
-    await dialog.locator("li").filter({ hasText: address }).click();
-    await dialog.getByRole("button", { name: "Aprobar", exact: true }).click();
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname ===
-          APPROVE_ESTABLISHMENT_REQUEST_ENDPOINT(id) &&
-        r.request().method() === "PATCH",
+      .getByRole("button", { name: REVIEW_PANEL.approveLabel, exact: true })
+      .click();
+    const saved = waitForApi(
+      this.page,
+      "PATCH",
+      APPROVE_ESTABLISHMENT_REQUEST_ENDPOINT(id),
     );
     await dialog
-      .getByRole("button", { name: "Confirmar alta", exact: true })
+      .getByRole("button", {
+        name: REVIEW_PANEL.approveConfirmLabel,
+        exact: true,
+      })
       .click();
     const response = await saved;
     expect(response.status()).toBe(200);
@@ -66,20 +78,24 @@ export class RequestsPage {
 
   async rejectCreation(id: string, name: string) {
     const dialog = await this.creation(name);
-    await dialog.getByRole("button", { name: "Rechazar", exact: true }).click();
     await dialog
-      .getByPlaceholder("Ej: Datos incompletos, comedor duplicado...", {
+      .getByRole("button", { name: REVIEW_PANEL.rejectLabel, exact: true })
+      .click();
+    await dialog
+      .getByPlaceholder(REVIEW_PANEL.rejectReasonPlaceholder, {
         exact: true,
       })
       .fill("E2E fictional request rejected");
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname ===
-          REJECT_ESTABLISHMENT_REQUEST_ENDPOINT(id) &&
-        r.request().method() === "PATCH",
+    const saved = waitForApi(
+      this.page,
+      "PATCH",
+      REJECT_ESTABLISHMENT_REQUEST_ENDPOINT(id),
     );
     await dialog
-      .getByRole("button", { name: "Confirmar rechazo", exact: true })
+      .getByRole("button", {
+        name: REVIEW_PANEL.rejectConfirmLabel,
+        exact: true,
+      })
       .click();
     expect((await saved).status()).toBe(204);
     await expect(dialog).toBeHidden();
@@ -126,21 +142,27 @@ export class RequestsPage {
       current += 1;
     }
     await this.row(email)
-      .getByRole("button", { name: "Revisar", exact: true })
+      .getByRole("button", { name: PENDING_REQUESTS_PAGE.review, exact: true })
       .click();
     const dialog = this.page.getByRole("dialog");
     await expect(dialog.getByText(email, { exact: true })).toBeVisible();
     // Leave every establishment undecided: this transition activates only the account.
     await dialog
-      .getByRole("button", { name: "Aceptar solicitud", exact: true })
+      .getByRole("button", {
+        name: PENDING_REQUESTS_PAGE.acceptRequest,
+        exact: true,
+      })
       .click();
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === APPROVE_FIELD_WORKER_ENDPOINT(id) &&
-        r.request().method() === "PATCH",
+    const saved = waitForApi(
+      this.page,
+      "PATCH",
+      APPROVE_FIELD_WORKER_ENDPOINT(id),
     );
     await dialog
-      .getByRole("button", { name: "Confirmar aceptación", exact: true })
+      .getByRole("button", {
+        name: PENDING_REQUESTS_PAGE.acceptConfirm,
+        exact: true,
+      })
       .click();
     const responseSaved = await saved;
     expect(responseSaved.status()).toBe(204);
@@ -155,23 +177,35 @@ export class RequestsPage {
       `/dashboard/requests/establishments?search=${encodeURIComponent(email)}`,
     );
     await this.row(email)
-      .getByRole("button", { name: "Revisar", exact: true })
+      .getByRole("button", {
+        name: ESTABLISHMENT_ACCESS_REQUESTS_PAGE.reviewButton,
+        exact: true,
+      })
       .click();
     const dialog = this.page.getByRole("dialog");
-    const card = dialog.locator("div.rounded-lg.border").filter({
-      has: this.page.getByText(establishment, { exact: true }),
+    const card = dialog.getByRole("group", {
+      name: establishment,
+      exact: true,
     });
-    await card.getByRole("button", { name: "Aceptar", exact: true }).click();
-    await dialog
-      .getByRole("button", { name: "Aplicar cambios", exact: true })
+    await card
+      .getByRole("button", { name: PENDING_REQUESTS_PAGE.accept, exact: true })
       .click();
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === APPROVE_ESTABLISHMENTS_ENDPOINT(id) &&
-        r.request().method() === "PATCH",
+    await dialog
+      .getByRole("button", {
+        name: ESTABLISHMENT_ACCESS_REQUESTS_PAGE.apply,
+        exact: true,
+      })
+      .click();
+    const saved = waitForApi(
+      this.page,
+      "PATCH",
+      APPROVE_ESTABLISHMENTS_ENDPOINT(id),
     );
     await dialog
-      .getByRole("button", { name: "Confirmar cambios", exact: true })
+      .getByRole("button", {
+        name: ESTABLISHMENT_ACCESS_REQUESTS_PAGE.applyConfirm,
+        exact: true,
+      })
       .click();
     expect((await saved).status()).toBe(204);
     await expect(dialog).toBeHidden();
@@ -181,20 +215,27 @@ export class RequestsPage {
     await this.page.goto(
       `/dashboard/establishments/${establishmentId}/field-workers`,
     );
-    await this.row(email).getByTitle("Más acciones", { exact: true }).click();
+    await this.row(email)
+      .getByTitle(ESTABLISHMENT_DASHBOARD_PAGE.actionsMenuLabel, {
+        exact: true,
+      })
+      .click();
     const confirmation = this.page
       .waitForEvent("dialog")
       .then(async (dialog) => {
         expect(dialog.type()).toBe("confirm");
         await dialog.accept();
       });
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === REVOKE_ESTABLISHMENTS_ENDPOINT(id) &&
-        r.request().method() === "PATCH",
+    const saved = waitForApi(
+      this.page,
+      "PATCH",
+      REVOKE_ESTABLISHMENTS_ENDPOINT(id),
     );
     await this.page
-      .getByRole("menuitem", { name: "Quitar acceso", exact: true })
+      .getByRole("menuitem", {
+        name: ESTABLISHMENT_DASHBOARD_PAGE.removeAccess,
+        exact: true,
+      })
       .click();
     await confirmation;
     expect((await saved).status()).toBe(204);
