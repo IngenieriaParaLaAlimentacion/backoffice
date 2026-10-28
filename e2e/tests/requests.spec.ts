@@ -16,7 +16,7 @@ import { installGeoref } from "../support/georef";
 
 test.use({ role: "admin" });
 
-test("CA2 approves an owned pending creation request into a persistent establishment", async ({
+test("approves an owned pending creation request into a persistent establishment", async ({
   page,
   flow,
   api,
@@ -55,7 +55,7 @@ test("CA2 approves an owned pending creation request into a persistent establish
   );
 });
 
-test("CA2 rejects an owned request without creating an establishment", async ({
+test("rejects an owned request without creating an establishment", async ({
   page,
   flow,
   api,
@@ -87,7 +87,7 @@ test("CA2 rejects an owned request without creating an establishment", async ({
   await expect(list.row(own.name)).toHaveCount(0);
 });
 
-test("CA2 activates a fresh worker, separately approves access, then revokes it from ficha", async ({
+test("activates a fresh worker, separately approves access, then revokes it from ficha", async ({
   page,
   flow,
   api,

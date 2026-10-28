@@ -1,7 +1,8 @@
 import { test as base, expect } from "./fixtures";
 import { FlowData } from "./support/flow-data";
+import { expectLoaded } from "./support/ui";
 import { e2eEnv } from "./support/env";
-import { readDeviceId, RefreshTracker } from "./support/session";
+import { saveCheckpoint, RefreshTracker } from "./support/session";
 
 export const test = base.extend<{ flow: FlowData }>({
   flow: async (
@@ -10,9 +11,7 @@ export const test = base.extend<{ flow: FlowData }>({
     info,
   ) => {
     // Depend on page so the scenario's real application auth has settled first.
-    await expect(
-      page.getByRole("heading", { name: "¡Bienvenido!", exact: true }),
-    ).toBeVisible();
+    await expectLoaded(page);
     if (role === "admin") {
       await provide(new FlowData(context, info));
       return;
@@ -26,17 +25,10 @@ export const test = base.extend<{ flow: FlowData }>({
     try {
       const adminPage = await adminContext.newPage();
       await adminPage.goto("/dashboard");
-      await expect(
-        adminPage.getByRole("heading", { name: "¡Bienvenido!", exact: true }),
-      ).toBeVisible();
+      await expectLoaded(adminPage);
       await provide(new FlowData(adminContext, info));
       if (info.status === "passed") {
-        const state = await tracker.checkpoint();
-        expect(
-          readDeviceId(state),
-          "admin fixture keeps the worker device",
-        ).toBe(session.deviceId);
-        session.state = state;
+        await saveCheckpoint(tracker, session);
       }
     } finally {
       tracker.dispose();

@@ -19,6 +19,7 @@ import type { AuthTokens } from "../../types/auth";
 import type { RefreshTokenResponse } from "../../lib/types";
 import type { ProfileResponse } from "../../types/user";
 import { e2eEnv, type TestRole } from "./env";
+import { matchesApiRequest } from "./api";
 
 export type BrowserState = Awaited<ReturnType<BrowserContext["storageState"]>>;
 export type WorkerSession = {
@@ -130,10 +131,7 @@ export class WorkerSessions {
 }
 
 function isRefresh(request: Request): boolean {
-  return (
-    request.method() === "POST" &&
-    new URL(request.url()).pathname === REFRESH_ENDPOINT
-  );
+  return matchesApiRequest(request, "POST", REFRESH_ENDPOINT);
 }
 
 export class RefreshTracker {
@@ -231,4 +229,15 @@ export class RefreshTracker {
     this.context.off("requestfailed", this.onFailed);
     this.context.off("response", this.onResponse);
   }
+}
+
+export async function saveCheckpoint(
+  tracker: RefreshTracker,
+  session: WorkerSession,
+): Promise<void> {
+  const state = await tracker.checkpoint();
+  expect(readDeviceId(state), "worker device identity is retained").toBe(
+    session.deviceId,
+  );
+  session.state = state;
 }

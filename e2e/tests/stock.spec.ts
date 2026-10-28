@@ -19,7 +19,7 @@ import type {
   PaginatedFoodStockResponse,
 } from "../../types/establishment";
 
-test.describe("CA4 stock", () => {
+test.describe("stock", () => {
   test.use({ role: "admin" });
 
   test("intake and outflow persist; excess is rejected without a movement", async ({

@@ -11,13 +11,25 @@ export class TestData {
   private readonly prefix: string;
 
   constructor(
-    private readonly context: BrowserContext,
+    protected readonly context: BrowserContext,
     info: TestInfo,
   ) {
-    const run = (process.env.E2E_RUN_ID ?? "local")
-      .replace(/[^a-zA-Z0-9-]/g, "")
-      .slice(0, 16);
-    this.prefix = `e2e-${run}-w${info.workerIndex}-r${info.retry}-${randomUUID()}`;
+    const run =
+      (process.env.E2E_RUN_ID ?? "local")
+        .replace(/[^a-zA-Z0-9-]/g, "")
+        .slice(0, 12) || "local";
+    this.prefix = `e2e-${run}-w${info.workerIndex}-r${info.retry}`;
+  }
+
+  name(label: string, limit = 100): string {
+    if (!Number.isInteger(limit) || limit < 40) {
+      throw new Error(
+        "Unique fixture names require an integer limit of at least 40",
+      );
+    }
+    const suffix = randomUUID().replaceAll("-", "");
+    const head = `${this.prefix}-${label.replace(/[^a-zA-Z0-9-]/g, "-")}`;
+    return `${head.slice(0, limit - suffix.length - 1)}-${suffix}`;
   }
 
   async request(
@@ -42,7 +54,7 @@ export class TestData {
 
   async survey(label = "permission"): Promise<SurveyResponse> {
     const body: SurveyCreateRequest = {
-      name: `${this.prefix}-${label}`.slice(0, 120),
+      name: this.name(label, 120),
       description: "Owned by one E2E test; fictional data",
       response_target: "anonymous",
       requires_response_number: false,
