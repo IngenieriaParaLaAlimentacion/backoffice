@@ -1,8 +1,9 @@
 import { test as base, expect, type BrowserContext } from "@playwright/test";
 import { e2eEnv, type TestRole } from "./support/env";
 import { TestData } from "./support/api-data";
+import { expectLoaded } from "./support/ui";
 import {
-  readDeviceId,
+  saveCheckpoint,
   RefreshTracker,
   WorkerSessions,
 } from "./support/session";
@@ -51,12 +52,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     } finally {
       try {
         if (info.status === "passed") {
-          const state = await tracker.checkpoint();
-          expect(
-            readDeviceId(state) === session.deviceId,
-            "worker device identity is retained",
-          ).toBe(true);
-          session.state = state;
+          await saveCheckpoint(tracker, session);
         }
       } finally {
         tracker.dispose();
@@ -66,9 +62,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   },
   page: async ({ page }, provide) => {
     await page.goto("/dashboard");
-    await expect(
-      page.getByRole("heading", { name: "¡Bienvenido!", exact: true }),
-    ).toBeVisible();
+    await expectLoaded(page);
     await provide(page);
   },
   api: async ({ context }, provide, info) => {

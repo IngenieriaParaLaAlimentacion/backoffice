@@ -15,17 +15,33 @@ npm run e2e
 
 Before the first run, authenticate Docker to GHCR with an account permitted to read the backend package. Use a read:packages credential via Docker's documented stdin/credential helper, never commit it into `.env.e2e.local`. In Actions the consuming repository needs package Actions access and `packages:read`; the standard job token authenticates the registry. The immutable image/source pair in `e2e/backend.json` is the contract. An image-pull failure is a prerequisite failure, not successful browser coverage.
 
-The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/Redis/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
+The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
 
-Local baseline selection uses `E2E_GREP` (a regular expression matched against full test titles). `E2E_REPEAT=2` repeats every selected test twice inside one owned backend/database lifetime, with fresh per-test contexts and unique fixtures. These controls are rejected in CI and every non-baseline mode; do not persist them in a shared env file. The runner records `selection` and `repeatEach` in its summary.
+The canonical backend uses in-memory rate-limit counters in its single process; no Redis service is needed.
 
-Example: `E2E_GREP='CA1' npm run e2e` runs the establishment group. A full unique test-title pattern runs that case alone. `E2E_GREP='CA1|CA2' E2E_REPEAT=2 npm run e2e` checks repeated independent records in the same disposable database. `E2E_REPEAT=2 npm run e2e` repeats the entire baseline. Ordinary `npm run e2e:ci` remains the complete baseline plus five strict session proof runs.
+Local baseline selection forwards Playwright's native `--grep <pattern>` and `--repeat-each <count>` arguments. These are accepted only for a local baseline; CI and stress/quarantine modes reject selection arguments so their coverage cannot be narrowed. Repeated tests share one owned backend/database lifetime but receive fresh browser contexts and unique data.
+
+Example: `npm run e2e -- --grep establishments` runs establishment journeys. A unique full-title pattern selects one case. `npm run e2e -- --grep establishments --repeat-each 2` checks repeated independent records. `npm run e2e -- --repeat-each 2` repeats the entire baseline. Ordinary `npm run e2e:ci` remains the complete baseline plus five strict session proof runs.
+
+## Updating the backend version
+
+`e2e/backend.json` deliberately pins the published image and both canonical source files to one full backend commit. A moving `develop` image could change between runs while the Compose/environment files remain at an older revision. Keeping the image, source commit and SHA256 hashes together makes failures reproducible and exposes backend upgrades in review.
+
+After the backend image publication workflow succeeds for the intended commit, authenticate Docker to the registry and run:
+
+```sh
+node e2e/scripts/update-backend.mjs <full-40-character-backend-commit-sha>
+git diff -- e2e/backend.json
+npm run e2e:ci
+```
+
+The update command validates the full SHA, verifies that its published image manifest is readable, downloads `e2e/compose.yml` and `e2e/.env.e2e` from that exact commit, and computes their SHA256 hashes. It writes the manifest only after all checks succeed; it does not pull or start containers. Review the canonical Compose/environment changes between the old and new commits as well as the generated manifest, then commit the upgrade with its complete suite evidence. Do not substitute the moving `develop` tag or guess hashes. Normal test runs keep using the reviewed pin and reject mismatched source bytes.
 
 ## Reset and stop
 
 ```sh
 npm run e2e:reset
-# Leaves only this worktree's clean, seeded backend+PostgreSQL+Redis ready on8080.
+# Leaves only this worktree's clean, seeded backend+PostgreSQL ready on8080.
 npm run e2e:down
 ```
 
@@ -52,7 +68,7 @@ The E2E workflow runs on PRs targeting develop/main, pushes to main and manual d
 
 ## Scope and sessions
 
-The baseline covers issue #105 authentication, administrator/analyst permissions and session stability, plus issue #106 CA1 establishment creation, required-name validation, general editing and analyst characterization, CA2 creation-request review, account/access approval and access revocation, CA3 FIES-template authoring, status, duplication and analyst response downloads, CA4 manual stock intake, outflow, history and excess-quantity validation, and CA5 inclusive subject birth-date filters, all-row CSV export and measurement evolution. Every mutable establishment, request, field-worker account, survey, subject and measurement belongs to one test. Subject and measurement creation use real API preparation; browser creation of these records is not claimed. Mobile synchronization, mail delivery and real external provider availability remain outside these journeys.
+The baseline covers authentication, administrator/analyst permissions and session stability, plus establishment creation, required-name validation, general editing and analyst characterization, creation-request review, account/access approval and access revocation, FIES-template authoring, status, duplication and analyst response downloads, manual stock intake, outflow, history and excess-quantity validation, and inclusive subject birth-date filters, all-row CSV export and measurement evolution. Every mutable establishment, request, field-worker account, survey, subject and measurement belongs to one test. Subject and measurement creation use real API preparation; browser creation of these records is not claimed. Mobile synchronization, mail delivery and real external provider availability remain outside these journeys.
 
 Authenticated tests import `test` from `e2e/fixtures`. Each worker lazily logs in once per role with its own device UUID. Role accounts come from environment variables; admin must be an actual admin. Each test still has a fresh Playwright context. A storageState fixture supplies the latest worker-owned in-memory credentials, and context teardown waits for refreshes and saves current browser storage before closing. No static authentication file is shared across workers or reused after its refresh token has been consumed.
 
@@ -64,7 +80,7 @@ Names include the invocation, worker, retry and an intact random UUID. Each case
 
 Subject preparation uses a fresh client UUID and a random DNI from 1,000,000 through 89,999,999, below the reference-data range. It retries only the canonical duplicate-DNI conflict, at most five times with the same client UUID; all other API errors fail immediately. Measurement preparation uses a fresh UUID for every record.
 
-CA5 checks inclusive calendar birth-date bounds and exports the full filtered subject total beyond the visible first page. Its private establishment city isolates measurement observations. Measurement instants use explicit UTC timestamps; displayed dates follow the application's Argentine time conversion. The evolution journey checks three persisted points for its own subject.
+checks inclusive calendar birth-date bounds and exports the full filtered subject total beyond the visible first page. Its private establishment city isolates measurement observations. Measurement instants use explicit UTC timestamps; displayed dates follow the application's Argentine time conversion. The evolution journey checks three persisted points for its own subject.
 
 The web overlay sets `ENVIRONMENT=development` only for the HTTP backend so newly registered pending field workers are email-verified and visible for admin review. Migration and reference seed retain canonical `e2e`. Email delivery remains disabled and untested.
 
@@ -72,26 +88,28 @@ Only GET requests to `https://apis.datos.gob.ar/georef/api/direcciones` are fulf
 
 Stock coverage creates real intake and outflow through the UI, then checks the persisted balance and movement history. An excessive outflow is rejected by the current dialog validation: the test checks its visible error, no mutation POST and no new history row. This covers local validation, not the backend's separate concurrent-update HTTP409 race.
 
-The current FIES-template authoring UI omits `instrument_type`, so the survey it creates persists as `custom`. CA3 checks its template questions, numbering, status and duplication; it does not claim scoring for that UI-created record. A separate private API-created survey explicitly uses canonical `instrument_type=fies` and owns its responses for analyst read/export checks.
+The current FIES-template authoring UI omits `instrument_type`, so the survey it creates persists as `custom`. checks its template questions, numbering, status and duplication; it does not claim scoring for that UI-created record. A separate private API-created survey explicitly uses canonical `instrument_type=fies` and owns its responses for analyst read/export checks.
 
-Downloads register both real HTTP-response and browser-download waits before clicking. Filename must equal the server's Content-Disposition filename, and the saved file must be nonempty. CSV actual rows, including rows beyond the first page, must equal both X-Export-Row-Count and the real filtered API listing total. Survey XLSX has no count header: the count-only interpretation counts `Respuestas` rows (excluding its header) against the filtered response-list total, without checking cell values or modifying the API. The user explicitly confirmed this count-only interpretation; cell values and backend changes are excluded. The test-only fflate dependency extracts the ZIP; browser-native XML parsing finds the named worksheet.
+Downloads register both real HTTP-response and browser-download waits before clicking. Filename must equal the server's Content-Disposition filename, and the saved file must be nonempty. CSV actual rows, including rows beyond the first page, must equal both X-Export-Row-Count and the real filtered API listing total. Survey XLSX has no count header: the count-only interpretation counts `Respuestas` rows (excluding its header) against the filtered response-list total, without checking cell values or modifying the API. Cell values are outside the count-only assertions. The test-only fflate dependency extracts the ZIP; browser-native XML parsing finds the named worksheet.
 
 ## Locators and Page Objects
 
-Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; this issue needs no new IDs or production-component edits. Use the shared `SignInPage` and `MenuPage` objects instead of duplicating login/menu mechanics.
+Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; these journeys need no new IDs. The Georef placeholder is shared with the provider through a constant without changing its behavior. Use the shared `SignInPage`, `MenuPage` and `SurveyListPage` objects instead of duplicating login/menu mechanics.
 
 Wait for a meaningful heading, loaded row, role-specific control or expected API result. Do not use fixed sleeps, `networkidle`, broad CSS classes or a negative assertion before proving the containing UI has loaded. Distinguish native `window.confirm` from app dialogs. A forbidden backoffice screen is rendered UI, while the backend independently returns HTTP403.
 
 ## Stability evidence
 
-The baseline contains thirty-five cases: eight auth, fifteen permission, four CA1 establishment, three CA2 request, two CA3 survey, one CA4 stock and two CA5 subject/measurement cases; it excludes stress and quarantine tags. The separate `@session-stress` selection contains exactly ten cases. With two actual workers, each case uses a new context, creates a private API record, reloads the real page, observes at least three successful refreshes, confirms two protected reads and rejects replay of the consumed refresh token. Nonsecret `session-proof` attachments report role, worker/parallel index, login count, refresh count and protected-read count; they never contain tokens or passwords.
+The baseline contains thirty-five cases: eight auth, fifteen permission, four establishment, three request, two survey, one stock and two subject/measurement cases; it excludes stress and quarantine tags. The separate `@session-stress` selection contains exactly ten cases. With two actual workers, each case uses a new context, creates a private API record, reloads the real page, observes at least three successful refreshes, confirms two protected reads and rejects replay of the consumed refresh token. Nonsecret `session-proof` attachments report role, worker/parallel index, login count, refresh count and protected-read count; they never contain tokens or passwords.
 
 Acceptance requires five separate successful runs with no retry, failure, flaky result or skip. A command configured with two workers is not evidence that both workers actually executed cases; the runner checks their result metadata. The default same-role proof uses admin; analyst can be selected explicitly with E2E_STRESS_ROLE.
 
 ## Quarantine and promotion
 
-Tag a documented unstable test with `@quarantine`; the baseline run excludes that tag and `@session-stress`. Session stress is selected explicitly by its separate proof/CI mode. The same PR must link the tracking issue, name the owner, record the reproduction and explain the temporary exclusion in the test comment. Do not quarantine any authentication/permission/stability acceptance case to call this issue complete. Do not add an intentionally failing example, `test.fixme`, silent skip or expected failure to manufacture a green baseline.
+Tag a documented unstable test with `@quarantine`; the baseline run excludes that tag and `@session-stress`. Session stress is selected explicitly by its separate proof/CI mode. The same PR must link the tracking issue, name the owner, record the reproduction and explain the temporary exclusion in the test comment. Do not quarantine any authentication/permission/stability acceptance case to report acceptance. Do not add an intentionally failing example, `test.fixme`, silent skip or expected failure to manufacture a green baseline.
 
 The initial suite adds no quarantined cases. Use the quarantine command when a real tagged case exists; an empty selection reports Playwright's no-tests-found result rather than acceptance coverage. Run quarantined cases separately using the documented quarantine command; its failures remain visible in that job/report. Remove the tag once the cause is fixed and the case passes repeatedly under the same parallel mode.
 
 The E2E job is not required initially. Propose making it required only after ten consecutive complete green develop runs with no quarantined acceptance case and no flaky retry being counted as a pass. Include report links and agreement from the maintainers; branch-protection settings are not changed by this PR. A failing non-required job still fails normally: do not use continue-on-error to mislabel failure as success.
+
+The Georef suggestions use legacy `ul/li` markup without option roles. The locator starts from the shared-placeholder input and selects the exact test-owned address from its sibling list. Listbox/option accessibility semantics are a separate change.

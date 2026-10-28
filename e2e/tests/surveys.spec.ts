@@ -28,7 +28,7 @@ function structure(
     }));
 }
 
-test.describe("CA3 authoring", () => {
+test.describe("authoring", () => {
   test.use({ role: "admin" });
 
   test("creates FIES-template structure, edits its name, changes status and duplicates the paused source", async ({
@@ -98,7 +98,7 @@ test.describe("CA3 authoring", () => {
   });
 });
 
-test.describe("CA3 analyst responses", () => {
+test.describe("analyst responses", () => {
   test.use({ role: "analyst" });
 
   test("reads owned FIES responses, opens a real detail and downloads matching XLSX row count", async ({

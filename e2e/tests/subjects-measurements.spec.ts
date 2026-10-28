@@ -4,7 +4,7 @@ import { assertDownload } from "../support/download";
 import { SUBJECTS_EXPORT_ENDPOINT } from "../../constants/api";
 import { EXPORT } from "../../constants/exports";
 
-test.describe("CA5 subjects and measurements", () => {
+test.describe("subjects and measurements", () => {
   test.use({ role: "analyst" });
 
   test("birth bounds are inclusive and CSV exports all matching pages", async ({
