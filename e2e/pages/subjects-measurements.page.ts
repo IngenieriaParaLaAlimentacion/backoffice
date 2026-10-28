@@ -1,3 +1,4 @@
+import { matchesApiRequest } from "../support/api";
 import type { Response, Page } from "@playwright/test";
 import { expect } from "../flow-fixtures";
 import {
@@ -36,9 +37,8 @@ export class SubjectsMeasurementsPage {
     return this.page.waitForResponse((response) => {
       const url = new URL(response.url());
       return (
-        response.request().method() === "GET" &&
+        matchesApiRequest(response.request(), "GET", path) &&
         response.status() === 200 &&
-        url.pathname === path &&
         Object.entries(params).every(
           ([key, value]) => url.searchParams.get(key) === value,
         )
@@ -204,10 +204,11 @@ export class SubjectsMeasurementsPage {
   ) {
     const response = this.page.waitForResponse(
       (result) =>
-        result.request().method() === "GET" &&
-        result.status() === 200 &&
-        new URL(result.url()).pathname ===
+        matchesApiRequest(
+          result.request(),
+          "GET",
           SUBJECT_EVOLUTION_ENDPOINT(subject.id),
+        ) && result.status() === 200,
     );
     // Three measurement rows share this subject; choose the top chronological row explicitly.
     const matching = this.rows.filter({ hasText: `(${subject.dni})` });
@@ -232,12 +233,18 @@ export class SubjectsMeasurementsPage {
     await expect(
       dialog.getByText(MEASUREMENTS_PAGE.detail.chartTitle, { exact: true }),
     ).toBeVisible();
-    for (const series of ["Peso (kg)", "Talla (cm)", "IMC"]) {
-      await expect(
-        dialog
-          .getByText(series, { exact: true })
-          .and(dialog.locator(".recharts-legend-item-text")),
-      ).toBeVisible();
+    const legend = dialog
+      .getByRole("region", {
+        name: MEASUREMENTS_PAGE.detail.chartTitle,
+        exact: true,
+      })
+      .getByRole("list");
+    for (const series of [
+      MEASUREMENTS_PAGE.columns.weight,
+      MEASUREMENTS_PAGE.columns.height,
+      MEASUREMENTS_PAGE.columns.bmi,
+    ]) {
+      await expect(legend.getByText(series, { exact: true })).toBeVisible();
     }
     return data;
   }
