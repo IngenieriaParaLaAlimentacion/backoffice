@@ -279,7 +279,16 @@ async function compose(args, options = {}) {
   assert(composeFile, "Canonical Compose was not resolved");
   return run(
     "docker",
-    ["compose", "--project-name", PROJECT, "-f", composeFile, ...args],
+    [
+      "compose",
+      "--project-name",
+      PROJECT,
+      "-f",
+      composeFile,
+      "-f",
+      path.join(ROOT, "e2e/backend.override.yml"),
+      ...args,
+    ],
     options,
   );
 }

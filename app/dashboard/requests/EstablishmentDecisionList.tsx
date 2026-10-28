@@ -34,6 +34,8 @@ export default function EstablishmentDecisionList({
         return (
           <div
             key={est.id}
+            role="group"
+            aria-label={est.name}
             className="rounded-lg border border-border p-3 flex flex-col gap-2"
           >
             <div className="flex min-w-0 flex-col">
