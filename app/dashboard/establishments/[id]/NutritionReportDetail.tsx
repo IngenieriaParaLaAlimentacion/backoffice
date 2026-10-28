@@ -13,12 +13,15 @@ import {
 } from "@/constants/nutritionReport";
 import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { formatPercentage, formatReportMonth } from "@/lib/format";
+import { humanizeReportText } from "@/lib/nutritionReportText";
 import { isClosedMonth } from "@/lib/reportMonth";
 import {
   ExcludedFoodsNotice,
   GapaGroupsTable,
   MacrosTable,
   NutrientsTable,
+  QUOTE_CLASS,
+  SECTION_TITLE_CLASS,
   SuggestedFoods,
 } from "./NutritionReportSections";
 import { NutritionReportResponse } from "@/types/nutritionReport";
@@ -36,7 +39,7 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
     );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-8">
       {report.summary_status === "unavailable" && (
         <p className={`${BANNER} ${TONE_BANNER_CLASS.warning}`} role="status">
           {COPY.summaryUnavailable}
@@ -53,9 +56,11 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
       </div>
 
       {report.summary && (
-        <section className="flex flex-col gap-1">
-          <h2 className="text-sm font-semibold">{COPY.overviewTitle}</h2>
-          <p className="text-sm">{report.summary.overview}</p>
+        <section className="flex flex-col gap-2">
+          <h2 className={SECTION_TITLE_CLASS}>{COPY.overviewTitle}</h2>
+          <p className="text-sm">
+            {humanizeReportText(report.summary.overview)}
+          </p>
         </section>
       )}
 
@@ -63,25 +68,37 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
 
       <NutrientsTable
         nutrients={report.analysis.nutrients}
-        commentary={report.summary?.at_risk_nutrients}
+        commentary={report.summary?.at_risk_nutrients.map(humanizeReportText)}
       />
       <MacrosTable
         macros={report.analysis.macros}
-        commentary={report.summary?.macros}
+        commentary={
+          report.summary ? humanizeReportText(report.summary.macros) : undefined
+        }
       />
       <GapaGroupsTable
         groups={report.analysis.gapa_groups}
-        commentary={report.summary?.gapa_groups}
+        commentary={
+          report.summary
+            ? humanizeReportText(report.summary.gapa_groups)
+            : undefined
+        }
       />
       <SuggestedFoods
         sources={report.analysis.top_sources}
-        commentary={report.summary?.incorporate}
+        commentary={
+          report.summary
+            ? humanizeReportText(report.summary.incorporate)
+            : undefined
+        }
       />
 
       {report.summary && (
-        <section className="flex flex-col gap-1">
-          <h2 className="text-sm font-semibold">{COPY.conclusionTitle}</h2>
-          <p className="text-sm">{report.summary.conclusion}</p>
+        <section className="flex flex-col gap-2">
+          <h2 className={SECTION_TITLE_CLASS}>{COPY.conclusionTitle}</h2>
+          <p className="text-sm">
+            {humanizeReportText(report.summary.conclusion)}
+          </p>
         </section>
       )}
     </div>
@@ -191,9 +208,7 @@ export default function NutritionReportDetail({
         ) : null}
 
         {report?.scope_note && (
-          <blockquote className="border-l-4 border-border pl-4 text-sm italic text-muted-foreground">
-            {report.scope_note}
-          </blockquote>
+          <blockquote className={QUOTE_CLASS}>{report.scope_note}</blockquote>
         )}
       </Card>
     </div>

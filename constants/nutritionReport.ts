@@ -2,6 +2,7 @@ import { ERROR_TYPES } from "@/lib/apiError";
 import {
   GapaGroup,
   Macronutrient,
+  NutritionReportSortOrder,
   PrioritizedNutrient,
 } from "@/types/nutritionReport";
 
@@ -58,6 +59,16 @@ export const NUTRITION_REPORT_PAGE = {
     not_applicable: "Sin datos",
   },
   retry: "Reintentar",
+  sortLabel: "Ordenar reportes",
+  sortOptions: [
+    { value: "month_desc", label: "Más recientes primero" },
+    { value: "month_asc", label: "Más antiguos primero" },
+  ] as { value: NutritionReportSortOrder; label: string }[],
+  actionsMenuLabel: "Más acciones",
+  viewReport: "Ver reporte",
+  downloadPdf: "Descargar PDF",
+  pdfBlockedHint:
+    "El texto del reporte no está disponible: volvé a generarlo para poder descargar el PDF.",
 } as const;
 
 export const NUTRITION_REPORT_DIALOG = {
@@ -105,7 +116,7 @@ export const NUTRIENT_LABELS: Record<
   calcio: { name: "Calcio", unit: "mg" },
   vitamina_a: { name: "Vitamina A (RAE)", unit: "µg" },
   folato: { name: "Folato (EFD)", unit: "µg" },
-  vitamina_b12: { name: "Vitamina B-12", unit: "µg" },
+  vitamina_b12: { name: "Vitamina B12", unit: "µg" },
   vitamina_c: { name: "Vitamina C", unit: "mg" },
   hierro: { name: "Hierro", unit: "mg" },
   zinc: { name: "Zinc", unit: "mg" },

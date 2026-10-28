@@ -116,7 +116,7 @@ describe("NutritionReportDetail", () => {
       within(calcium).getByText(EXTRAS.suggested.per100kcal("190 mg")),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Vitamina B-12", level: 3 }),
+      screen.getByRole("heading", { name: "Vitamina B12", level: 3 }),
     ).toBeInTheDocument();
     // Iron is not at risk: it gets no suggestions.
     expect(
@@ -139,12 +139,21 @@ describe("NutritionReportDetail", () => {
     expect(screen.getByText(/Conviene incorporar leche/)).toBeInTheDocument();
   });
 
-  it("warns about the foods left out of the calculation", async () => {
+  it("reads the codes the AI repeats as the names the tables use", async () => {
     await renderDetail("2026-09");
 
     expect(
-      await screen.findByText(EXTRAS.excluded.one("Varios")),
+      await screen.findByText(/^Vitamina B12: su falta afecta la sangre/),
     ).toBeInTheDocument();
+    expect(screen.queryByText(/vitamina_b12/i)).not.toBeInTheDocument();
+  });
+
+  it("warns about the foods left out of the calculation", async () => {
+    await renderDetail("2026-09");
+
+    const notice = await screen.findByText(EXTRAS.excluded.one("Varios"));
+    // Quoted, like the scope note at the end.
+    expect(notice.tagName).toBe("BLOCKQUOTE");
   });
 
   it("shows the figures without the AI's reading when its text is unavailable", async () => {

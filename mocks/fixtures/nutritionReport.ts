@@ -191,7 +191,7 @@ const SUMMARY: NutritionReportSummary = {
   overview: "El mes dejó el calcio por debajo del mínimo recomendado.",
   at_risk_nutrients: [
     "Calcio: es clave para el crecimiento de los huesos en la infancia.",
-    "Vitamina B-12: su falta afecta la sangre y el sistema nervioso.",
+    "Vitamina_b12: su falta afecta la sangre y el sistema nervioso.",
   ],
   macros: "Los lípidos superan el rango y los carbohidratos quedan cortos.",
   gapa_groups: "No ingresaron lácteos ni carnes durante el mes.",

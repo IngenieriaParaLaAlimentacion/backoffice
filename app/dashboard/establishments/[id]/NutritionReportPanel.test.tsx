@@ -7,6 +7,7 @@ import RequirePermission from "@/components/RequirePermission";
 import { renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
+import { REPORT_PDF_FILENAME } from "@/mocks/fixtures/nutritionReport";
 import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutritionReport";
 import {
   ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT,
@@ -172,6 +173,82 @@ describe("NutritionReportPanel", () => {
       NUTRITION_REPORT_LIMIT_MESSAGE("2 minutos"),
     );
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it("sorts the reports from the oldest or the newest month", async () => {
+    await renderPanel();
+    await screen.findAllByRole("link");
+
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: COPY.sortLabel }),
+      "month_asc",
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("link").map((link) => link.textContent),
+      ).toEqual([
+        expect.stringContaining("julio de 2026"),
+        expect.stringContaining("agosto de 2026"),
+        expect.stringContaining("septiembre de 2026"),
+      ]),
+    );
+
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: COPY.sortLabel }),
+      "month_desc",
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByRole("link")[0].textContent).toContain(
+        "septiembre de 2026",
+      ),
+    );
+  });
+
+  it("downloads a report's PDF from the row menu, without opening it", async () => {
+    Object.assign(URL, {
+      createObjectURL: vi.fn(() => "blob:mock"),
+      revokeObjectURL: vi.fn(),
+    });
+    const anchors: HTMLAnchorElement[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      anchors.push(this);
+    });
+    await renderPanel();
+
+    const [menu] = await screen.findAllByRole("button", {
+      name: COPY.actionsMenuLabel,
+    });
+    await userEvent.click(menu);
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: COPY.downloadPdf }),
+    );
+
+    await waitFor(() => expect(anchors).toHaveLength(1));
+    expect(anchors[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
+    expect(push).not.toHaveBeenCalled();
+    Reflect.deleteProperty(URL, "createObjectURL");
+    Reflect.deleteProperty(URL, "revokeObjectURL");
+    vi.restoreAllMocks();
+  });
+
+  it("does not offer the PDF of a report whose AI text is unavailable", async () => {
+    await renderPanel();
+
+    // Rows are newest first: September, August (no text), July.
+    const menus = await screen.findAllByRole("button", {
+      name: COPY.actionsMenuLabel,
+    });
+    await userEvent.click(menus[1]);
+
+    const item = await screen.findByRole("menuitem", {
+      name: COPY.downloadPdf,
+    });
+    expect(item).toHaveAttribute("aria-disabled", "true");
+    expect(item).toHaveAttribute("title", COPY.pdfBlockedHint);
   });
 
   it("is refused to a role without the permission", async () => {

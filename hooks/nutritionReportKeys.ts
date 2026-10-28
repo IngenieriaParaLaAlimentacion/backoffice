@@ -1,4 +1,4 @@
-import { ReportMonth } from "@/types/nutritionReport";
+import { NutritionReportSortOrder, ReportMonth } from "@/types/nutritionReport";
 
 /**
  * SWR keys of the report screen. Array keys, so one comedor's list pages can
@@ -12,7 +12,8 @@ export const nutritionReportKey = (
 export const nutritionReportsListKey = (
   establishmentId: string,
   page: number,
-) => ["nutrition-reports", establishmentId, page] as const;
+  sortOrder: NutritionReportSortOrder,
+) => ["nutrition-reports", establishmentId, page, sortOrder] as const;
 
 export const nutritionReportsListMatcher =
   (establishmentId: string) => (key: unknown) =>

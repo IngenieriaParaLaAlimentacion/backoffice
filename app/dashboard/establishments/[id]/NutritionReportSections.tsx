@@ -6,12 +6,7 @@ import {
   NUTRITION_REPORT_EXTRAS as EXTRAS,
   NUTRITION_REPORT_SECTIONS as COPY,
 } from "@/constants/nutritionReport";
-import {
-  PILL_CLASS,
-  TONE_BANNER_CLASS,
-  TONE_PILL_CLASS,
-  TONE_ROW_CLASS,
-} from "@/constants/theme";
+import { PILL_CLASS, TONE_PILL_CLASS, TONE_ROW_CLASS } from "@/constants/theme";
 import { formatMetric, formatPercentage } from "@/lib/format";
 import {
   ReportFoodWithoutConversion,
@@ -34,9 +29,9 @@ function Section({
   note?: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-2">
-      <div className="flex flex-col gap-0.5">
-        <h2 className="text-sm font-semibold">{title}</h2>
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h2 className={SECTION_TITLE_CLASS}>{title}</h2>
         <p className="text-xs text-muted-foreground">{subtitle}</p>
       </div>
       <div className="overflow-x-auto rounded-lg border border-border">
@@ -46,6 +41,12 @@ function Section({
     </section>
   );
 }
+
+/** The look of a section's heading, shared with the sections of the screen itself. */
+export const SECTION_TITLE_CLASS = "text-base font-semibold";
+/** A quote: the notes that qualify the report rather than belong to its figures. */
+export const QUOTE_CLASS =
+  "border-l-4 border-border pl-4 text-sm italic text-muted-foreground";
 
 const TH = "px-4 py-3 font-medium";
 /** The last column of every table has the same width, so "Estado" lines up
@@ -263,9 +264,9 @@ export function SuggestedFoods({
   const withFoods = sources.filter((item) => item.foods.length > 0);
   if (withFoods.length === 0) return null;
   return (
-    <section className="flex flex-col gap-2">
-      <div className="flex flex-col gap-0.5">
-        <h2 className="text-sm font-semibold">{EXTRAS.suggested.title}</h2>
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h2 className={SECTION_TITLE_CLASS}>{EXTRAS.suggested.title}</h2>
         <p className="text-xs text-muted-foreground">
           {EXTRAS.suggested.subtitle}
         </p>
@@ -309,13 +310,10 @@ export function ExcludedFoodsNotice({
   if (foods.length === 0) return null;
   const names = foods.map((food) => food.name);
   return (
-    <p
-      role="status"
-      className={`rounded-md border px-4 py-3 text-sm ${TONE_BANNER_CLASS.warning}`}
-    >
+    <blockquote role="status" className={QUOTE_CLASS}>
       {names.length === 1
         ? EXTRAS.excluded.one(names[0])
         : EXTRAS.excluded.many(names)}
-    </p>
+    </blockquote>
   );
 }
