@@ -14,6 +14,7 @@ const image = `ghcr.io/ingenieriaparalaalimentacion/backend:sha-${commit}`;
 execFileSync("docker", ["manifest", "inspect", image], {
   stdio: "ignore",
   timeout: 30_000,
+  killSignal: "SIGKILL",
 });
 const files = Object.fromEntries(
   await Promise.all(
