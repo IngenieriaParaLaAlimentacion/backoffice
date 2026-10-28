@@ -1,3 +1,4 @@
+import { waitForApi } from "../support/api";
 import {
   DUPLICATE_SURVEY_ENDPOINT,
   FIES_TEMPLATE_ENDPOINT,
@@ -22,11 +23,7 @@ export class SurveysPage extends SurveyListPage {
     await this.page
       .getByRole("button", { name: SURVEYS_PAGE.createSurvey, exact: true })
       .click();
-    const loaded = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === FIES_TEMPLATE_ENDPOINT &&
-        r.request().method() === "GET",
-    );
+    const loaded = waitForApi(this.page, "GET", FIES_TEMPLATE_ENDPOINT);
     await this.page
       .getByRole("dialog")
       .getByRole("link", { name: /^Plantilla FIES/ })
@@ -37,11 +34,7 @@ export class SurveysPage extends SurveyListPage {
     await this.page
       .getByPlaceholder(SURVEY_FORM.namePlaceholder, { exact: true })
       .fill(name);
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === SURVEYS_ENDPOINT &&
-        r.request().method() === "POST",
-    );
+    const saved = waitForApi(this.page, "POST", SURVEYS_ENDPOINT);
     await this.page
       .getByRole("button", { name: SURVEY_FORM.save, exact: true })
       .click();
@@ -65,11 +58,7 @@ export class SurveysPage extends SurveyListPage {
     await this.page
       .getByPlaceholder(SURVEY_FORM.namePlaceholder, { exact: true })
       .fill(name);
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === SURVEY_ENDPOINT(id) &&
-        r.request().method() === "PUT",
-    );
+    const saved = waitForApi(this.page, "PUT", SURVEY_ENDPOINT(id));
     await this.page
       .getByRole("button", { name: SURVEY_FORM.save, exact: true })
       .click();
@@ -91,11 +80,7 @@ export class SurveysPage extends SurveyListPage {
         expect(dialog.type()).toBe("confirm");
         await dialog.accept();
       });
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === SURVEY_STATUS_ENDPOINT(id) &&
-        r.request().method() === "PATCH",
-    );
+    const saved = waitForApi(this.page, "PATCH", SURVEY_STATUS_ENDPOINT(id));
     await this.page
       .getByRole("menuitem", {
         name: active ? SURVEY_FORM.activate : SURVEY_FORM.deactivate,
@@ -115,11 +100,7 @@ export class SurveysPage extends SurveyListPage {
   async duplicate(id: string, name: string): Promise<SurveyResponse> {
     await this.search(name);
     await this.openActions(name);
-    const saved = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === DUPLICATE_SURVEY_ENDPOINT(id) &&
-        r.request().method() === "POST",
-    );
+    const saved = waitForApi(this.page, "POST", DUPLICATE_SURVEY_ENDPOINT(id));
     await this.page
       .getByRole("menuitem", { name: SURVEYS_PAGE.duplicate, exact: true })
       .click();
@@ -140,11 +121,7 @@ export class SurveysPage extends SurveyListPage {
   }
 
   async responses(id: string): Promise<PaginatedSurveyResponses> {
-    const loaded = this.page.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname === SURVEY_RESPONSES_ENDPOINT(id) &&
-        r.request().method() === "GET",
-    );
+    const loaded = waitForApi(this.page, "GET", SURVEY_RESPONSES_ENDPOINT(id));
     await this.page.goto(`/dashboard/surveys/${id}/responses`);
     const response = await loaded;
     expect(response.status()).toBe(200);
