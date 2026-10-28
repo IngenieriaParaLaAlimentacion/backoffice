@@ -14,6 +14,11 @@ import {
 import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { formatPercentage, formatReportMonth } from "@/lib/format";
 import { isClosedMonth } from "@/lib/reportMonth";
+import {
+  GapaGroupsTable,
+  MacrosTable,
+  NutrientsTable,
+} from "./NutritionReportSections";
 import { NutritionReportResponse } from "@/types/nutritionReport";
 
 const BANNER = "rounded-md border px-4 py-3 text-sm";
@@ -46,16 +51,21 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
       </div>
 
       {report.summary && (
-        <>
-          <section className="flex flex-col gap-1">
-            <h2 className="text-sm font-semibold">{COPY.overviewTitle}</h2>
-            <p className="text-sm">{report.summary.overview}</p>
-          </section>
-          <section className="flex flex-col gap-1">
-            <h2 className="text-sm font-semibold">{COPY.conclusionTitle}</h2>
-            <p className="text-sm">{report.summary.conclusion}</p>
-          </section>
-        </>
+        <section className="flex flex-col gap-1">
+          <h2 className="text-sm font-semibold">{COPY.overviewTitle}</h2>
+          <p className="text-sm">{report.summary.overview}</p>
+        </section>
+      )}
+
+      <NutrientsTable nutrients={report.analysis.nutrients} />
+      <MacrosTable macros={report.analysis.macros} />
+      <GapaGroupsTable groups={report.analysis.gapa_groups} />
+
+      {report.summary && (
+        <section className="flex flex-col gap-1">
+          <h2 className="text-sm font-semibold">{COPY.conclusionTitle}</h2>
+          <p className="text-sm">{report.summary.conclusion}</p>
+        </section>
       )}
     </div>
   );

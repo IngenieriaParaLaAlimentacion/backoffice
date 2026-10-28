@@ -1,4 +1,9 @@
 import { ERROR_TYPES } from "@/lib/apiError";
+import {
+  GapaGroup,
+  Macronutrient,
+  PrioritizedNutrient,
+} from "@/types/nutritionReport";
 
 /** Backend errors of the nutrition report screen, keyed by `type`. */
 export const NUTRITION_REPORT_ERROR_MESSAGES: Record<string, string> = {
@@ -90,4 +95,76 @@ export const NUTRITION_REPORT_DETAIL = {
   overviewTitle: "Resumen",
   conclusionTitle: "Conclusión",
   retry: "Reintentar",
+} as const;
+
+/** Spanish names and units of the nutrients a report evaluates, as the backend prints them. */
+export const NUTRIENT_LABELS: Record<
+  PrioritizedNutrient,
+  { name: string; unit: string }
+> = {
+  calcio: { name: "Calcio", unit: "mg" },
+  vitamina_a: { name: "Vitamina A (RAE)", unit: "µg" },
+  folato: { name: "Folato (EFD)", unit: "µg" },
+  vitamina_b12: { name: "Vitamina B-12", unit: "µg" },
+  vitamina_c: { name: "Vitamina C", unit: "mg" },
+  hierro: { name: "Hierro", unit: "mg" },
+  zinc: { name: "Zinc", unit: "mg" },
+};
+
+export const MACRO_LABELS: Record<Macronutrient, string> = {
+  proteinas: "Proteínas",
+  lipidos: "Lípidos",
+  carbohidratos: "Carbohidratos",
+};
+
+export const GAPA_GROUP_LABELS: Record<GapaGroup, string> = {
+  verduras_y_frutas: "Verduras y frutas",
+  legumbres_cereales_papa_pan_y_pastas:
+    "Legumbres, cereales, papa, pan y pastas",
+  leche_yogur_y_quesos: "Leche, yogur y quesos",
+  carnes_y_huevos: "Carnes y huevos",
+  aceites_frutas_secas_y_semillas: "Aceites, frutas secas y semillas",
+  consumo_opcional: "Consumo opcional",
+};
+
+export const NUTRITION_REPORT_SECTIONS = {
+  nutrients: {
+    title: "Nutrientes",
+    subtitle:
+      "Aporte por cada 1.000 kcal de lo que llegó al comedor, frente a la referencia. Por debajo de 2/3 de la referencia, el nutriente está en riesgo.",
+    columns: {
+      nutrient: "Nutriente",
+      reference: "Referencia",
+      minimum: "Mínimo (2/3)",
+      amount: "Aporte",
+      adequacy: "Adecuación",
+      status: "Estado",
+    },
+    atRisk: "En riesgo",
+    adequate: "Adecuado",
+  },
+  macros: {
+    title: "Macronutrientes",
+    subtitle: "Porcentaje de la energía que aporta cada uno.",
+    columns: {
+      macro: "Macronutriente",
+      share: "% de la energía",
+      range: "Rango recomendado",
+      status: "Estado",
+    },
+    inRange: "Dentro del rango",
+    outOfRange: "Fuera del rango",
+    range: (min: string, max: string) => `${min} a ${max}`,
+  },
+  gapa: {
+    title: "Grupos de alimentos (GAPA)",
+    subtitle: "Porcentaje de la energía que aporta cada grupo.",
+    columns: { group: "Grupo", share: "% de la energía", status: "Estado" },
+    present: "Presente",
+    missing: "Ausente",
+    missingSummary: (groups: string[]) =>
+      groups.length === 1
+        ? `Grupo ausente: ${groups[0]}.`
+        : `Grupos ausentes: ${groups.join(", ")}.`,
+  },
 } as const;

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import NutritionReportDetail from "./NutritionReportDetail";
 import { renderWithProviders } from "@/test-utils";
@@ -10,6 +10,7 @@ import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutr
 import {
   NUTRITION_REPORT_DETAIL as COPY,
   NUTRITION_REPORT_ERROR_MESSAGES,
+  NUTRITION_REPORT_SECTIONS as SECTIONS,
 } from "@/constants/nutritionReport";
 import { ERROR_TYPES } from "@/lib/apiError";
 
@@ -52,11 +53,63 @@ describe("NutritionReportDetail", () => {
     ).toBeEnabled();
   });
 
+  it("marks the nutrients at risk in words, with the reference and the minimum", async () => {
+    await renderDetail("2026-09");
+
+    const calcium = (await screen.findByRole("row", {
+      name: /Calcio/,
+    })) as HTMLElement;
+    expect(
+      within(calcium).getByText(SECTIONS.nutrients.atRisk),
+    ).toBeInTheDocument();
+    expect(within(calcium).getByText("500 mg")).toBeInTheDocument();
+    expect(within(calcium).getByText("333,33 mg")).toBeInTheDocument();
+    expect(within(calcium).getByText("310 mg")).toBeInTheDocument();
+    expect(within(calcium).getByText("62%")).toBeInTheDocument();
+
+    const iron = screen.getByRole("row", { name: /Hierro/ });
+    expect(
+      within(iron).getByText(SECTIONS.nutrients.adequate),
+    ).toBeInTheDocument();
+  });
+
+  it("says whether each macronutrient is inside its recommended range", async () => {
+    await renderDetail("2026-09");
+
+    const proteins = await screen.findByRole("row", { name: /Proteínas/ });
+    expect(within(proteins).getByText("10% a 15%")).toBeInTheDocument();
+    expect(
+      within(proteins).getByText(SECTIONS.macros.inRange),
+    ).toBeInTheDocument();
+    const lipids = screen.getByRole("row", { name: /Lípidos/ });
+    expect(
+      within(lipids).getByText(SECTIONS.macros.outOfRange),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the GAPA groups and names the missing ones", async () => {
+    await renderDetail("2026-09");
+
+    const dairy = await screen.findByRole("row", {
+      name: /Leche, yogur y quesos/,
+    });
+    expect(within(dairy).getByText(SECTIONS.gapa.missing)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        SECTIONS.gapa.missingSummary([
+          "Leche, yogur y quesos",
+          "Carnes y huevos",
+        ]),
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("says there is no data for a month without intakes, and still allows the PDF", async () => {
     await renderDetail("2026-07");
 
     expect(await screen.findByText(COPY.noData)).toBeInTheDocument();
     expect(screen.queryByText(COPY.indicatorLabel)).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: COPY.downloadPdf }),
     ).toBeEnabled();
