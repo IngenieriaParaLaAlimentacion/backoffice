@@ -37,11 +37,16 @@ describe("NutritionReportDetail", () => {
     await renderDetail("2026-09");
 
     expect(
-      await screen.findByRole("heading", { name: /septiembre de 2026/ }),
+      await screen.findByRole("heading", {
+        name: COPY.title("septiembre de 2026"),
+      }),
     ).toBeInTheDocument();
     expect(await screen.findByText("78,4%")).toBeInTheDocument();
     expect(screen.getByText(/principal punto a mejorar/)).toBeInTheDocument();
-    expect(screen.getByText(/no la dieta completa/)).toBeInTheDocument();
+    const note = screen.getByText(/No conoce la dieta completa/);
+    // A quote, and the last thing on the screen.
+    expect(note.tagName).toBe("BLOCKQUOTE");
+    expect(note.nextElementSibling).toBeNull();
     expect(
       screen.getByRole("button", { name: COPY.downloadPdf }),
     ).toBeEnabled();

@@ -18,7 +18,8 @@ import { NutritionReportResponse } from "@/types/nutritionReport";
 
 const BANNER = "rounded-md border px-4 py-3 text-sm";
 
-/** The report's content. The detailed sections are added on top of this. */
+/** The report's content. The detailed sections are added on top of this. The
+ * scope note is not part of it: it closes the screen, whatever the sections. */
 function ReportContent({ report }: { report: NutritionReportResponse }) {
   if (!report.has_data)
     return (
@@ -55,10 +56,6 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
             <p className="text-sm">{report.summary.conclusion}</p>
           </section>
         </>
-      )}
-
-      {report.scope_note && (
-        <p className="text-xs text-muted-foreground">{report.scope_note}</p>
       )}
     </div>
   );
@@ -112,6 +109,7 @@ export default function NutritionReportDetail({
                 {textUnavailable && (
                   <Button
                     size="sm"
+                    variant="outline"
                     onClick={() => void generate()}
                     disabled={isGenerating}
                   >
@@ -120,7 +118,6 @@ export default function NutritionReportDetail({
                 )}
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() => void pdf.download(report.month)}
                   disabled={pdf.isDownloading || textUnavailable}
                 >
@@ -165,6 +162,12 @@ export default function NutritionReportDetail({
         ) : report ? (
           <ReportContent report={report} />
         ) : null}
+
+        {report?.scope_note && (
+          <blockquote className="border-l-4 border-border pl-4 text-sm italic text-muted-foreground">
+            {report.scope_note}
+          </blockquote>
+        )}
       </Card>
     </div>
   );

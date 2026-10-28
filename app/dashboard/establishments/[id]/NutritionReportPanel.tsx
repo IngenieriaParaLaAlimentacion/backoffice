@@ -36,7 +36,9 @@ export default function NutritionReportPanel({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted-foreground text-sm">{COPY.subtitle(total)}</p>
+        <p className="flex h-8 items-center text-muted-foreground text-sm">
+          {COPY.subtitle(total)}
+        </p>
         <Button size="sm" onClick={() => setDialogOpen(true)}>
           <Plus size={14} />
           {COPY.newReport}

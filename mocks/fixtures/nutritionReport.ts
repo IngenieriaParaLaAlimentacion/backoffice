@@ -7,7 +7,7 @@ import {
 } from "@/types/nutritionReport";
 
 export const REPORT_SCOPE_NOTE =
-  "Este reporte evalúa lo que llega al comedor, no la dieta completa de quienes comen allí.";
+  "Este informe evalúa el equilibrio nutricional de los alimentos que llegaron al comedor durante el mes. No conoce la dieta completa de los chicos, no indica si la cantidad alcanza y no reemplaza la evaluación de un nutricionista.";
 
 export const REPORT_PDF_FILENAME = (month: ReportMonth) =>
   `reporte-nutricional-${month}.pdf`;

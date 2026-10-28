@@ -148,6 +148,13 @@ describe("NutritionReportPanel", () => {
         nutritionReportHref(ESTABLISHMENT, "2026-06"),
       ),
     );
+    // Once saved, the dialog must not flip to "ya existe" before leaving.
+    expect(
+      within(dialog).getByRole("button", { name: DIALOG.opening }),
+    ).toBeDisabled();
+    expect(
+      within(dialog).queryByText(DIALOG.alreadyExists),
+    ).not.toBeInTheDocument();
   });
 
   it("tells how long to wait when the usage limit was hit", async () => {

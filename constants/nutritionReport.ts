@@ -57,8 +57,7 @@ export const NUTRITION_REPORT_PAGE = {
 
 export const NUTRITION_REPORT_DIALOG = {
   title: "Generar nuevo reporte",
-  description:
-    "Elegí el mes del que querés el reporte. Solo se pueden elegir meses ya terminados.",
+  description: "Elegí el mes del que querés el reporte.",
   monthLabel: "Mes del reporte",
   checking: "Buscando si ya existe un reporte de este mes…",
   alreadyExists:
@@ -66,6 +65,7 @@ export const NUTRITION_REPORT_DIALOG = {
   viewExisting: "Ver reporte",
   generate: "Generar reporte",
   generating: "Generando…",
+  opening: "Abriendo reporte…",
   generatingHint:
     "Generar el reporte puede tardar un momento. No cierres esta pantalla.",
   cancel: "Cancelar",

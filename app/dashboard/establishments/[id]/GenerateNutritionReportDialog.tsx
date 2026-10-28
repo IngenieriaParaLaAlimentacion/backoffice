@@ -36,10 +36,16 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
     generateError,
     generate,
   } = useNutritionReport(establishmentId, month);
+  // Between the report being saved and the next screen showing up the dialog
+  // would otherwise flip to "ya existe": keep saying we are on our way.
+  const [isOpening, setIsOpening] = useState(false);
   const href = nutritionReportHref(establishmentId, month);
+  const isBusy = isGenerating || isOpening;
 
   const handleGenerate = async () => {
-    if (await generate()) router.push(href);
+    if (!(await generate())) return;
+    setIsOpening(true);
+    router.push(href);
   };
 
   return (
@@ -54,7 +60,7 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
         <select
           id="nutrition-report-month"
           value={month}
-          disabled={isGenerating}
+          disabled={isBusy}
           onChange={(e) => setMonth(e.target.value)}
           className={`${SELECT_CLASS} w-full`}
         >
@@ -80,7 +86,7 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
           <Loader2 className="animate-spin" size={14} />
           {COPY.checking}
         </p>
-      ) : report ? (
+      ) : report && !isOpening ? (
         <p className="text-sm text-muted-foreground">{COPY.alreadyExists}</p>
       ) : null}
 
@@ -92,13 +98,11 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
 
       <div className="flex justify-end gap-2">
         <Dialog.Close
-          render={
-            <Button type="button" variant="ghost" disabled={isGenerating} />
-          }
+          render={<Button type="button" variant="ghost" disabled={isBusy} />}
         >
           {COPY.cancel}
         </Dialog.Close>
-        {report ? (
+        {report && !isOpening ? (
           <Button
             // A next/link <a>, not a <button>.
             nativeButton={false}
@@ -110,10 +114,14 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
           <Button
             // Never while the month is still being looked up: the lookup is
             // what tells an existing report (free to open) from a missing one.
-            disabled={isLoading || isGenerating || report === undefined}
+            disabled={isLoading || isBusy || report === undefined}
             onClick={() => void handleGenerate()}
           >
-            {isGenerating ? COPY.generating : COPY.generate}
+            {isOpening
+              ? COPY.opening
+              : isGenerating
+                ? COPY.generating
+                : COPY.generate}
           </Button>
         )}
       </div>
