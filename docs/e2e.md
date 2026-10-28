@@ -15,17 +15,33 @@ npm run e2e
 
 Before the first run, authenticate Docker to GHCR with an account permitted to read the backend package. Use a read:packages credential via Docker's documented stdin/credential helper, never commit it into `.env.e2e.local`. In Actions the consuming repository needs package Actions access and `packages:read`; the standard job token authenticates the registry. The immutable image/source pair in `e2e/backend.json` is the contract. An image-pull failure is a prerequisite failure, not successful browser coverage.
 
-The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/Redis/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
+The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
+
+The canonical backend uses in-memory rate-limit counters in its single process; no Redis service is needed.
 
 Local baseline selection forwards Playwright's native `--grep <pattern>` and `--repeat-each <count>` arguments. These are accepted only for a local baseline; CI and stress/quarantine modes reject selection arguments so their coverage cannot be narrowed. Repeated tests share one owned backend/database lifetime but receive fresh browser contexts and unique data.
 
 Example: `npm run e2e -- --grep establishments` runs establishment journeys. A unique full-title pattern selects one case. `npm run e2e -- --grep establishments --repeat-each 2` checks repeated independent records. `npm run e2e -- --repeat-each 2` repeats the entire baseline. Ordinary `npm run e2e:ci` remains the complete baseline plus five strict session proof runs.
 
+## Updating the backend version
+
+`e2e/backend.json` deliberately pins the published image and both canonical source files to one full backend commit. A moving `develop` image could change between runs while the Compose/environment files remain at an older revision. Keeping the image, source commit and SHA256 hashes together makes failures reproducible and exposes backend upgrades in review.
+
+After the backend image publication workflow succeeds for the intended commit, authenticate Docker to the registry and run:
+
+```sh
+node e2e/scripts/update-backend.mjs <full-40-character-backend-commit-sha>
+git diff -- e2e/backend.json
+npm run e2e:ci
+```
+
+The update command validates the full SHA, verifies that its published image manifest is readable, downloads `e2e/compose.yml` and `e2e/.env.e2e` from that exact commit, and computes their SHA256 hashes. It writes the manifest only after all checks succeed; it does not pull or start containers. Review the canonical Compose/environment changes between the old and new commits as well as the generated manifest, then commit the upgrade with its complete suite evidence. Do not substitute the moving `develop` tag or guess hashes. Normal test runs keep using the reviewed pin and reject mismatched source bytes.
+
 ## Reset and stop
 
 ```sh
 npm run e2e:reset
-# Leaves only this worktree's clean, seeded backend+PostgreSQL+Redis ready on8080.
+# Leaves only this worktree's clean, seeded backend+PostgreSQL ready on8080.
 npm run e2e:down
 ```
 
@@ -66,7 +82,7 @@ Only GET requests to `https://apis.datos.gob.ar/georef/api/direcciones` are fulf
 
 ## Locators and Page Objects
 
-Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; these journeys need no new IDs or production-component edits. Use the shared `SignInPage`, `MenuPage` and `SurveyListPage` objects instead of duplicating login/menu mechanics.
+Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; these journeys need no new IDs. The Georef placeholder is shared with the provider through a constant without changing its behavior. Use the shared `SignInPage`, `MenuPage` and `SurveyListPage` objects instead of duplicating login/menu mechanics.
 
 Wait for a meaningful heading, loaded row, role-specific control or expected API result. Do not use fixed sleeps, `networkidle`, broad CSS classes or a negative assertion before proving the containing UI has loaded. Distinguish native `window.confirm` from app dialogs. A forbidden backoffice screen is rendered UI, while the backend independently returns HTTP403.
 

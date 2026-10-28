@@ -1,7 +1,7 @@
 import { test, expect } from "../fixtures";
 import { ME_ENDPOINT, REFRESH_ENDPOINT } from "../../constants/api";
 import { DEVICE_ID_STORAGE_KEY } from "../../constants/tokenStorage";
-import { SURVEYS_PAGE } from "../../constants/surveys";
+import { SurveyListPage } from "../pages/survey-list.page";
 import { currentTokens } from "../support/session";
 import { e2eEnv } from "../support/env";
 
@@ -18,35 +18,16 @@ for (let index = 1; index <= 10; index += 1) {
     expect(firstRead.status()).toBe(200);
     expect((await firstRead.json()).role).toBe(e2eEnv.stressRole);
     const survey = await api.survey(`session-${index}`);
-    await page.goto("/dashboard/surveys");
-    await expect(
-      page.getByRole("heading", { name: SURVEYS_PAGE.title, exact: true }),
-    ).toBeVisible();
-    await page
-      .getByPlaceholder(SURVEYS_PAGE.searchPlaceholder, { exact: true })
-      .fill(survey.name);
-    await expect(
-      page
-        .getByRole("row")
-        .filter({ has: page.getByText(survey.name, { exact: true }) }),
-    ).toBeVisible();
+    const list = new SurveyListPage(page);
+    await list.open();
+    await list.search(survey.name);
     const beforeReload = await currentTokens(context);
     const deviceId = await page.evaluate(
       (key) => localStorage.getItem(key),
       DEVICE_ID_STORAGE_KEY,
     );
-    await page.reload();
-    await expect(
-      page.getByRole("heading", { name: SURVEYS_PAGE.title, exact: true }),
-    ).toBeVisible();
-    await page
-      .getByPlaceholder(SURVEYS_PAGE.searchPlaceholder, { exact: true })
-      .fill(survey.name);
-    await expect(
-      page
-        .getByRole("row")
-        .filter({ has: page.getByText(survey.name, { exact: true }) }),
-    ).toBeVisible();
+    await list.open(true);
+    await list.search(survey.name);
     expect(
       (await currentTokens(context)).refreshToken !== beforeReload.refreshToken,
     ).toBe(true);
