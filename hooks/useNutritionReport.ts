@@ -65,26 +65,30 @@ export function useNutritionReport(
     { ...SWR_CONFIG, keepPreviousData: false, shouldRetryOnError: false },
   );
 
-  const generate = useCallback(async () => {
-    if (!month || generatingMonth) return;
-    setGeneratingMonth(month);
-    setFailure(null);
-    try {
-      const report = await generateNutritionReportAction(
-        makeAuthorizedRequest,
-        establishmentId,
-        month,
-      );
-      await mutate(nutritionReportKey(establishmentId, month), report, {
-        revalidate: false,
-      });
-      await mutate(nutritionReportsListMatcher(establishmentId));
-    } catch (err) {
-      setFailure({ month, message: getNutritionReportErrorMessage(err) });
-    } finally {
-      setGeneratingMonth(null);
-    }
-  }, [makeAuthorizedRequest, establishmentId, month, generatingMonth]);
+  /** Resolves to the saved report, or `null` when it could not be generated. */
+  const generate =
+    useCallback(async (): Promise<NutritionReportResponse | null> => {
+      if (!month || generatingMonth) return null;
+      setGeneratingMonth(month);
+      setFailure(null);
+      try {
+        const report = await generateNutritionReportAction(
+          makeAuthorizedRequest,
+          establishmentId,
+          month,
+        );
+        await mutate(nutritionReportKey(establishmentId, month), report, {
+          revalidate: false,
+        });
+        await mutate(nutritionReportsListMatcher(establishmentId));
+        return report;
+      } catch (err) {
+        setFailure({ month, message: getNutritionReportErrorMessage(err) });
+        return null;
+      } finally {
+        setGeneratingMonth(null);
+      }
+    }, [makeAuthorizedRequest, establishmentId, month, generatingMonth]);
 
   const refetch = useCallback(() => {
     void refetchReport();

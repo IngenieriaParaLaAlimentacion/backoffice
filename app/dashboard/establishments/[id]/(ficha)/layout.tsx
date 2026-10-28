@@ -19,6 +19,7 @@ import {
   EstablishmentCharacterizationResponse,
   EstablishmentDashboardResponse,
 } from "@/types/establishment";
+import { NUTRITION_REPORT_TAB_PATH } from "@/constants/nutritionReport";
 import { useSession } from "@/context/SessionContext";
 import { Loader2 } from "lucide-react";
 
@@ -120,6 +121,14 @@ export default function EstablishmentLayout({
       href: `${baseHref}/field-workers`,
     },
     { label: ESTABLISHMENT_DETAIL_TABS.stock, href: `${baseHref}/stock` },
+    ...(can("nutrition_reports.view")
+      ? [
+          {
+            label: ESTABLISHMENT_DETAIL_TABS.nutritionReport,
+            href: `${baseHref}/${NUTRITION_REPORT_TAB_PATH}`,
+          },
+        ]
+      : []),
     {
       label: ESTABLISHMENT_DETAIL_TABS.profile,
       href: establishmentProfileHref(id),

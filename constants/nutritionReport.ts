@@ -34,3 +34,60 @@ export const NUTRITION_REPORT_LIST_PAGE_SIZE = 12;
 /** Used only when the response carries no `Content-Disposition`. */
 export const NUTRITION_REPORT_PDF_FALLBACK_FILENAME = (month: string) =>
   `reporte-nutricional-${month}.pdf`;
+
+export const NUTRITION_REPORT_TAB_PATH = "nutrition-report";
+
+export const nutritionReportHref = (establishmentId: string, month: string) =>
+  `/dashboard/establishments/${establishmentId}/${NUTRITION_REPORT_TAB_PATH}/${month}`;
+
+export const NUTRITION_REPORT_PAGE = {
+  subtitle: (total: number) =>
+    total === 1 ? "1 reporte generado" : `${total} reportes generados`,
+  newReport: "Generar nuevo reporte",
+  empty:
+    "Todavía no se generó ningún reporte para este comedor. Generá el primero con el botón de arriba.",
+  columns: { month: "Mes", status: "Estado", createdAt: "Generado" },
+  summaryStatus: {
+    generated: "Completo",
+    unavailable: "Sin texto",
+    not_applicable: "Sin datos",
+  },
+  retry: "Reintentar",
+} as const;
+
+export const NUTRITION_REPORT_DIALOG = {
+  title: "Generar nuevo reporte",
+  description:
+    "Elegí el mes del que querés el reporte. Solo se pueden elegir meses ya terminados.",
+  monthLabel: "Mes del reporte",
+  checking: "Buscando si ya existe un reporte de este mes…",
+  alreadyExists:
+    "Ya existe un reporte de este mes. Podés abrirlo sin volver a generarlo.",
+  viewExisting: "Ver reporte",
+  generate: "Generar reporte",
+  generating: "Generando…",
+  generatingHint:
+    "Generar el reporte puede tardar un momento. No cierres esta pantalla.",
+  cancel: "Cancelar",
+  close: "Cerrar",
+} as const;
+
+export const NUTRITION_REPORT_DETAIL = {
+  back: "Volver a reportes",
+  title: (month: string) => `Reporte nutricional de ${month}`,
+  notGenerated: "Todavía no se generó el reporte de este mes.",
+  regenerateText: "Regenerar texto",
+  generating: "Generando…",
+  noData:
+    "Sin datos: el comedor no tuvo ingresos de alimentos en este mes, por eso no hay déficits para mostrar.",
+  summaryUnavailable:
+    "El texto redactado por la IA no está disponible. Los datos calculados se muestran igual; podés volver a generar el texto.",
+  downloadPdf: "Descargar PDF",
+  downloading: "Descargando…",
+  pdfBlockedHint:
+    "Para descargar el PDF, primero regenerá el texto del reporte.",
+  indicatorLabel: "Adecuación media del mes",
+  overviewTitle: "Resumen",
+  conclusionTitle: "Conclusión",
+  retry: "Reintentar",
+} as const;
