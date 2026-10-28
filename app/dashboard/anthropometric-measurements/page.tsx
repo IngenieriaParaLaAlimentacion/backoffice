@@ -690,12 +690,15 @@ export default function AnthropometricMeasurementsPage() {
 
                 <Separator />
 
-                <div className="flex flex-col gap-2">
+                <section
+                  aria-label={MEASUREMENTS_PAGE.detail.chartTitle}
+                  className="flex flex-col gap-2"
+                >
                   <span className="text-sm font-medium">
                     {MEASUREMENTS_PAGE.detail.chartTitle}
                   </span>
                   <MeasurementEvolutionChart points={evolution.points} />
-                </div>
+                </section>
 
                 <section
                   aria-label={MEASUREMENTS_PAGE.detail.observationsTitle}

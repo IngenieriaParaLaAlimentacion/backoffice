@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { MEASUREMENTS_PAGE } from "@/constants/measurements";
 import { EvolutionPoint } from "@/types/measurement";
 import { formatTimestampShortDate } from "@/lib/format";
 
@@ -95,7 +96,7 @@ export default function MeasurementEvolutionChart({
           yAxisId="weight"
           type="monotone"
           dataKey="weight_kg"
-          name="Peso (kg)"
+          name={MEASUREMENTS_PAGE.columns.weight}
           stroke={SERIES_STROKE.weight}
           strokeWidth={2}
           dot={{ r: 3 }}
@@ -104,7 +105,7 @@ export default function MeasurementEvolutionChart({
           yAxisId="height"
           type="monotone"
           dataKey="height_cm"
-          name="Talla (cm)"
+          name={MEASUREMENTS_PAGE.columns.height}
           stroke={SERIES_STROKE.height}
           strokeWidth={2}
           dot={{ r: 3 }}
@@ -113,7 +114,7 @@ export default function MeasurementEvolutionChart({
           yAxisId="weight"
           type="monotone"
           dataKey="bmi"
-          name="IMC"
+          name={MEASUREMENTS_PAGE.columns.bmi}
           stroke={SERIES_STROKE.bmi}
           strokeWidth={2}
           strokeDasharray="4 4"
