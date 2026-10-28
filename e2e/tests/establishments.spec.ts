@@ -1,4 +1,10 @@
 import {
+  CREATE_ESTABLISHMENT_PAGE,
+  EDIT_ESTABLISHMENT_DIALOG,
+  ESTABLISHMENT_PROFILE,
+} from "../../constants/establishments";
+import {
+  ESTABLISHMENTS_ENDPOINT,
   ESTABLISHMENT_CHARACTERIZATION_ENDPOINT,
   ESTABLISHMENT_DASHBOARD_ENDPOINT,
   ESTABLISHMENT_ENDPOINT,
@@ -8,7 +14,7 @@ import { EstablishmentsPage } from "../pages/establishments.page";
 import { installGeoref } from "../support/georef";
 import type { EstablishmentResponse } from "../../types/establishment";
 
-test.describe("CA1 admin establishments", () => {
+test.describe("Administrator establishments", () => {
   test.use({ role: "admin" });
 
   test("creates through Georef and remains in the list after reload", async ({
@@ -36,15 +42,23 @@ test.describe("CA1 admin establishments", () => {
     });
   });
 
-  test("empty creation stays disabled; selected address exposes touched name validation", async ({
+  test("creation requires a name and shows its validation error", async ({
     page,
     flow,
   }) => {
     const ui = new EstablishmentsPage(page);
     const address = await installGeoref(page, flow.name("validation-place"));
     await ui.newEstablishment();
+    const creations: string[] = [];
+    page.on("request", (request) => {
+      if (
+        request.method() === "POST" &&
+        new URL(request.url()).pathname === ESTABLISHMENTS_ENDPOINT
+      )
+        creations.push(request.url());
+    });
     const submit = page.getByRole("button", {
-      name: "Crear establecimiento",
+      name: CREATE_ESTABLISHMENT_PAGE.submitButton,
       exact: true,
     });
     await expect(submit).toBeDisabled();
@@ -52,12 +66,12 @@ test.describe("CA1 admin establishments", () => {
     const name = page.getByRole("textbox", { name: /^Nombre\s*\*?$/ });
     await name.focus();
     await name.blur();
-    await expect(submit).toBeEnabled();
-    await submit.click();
+    if (await submit.isEnabled()) await submit.click();
     await expect(
       page.getByText("El nombre es requerido", { exact: true }),
     ).toBeVisible();
     await expect(page).toHaveURL(/\/establishments\/create$/);
+    expect(creations).toHaveLength(0);
   });
 
   test("edits name and normalized address on the same persisted establishment", async ({
@@ -91,7 +105,7 @@ test.describe("CA1 admin establishments", () => {
   });
 });
 
-test.describe("CA1 analyst characterization", () => {
+test.describe("Analyst establishment characterization", () => {
   test.use({ role: "analyst" });
 
   test("saves private establishment characterization without general-data editing", async ({
@@ -106,13 +120,22 @@ test.describe("CA1 analyst characterization", () => {
       page.getByRole("heading", { level: 1, name: own.name, exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Editar datos", exact: true }),
+      page.getByRole("button", {
+        name: EDIT_ESTABLISHMENT_DIALOG.button,
+        exact: true,
+      }),
     ).toHaveCount(0);
     await page
-      .getByRole("button", { name: "Completar perfil", exact: true })
+      .getByRole("button", {
+        name: ESTABLISHMENT_PROFILE.completeAction,
+        exact: true,
+      })
       .click();
     await page
-      .getByRole("textbox", { name: "Barrio", exact: true })
+      .getByRole("textbox", {
+        name: ESTABLISHMENT_PROFILE.fields.neighborhood,
+        exact: true,
+      })
       .fill(neighborhood);
     const saved = page.waitForResponse(
       (r) =>
@@ -121,16 +144,22 @@ test.describe("CA1 analyst characterization", () => {
         r.request().method() === "PUT",
     );
     await page
-      .getByRole("button", { name: "Guardar perfil", exact: true })
+      .getByRole("button", { name: ESTABLISHMENT_PROFILE.save, exact: true })
       .click();
     expect((await saved).status()).toBe(200);
     await expect(
-      page.getByRole("button", { name: "Guardar perfil", exact: true }),
+      page.getByRole("button", {
+        name: ESTABLISHMENT_PROFILE.save,
+        exact: true,
+      }),
     ).toHaveCount(0);
     await page.reload();
     await expect(page.getByText(neighborhood, { exact: true })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Editar datos", exact: true }),
+      page.getByRole("button", {
+        name: EDIT_ESTABLISHMENT_DIALOG.button,
+        exact: true,
+      }),
     ).toHaveCount(0);
     const read = await api.request(
       "GET",

@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { DEVICE_ID_STORAGE_KEY } from "../../constants/tokenStorage";
 import type { Credentials } from "../support/env";
+import { E2E_UI } from "../support/ui";
 
 export class SignInPage {
   constructor(private readonly page: Page) {}
@@ -23,18 +24,23 @@ export class SignInPage {
         },
       )
       .toBe(true);
-    await expect(this.page.getByLabel(/^Email\s*\*?$/)).toBeVisible();
-    await expect(this.page.getByLabel(/^Contraseña\s*\*?$/)).toBeVisible();
+    await expect(this.page.getByLabel(E2E_UI.signIn.email)).toBeVisible();
+    await expect(this.page.getByLabel(E2E_UI.signIn.password)).toBeVisible();
     await expect(
-      this.page.getByRole("button", { name: "Iniciar sesión", exact: true }),
+      this.page.getByRole("button", {
+        name: E2E_UI.signIn.submit,
+        exact: true,
+      }),
     ).toBeVisible();
   }
 
   async submit(credentials: Credentials): Promise<void> {
-    await this.page.getByLabel(/^Email\s*\*?$/).fill(credentials.email);
-    await this.page.getByLabel(/^Contraseña\s*\*?$/).fill(credentials.password);
+    await this.page.getByLabel(E2E_UI.signIn.email).fill(credentials.email);
     await this.page
-      .getByRole("button", { name: "Iniciar sesión", exact: true })
+      .getByLabel(E2E_UI.signIn.password)
+      .fill(credentials.password);
+    await this.page
+      .getByRole("button", { name: E2E_UI.signIn.submit, exact: true })
       .click();
   }
 }
