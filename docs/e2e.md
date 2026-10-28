@@ -4,7 +4,7 @@ The suite controls real Chromium against production Next and the real isolated b
 
 ## Setup
 
-Requirements: Node24, npm, Docker with Compose v2 (`up --wait`), private GHCR package-read access and available localhost ports8080/3001. The backend source repository is public; no source PAT is needed.
+Requirements: Node24, npm, Docker with Compose v2 (`up --wait` and multiple Compose files), private GHCR package-read access and available localhost ports8080/3001. The backend source repository is public; no source PAT is needed.
 
 ```sh
 npm ci
@@ -17,7 +17,11 @@ Before the first run, authenticate Docker to GHCR with an account permitted to r
 
 The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
 
-The runner uses the canonical Compose file without a local overlay. Its environment selects `memory://` rate-limit storage, which is sufficient for the single backend process in this isolated stack.
+The canonical backend uses in-memory rate-limit counters in its single process; no Redis service is needed.
+
+Local baseline selection forwards Playwright's native `--grep <pattern>` and `--repeat-each <count>` arguments. These are accepted only for a local baseline; CI and stress/quarantine modes reject selection arguments so their coverage cannot be narrowed. Repeated tests share one owned backend/database lifetime but receive fresh browser contexts and unique data.
+
+Example: `npm run e2e -- --grep establishments` runs establishment journeys. A unique full-title pattern selects one case. `npm run e2e -- --grep establishments --repeat-each 2` checks repeated independent records. `npm run e2e -- --repeat-each 2` repeats the entire baseline. Ordinary `npm run e2e:ci` remains the complete baseline plus five strict session proof runs.
 
 ## Updating the backend version
 
@@ -48,7 +52,7 @@ The Compose project is derived from this worktree's real path; the command lock 
 ## Baseline, stress and CI
 
 ```sh
-npm run e2e             # Auth and role baseline, production build/start.
+npm run e2e             # Auth, role and establishment baseline, production build/start.
 npm run e2e:stress      # Five fresh PW processes, ten same-role cases each, two workers.
 npm run e2e:ci          # One build/stack, baseline followed by all five proof passes.
 npm run e2e:quarantine  # Explicit diagnostic selection, outside the baseline.
@@ -64,30 +68,36 @@ The E2E workflow runs on PRs targeting develop/main, pushes to main and manual d
 
 ## Scope and sessions
 
-The suite covers real authentication, administrator/analyst permissions and session stability. API-created questionnaires are private test fixtures for permissions and authenticated reads; this suite does not claim survey CRUD, stock, measurement creation, mobile offline synchronization, mail delivery or third-party-provider coverage.
+The baseline covers authentication, administrator/analyst permissions and session stability, plus establishment creation, required-name validation, general editing and analyst characterization. Every mutable establishment belongs to one test. API-created questionnaires remain private permission fixtures. Survey CRUD, stock, measurement creation, mobile synchronization, mail delivery and real external provider availability remain outside these journeys.
 
 Authenticated tests import `test` from `e2e/fixtures`. Each worker lazily logs in once per role with its own device UUID. Role accounts come from environment variables; admin must be an actual admin. Each test still has a fresh Playwright context. A storageState fixture supplies the latest worker-owned in-memory credentials, and context teardown waits for refreshes and saves current browser storage before closing. No static authentication file is shared across workers or reused after its refresh token has been consumed.
 
 Each test finishes with an observable UI/API assertion. Do not leave asynchronous authenticated navigation running, open multiple authenticated pages in one session, log out or revoke shared fixture credentials. Use the ordinary `@playwright/test` fixture for tests whose subject is login/logout/invalid credentials. A failed authenticated test discards its worker state; the replacement worker performs its own one-time role login. Fixture code never hides a stale-session failure by logging in again.
 
-API setup uses the current browser access token without refreshing. New test resources have UUID-derived names, are never canonical seed rows, and need no unsupported delete API. Rerunning the shared seed fills gaps; it does not reset mutated fixtures. The local reset and CI teardown discard the isolated database.
+The inherited `api` helper uses the current scenario browser token and never refreshes independently. Business specs import `test` and `expect` from `e2e/flow-fixtures`; its `flow` helper prepares unique establishments through a worker-owned admin session, including for analyst scenarios. The analyst case's separate admin context visits the real dashboard so production auth can refresh, then checkpoints the latest state to that worker session. Scenario assertions use the real UI or `api`, preserving the tested role. Do not create per-test admin API logins, sign tokens, mutate SQL or share mutable seed resources.
+
+Names include the invocation, worker, retry and an intact random UUID. Each case creates its own establishments as needed. Rerunning the shared seed fills gaps and does not restore modified fixtures; reset/teardown discard the disposable database. No unsupported delete API is used.
+
+Only GET requests to `https://apis.datos.gob.ar/georef/api/direcciones` are fulfilled for deterministic address suggestions. Its exact JSON fields drive the real provider; the unique `calle.id` participates in persisted `place_id`. All backend/API calls remain real. List-mode journeys need no map tile interception.
 
 ## Locators and Page Objects
 
-Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; these tests need no new IDs or production-component edits. Use the shared `SignInPage` and `MenuPage` objects instead of duplicating login/menu mechanics.
+Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; these journeys need no new IDs. The Georef placeholder is shared with the provider through a constant without changing its behavior. Use the shared `SignInPage`, `MenuPage` and `SurveyListPage` objects instead of duplicating login/menu mechanics.
 
 Wait for a meaningful heading, loaded row, role-specific control or expected API result. Do not use fixed sleeps, `networkidle`, broad CSS classes or a negative assertion before proving the containing UI has loaded. Distinguish native `window.confirm` from app dialogs. A forbidden backoffice screen is rendered UI, while the backend independently returns HTTP403.
 
 ## Stability evidence
 
-The baseline contains eight auth and fifteen permission cases; it excludes stress and quarantine tags. The separate `@session-stress` selection contains exactly ten cases. With two actual workers, each case uses a new context, creates a private API record, reloads the real page, observes at least three successful refreshes, confirms two protected reads and rejects replay of the consumed refresh token. Nonsecret `session-proof` attachments report role, worker/parallel index, login count, refresh count and protected-read count; they never contain tokens or passwords.
+The baseline contains eight auth, fifteen permission and four establishment cases; it excludes stress and quarantine tags. The separate `@session-stress` selection contains exactly ten cases. With two actual workers, each case uses a new context, creates a private API record, reloads the real page, observes at least three successful refreshes, confirms two protected reads and rejects replay of the consumed refresh token. Nonsecret `session-proof` attachments report role, worker/parallel index, login count, refresh count and protected-read count; they never contain tokens or passwords.
 
 Acceptance requires five separate successful runs with no retry, failure, flaky result or skip. A command configured with two workers is not evidence that both workers actually executed cases; the runner checks their result metadata. The default same-role proof uses admin; analyst can be selected explicitly with E2E_STRESS_ROLE.
 
 ## Quarantine and promotion
 
-Tag a documented unstable test with `@quarantine`; the baseline run excludes that tag and `@session-stress`. Session stress is selected explicitly by its separate proof/CI mode. The same PR must link the tracking issue, name the owner, record the reproduction and explain the temporary exclusion in the test comment. Do not quarantine any authentication/permission/stability acceptance case to claim complete coverage. Do not add an intentionally failing example, `test.fixme`, silent skip or expected failure to manufacture a green baseline.
+Tag a documented unstable test with `@quarantine`; the baseline run excludes that tag and `@session-stress`. Session stress is selected explicitly by its separate proof/CI mode. The same PR must link the tracking issue, name the owner, record the reproduction and explain the temporary exclusion in the test comment. Do not quarantine any authentication/permission/stability acceptance case to report acceptance. Do not add an intentionally failing example, `test.fixme`, silent skip or expected failure to manufacture a green baseline.
 
 The initial suite adds no quarantined cases. Use the quarantine command when a real tagged case exists; an empty selection reports Playwright's no-tests-found result rather than acceptance coverage. Run quarantined cases separately using the documented quarantine command; its failures remain visible in that job/report. Remove the tag once the cause is fixed and the case passes repeatedly under the same parallel mode.
 
 The E2E job is not required initially. Propose making it required only after ten consecutive complete green develop runs with no quarantined acceptance case and no flaky retry being counted as a pass. Include report links and agreement from the maintainers; branch-protection settings are not changed by this PR. A failing non-required job still fails normally: do not use continue-on-error to mislabel failure as success.
+
+The Georef suggestions are legacy `ul/li` markup without option roles. Their scoped test locator starts from the shared-placeholder input and selects the exact test-owned address under its sibling list. Adding listbox/option semantics is a separate accessibility change.

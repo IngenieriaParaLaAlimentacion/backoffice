@@ -23,11 +23,19 @@ const allowed = new Set([
   "--down",
   "--quarantine",
 ]);
+const MODE = allowed.has(flags[0]) ? flags.shift().slice(2) : "baseline";
 assert(
-  flags.length <= 1 && flags.every((flag) => allowed.has(flag)),
-  "Choose one supported E2E mode",
+  flags.length === 0 || (MODE === "baseline" && !process.env.CI),
+  "Playwright selection arguments are supported only for a local baseline",
 );
-const MODE = flags[0]?.slice(2) ?? "baseline";
+assert(
+  flags.length % 2 === 0 &&
+    flags.every(
+      (value, index) =>
+        index % 2 === 1 || ["--grep", "--repeat-each"].includes(value),
+    ),
+  "Use --grep <pattern> and/or --repeat-each <count> after the E2E command",
+);
 assert(
   Number(process.versions.node.split(".")[0]) >= 24,
   "Use Node24 or later",
@@ -360,6 +368,7 @@ async function playwright(label, mode, summary) {
     "--project=chromium",
   ];
   if (mode === "stress") args.push("--retries=0");
+  if (mode === "baseline") args.push(...flags);
   await run(process.execPath, args, {
     env: {
       E2E_MODE: mode,
