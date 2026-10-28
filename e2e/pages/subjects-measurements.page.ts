@@ -140,14 +140,23 @@ export class SubjectsMeasurementsPage {
     return listing;
   }
 
-  async measurements(city: string, province: string, from: string, to: string) {
+  async measurements(
+    city: string,
+    province: string,
+    from: string,
+    to: string,
+    reload = false,
+  ) {
     const path = MEASUREMENTS_ENDPOINT;
     const empty = MEASUREMENTS_PAGE.noMeasurements;
     const loaded = this.listResponse(path, {
       page: "1",
       sort_order: "date_desc",
     });
-    await this.page.goto("/dashboard/anthropometric-measurements");
+    // A reload must finish the application bootstrap before another navigation
+    // can rotate its refresh token. Arm this read before either navigation.
+    if (reload) await this.page.reload();
+    else await this.page.goto("/dashboard/anthropometric-measurements");
     await this.renderedList<PaginatedMeasurementsResponse>(await loaded, empty);
     await expect(
       this.page.getByRole("heading", {

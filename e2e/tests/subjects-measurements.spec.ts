@@ -102,12 +102,13 @@ test.describe("CA5 subjects and measurements", () => {
         }),
       );
     const clinical = new SubjectsMeasurementsPage(page);
-    const verify = async () => {
+    const verify = async (reload = false) => {
       const listing = await clinical.measurements(
         establishment.city,
         establishment.province,
         "2024-01-01",
         "2024-12-31",
+        reload,
       );
       expect(listing.total).toBe(3);
       expect(listing.items.map((measurement) => measurement.id).sort()).toEqual(
@@ -138,7 +139,6 @@ test.describe("CA5 subjects and measurements", () => {
       ).toEqual(readings);
     };
     await verify();
-    await page.reload();
-    await verify();
+    await verify(true);
   });
 });
