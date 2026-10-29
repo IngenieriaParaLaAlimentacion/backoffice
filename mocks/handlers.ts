@@ -72,6 +72,12 @@ import {
   makeFoodIntakeHandler,
   makeFoodOutflowHandler,
 } from "@/mocks/handlers/foodMovement";
+import {
+  makeGenerateNutritionReportHandler,
+  makeGetNutritionReportHandler,
+  makeListNutritionReportsHandler,
+  makeNutritionReportPdfHandler,
+} from "@/mocks/handlers/nutritionReport";
 
 export const handlers = [
   makeListMeasurementsHandler(),
@@ -106,6 +112,10 @@ export const handlers = [
   makeFoodIntakeHandler(),
   makeFoodOutflowHandler(),
   makeExportEstablishmentStockHandler(),
+  makeListNutritionReportsHandler(),
+  makeGetNutritionReportHandler(),
+  makeGenerateNutritionReportHandler(),
+  makeNutritionReportPdfHandler(),
   makeListFoodCategoriesHandler(),
   makeListFoodsHandler(),
   makeListEstablishmentsHandler(),

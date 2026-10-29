@@ -1,7 +1,7 @@
 "use client";
 
 import { use } from "react";
-import EstablishmentSubjectsList from "../EstablishmentSubjectsList";
+import EstablishmentSubjectsList from "./EstablishmentSubjectsList";
 import { useEstablishmentDashboardContext } from "./layout";
 
 export default function EstablishmentSubjectsTabPanel({

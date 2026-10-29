@@ -1,7 +1,7 @@
 "use client";
 
 import { use } from "react";
-import EstablishmentFieldWorkersList from "../../EstablishmentFieldWorkersList";
+import EstablishmentFieldWorkersList from "./EstablishmentFieldWorkersList";
 
 export default function EstablishmentFieldWorkersTabPanel({
   params,

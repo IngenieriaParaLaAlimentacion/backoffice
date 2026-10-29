@@ -11,10 +11,11 @@ arg) → `constants/api.ts` (endpoint path constants/builders) → `lib/http.ts`
 source of truth for form input types (`z.infer<...>`). `types/*.ts` hold API response
 shapes (snake_case, matching the backend contract).
 
-Hooks load with `useState` + `useEffect` by default. The one exception so far is
+Hooks load with `useState` + `useEffect` by default. The exceptions so far are
 `useEstablishmentsMap`, which uses SWR to cache its response — see "Caching" under
-Establishments map. Don't convert other hooks to SWR piecemeal; it's a convention to
-agree on for the whole app.
+Establishments map — and the nutrition report hooks, which share one cache between the
+generate dialog and the report screen — see "Nutrition report". Don't convert other
+hooks to SWR piecemeal; it's a convention to agree on for the whole app.
 
 ## Auth (`context/AuthContext.tsx`)
 
@@ -386,6 +387,68 @@ until a food is actually picked. That is why both controls live in one component
 labelled "Buscar alimento" instead of sitting in the filter row next to Dirección and
 the dates — a category that looked like a listing filter would be a filter that does
 nothing. A test pins the behaviour.
+
+## Nutrition report (`nutrition-report/`)
+
+The monthly nutrition report of a comedor (#80): which nutrients fall short in what
+reached it, how the energy splits between macronutrients and food groups, and what to
+add. The backend calculates it and the AI writes the text around it; the backoffice
+reads, generates and downloads it.
+
+- **Two screens.** `(ficha)/nutrition-report/page.tsx` is a tab of the ficha that lists
+  the saved reports (`NutritionReportPanel`) and opens `GenerateNutritionReportDialog`
+  from "Generar nuevo reporte". One report is read at `nutrition-report/[month]/page.tsx`
+  (`NutritionReportDetail`), outside `(ficha)` like the stock movements history: it is
+  long, and the ficha's header would only push it down. Both are gated with
+  `nutritionReports.view`; the tab is also hidden in `(ficha)/layout.tsx` by
+  `can(...)`. Each screen's components sit next to its `page.tsx`; the pieces both
+  share (banner, load error, notice dialog and its frame) live in
+  `components/nutritionReport/`.
+- **`GET` reads, `PUT` generates — and every `PUT` counts toward the per-user AI usage
+  limit**, even when it answers with the report that was already saved or does not call
+  the AI at all (the backend's limiter runs before it knows). So nothing calls it on its own:
+  `useNutritionReport` reads with `GET`, and `generate()` only runs from a button. The
+  dialog looks the chosen month up first, so an existing report is opened for free
+  instead of generated again. The same `PUT` rewrites only the text of a report whose
+  AI text had failed ("Regenerar texto"). A `GET` 404 is the normal "not generated yet"
+  state (`report === null`), not an error.
+  The one other case the backend recalculates is a month saved **without data**: a month
+  is reportable from the first day of the next one, which can be before its last
+  intakes are loaded, so asking again fills the report in if they have arrived (and
+  writes nothing if not). The report screen offers it as "Volver a calcular", only for
+  such a month, and says so when it came back empty again.
+- **Months** are `YYYY-MM` strings, and only closed ones can be asked for: the month
+  before the current one in the Argentine calendar is the newest (`lib/reportMonth.ts`).
+  Show one with `formatReportMonth` (`lib/format.ts`), never inline.
+- **Caching.** SWR with array keys (`hooks/nutritionReportKeys.ts`), so one comedor's
+  list pages can be invalidated without touching its reports. Generating writes the
+  returned report into the cache and refreshes the list, which is why the screen it
+  navigates to has it already. `keepPreviousData` is off for a single report: another
+  month's figures must never stay on screen while this one loads.
+- **Errors** go through `getNutritionReportErrorMessage` (`lib/nutritionReportErrors.ts`),
+  keyed by `type`: the two 409s (no AI text for the PDF; no food converts to grams) are
+  told apart by it, not by status. A 429 (AI quota or attempts limit) says how long to
+  wait when the backend reports `retry_after`; it comes in the body, and `toApiError`
+  takes the `Retry-After` header as a fallback.
+- **Never render the report's `warnings`.** They are English prose from the backend.
+  The notice about foods left out is built from `foods_without_conversion` instead.
+- **What the screen shows of the analysis**: the mean adequacy and the month's total
+  energy, the nutrients, macros and GAPA groups, "Otros nutrientes" (`limits`: fiber,
+  sodium and the like, as information with no reference), the suggested foods and the
+  foods left out — the same as the backend's PDF. `reference_profile` arrives as a code
+  (`nino_7_9`), not a name: `nutritionReportReferenceProfile` turns it into who the
+  reference is for, and says nothing for a code it doesn't know. Ask the backend to send
+  the name when a second profile exists, instead of growing that map. The capped
+  adequacy (`adequacy_capped_percent`) only feeds the mean and is not typed.
+- **The scope note** ("evalúa lo que llega al comedor, no la dieta completa") is fixed
+  text sent by the backend, shown last on the screen as a quote. It is not part of the
+  AI's text, so it is there even when the AI text is unavailable.
+- **The PDF** (`useNutritionReportPdf`) never generates a report or spends quota; the
+  backend refuses it with a 409 while the AI text is missing, and the button is disabled
+  with the reason beforehand.
+- **Mocks.** `mocks/fixtures/nutritionReport.ts` keeps the saved reports per comedor
+  (reset after every test in `vitest.setup.ts`), and
+  `makeGenerateNutritionReportFailureHandler` stands in for the 429, 504 and 409 cases.
 
 ## Email verification link (`/verify-email`) and Android App Links
 

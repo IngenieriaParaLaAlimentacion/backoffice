@@ -1,4 +1,5 @@
 import { MONTHS_PER_YEAR, RELATIVE_MEASUREMENT_TIME } from "@/constants/format";
+import { REPORT_MONTH_PATTERN } from "@/constants/nutritionReport";
 
 /**
  * Every timestamp the API returns is a UTC instant ("2026-03-01T10:00:00Z"),
@@ -281,4 +282,37 @@ export function formatTimeSinceMeasurement(
     );
   if (months >= 1) return RELATIVE_MEASUREMENT_TIME.months(months);
   return RELATIVE_MEASUREMENT_TIME.days(days);
+}
+
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
+/** A wait of `seconds` as "30 segundos", "5 minutos", "2 horas" or "3 días". */
+export function formatWaitDuration(seconds: number) {
+  const plural = (count: number, one: string, many: string) =>
+    `${count} ${count === 1 ? one : many}`;
+  const rounded = Math.ceil(seconds);
+  if (rounded < SECONDS_PER_MINUTE)
+    return plural(rounded, "segundo", "segundos");
+  const minutes = Math.ceil(rounded / SECONDS_PER_MINUTE);
+  if (minutes < MINUTES_PER_HOUR) return plural(minutes, "minuto", "minutos");
+  const hours = Math.ceil(minutes / MINUTES_PER_HOUR);
+  if (hours < HOURS_PER_DAY) return plural(hours, "hora", "horas");
+  return plural(Math.ceil(hours / HOURS_PER_DAY), "día", "días");
+}
+
+/**
+ * A report month "YYYY-MM" as "agosto de 2026". Anything else is returned as
+ * it came: `Date.UTC` would roll "2026-13" over into January 2027.
+ */
+export function formatReportMonth(month: string) {
+  if (!REPORT_MONTH_PATTERN.test(month)) return month;
+  const [year, number] = month.split("-").map(Number);
+  return new Intl.DateTimeFormat("es-AR", {
+    month: "long",
+    year: "numeric",
+    // A calendar month, not an instant: no zone may shift it.
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, number - 1, 1)));
 }

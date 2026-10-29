@@ -172,6 +172,7 @@ export const ESTABLISHMENT_DETAIL_TABS = {
   subjects: "Sujetos",
   fieldWorkers: "Relevadores",
   stock: "Stock",
+  nutritionReport: "Reporte nutricional",
   profile: "Perfil",
 } as const;
 

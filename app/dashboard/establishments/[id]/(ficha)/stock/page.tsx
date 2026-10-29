@@ -1,7 +1,7 @@
 "use client";
 
 import { use } from "react";
-import EstablishmentStockList from "../../EstablishmentStockList";
+import EstablishmentStockList from "./EstablishmentStockList";
 import { useEstablishmentDashboardContext } from "../layout";
 
 export default function EstablishmentStockTabPanel({

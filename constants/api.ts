@@ -72,6 +72,17 @@ export const ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT = (
   establishmentId: string,
   movementId: string,
 ) => `/api/v1/establishments/${establishmentId}/food-movements/${movementId}`;
+export const ESTABLISHMENT_NUTRITION_REPORTS_ENDPOINT = (
+  establishmentId: string,
+) => `/api/v1/establishments/${establishmentId}/nutrition-reports`;
+export const ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT = (
+  establishmentId: string,
+  month: string,
+) => `/api/v1/establishments/${establishmentId}/nutrition-reports/${month}`;
+export const ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT = (
+  establishmentId: string,
+  month: string,
+) => `/api/v1/establishments/${establishmentId}/nutrition-reports/${month}/pdf`;
 export const ESTABLISHMENT_CHARACTERIZATION_ENDPOINT = (
   establishmentId: string,
 ) => `/api/v1/establishments/${establishmentId}/characterization`;

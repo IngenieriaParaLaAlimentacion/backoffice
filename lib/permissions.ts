@@ -24,6 +24,9 @@ export type Permission =
   | "establishments.edit"
   /** Editing an establishment's profile (its characterization). */
   | "establishments.characterization.edit"
+  /** The "Reporte nutricional" tab of an establishment: reading, generating
+   * and downloading its monthly nutrition reports. */
+  | "nutritionReports.view"
   /** Inviting admins/analysts from the Usuarios screen. */
   | "users.invite"
   /** Revoking a field worker's access to an establishment. */
@@ -41,6 +44,7 @@ const ALL_PERMISSIONS = [
   "establishments.create",
   "establishments.edit",
   "establishments.characterization.edit",
+  "nutritionReports.view",
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",
@@ -61,6 +65,7 @@ const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   admin: ALL_PERMISSIONS,
   analyst: [
     "establishments.characterization.edit",
+    "nutritionReports.view",
     "establishments.requestAccess",
   ],
   field_worker: [],

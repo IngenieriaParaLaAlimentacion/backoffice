@@ -1,4 +1,5 @@
 import { ReactElement, ReactNode } from "react";
+import { vi } from "vitest";
 import { render, RenderOptions, screen } from "@testing-library/react";
 import { server } from "@/mocks/server";
 import { makeMeHandler } from "@/mocks/handlers/user";
@@ -80,3 +81,26 @@ export async function renderWithProviders(
 }
 
 export * from "@testing-library/react";
+
+/**
+ * jsdom implements neither `URL.createObjectURL` nor `revokeObjectURL`, and
+ * `saveBlob` needs both to start a download, plus a click on a throwaway `<a>`.
+ * Stubs all three; `vitest.setup.ts` puts them back after every test. Patches
+ * the two statics rather than the `URL` global: MSW builds `new URL(...)` on
+ * every request.
+ */
+export function mockBlobDownload() {
+  const createObjectURL = vi.fn(() => "blob:mock");
+  const revokeObjectURL = vi.fn();
+  Object.assign(URL, { createObjectURL, revokeObjectURL });
+  const click = vi
+    .spyOn(HTMLAnchorElement.prototype, "click")
+    .mockImplementation(() => {});
+  return {
+    createObjectURL,
+    revokeObjectURL,
+    click,
+    /** The `<a>` elements that were clicked, in order: `download` is the file name. */
+    anchors: () => click.mock.instances as HTMLAnchorElement[],
+  };
+}

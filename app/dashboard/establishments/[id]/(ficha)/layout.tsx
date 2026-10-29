@@ -7,9 +7,9 @@ import { useEstablishmentDashboard } from "@/hooks/useEstablishmentDashboard";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import FullScreenMessage from "@/components/FullScreenMessage";
-import EstablishmentHeader from "../EstablishmentHeader";
-import EstablishmentMetrics from "../EstablishmentMetrics";
-import EstablishmentAlertBanner from "../EstablishmentAlertBanner";
+import EstablishmentHeader from "./EstablishmentHeader";
+import EstablishmentMetrics from "./EstablishmentMetrics";
+import EstablishmentAlertBanner from "./EstablishmentAlertBanner";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
   ESTABLISHMENT_DETAIL_TABS,
@@ -19,6 +19,7 @@ import {
   EstablishmentCharacterizationResponse,
   EstablishmentDashboardResponse,
 } from "@/types/establishment";
+import { nutritionReportListHref } from "@/constants/nutritionReport";
 import { useSession } from "@/context/SessionContext";
 import { Loader2 } from "lucide-react";
 
@@ -120,6 +121,14 @@ export default function EstablishmentLayout({
       href: `${baseHref}/field-workers`,
     },
     { label: ESTABLISHMENT_DETAIL_TABS.stock, href: `${baseHref}/stock` },
+    ...(can("nutritionReports.view")
+      ? [
+          {
+            label: ESTABLISHMENT_DETAIL_TABS.nutritionReport,
+            href: nutritionReportListHref(id),
+          },
+        ]
+      : []),
     {
       label: ESTABLISHMENT_DETAIL_TABS.profile,
       href: establishmentProfileHref(id),

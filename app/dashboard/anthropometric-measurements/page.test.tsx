@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Page from "./page";
-import { renderWithProviders } from "@/test-utils";
+import { mockBlobDownload, renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import {
   makeListMeasurementsHandler,
@@ -74,30 +74,20 @@ describe("AnthropometricMeasurementsPage observations", () => {
   });
 
   it("downloads a CSV containing observations through the existing export action", async () => {
-    const createObjectURL = vi.fn(() => "blob:mock");
-    Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
-    const click = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => {});
-    try {
-      const user = userEvent.setup();
-      await renderWithProviders(<Page />);
-      await screen.findByRole("table");
-      await user.click(screen.getByRole("button", { name: EXPORT.label }));
-      await waitFor(() => expect(createObjectURL).toHaveBeenCalledOnce());
-      const csv = await (
-        createObjectURL.mock.calls[0] as unknown as [Blob]
-      )[0].text();
-      expect(csv).toContain("Observación");
-      expect(csv).toContain(
-        observation.replace(/\s+/g, " ").replaceAll('"', '""'),
-      );
-      expect(click).toHaveBeenCalledOnce();
-    } finally {
-      Reflect.deleteProperty(URL, "createObjectURL");
-      Reflect.deleteProperty(URL, "revokeObjectURL");
-      click.mockRestore();
-    }
+    const { createObjectURL, click } = mockBlobDownload();
+    const user = userEvent.setup();
+    await renderWithProviders(<Page />);
+    await screen.findByRole("table");
+    await user.click(screen.getByRole("button", { name: EXPORT.label }));
+    await waitFor(() => expect(createObjectURL).toHaveBeenCalledOnce());
+    const csv = await (
+      createObjectURL.mock.calls[0] as unknown as [Blob]
+    )[0].text();
+    expect(csv).toContain("Observación");
+    expect(csv).toContain(
+      observation.replace(/\s+/g, " ").replaceAll('"', '""'),
+    );
+    expect(click).toHaveBeenCalledOnce();
   });
 
   it("keeps older API responses without observations readable", async () => {

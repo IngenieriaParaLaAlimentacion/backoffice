@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { useCsvExport } from "@/hooks/useCsvExport";
+import { mockBlobDownload } from "@/test-utils";
 import { downloadRequest } from "@/lib/http";
 import { EXPORT } from "@/constants/exports";
 import { ERROR_TYPES } from "@/lib/apiError";
@@ -12,32 +13,11 @@ import { baseHandler } from "@/mocks/handlers/base";
 
 const fetchSubjectsCsv = () => downloadRequest(SUBJECTS_EXPORT_ENDPOINT);
 
-/**
- * jsdom implements neither, and `saveBlob` needs both. Patch the two statics
- * rather than the `URL` global: MSW builds `new URL(...)` on every request.
- */
-function stubObjectUrl() {
-  const createObjectURL = vi.fn(() => "blob:mock");
-  const revokeObjectURL = vi.fn();
-  Object.assign(URL, { createObjectURL, revokeObjectURL });
-  return { createObjectURL, revokeObjectURL };
-}
-
 describe("useCsvExport", () => {
-  let objectUrl: ReturnType<typeof stubObjectUrl>;
-  let click: ReturnType<typeof vi.spyOn>;
+  let download: ReturnType<typeof mockBlobDownload>;
 
   beforeEach(() => {
-    objectUrl = stubObjectUrl();
-    click = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    Reflect.deleteProperty(URL, "createObjectURL");
-    Reflect.deleteProperty(URL, "revokeObjectURL");
-    vi.restoreAllMocks();
+    download = mockBlobDownload();
   });
 
   it("saves the file under the name the server chose", async () => {
@@ -48,16 +28,15 @@ describe("useCsvExport", () => {
     });
 
     expect(result.current.error).toBeNull();
-    expect(objectUrl.createObjectURL).toHaveBeenCalledOnce();
+    expect(download.createObjectURL).toHaveBeenCalledOnce();
     const csv = await (
-      objectUrl.createObjectURL.mock.calls[0] as unknown as [Blob]
+      download.createObjectURL.mock.calls[0] as unknown as [Blob]
     )[0].text();
     expect(csv).toContain(
       "Nombre;Documento;Fecha de nacimiento;Edad;Último relevamiento;Tiempo desde el último relevamiento",
     );
-    expect(click).toHaveBeenCalledOnce();
-    const anchor = click.mock.instances[0] as HTMLAnchorElement;
-    expect(anchor.download).toBe("sujetos_2026-08-24.csv");
+    expect(download.click).toHaveBeenCalledOnce();
+    expect(download.anchors()[0].download).toBe("sujetos_2026-08-24.csv");
   });
 
   it("saves an export with no rows: a header-only file is valid", async () => {
@@ -69,7 +48,7 @@ describe("useCsvExport", () => {
     });
 
     expect(result.current.error).toBeNull();
-    expect(click).toHaveBeenCalledOnce();
+    expect(download.click).toHaveBeenCalledOnce();
   });
 
   it("refuses a file shorter than X-Export-Row-Count and saves nothing", async () => {
@@ -89,8 +68,8 @@ describe("useCsvExport", () => {
     });
 
     await waitFor(() => expect(result.current.error).toBe(EXPORT.interrupted));
-    expect(click).not.toHaveBeenCalled();
-    expect(objectUrl.createObjectURL).not.toHaveBeenCalled();
+    expect(download.click).not.toHaveBeenCalled();
+    expect(download.createObjectURL).not.toHaveBeenCalled();
     expect(result.current.isExporting).toBe(false);
   });
 
@@ -114,6 +93,6 @@ describe("useCsvExport", () => {
     expect(result.current.error).toBe(
       SHARED_ERROR_MESSAGES[ERROR_TYPES.INVALID_DATE_RANGE],
     );
-    expect(click).not.toHaveBeenCalled();
+    expect(download.click).not.toHaveBeenCalled();
   });
 });
