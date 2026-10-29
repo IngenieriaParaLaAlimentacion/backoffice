@@ -62,6 +62,33 @@ function Pill({
   );
 }
 
+/** The table every section shares; the last column is always the status. */
+function ReportTable({
+  columns,
+  children,
+}: {
+  columns: string[];
+  children: ReactNode;
+}) {
+  return (
+    <table className={TABLE}>
+      <thead>
+        <tr className={HEAD_ROW}>
+          {columns.map((column, index) => (
+            <th
+              key={column}
+              className={index === columns.length - 1 ? STATUS_TH : TH}
+            >
+              {column}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-border">{children}</tbody>
+    </table>
+  );
+}
+
 /** Below 2/3 of the reference a nutrient is at risk: said in words, not only in tone. */
 export function NutrientsTable({
   nutrients,
@@ -87,50 +114,45 @@ export function NutrientsTable({
         )
       }
     >
-      <table className={TABLE}>
-        <thead>
-          <tr className={HEAD_ROW}>
-            <th className={TH}>{columns.nutrient}</th>
-            <th className={TH}>{columns.reference}</th>
-            <th className={TH}>{columns.minimum}</th>
-            <th className={TH}>{columns.amount}</th>
-            <th className={TH}>{columns.adequacy}</th>
-            <th className={STATUS_TH}>{columns.status}</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {nutrients.map((item) => {
-            const { name, unit } = item;
-            return (
-              <tr
-                key={item.nutrient}
-                className={item.at_risk ? TONE_ROW_CLASS.danger : "bg-card"}
-              >
-                <td className={`${TD} font-medium`}>{name}</td>
-                <td className={TD}>
-                  {formatMetric(item.reference_per_1000_kcal, unit)}
-                </td>
-                <td className={TD}>
-                  {formatMetric(item.minimum_per_1000_kcal, unit)}
-                </td>
-                <td className={TD}>
-                  {formatMetric(item.amount_per_1000_kcal, unit)}
-                </td>
-                <td className={TD}>
-                  {formatPercentage(item.adequacy_percent)}
-                </td>
-                <td className={TD}>
-                  {item.at_risk ? (
-                    <Pill tone="danger" label={SECTIONS.nutrients.atRisk} />
-                  ) : (
-                    <Pill tone="success" label={SECTIONS.nutrients.adequate} />
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <ReportTable
+        columns={[
+          columns.nutrient,
+          columns.reference,
+          columns.minimum,
+          columns.amount,
+          columns.adequacy,
+          columns.status,
+        ]}
+      >
+        {nutrients.map((item) => {
+          const { name, unit } = item;
+          return (
+            <tr
+              key={item.nutrient}
+              className={item.at_risk ? TONE_ROW_CLASS.danger : "bg-card"}
+            >
+              <td className={`${TD} font-medium`}>{name}</td>
+              <td className={TD}>
+                {formatMetric(item.reference_per_1000_kcal, unit)}
+              </td>
+              <td className={TD}>
+                {formatMetric(item.minimum_per_1000_kcal, unit)}
+              </td>
+              <td className={TD}>
+                {formatMetric(item.amount_per_1000_kcal, unit)}
+              </td>
+              <td className={TD}>{formatPercentage(item.adequacy_percent)}</td>
+              <td className={TD}>
+                {item.at_risk ? (
+                  <Pill tone="danger" label={SECTIONS.nutrients.atRisk} />
+                ) : (
+                  <Pill tone="success" label={SECTIONS.nutrients.adequate} />
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </ReportTable>
     </Section>
   );
 }
@@ -150,39 +172,31 @@ export function MacrosTable({
       subtitle={SECTIONS.macros.subtitle}
       note={commentary && <p className="text-sm">{commentary}</p>}
     >
-      <table className={TABLE}>
-        <thead>
-          <tr className={HEAD_ROW}>
-            <th className={TH}>{columns.macro}</th>
-            <th className={TH}>{columns.share}</th>
-            <th className={TH}>{columns.range}</th>
-            <th className={STATUS_TH}>{columns.status}</th>
+      <ReportTable
+        columns={[columns.macro, columns.share, columns.range, columns.status]}
+      >
+        {macros.map((item) => (
+          <tr key={item.macro} className="bg-card">
+            <td className={`${TD} font-medium`}>{item.name}</td>
+            <td className={TD}>
+              {formatPercentage(item.energy_share_percent)}
+            </td>
+            <td className={TD}>
+              {SECTIONS.macros.range(
+                formatPercentage(item.min_percent),
+                formatPercentage(item.max_percent),
+              )}
+            </td>
+            <td className={TD}>
+              {item.in_range ? (
+                <Pill tone="success" label={SECTIONS.macros.inRange} />
+              ) : (
+                <Pill tone="warning" label={SECTIONS.macros.outOfRange} />
+              )}
+            </td>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {macros.map((item) => (
-            <tr key={item.macro} className="bg-card">
-              <td className={`${TD} font-medium`}>{item.name}</td>
-              <td className={TD}>
-                {formatPercentage(item.energy_share_percent)}
-              </td>
-              <td className={TD}>
-                {SECTIONS.macros.range(
-                  formatPercentage(item.min_percent),
-                  formatPercentage(item.max_percent),
-                )}
-              </td>
-              <td className={TD}>
-                {item.in_range ? (
-                  <Pill tone="success" label={SECTIONS.macros.inRange} />
-                ) : (
-                  <Pill tone="warning" label={SECTIONS.macros.outOfRange} />
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        ))}
+      </ReportTable>
     </Section>
   );
 }
@@ -205,32 +219,23 @@ export function GapaGroupsTable({
       subtitle={SECTIONS.gapa.subtitle}
       note={commentary && <p className="text-sm">{commentary}</p>}
     >
-      <table className={TABLE}>
-        <thead>
-          <tr className={HEAD_ROW}>
-            <th className={TH}>{columns.group}</th>
-            <th className={TH}>{columns.share}</th>
-            <th className={STATUS_TH}>{columns.status}</th>
+      <ReportTable columns={[columns.group, columns.share, columns.status]}>
+        {groups.map((item) => (
+          <tr key={item.group} className="bg-card">
+            <td className={`${TD} font-medium`}>{item.name}</td>
+            <td className={TD}>
+              {formatPercentage(item.energy_share_percent)}
+            </td>
+            <td className={TD}>
+              {item.missing ? (
+                <Pill tone="warning" label={SECTIONS.gapa.missing} />
+              ) : (
+                <Pill tone="success" label={SECTIONS.gapa.present} />
+              )}
+            </td>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {groups.map((item) => (
-            <tr key={item.group} className="bg-card">
-              <td className={`${TD} font-medium`}>{item.name}</td>
-              <td className={TD}>
-                {formatPercentage(item.energy_share_percent)}
-              </td>
-              <td className={TD}>
-                {item.missing ? (
-                  <Pill tone="warning" label={SECTIONS.gapa.missing} />
-                ) : (
-                  <Pill tone="success" label={SECTIONS.gapa.present} />
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        ))}
+      </ReportTable>
       {missing.length > 0 && (
         <p className="border-t border-border px-4 py-3 text-sm">
           {SECTIONS.gapa.missingSummary(missing)}
