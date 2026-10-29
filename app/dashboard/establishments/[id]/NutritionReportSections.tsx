@@ -1,8 +1,5 @@
 import { ReactNode } from "react";
-import {
-  NUTRITION_REPORT_EXTRAS as EXTRAS,
-  NUTRITION_REPORT_SECTIONS as COPY,
-} from "@/constants/nutritionReport";
+import { NUTRITION_REPORT_SECTIONS as SECTIONS } from "@/constants/nutritionReport";
 import { PILL_CLASS, TONE_PILL_CLASS, TONE_ROW_CLASS } from "@/constants/theme";
 import { formatMetric, formatPercentage } from "@/lib/format";
 import {
@@ -74,12 +71,12 @@ export function NutrientsTable({
   /** One line per nutrient at risk, written by the AI. */
   commentary?: string[];
 }) {
-  const { columns } = COPY.nutrients;
+  const { columns } = SECTIONS.nutrients;
   if (nutrients.length === 0) return null;
   return (
     <Section
-      title={COPY.nutrients.title}
-      subtitle={COPY.nutrients.subtitle}
+      title={SECTIONS.nutrients.title}
+      subtitle={SECTIONS.nutrients.subtitle}
       note={
         commentary.length > 0 && (
           <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
@@ -124,9 +121,9 @@ export function NutrientsTable({
                 </td>
                 <td className={TD}>
                   {item.at_risk ? (
-                    <Pill tone="danger" label={COPY.nutrients.atRisk} />
+                    <Pill tone="danger" label={SECTIONS.nutrients.atRisk} />
                   ) : (
-                    <Pill tone="success" label={COPY.nutrients.adequate} />
+                    <Pill tone="success" label={SECTIONS.nutrients.adequate} />
                   )}
                 </td>
               </tr>
@@ -145,12 +142,12 @@ export function MacrosTable({
   macros: ReportMacro[];
   commentary?: string;
 }) {
-  const { columns } = COPY.macros;
+  const { columns } = SECTIONS.macros;
   if (macros.length === 0) return null;
   return (
     <Section
-      title={COPY.macros.title}
-      subtitle={COPY.macros.subtitle}
+      title={SECTIONS.macros.title}
+      subtitle={SECTIONS.macros.subtitle}
       note={commentary && <p className="text-sm">{commentary}</p>}
     >
       <table className={TABLE}>
@@ -170,16 +167,16 @@ export function MacrosTable({
                 {formatPercentage(item.energy_share_percent)}
               </td>
               <td className={TD}>
-                {COPY.macros.range(
+                {SECTIONS.macros.range(
                   formatPercentage(item.min_percent),
                   formatPercentage(item.max_percent),
                 )}
               </td>
               <td className={TD}>
                 {item.in_range ? (
-                  <Pill tone="success" label={COPY.macros.inRange} />
+                  <Pill tone="success" label={SECTIONS.macros.inRange} />
                 ) : (
-                  <Pill tone="warning" label={COPY.macros.outOfRange} />
+                  <Pill tone="warning" label={SECTIONS.macros.outOfRange} />
                 )}
               </td>
             </tr>
@@ -197,15 +194,15 @@ export function GapaGroupsTable({
   groups: ReportGapaGroup[];
   commentary?: string;
 }) {
-  const { columns } = COPY.gapa;
+  const { columns } = SECTIONS.gapa;
   if (groups.length === 0) return null;
   const missing = groups
     .filter((item) => item.missing)
     .map((item) => item.name);
   return (
     <Section
-      title={COPY.gapa.title}
-      subtitle={COPY.gapa.subtitle}
+      title={SECTIONS.gapa.title}
+      subtitle={SECTIONS.gapa.subtitle}
       note={commentary && <p className="text-sm">{commentary}</p>}
     >
       <table className={TABLE}>
@@ -225,9 +222,9 @@ export function GapaGroupsTable({
               </td>
               <td className={TD}>
                 {item.missing ? (
-                  <Pill tone="warning" label={COPY.gapa.missing} />
+                  <Pill tone="warning" label={SECTIONS.gapa.missing} />
                 ) : (
-                  <Pill tone="success" label={COPY.gapa.present} />
+                  <Pill tone="success" label={SECTIONS.gapa.present} />
                 )}
               </td>
             </tr>
@@ -236,7 +233,7 @@ export function GapaGroupsTable({
       </table>
       {missing.length > 0 && (
         <p className="border-t border-border px-4 py-3 text-sm">
-          {COPY.gapa.missingSummary(missing)}
+          {SECTIONS.gapa.missingSummary(missing)}
         </p>
       )}
     </Section>
@@ -262,9 +259,9 @@ export function SuggestedFoods({
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <h2 className={SECTION_TITLE_CLASS}>{EXTRAS.suggested.title}</h2>
+        <h2 className={SECTION_TITLE_CLASS}>{SECTIONS.suggested.title}</h2>
         <p className="text-xs text-muted-foreground">
-          {EXTRAS.suggested.subtitle}
+          {SECTIONS.suggested.subtitle}
         </p>
       </div>
       {commentary && <p className="text-sm">{commentary}</p>}
@@ -284,7 +281,7 @@ export function SuggestedFoods({
                   <li key={food.food_id} className="flex justify-between gap-3">
                     <span>{food.name}</span>
                     <span className="text-muted-foreground">
-                      {EXTRAS.suggested.per100kcal(
+                      {SECTIONS.suggested.per100kcal(
                         formatMetric(food.amount_per_100_kcal, unit),
                       )}
                     </span>
@@ -310,8 +307,8 @@ export function ExcludedFoodsNotice({
   return (
     <blockquote role="status" className={QUOTE_CLASS}>
       {names.length === 1
-        ? EXTRAS.excluded.one(names[0])
-        : EXTRAS.excluded.many(names)}
+        ? SECTIONS.excluded.one(names[0])
+        : SECTIONS.excluded.many(names)}
     </blockquote>
   );
 }
@@ -321,7 +318,7 @@ export function DataLimitations({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
     <section className="flex flex-col gap-2">
-      <h2 className={SECTION_TITLE_CLASS}>{EXTRAS.limitations.title}</h2>
+      <h2 className={SECTION_TITLE_CLASS}>{SECTIONS.limitations.title}</h2>
       <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
         {items.map((item) => (
           <li key={item}>{item}</li>

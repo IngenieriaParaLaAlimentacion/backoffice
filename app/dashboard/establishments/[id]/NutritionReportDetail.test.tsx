@@ -14,7 +14,6 @@ import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutr
 import {
   NUTRITION_REPORT_DETAIL as COPY,
   NUTRITION_REPORT_ERROR_MESSAGES,
-  NUTRITION_REPORT_EXTRAS as EXTRAS,
   NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_SECTIONS as SECTIONS,
 } from "@/constants/nutritionReport";
@@ -118,7 +117,7 @@ describe("NutritionReportDetail", () => {
     ).parentElement as HTMLElement;
     expect(within(calcium).getByText("Leche entera")).toBeInTheDocument();
     expect(
-      within(calcium).getByText(EXTRAS.suggested.per100kcal("190 mg")),
+      within(calcium).getByText(SECTIONS.suggested.per100kcal("190 mg")),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Vitamina B12", level: 3 }),
@@ -147,7 +146,7 @@ describe("NutritionReportDetail", () => {
   it("warns about the foods left out of the calculation", async () => {
     await renderDetail("2026-09");
 
-    const notice = await screen.findByText(EXTRAS.excluded.one("Varios"));
+    const notice = await screen.findByText(SECTIONS.excluded.one("Varios"));
     // Quoted, like the scope note at the end.
     expect(notice.tagName).toBe("BLOCKQUOTE");
   });
@@ -156,7 +155,7 @@ describe("NutritionReportDetail", () => {
     await renderDetail("2026-09");
 
     const title = await screen.findByRole("heading", {
-      name: EXTRAS.limitations.title,
+      name: SECTIONS.limitations.title,
     });
     expect(title).toBeInTheDocument();
     expect(screen.getByText(/sin valor cargado/)).toBeInTheDocument();
@@ -169,7 +168,7 @@ describe("NutritionReportDetail", () => {
 
     await screen.findByText(COPY.summaryUnavailable);
     expect(
-      screen.queryByText(EXTRAS.limitations.title),
+      screen.queryByText(SECTIONS.limitations.title),
     ).not.toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Calcio/ })).toBeInTheDocument();
     expect(

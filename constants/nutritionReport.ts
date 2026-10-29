@@ -153,9 +153,6 @@ export const NUTRITION_REPORT_SECTIONS = {
         ? `Grupo ausente: ${groups[0]}.`
         : `Grupos ausentes: ${groups.join(", ")}.`,
   },
-} as const;
-
-export const NUTRITION_REPORT_EXTRAS = {
   suggested: {
     title: "Alimentos sugeridos",
     subtitle:
