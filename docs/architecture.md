@@ -424,9 +424,13 @@ a test would be handed the previous test's response.
 ### CI
 
 `.github/workflows/ci.yml` runs on every pull request (each push to a branch with an open
-PR) and once on each merge into `develop` or `main`; a newer push cancels the PR's run in
-progress. Its `test` job runs lint, typecheck, tests via `npm run test:ci`, a Codecov
-upload of `coverage/lcov.info`, build, Semgrep, and a Docker build that is not pushed.
+PR) and once on each merge into `develop` or `main`. A newer push cancels a PR's run in
+progress, but never a `main`/`develop` run: each of those commits must upload coverage, or
+Codecov has no baseline for the next PR. Its `test` job runs lint, typecheck, tests via
+`npm run test:ci`, a Codecov upload of `coverage/lcov.info`, build, Semgrep, and a Docker
+build that is not pushed. The workflow token is read-only (`permissions: contents: read`),
+jobs have a `timeout-minutes`, and every action and the Semgrep image are pinned by SHA or
+digest with the version in a comment — bump both together.
 
 `.github/workflows/audit.yml` runs the dependency audit (`npm run audit` =
 `npm audit --omit=dev --audit-level=high`): on PRs and merges that touch `package.json` or
