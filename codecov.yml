@@ -1,0 +1,17 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 70%
+        threshold: 1%
+    patch:
+      default:
+        target: 70%
+        threshold: 1%
+
+comment:
+  layout: "header,diff,flags,files"
+  behavior: default
+  require_changes: false
+# What counts toward coverage is decided in vitest.config.ts (coverage.include/exclude),
+# so `npm run test:ci` locally reports the same number Codecov does.

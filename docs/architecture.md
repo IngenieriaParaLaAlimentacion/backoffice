@@ -420,3 +420,27 @@ code and tests.
 
 SWR's cache outlives a test, so `vitest.setup.ts` clears it after each one; without that,
 a test would be handed the previous test's response.
+
+### CI
+
+`.github/workflows/ci.yml` runs on every pull request (each push to a branch with an open
+PR) and once on each merge into `develop` or `main`. A newer push cancels a PR's run in
+progress, but never a `main`/`develop` run: each of those commits must upload coverage, or
+Codecov has no baseline for the next PR. Its `test` job runs lint, typecheck, tests via
+`npm run test:ci`, a Codecov upload of `coverage/lcov.info`, build, Semgrep, and a Docker
+build that is not pushed. The workflow token is read-only (`permissions: contents: read`),
+jobs have a `timeout-minutes`, and every action and the Semgrep image are pinned by SHA or
+digest with the version in a comment — bump both together.
+
+Coverage scope (`coverage.include`/`exclude`) lives only in `vitest.config.ts`; Vitest 4
+reports just the files a test imported unless `include` is set, so an untested file counts
+as 0% rather than disappearing. `codecov.yml` holds only the status targets, so the local
+`npm run test:ci` number matches Codecov's.
+
+`.github/workflows/audit.yml` runs the dependency audit (`npm run audit` =
+`npm audit --omit=dev --audit-level=high`): on PRs and merges that touch `package.json` or
+`package-lock.json`, weekly on a schedule, and on demand. It checks runtime dependencies
+only — what ships in the image — and fails on **high or critical** advisories. Since
+advisories change independently of the code, it doesn't run on unrelated PRs; a new
+advisory shows up in the weekly run. Fix it with `npm audit fix` or a version bump; don't
+lower the threshold.
