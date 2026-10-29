@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import EstablishmentStockList from "./EstablishmentStockList";
-import { renderWithProviders } from "@/test-utils";
+import { mockBlobDownload, renderWithProviders } from "@/test-utils";
 import {
   currentStock,
   MOCK_ESTABLISHMENTS,
@@ -13,30 +13,7 @@ import { EXPORT } from "@/constants/exports";
 const WITH_DATA_ID = MOCK_ESTABLISHMENTS[0].id;
 const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
 
-/** jsdom implements neither; `saveBlob` needs both to trigger a download. */
-function stubObjectUrl() {
-  const createObjectURL = vi.fn(() => "blob:mock");
-  const revokeObjectURL = vi.fn();
-  Object.assign(URL, { createObjectURL, revokeObjectURL });
-  return { createObjectURL, revokeObjectURL };
-}
-
 describe("EstablishmentStockList", () => {
-  let click: ReturnType<typeof vi.spyOn>;
-
-  beforeEach(() => {
-    stubObjectUrl();
-    click = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    Reflect.deleteProperty(URL, "createObjectURL");
-    Reflect.deleteProperty(URL, "revokeObjectURL");
-    vi.restoreAllMocks();
-  });
-
   // The desktop table and the mobile card list render at the same time in
   // jsdom (no CSS to hide either one), so every row's text exists twice —
   // scoping to the table is what makes a single `getByText` valid.
@@ -124,6 +101,7 @@ describe("EstablishmentStockList", () => {
   });
 
   it("exports the current listing as CSV", async () => {
+    const { click, anchors } = mockBlobDownload();
     await renderWithProviders(
       <EstablishmentStockList establishmentId={WITH_DATA_ID} />,
     );
@@ -132,7 +110,6 @@ describe("EstablishmentStockList", () => {
     await userEvent.click(screen.getByRole("button", { name: EXPORT.label }));
 
     await waitFor(() => expect(click).toHaveBeenCalledOnce());
-    const anchor = click.mock.instances[0] as HTMLAnchorElement;
-    expect(anchor.download).toBe("stock.csv");
+    expect(anchors()[0].download).toBe("stock.csv");
   });
 });

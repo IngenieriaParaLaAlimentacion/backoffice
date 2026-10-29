@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { renderWithProviders, screen, waitFor } from "@/test-utils";
+import {
+  mockBlobDownload,
+  renderWithProviders,
+  screen,
+  waitFor,
+} from "@/test-utils";
 import { useNutritionReport } from "@/hooks/useNutritionReport";
 import { useNutritionReportList } from "@/hooks/useNutritionReportList";
 import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
@@ -181,24 +186,14 @@ function PdfProbe({ month }: { month: string }) {
 
 describe("useNutritionReportPdf", () => {
   it("saves the PDF under the name the server chose", async () => {
-    const createObjectURL = vi.fn(() => "blob:mock");
-    Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
-    const anchors: HTMLAnchorElement[] = [];
-    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
-      this: HTMLAnchorElement,
-    ) {
-      anchors.push(this);
-    });
+    const { click, anchors } = mockBlobDownload();
     await renderWithProviders(<PdfProbe month="2026-09" />);
 
     await userEvent.click(screen.getByText("download"));
 
-    await waitFor(() => expect(anchors).toHaveLength(1));
-    expect(anchors[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
+    await waitFor(() => expect(click).toHaveBeenCalledOnce());
+    expect(anchors()[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
     expect(text("pdf-error")).toBe("");
-    Reflect.deleteProperty(URL, "createObjectURL");
-    Reflect.deleteProperty(URL, "revokeObjectURL");
-    vi.restoreAllMocks();
   });
 
   it("explains that the report must be generated again when its text is unavailable", async () => {

@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import NutritionReportPanel from "./NutritionReportPanel";
 import RequirePermission from "@/components/RequirePermission";
-import { renderWithProviders } from "@/test-utils";
+import { mockBlobDownload, renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 import {
@@ -219,16 +219,7 @@ describe("NutritionReportPanel", () => {
   });
 
   it("downloads a report's PDF from the row menu, without opening it", async () => {
-    Object.assign(URL, {
-      createObjectURL: vi.fn(() => "blob:mock"),
-      revokeObjectURL: vi.fn(),
-    });
-    const anchors: HTMLAnchorElement[] = [];
-    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
-      this: HTMLAnchorElement,
-    ) {
-      anchors.push(this);
-    });
+    const { click, anchors } = mockBlobDownload();
     await renderPanel();
 
     const [menu] = await screen.findAllByRole("button", {
@@ -239,12 +230,9 @@ describe("NutritionReportPanel", () => {
       await screen.findByRole("menuitem", { name: COPY.downloadPdf }),
     );
 
-    await waitFor(() => expect(anchors).toHaveLength(1));
-    expect(anchors[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
+    await waitFor(() => expect(click).toHaveBeenCalledOnce());
+    expect(anchors()[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
     expect(push).not.toHaveBeenCalled();
-    Reflect.deleteProperty(URL, "createObjectURL");
-    Reflect.deleteProperty(URL, "revokeObjectURL");
-    vi.restoreAllMocks();
   });
 
   it("does not offer the PDF of a report whose AI text is unavailable", async () => {

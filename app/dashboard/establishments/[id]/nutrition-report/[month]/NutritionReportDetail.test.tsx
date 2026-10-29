@@ -3,7 +3,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import NutritionReportDetail from "./NutritionReportDetail";
-import { renderWithProviders } from "@/test-utils";
+import { mockBlobDownload, renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 import {
@@ -36,9 +36,6 @@ describe("NutritionReportDetail", () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    Reflect.deleteProperty(URL, "createObjectURL");
-    Reflect.deleteProperty(URL, "revokeObjectURL");
-    vi.restoreAllMocks();
   });
 
   it("shows the report with its summary, indicator and scope note", async () => {
@@ -307,24 +304,15 @@ describe("NutritionReportDetail", () => {
   });
 
   it("downloads the PDF under the name the server chose", async () => {
-    Object.assign(URL, {
-      createObjectURL: vi.fn(() => "blob:mock"),
-      revokeObjectURL: vi.fn(),
-    });
-    const anchors: HTMLAnchorElement[] = [];
-    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
-      this: HTMLAnchorElement,
-    ) {
-      anchors.push(this);
-    });
+    const { click, anchors } = mockBlobDownload();
     await renderDetail("2026-09");
 
     await userEvent.click(
       await screen.findByRole("button", { name: COPY.downloadPdf }),
     );
 
-    await waitFor(() => expect(anchors).toHaveLength(1));
-    expect(anchors[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
+    await waitFor(() => expect(click).toHaveBeenCalledOnce());
+    expect(anchors()[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
   });
 
   it("says the report was not generated for a month without one", async () => {
