@@ -12,11 +12,10 @@ El catálogo determina la unidad: kilogramos, litros o unidades. Registrá cada 
 
 **Quién:** administrador o analista con acceso a las acciones correspondientes. **Dónde:** ficha del establecimiento → **Stock → Registrar movimiento**.
 
-1. Elegí si se trata de un ingreso o un egreso.
+1. Elegí si se trata de un ingreso o un egreso de stock.
 2. Completá fecha, alimentos, cantidades y comentarios según el formulario.
-3. Para un egreso, elegí también su destino. Para un ingreso, indicá el origen y si el aporte es único o recurrente.
-4. Guardá y verificá **Movimiento registrado**.
-5. Usá **Ver movimiento** o **Historial de Movimientos** para comprobar el registro.
+3. Si el movimiento es un egreso, especificá hacia dónde va el stock. Si es un ingreso, indicá de dónde proviene y aclará si es un aporte único o recurrente.
+4. Hacé clic en **Guardar movimiento** y andá al **Historial de Movimientos**, donde podés hacer clic sobre el registro para verificarlo y ver todo su detalle.
 
 Si se informa que el movimiento ya estaba registrado, abrí el guardado y revisalo antes de volver a cargarlo.
 

@@ -6,8 +6,8 @@ El backoffice está destinado a administradores y analistas. El menú lateral mu
 
 1. Abrí la página de acceso e ingresá el email y la contraseña.
 2. Elegí **Iniciar sesión**.
-3. Si recibiste una invitación, abrí primero su enlace, completá tus datos y creá la contraseña para activar la cuenta.
-4. Si olvidaste la contraseña, elegí **¿Olvidaste tu contraseña?**, ingresá el email y seguí el enlace del correo.
+3. Si te invitaron a ser administrador o analista del backoffice, la invitación llega por email. Abrí el enlace del correo, completá tus datos y creá la contraseña para activar la cuenta.
+4. Si olvidaste la contraseña, elegí **¿Olvidaste tu contraseña?** e ingresá tu email. Te llegará un correo de recuperación: abrí su enlace para restablecerla.
 5. Definí la nueva contraseña según los requisitos del formulario y volvé a iniciar sesión.
 
 Si un enlace venció o ya se usó, solicitá uno nuevo. Si el sistema pide esperar tras varios intentos, respetá el plazo indicado. Si tu cuenta está pendiente, pedí a un administrador que revise el registro.
@@ -22,7 +22,7 @@ Si un enlace venció o ya se usó, solicitá uno nuevo. Si el sistema pide esper
 
 1. Buscá el registro pendiente y elegí **Revisar**.
 2. Comprobá los datos y el aviso de email sin verificar, si aparece.
-3. Decidí qué establecimientos aceptar, cuáles rechazar y cuáles dejar pendientes.
+3. Decidí a qué establecimientos darle acceso al usuario y qué solicitudes de acceso rechazar o dejar pendientes.
 4. Elegí **Aceptar solicitud** y confirmá para activar la cuenta con las decisiones tomadas.
 5. Para rechazar el registro completo, elegí **Rechazar solicitud** y confirmá.
 
