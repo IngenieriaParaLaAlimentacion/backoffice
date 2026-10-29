@@ -20,6 +20,7 @@ import { NutritionReportSortOrder, ReportMonth } from "@/types/nutritionReport";
 import GenerateNutritionReportDialog from "./GenerateNutritionReportDialog";
 import NutritionReportActionsMenu from "./NutritionReportActionsMenu";
 import NutritionReportBanner from "./NutritionReportBanner";
+import NutritionReportLoadError from "./NutritionReportLoadError";
 import NutritionReportNoticeDialog, {
   ReportNotice,
 } from "./NutritionReportNoticeDialog";
@@ -115,16 +116,7 @@ export default function NutritionReportPanel({
         onClose={() => setNotice(null)}
       />
 
-      {error && (
-        <div className="flex flex-col items-start gap-2">
-          <NutritionReportBanner tone="danger" className="w-full">
-            {error}
-          </NutritionReportBanner>
-          <Button size="sm" variant="outline" onClick={refetch}>
-            {COPY.retry}
-          </Button>
-        </div>
-      )}
+      {error && <NutritionReportLoadError message={error} onRetry={refetch} />}
 
       {isLoading && reports.length === 0 ? (
         <div className="flex items-center justify-center py-8">

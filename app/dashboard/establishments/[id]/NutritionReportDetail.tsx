@@ -16,6 +16,7 @@ import {
 import { formatPercentage, formatReportMonth } from "@/lib/format";
 import { isClosedMonth } from "@/lib/reportMonth";
 import NutritionReportBanner from "./NutritionReportBanner";
+import NutritionReportLoadError from "./NutritionReportLoadError";
 import NutritionReportNoticeDialog from "./NutritionReportNoticeDialog";
 import {
   DataLimitations,
@@ -223,14 +224,7 @@ export default function NutritionReportDetail({
             <Loader2 className="animate-spin text-muted-foreground" size={28} />
           </div>
         ) : loadError ? (
-          <div className="flex flex-col items-start gap-2">
-            <NutritionReportBanner tone="danger" className="w-full">
-              {loadError}
-            </NutritionReportBanner>
-            <Button size="sm" variant="outline" onClick={refetch}>
-              {COPY.retry}
-            </Button>
-          </div>
+          <NutritionReportLoadError message={loadError} onRetry={refetch} />
         ) : missing ? (
           <p className="text-sm text-muted-foreground">{COPY.notGenerated}</p>
         ) : report ? (

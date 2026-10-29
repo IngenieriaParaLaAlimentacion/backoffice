@@ -45,7 +45,7 @@ export const nutritionReportHref = (establishmentId: string, month: string) =>
   `${nutritionReportListHref(establishmentId)}/${month}`;
 
 /** Wording the list, the dialog and the report screen all use. */
-const SHARED_COPY = {
+export const NUTRITION_REPORT_SHARED_COPY = {
   retry: "Reintentar",
   generating: "Generando…",
   viewReport: "Ver reporte",
@@ -56,7 +56,7 @@ const SHARED_COPY = {
 } as const;
 
 export const NUTRITION_REPORT_PAGE = {
-  ...SHARED_COPY,
+  ...NUTRITION_REPORT_SHARED_COPY,
   subtitle: (total: number) =>
     total === 1 ? "1 reporte generado" : `${total} reportes generados`,
   newReport: "Generar nuevo reporte",
@@ -78,7 +78,7 @@ export const NUTRITION_REPORT_PAGE = {
 } as const;
 
 export const NUTRITION_REPORT_DIALOG = {
-  ...SHARED_COPY,
+  ...NUTRITION_REPORT_SHARED_COPY,
   title: "Generar nuevo reporte",
   description: "Elegí el mes del que querés el reporte.",
   monthLabel: "Mes del reporte",
@@ -95,7 +95,7 @@ export const NUTRITION_REPORT_DIALOG = {
 } as const;
 
 export const NUTRITION_REPORT_DETAIL = {
-  ...SHARED_COPY,
+  ...NUTRITION_REPORT_SHARED_COPY,
   back: "Volver a reportes",
   title: (month: string) => `Reporte nutricional de ${month}`,
   notGenerated: "Todavía no se generó el reporte de este mes.",
