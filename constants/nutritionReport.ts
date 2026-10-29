@@ -112,6 +112,7 @@ export const NUTRITION_REPORT_DETAIL = {
     "El texto redactado por la IA no está disponible. Los datos calculados se muestran igual; podés volver a generar el texto.",
   downloading: "Descargando…",
   indicatorLabel: "Adecuación media del mes",
+  energyLabel: "Energía total que ingresó",
   overviewTitle: "Resumen",
   conclusionTitle: "Conclusión",
 } as const;
@@ -119,8 +120,8 @@ export const NUTRITION_REPORT_DETAIL = {
 export const NUTRITION_REPORT_SECTIONS = {
   nutrients: {
     title: "Nutrientes",
-    subtitle:
-      "Aporte por cada 1.000 kcal de lo que llegó al comedor, frente a la referencia. Por debajo de 2/3 de la referencia, el nutriente está en riesgo.",
+    subtitle: (profile: string | null) =>
+      `Aporte por cada 1.000 kcal de lo que llegó al comedor, frente a la referencia${profile ? ` para ${profile}` : ""}. Por debajo de 2/3 de la referencia, el nutriente está en riesgo.`,
     columns: {
       nutrient: "Nutriente",
       reference: "Referencia",
@@ -156,6 +157,12 @@ export const NUTRITION_REPORT_SECTIONS = {
         ? `Grupo ausente: ${groups[0]}.`
         : `Grupos ausentes: ${groups.join(", ")}.`,
   },
+  limits: {
+    title: "Otros nutrientes",
+    subtitle:
+      "Aporte por cada 1.000 kcal de lo que llegó al comedor. Se muestran como información, sin valor de referencia.",
+    columns: { nutrient: "Nutriente", amount: "Aporte por 1.000 kcal" },
+  },
   suggested: {
     title: "Alimentos sugeridos",
     subtitle:
@@ -172,6 +179,15 @@ export const NUTRITION_REPORT_SECTIONS = {
     title: "Limitaciones de los datos",
   },
 } as const;
+
+/** The backend sends the code of the reference profile, not a name for it. */
+const NUTRITION_REPORT_REFERENCE_PROFILES: Record<string, string> = {
+  nino_7_9: "niños y niñas de 7 a 9 años",
+};
+
+/** Who a report's reference is for, or `null` for a code this screen doesn't know. */
+export const nutritionReportReferenceProfile = (code: string) =>
+  NUTRITION_REPORT_REFERENCE_PROFILES[code] ?? null;
 
 /** Outcomes of calculating a month again, told in a dialog the user closes. */
 export const NUTRITION_REPORT_NOTICE = {

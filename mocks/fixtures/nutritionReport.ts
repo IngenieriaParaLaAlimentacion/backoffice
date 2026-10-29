@@ -36,7 +36,6 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
       reference_per_1000_kcal: 500,
       minimum_per_1000_kcal: 333.33,
       adequacy_percent: 62.0,
-      adequacy_capped_percent: 62.0,
       at_risk: true,
     },
     {
@@ -47,7 +46,6 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
       reference_per_1000_kcal: 300,
       minimum_per_1000_kcal: 200.0,
       adequacy_percent: 86.67,
-      adequacy_capped_percent: 86.67,
       at_risk: false,
     },
     {
@@ -58,7 +56,6 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
       reference_per_1000_kcal: 200,
       minimum_per_1000_kcal: 133.33,
       adequacy_percent: 75.0,
-      adequacy_capped_percent: 75.0,
       at_risk: false,
     },
     {
@@ -69,7 +66,6 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
       reference_per_1000_kcal: 1.2,
       minimum_per_1000_kcal: 0.8,
       adequacy_percent: 41.67,
-      adequacy_capped_percent: 41.67,
       at_risk: true,
     },
     {
@@ -80,7 +76,6 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
       reference_per_1000_kcal: 30,
       minimum_per_1000_kcal: 20.0,
       adequacy_percent: 116.67,
-      adequacy_capped_percent: 100,
       at_risk: false,
     },
     {
@@ -91,7 +86,6 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
       reference_per_1000_kcal: 7,
       minimum_per_1000_kcal: 4.67,
       adequacy_percent: 120.0,
-      adequacy_capped_percent: 100,
       at_risk: false,
     },
     {
@@ -102,7 +96,6 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
       reference_per_1000_kcal: 6,
       minimum_per_1000_kcal: 4.0,
       adequacy_percent: 70.0,
-      adequacy_capped_percent: 70.0,
       at_risk: false,
     },
   ],
@@ -180,6 +173,12 @@ const FULL_ANALYSIS: NutritionReportAnalysis = {
     },
   ],
   limits: [
+    {
+      code: "fibra",
+      name: "Fibra alimentaria",
+      unit: "g",
+      amount_per_1000_kcal: 9.5,
+    },
     { code: "sodio", name: "Sodio", unit: "mg", amount_per_1000_kcal: 1200 },
   ],
   top_sources: [
@@ -261,7 +260,7 @@ export function buildNutritionReport({
     establishment_id: establishmentId,
     month,
     has_data: !noData,
-    reference_profile: "Niños y niñas de 6 a 12 años",
+    reference_profile: "nino_7_9",
     analysis: structuredClone(noData ? EMPTY_ANALYSIS : FULL_ANALYSIS),
     summary_status: status,
     summary: status === "generated" ? structuredClone(SUMMARY) : null,

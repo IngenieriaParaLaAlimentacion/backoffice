@@ -52,7 +52,6 @@ export type ReportNutrient = Named & {
   /** Two thirds of the reference: below it the nutrient is `at_risk`. */
   minimum_per_1000_kcal: number;
   adequacy_percent: number;
-  adequacy_capped_percent: number;
   at_risk: boolean;
 };
 

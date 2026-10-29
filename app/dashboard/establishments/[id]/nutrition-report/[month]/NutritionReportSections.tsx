@@ -5,6 +5,7 @@ import { formatMetric, formatPercentage } from "@/lib/format";
 import {
   ReportFoodWithoutConversion,
   ReportGapaGroup,
+  ReportLimit,
   ReportMacro,
   ReportNutrient,
   ReportNutrientSources,
@@ -62,7 +63,8 @@ function Pill({
   );
 }
 
-/** The table every section shares; the last column is always the status. */
+/** The table every section shares. Its last column has a fixed width, so it
+ * lines up from one table to the next. */
 function ReportTable({
   columns,
   children,
@@ -92,9 +94,12 @@ function ReportTable({
 /** Below 2/3 of the reference a nutrient is at risk: said in words, not only in tone. */
 export function NutrientsTable({
   nutrients,
+  referenceProfile = null,
   commentary = [],
 }: {
   nutrients: ReportNutrient[];
+  /** Who the reference is for, when this screen knows the profile. */
+  referenceProfile?: string | null;
   /** One line per nutrient at risk, written by the AI. */
   commentary?: string[];
 }) {
@@ -103,7 +108,7 @@ export function NutrientsTable({
   return (
     <Section
       title={SECTIONS.nutrients.title}
-      subtitle={SECTIONS.nutrients.subtitle}
+      subtitle={SECTIONS.nutrients.subtitle(referenceProfile)}
       note={
         commentary.length > 0 && (
           <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
@@ -241,6 +246,26 @@ export function GapaGroupsTable({
           {SECTIONS.gapa.missingSummary(missing)}
         </p>
       )}
+    </Section>
+  );
+}
+
+/** Fiber, sodium and the like: what came in, with no reference to judge it by. */
+export function OtherNutrientsTable({ limits }: { limits: ReportLimit[] }) {
+  const { columns } = SECTIONS.limits;
+  if (limits.length === 0) return null;
+  return (
+    <Section title={SECTIONS.limits.title} subtitle={SECTIONS.limits.subtitle}>
+      <ReportTable columns={[columns.nutrient, columns.amount]}>
+        {limits.map((item) => (
+          <tr key={item.code} className="bg-card">
+            <td className={`${TD} font-medium`}>{item.name}</td>
+            <td className={TD}>
+              {formatMetric(item.amount_per_1000_kcal, item.unit)}
+            </td>
+          </tr>
+        ))}
+      </ReportTable>
     </Section>
   );
 }

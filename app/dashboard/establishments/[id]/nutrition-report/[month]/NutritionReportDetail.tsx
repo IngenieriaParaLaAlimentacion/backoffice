@@ -12,8 +12,13 @@ import {
   NUTRITION_REPORT_DETAIL as COPY,
   NUTRITION_REPORT_NOTICE as NOTICE,
   nutritionReportListHref,
+  nutritionReportReferenceProfile,
 } from "@/constants/nutritionReport";
-import { formatPercentage, formatReportMonth } from "@/lib/format";
+import {
+  formatMetric,
+  formatPercentage,
+  formatReportMonth,
+} from "@/lib/format";
 import { isClosedMonth } from "@/lib/reportMonth";
 import NutritionReportBanner from "@/components/nutritionReport/NutritionReportBanner";
 import NutritionReportLoadError from "@/components/nutritionReport/NutritionReportLoadError";
@@ -24,6 +29,7 @@ import {
   GapaGroupsTable,
   MacrosTable,
   NutrientsTable,
+  OtherNutrientsTable,
   QUOTE_CLASS,
   SECTION_TITLE_CLASS,
   SuggestedFoods,
@@ -33,6 +39,16 @@ import { NutritionReportResponse } from "@/types/nutritionReport";
 /** Fades in, so arriving from the generate dialog does not cut the screen in. */
 const CARD_CLASS =
   "min-w-0 flex-1 p-4 md:p-8 flex flex-col gap-6 animate-in fade-in duration-300";
+
+/** One headline figure of the month, with what it measures. */
+function Figure({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-2xl font-semibold">{value}</span>
+    </div>
+  );
+}
 
 /** The report's content. The detailed sections are added on top of this. The
  * scope note is not part of it: it closes the screen, whatever the sections. */
@@ -52,13 +68,15 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
         </NutritionReportBanner>
       )}
 
-      <div className="flex flex-col gap-1">
-        <span className="text-xs text-muted-foreground">
-          {COPY.indicatorLabel}
-        </span>
-        <span className="text-2xl font-semibold">
-          {formatPercentage(report.analysis.mean_adequacy_percent)}
-        </span>
+      <div className="flex flex-wrap gap-x-10 gap-y-4">
+        <Figure
+          label={COPY.indicatorLabel}
+          value={formatPercentage(report.analysis.mean_adequacy_percent)}
+        />
+        <Figure
+          label={COPY.energyLabel}
+          value={formatMetric(report.analysis.energy_kcal, "kcal")}
+        />
       </div>
 
       {report.summary && (
@@ -72,6 +90,9 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
 
       <NutrientsTable
         nutrients={report.analysis.nutrients}
+        referenceProfile={nutritionReportReferenceProfile(
+          report.reference_profile,
+        )}
         commentary={report.summary?.at_risk_nutrients}
       />
       <MacrosTable
@@ -87,6 +108,7 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
         nutrients={report.analysis.nutrients}
         commentary={report.summary?.incorporate}
       />
+      <OtherNutrientsTable limits={report.analysis.limits} />
 
       {report.summary && (
         <section className="flex flex-col gap-2">

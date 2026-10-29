@@ -127,6 +127,72 @@ describe("NutritionReportDetail", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows the month's total energy next to the mean adequacy", async () => {
+    await renderDetail("2026-09");
+
+    expect(await screen.findByText(COPY.energyLabel)).toBeInTheDocument();
+    expect(screen.getByText("182.000 kcal")).toBeInTheDocument();
+    expect(screen.getByText(COPY.indicatorLabel)).toBeInTheDocument();
+  });
+
+  it("lists the other nutrients as information, before the conclusion", async () => {
+    await renderDetail("2026-09");
+
+    const title = await screen.findByRole("heading", {
+      name: SECTIONS.limits.title,
+    });
+    const section = title.closest("section") as HTMLElement;
+    expect(
+      within(section).getByText(SECTIONS.limits.subtitle),
+    ).toBeInTheDocument();
+    expect(
+      within(within(section).getByRole("row", { name: /Sodio/ })).getByText(
+        "1.200 mg",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(within(section).getByRole("row", { name: /Fibra/ })).getByText(
+        "9,5 g",
+      ),
+    ).toBeInTheDocument();
+    const suggested = screen.getByRole("heading", {
+      name: SECTIONS.suggested.title,
+    });
+    const conclusion = screen.getByRole("heading", {
+      name: COPY.conclusionTitle,
+    });
+    expect(
+      suggested.compareDocumentPosition(title) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      title.compareDocumentPosition(conclusion) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("says who the reference is for", async () => {
+    await renderDetail("2026-09");
+
+    expect(
+      await screen.findByText(
+        SECTIONS.nutrients.subtitle("niños y niñas de 7 a 9 años"),
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("does not name who the reference is for when the profile is unknown", async () => {
+    saveNutritionReport({
+      ...buildNutritionReport({ month: "2026-04" }),
+      reference_profile: "nino_99",
+    });
+    await renderDetail("2026-04");
+
+    expect(
+      await screen.findByText(SECTIONS.nutrients.subtitle(null)),
+    ).toBeInTheDocument();
+  });
+
   it("shows the AI's reading under each table", async () => {
     await renderDetail("2026-09");
 
@@ -181,6 +247,7 @@ describe("NutritionReportDetail", () => {
 
     expect(await screen.findByText(COPY.noData)).toBeInTheDocument();
     expect(screen.queryByText(COPY.indicatorLabel)).not.toBeInTheDocument();
+    expect(screen.queryByText(COPY.energyLabel)).not.toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: COPY.downloadPdf }),

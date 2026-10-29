@@ -432,6 +432,14 @@ reads, generates and downloads it.
   takes the `Retry-After` header as a fallback.
 - **Never render the report's `warnings`.** They are English prose from the backend.
   The notice about foods left out is built from `foods_without_conversion` instead.
+- **What the screen shows of the analysis**: the mean adequacy and the month's total
+  energy, the nutrients, macros and GAPA groups, "Otros nutrientes" (`limits`: fiber,
+  sodium and the like, as information with no reference), the suggested foods and the
+  foods left out — the same as the backend's PDF. `reference_profile` arrives as a code
+  (`nino_7_9`), not a name: `nutritionReportReferenceProfile` turns it into who the
+  reference is for, and says nothing for a code it doesn't know. Ask the backend to send
+  the name when a second profile exists, instead of growing that map. The capped
+  adequacy (`adequacy_capped_percent`) only feeds the mean and is not typed.
 - **The scope note** ("evalúa lo que llega al comedor, no la dieta completa") is fixed
   text sent by the backend, shown last on the screen as a quote. It is not part of the
   AI's text, so it is there even when the AI text is unavailable.
