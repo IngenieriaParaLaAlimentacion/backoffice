@@ -432,6 +432,11 @@ build that is not pushed. The workflow token is read-only (`permissions: content
 jobs have a `timeout-minutes`, and every action and the Semgrep image are pinned by SHA or
 digest with the version in a comment — bump both together.
 
+Coverage scope (`coverage.include`/`exclude`) lives only in `vitest.config.ts`; Vitest 4
+reports just the files a test imported unless `include` is set, so an untested file counts
+as 0% rather than disappearing. `codecov.yml` holds only the status targets, so the local
+`npm run test:ci` number matches Codecov's.
+
 `.github/workflows/audit.yml` runs the dependency audit (`npm run audit` =
 `npm audit --omit=dev --audit-level=high`): on PRs and merges that touch `package.json` or
 `package-lock.json`, weekly on a schedule, and on demand. It checks runtime dependencies
