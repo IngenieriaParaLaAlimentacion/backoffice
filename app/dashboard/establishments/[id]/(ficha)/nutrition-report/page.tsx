@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import RequirePermission from "@/components/RequirePermission";
-import NutritionReportPanel from "../../NutritionReportPanel";
+import NutritionReportPanel from "./NutritionReportPanel";
 
 export default function EstablishmentNutritionReportTabPanel({
   params,

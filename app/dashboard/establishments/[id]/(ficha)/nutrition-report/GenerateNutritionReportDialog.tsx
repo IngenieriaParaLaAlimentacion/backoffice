@@ -14,8 +14,8 @@ import {
 } from "@/constants/nutritionReport";
 import { formatReportMonth } from "@/lib/format";
 import { closedMonthOptions, lastClosedMonth } from "@/lib/reportMonth";
-import NutritionReportBanner from "./NutritionReportBanner";
-import NutritionReportDialogFrame from "./NutritionReportDialogFrame";
+import NutritionReportBanner from "@/components/nutritionReport/NutritionReportBanner";
+import NutritionReportDialogFrame from "@/components/nutritionReport/NutritionReportDialogFrame";
 
 /**
  * Mounted only while the dialog is open, so every opening starts again from

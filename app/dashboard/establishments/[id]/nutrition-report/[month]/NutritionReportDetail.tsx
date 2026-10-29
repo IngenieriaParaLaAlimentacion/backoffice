@@ -15,9 +15,9 @@ import {
 } from "@/constants/nutritionReport";
 import { formatPercentage, formatReportMonth } from "@/lib/format";
 import { isClosedMonth } from "@/lib/reportMonth";
-import NutritionReportBanner from "./NutritionReportBanner";
-import NutritionReportLoadError from "./NutritionReportLoadError";
-import NutritionReportNoticeDialog from "./NutritionReportNoticeDialog";
+import NutritionReportBanner from "@/components/nutritionReport/NutritionReportBanner";
+import NutritionReportLoadError from "@/components/nutritionReport/NutritionReportLoadError";
+import NutritionReportNoticeDialog from "@/components/nutritionReport/NutritionReportNoticeDialog";
 import {
   DataLimitations,
   ExcludedFoodsNotice,

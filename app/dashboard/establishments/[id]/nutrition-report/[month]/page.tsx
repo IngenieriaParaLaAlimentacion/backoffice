@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import RequirePermission from "@/components/RequirePermission";
-import NutritionReportDetail from "../../NutritionReportDetail";
+import NutritionReportDetail from "./NutritionReportDetail";
 
 /**
  * A screen of its own rather than a nested tab: one report is read at length

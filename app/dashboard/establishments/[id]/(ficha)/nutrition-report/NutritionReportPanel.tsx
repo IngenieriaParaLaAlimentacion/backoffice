@@ -19,11 +19,11 @@ import { formatReportMonth, formatTimestampDate } from "@/lib/format";
 import { NutritionReportSortOrder, ReportMonth } from "@/types/nutritionReport";
 import GenerateNutritionReportDialog from "./GenerateNutritionReportDialog";
 import NutritionReportActionsMenu from "./NutritionReportActionsMenu";
-import NutritionReportBanner from "./NutritionReportBanner";
-import NutritionReportLoadError from "./NutritionReportLoadError";
+import NutritionReportBanner from "@/components/nutritionReport/NutritionReportBanner";
+import NutritionReportLoadError from "@/components/nutritionReport/NutritionReportLoadError";
 import NutritionReportNoticeDialog, {
   ReportNotice,
-} from "./NutritionReportNoticeDialog";
+} from "@/components/nutritionReport/NutritionReportNoticeDialog";
 
 /** The "Reporte nutricional" tab: the comedor's saved reports. */
 export default function NutritionReportPanel({

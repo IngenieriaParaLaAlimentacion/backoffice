@@ -401,7 +401,9 @@ reads, generates and downloads it.
   (`NutritionReportDetail`), outside `(ficha)` like the stock movements history: it is
   long, and the ficha's header would only push it down. Both are gated with
   `nutrition_reports.view`; the tab is also hidden in `(ficha)/layout.tsx` by
-  `can(...)`.
+  `can(...)`. Each screen's components sit next to its `page.tsx`; the pieces both
+  share (banner, load error, notice dialog and its frame) live in
+  `components/nutritionReport/`.
 - **`GET` reads, `PUT` generates — and every `PUT` counts toward the per-user AI usage
   limit**, even when it answers with the report that was already saved or does not call
   the AI at all (the backend's limiter runs before it knows). So nothing calls it on its own:
