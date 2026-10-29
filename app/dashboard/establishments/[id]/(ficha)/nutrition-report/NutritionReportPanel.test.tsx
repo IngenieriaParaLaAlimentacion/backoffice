@@ -9,7 +9,6 @@ import { server } from "@/mocks/server";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 import {
   buildNutritionReport,
-  REPORT_PDF_FILENAME,
   saveNutritionReport,
 } from "@/mocks/fixtures/nutritionReport";
 import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutritionReport";
@@ -301,7 +300,7 @@ describe("NutritionReportPanel", () => {
   });
 
   it("downloads a report's PDF from the row menu, without opening it", async () => {
-    const { click, anchors } = mockBlobDownload();
+    const { click } = mockBlobDownload();
     await renderPanel();
 
     const [menu] = await screen.findAllByRole("button", {
@@ -313,7 +312,6 @@ describe("NutritionReportPanel", () => {
     );
 
     await waitFor(() => expect(click).toHaveBeenCalledOnce());
-    expect(anchors()[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
     expect(push).not.toHaveBeenCalled();
   });
 

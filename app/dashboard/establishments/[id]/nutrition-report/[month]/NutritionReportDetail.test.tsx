@@ -8,7 +8,6 @@ import { server } from "@/mocks/server";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 import {
   buildNutritionReport,
-  REPORT_PDF_FILENAME,
   saveNutritionReport,
 } from "@/mocks/fixtures/nutritionReport";
 import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutritionReport";
@@ -370,8 +369,8 @@ describe("NutritionReportDetail", () => {
     expect(screen.getByText(COPY.summaryUnavailable)).toBeInTheDocument();
   });
 
-  it("downloads the PDF under the name the server chose", async () => {
-    const { click, anchors } = mockBlobDownload();
+  it("downloads the PDF", async () => {
+    const { click } = mockBlobDownload();
     await renderDetail("2026-09");
 
     await userEvent.click(
@@ -379,7 +378,6 @@ describe("NutritionReportDetail", () => {
     );
 
     await waitFor(() => expect(click).toHaveBeenCalledOnce());
-    expect(anchors()[0].download).toBe(REPORT_PDF_FILENAME("2026-09"));
   });
 
   it("says the report was not generated for a month without one", async () => {

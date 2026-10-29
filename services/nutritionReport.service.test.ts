@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { http, HttpResponse } from "msw";
 import { server } from "@/mocks/server";
 import { apiRequest, downloadRequest } from "@/lib/http";
-import { ApiError } from "@/lib/apiError";
-import { getNutritionReportErrorMessage } from "@/lib/nutritionReportErrors";
+import { ApiError, ERROR_TYPES, getRetryAfterSeconds } from "@/lib/apiError";
+import {
+  ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT,
+  ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT,
+  ESTABLISHMENT_NUTRITION_REPORTS_ENDPOINT,
+} from "@/constants/api";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
-import { REPORT_PDF_FILENAME } from "@/mocks/fixtures/nutritionReport";
-import { makeGenerateNutritionReportFailureHandler } from "@/mocks/handlers/nutritionReport";
+import { buildNutritionReport } from "@/mocks/fixtures/nutritionReport";
 import {
   downloadNutritionReportPdfAction,
   generateNutritionReportAction,
@@ -14,7 +18,6 @@ import {
 } from "./nutritionReport.service";
 
 const ESTABLISHMENT = MOCK_ESTABLISHMENTS[0].id;
-const WITHOUT_INTAKES = MOCK_ESTABLISHMENTS[1].id;
 
 const caught = async (promise: Promise<unknown>) => {
   try {
@@ -25,135 +28,153 @@ const caught = async (promise: Promise<unknown>) => {
   throw new Error("expected the call to fail");
 };
 
-describe("nutrition report mocks", () => {
-  it("lists the saved reports, newest month first", async () => {
-    const page = await listNutritionReportsAction(apiRequest, ESTABLISHMENT);
+const problem = (
+  type: string,
+  status: number,
+  headers: Record<string, string> = {},
+) =>
+  HttpResponse.json(
+    { type, title: type, status, detail: "x", instance: "/" },
+    {
+      status,
+      headers: { "Content-Type": "application/problem+json", ...headers },
+    },
+  );
 
-    expect(page.items.map((item) => item.month)).toEqual([
-      "2026-09",
-      "2026-08",
-      "2026-07",
-    ]);
+describe("nutrition report service", () => {
+  describe("listNutritionReportsAction", () => {
+    it("sends the page, the page size and the sort order as query parameters", async () => {
+      let query: URLSearchParams | undefined;
+      server.use(
+        http.get(
+          ESTABLISHMENT_NUTRITION_REPORTS_ENDPOINT(":id"),
+          ({ request }) => {
+            query = new URL(request.url).searchParams;
+            return HttpResponse.json({
+              items: [],
+              total: 0,
+              page: 2,
+              page_size: 12,
+              total_pages: 1,
+            });
+          },
+        ),
+      );
+
+      await listNutritionReportsAction(apiRequest, ESTABLISHMENT, {
+        sort_order: "month_asc",
+        page: 2,
+        page_size: 12,
+      });
+
+      expect(Object.fromEntries(query!)).toEqual({
+        sort_order: "month_asc",
+        page: "2",
+        page_size: "12",
+      });
+    });
+
+    it("sends no query string when it has no parameters", async () => {
+      let search: string | undefined;
+      server.use(
+        http.get(
+          ESTABLISHMENT_NUTRITION_REPORTS_ENDPOINT(":id"),
+          ({ request }) => {
+            search = new URL(request.url).search;
+            return HttpResponse.json({
+              items: [],
+              total: 0,
+              page: 1,
+              page_size: 20,
+              total_pages: 1,
+            });
+          },
+        ),
+      );
+
+      await listNutritionReportsAction(apiRequest, ESTABLISHMENT);
+
+      expect(search).toBe("");
+    });
   });
 
-  it("reads a saved report and answers 404 for a month without one", async () => {
-    const report = await getNutritionReportAction(
-      apiRequest,
-      ESTABLISHMENT,
-      "2026-09",
-    );
-    expect(report.summary_status).toBe("generated");
+  describe("getNutritionReportAction", () => {
+    it("throws an ApiError that keeps the backend's status and type", async () => {
+      server.use(
+        http.get(ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT(":id", ":month"), () =>
+          problem(ERROR_TYPES.NUTRITION_REPORT_NOT_FOUND, 404),
+        ),
+      );
 
-    const error = await caught(
-      getNutritionReportAction(apiRequest, ESTABLISHMENT, "2026-06"),
-    );
-    expect(error.status).toBe(404);
+      const error = await caught(
+        getNutritionReportAction(apiRequest, ESTABLISHMENT, "2026-06"),
+      );
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error.status).toBe(404);
+      expect(error.type).toBe(ERROR_TYPES.NUTRITION_REPORT_NOT_FOUND);
+    });
   });
 
-  it("generates a missing month with 201 and then reads it back", async () => {
-    const report = await generateNutritionReportAction(
-      apiRequest,
-      ESTABLISHMENT,
-      "2026-06",
-    );
-    expect(report.has_data).toBe(true);
+  describe("generateNutritionReportAction", () => {
+    it("asks with PUT and returns the report", async () => {
+      const saved = buildNutritionReport({ month: "2026-06" });
+      server.use(
+        http.put(ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT(":id", ":month"), () =>
+          HttpResponse.json(saved, { status: 201 }),
+        ),
+      );
 
-    const saved = await getNutritionReportAction(
-      apiRequest,
-      ESTABLISHMENT,
-      "2026-06",
-    );
-    expect(saved.id).toBe(report.id);
+      const report = await generateNutritionReportAction(
+        apiRequest,
+        ESTABLISHMENT,
+        "2026-06",
+      );
+
+      expect(report.id).toBe(saved.id);
+    });
+
+    it("keeps the Retry-After header of a 429 whose body does not say how long", async () => {
+      server.use(
+        http.put(ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT(":id", ":month"), () =>
+          problem(ERROR_TYPES.RATE_LIMITED, 429, { "Retry-After": "30" }),
+        ),
+      );
+
+      const error = await caught(
+        generateNutritionReportAction(apiRequest, ESTABLISHMENT, "2026-06"),
+      );
+
+      expect(error.status).toBe(429);
+      expect(getRetryAfterSeconds(error)).toBe(30);
+    });
   });
 
-  it("generates a month without intakes as no data, with no AI text", async () => {
-    const report = await generateNutritionReportAction(
-      apiRequest,
-      WITHOUT_INTAKES,
-      "2026-06",
-    );
+  describe("downloadNutritionReportPdfAction", () => {
+    it("asks for the PDF of that month and hands the file back", async () => {
+      let pathname: string | undefined;
+      server.use(
+        http.get(
+          ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT(":id", ":month"),
+          ({ request }) => {
+            pathname = new URL(request.url).pathname;
+            return new HttpResponse("%PDF-1.4 mock", {
+              headers: { "Content-Type": "application/pdf" },
+            });
+          },
+        ),
+      );
 
-    expect(report.has_data).toBe(false);
-    expect(report.summary_status).toBe("not_applicable");
-    expect(report.summary).toBeNull();
-    expect(report.analysis.nutrients).toEqual([]);
-  });
-
-  it("rewrites the text of a report whose AI text was unavailable", async () => {
-    const report = await generateNutritionReportAction(
-      apiRequest,
-      ESTABLISHMENT,
-      "2026-08",
-    );
-
-    expect(report.summary_status).toBe("generated");
-    expect(report.summary).not.toBeNull();
-  });
-
-  it("refuses a month that has not ended", async () => {
-    const error = await caught(
-      generateNutritionReportAction(apiRequest, ESTABLISHMENT, "2999-01"),
-    );
-
-    expect(error.status).toBe(422);
-    expect(getNutritionReportErrorMessage(error)).toMatch(/todavía no terminó/);
-  });
-
-  it("downloads the PDF with the name the server gives", async () => {
-    const file = await downloadNutritionReportPdfAction(
-      downloadRequest,
-      ESTABLISHMENT,
-      "2026-09",
-    );
-
-    expect(file.filename).toBe(REPORT_PDF_FILENAME("2026-09"));
-  });
-
-  it("downloads a month without intakes too", async () => {
-    await generateNutritionReportAction(apiRequest, WITHOUT_INTAKES, "2026-06");
-
-    const file = await downloadNutritionReportPdfAction(
-      downloadRequest,
-      WITHOUT_INTAKES,
-      "2026-06",
-    );
-
-    expect(file.filename).toBe(REPORT_PDF_FILENAME("2026-06"));
-  });
-
-  it("refuses the PDF while the AI text is unavailable", async () => {
-    const error = await caught(
-      downloadNutritionReportPdfAction(
+      const file = await downloadNutritionReportPdfAction(
         downloadRequest,
         ESTABLISHMENT,
-        "2026-08",
-      ),
-    );
+        "2026-09",
+      );
 
-    expect(error.status).toBe(409);
-    expect(getNutritionReportErrorMessage(error)).toMatch(/volvé a generar/i);
-  });
-
-  it("surfaces how long to wait from a 429", async () => {
-    server.use(
-      makeGenerateNutritionReportFailureHandler("quota", { retryAfter: 90 }),
-    );
-
-    const error = await caught(
-      generateNutritionReportAction(apiRequest, ESTABLISHMENT, "2026-06"),
-    );
-
-    expect(error.status).toBe(429);
-    expect(getNutritionReportErrorMessage(error)).toMatch(/2 minutos/);
-  });
-
-  it("gives a generic notice when the 429 reports no wait", async () => {
-    server.use(makeGenerateNutritionReportFailureHandler("rate-limited"));
-
-    const error = await caught(
-      generateNutritionReportAction(apiRequest, ESTABLISHMENT, "2026-06"),
-    );
-
-    expect(getNutritionReportErrorMessage(error)).toMatch(/más tarde/);
+      expect(pathname).toBe(
+        ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT(ESTABLISHMENT, "2026-09"),
+      );
+      expect(await file.blob.text()).toBe("%PDF-1.4 mock");
+    });
   });
 });
