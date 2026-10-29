@@ -70,7 +70,26 @@ it("shows current age and elapsed latest measurement in the table and cards", as
   ).toBeInTheDocument();
 });
 
-it("shows placeholders for invalid demographics and future or invalid readings", async () => {
+it("shows later readings on today's Argentina calendar day as hoy", async () => {
+  server.use(
+    listHandler([
+      {
+        ...subject,
+        latest_measurement: {
+          ...subject.latest_measurement!,
+          measured_at: "2026-10-29T02:59:59Z",
+        },
+      },
+    ]),
+  );
+  await renderWithProviders(<Page />);
+  const table = await screen.findByRole("table");
+  const row = within(table).getAllByRole("row")[1];
+  expect(within(row).getByText("28/10/2026")).toBeInTheDocument();
+  expect(within(row).getByText("hoy")).toBeInTheDocument();
+});
+
+it("shows placeholders for invalid demographics and readings on future days", async () => {
   server.use(
     listHandler([
       {
@@ -88,7 +107,7 @@ it("shows placeholders for invalid demographics and future or invalid readings",
         birth_date: "2027-01-01",
         latest_measurement: {
           ...subject.latest_measurement!,
-          measured_at: "2026-10-28T14:00:00Z",
+          measured_at: "2026-10-29T03:00:00Z",
         },
       },
     ]),
@@ -139,7 +158,7 @@ it("saves the six-column CSV supplied by the server", async () => {
     expect(csv).toContain(
       "Nombre;Documento;Fecha de nacimiento;Edad;Último relevamiento;Tiempo desde el último relevamiento",
     );
-    expect(csv).toContain("11 a 5 m;14/03/2026 07:30;hace 5 meses");
+    expect(csv).toContain("11a 5m;14/03/2026 07:30;hace 5 meses");
     expect(click).toHaveBeenCalledOnce();
   } finally {
     Reflect.deleteProperty(URL, "createObjectURL");

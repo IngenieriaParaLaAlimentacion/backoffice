@@ -1,4 +1,4 @@
-import { RELATIVE_MEASUREMENT_TIME } from "@/constants/format";
+import { MONTHS_PER_YEAR, RELATIVE_MEASUREMENT_TIME } from "@/constants/format";
 
 /**
  * Every timestamp the API returns is a UTC instant ("2026-03-01T10:00:00Z"),
@@ -183,8 +183,8 @@ export function formatMetric(value: number | null | undefined, unit?: string) {
 /** Whole months -> "7 a 3 m". Returns "—" for null. */
 export function formatAgeMonths(months: number | null | undefined) {
   if (months === null || months === undefined) return EMPTY_VALUE;
-  const years = Math.floor(months / 12);
-  const rest = months % 12;
+  const years = Math.floor(months / MONTHS_PER_YEAR);
+  const rest = months % MONTHS_PER_YEAR;
   if (years === 0) return `${rest} m`;
   return rest === 0 ? `${years} a` : `${years} a ${rest} m`;
 }
@@ -216,7 +216,7 @@ function parseCalendarDate(value: string): CalendarDate | null {
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
-  if (year < 1 || month < 1 || month > 12) return null;
+  if (year < 1 || month < 1 || month > MONTHS_PER_YEAR) return null;
   const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
   const daysInMonth = [
     31,
@@ -238,7 +238,8 @@ function parseCalendarDate(value: string): CalendarDate | null {
 }
 
 function completedMonths(start: CalendarDate, end: CalendarDate) {
-  const months = (end.year - start.year) * 12 + end.month - start.month;
+  const months =
+    (end.year - start.year) * MONTHS_PER_YEAR + end.month - start.month;
   return Math.max(0, months - (end.day < start.day ? 1 : 0));
 }
 
@@ -264,10 +265,6 @@ export function formatTimeSinceMeasurement(
   now: Date = new Date(),
 ) {
   if (!value || Number.isNaN(now.getTime())) return EMPTY_VALUE;
-  const measured = new Date(value);
-  if (Number.isNaN(measured.getTime()) || measured.getTime() > now.getTime()) {
-    return EMPTY_VALUE;
-  }
   const parts = timestampParts(value);
   const start = parts
     ? parseCalendarDate(`${parts.year}-${parts.month}-${parts.day}`)
@@ -275,10 +272,13 @@ export function formatTimeSinceMeasurement(
   const end = parseCalendarDate(argentineToday(now));
   if (!start || !end) return EMPTY_VALUE;
   const days = calendarDayIndex(end) - calendarDayIndex(start);
+  if (days < 0) return EMPTY_VALUE;
   if (days === 0) return RELATIVE_MEASUREMENT_TIME.today;
   const months = completedMonths(start, end);
-  if (months >= 12)
-    return RELATIVE_MEASUREMENT_TIME.years(Math.floor(months / 12));
+  if (months >= MONTHS_PER_YEAR)
+    return RELATIVE_MEASUREMENT_TIME.years(
+      Math.floor(months / MONTHS_PER_YEAR),
+    );
   if (months >= 1) return RELATIVE_MEASUREMENT_TIME.months(months);
   return RELATIVE_MEASUREMENT_TIME.days(days);
 }
