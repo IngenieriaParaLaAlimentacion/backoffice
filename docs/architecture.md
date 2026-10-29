@@ -425,10 +425,13 @@ a test would be handed the previous test's response.
 
 `.github/workflows/ci.yml` runs on every pull request (each push to a branch with an open
 PR) and once on each merge into `develop` or `main`; a newer push cancels the PR's run in
-progress. It has two parallel jobs: `audit` (dependency audit) and `test` (lint, typecheck,
-tests via `npm run test:ci`, a Codecov upload of `coverage/lcov.info`, build, Semgrep, and
-a Docker build that is not pushed).
+progress. Its `test` job runs lint, typecheck, tests via `npm run test:ci`, a Codecov
+upload of `coverage/lcov.info`, build, Semgrep, and a Docker build that is not pushed.
 
-The audit (`npm run audit` = `npm audit --audit-level=high`) fails on **high or critical**
-advisories only. A new advisory can turn CI red with no code change. Fix it with
-`npm audit fix` or a version bump; don't lower the threshold.
+`.github/workflows/audit.yml` runs the dependency audit (`npm run audit` =
+`npm audit --omit=dev --audit-level=high`): on PRs and merges that touch `package.json` or
+`package-lock.json`, weekly on a schedule, and on demand. It checks runtime dependencies
+only — what ships in the image — and fails on **high or critical** advisories. Since
+advisories change independently of the code, it doesn't run on unrelated PRs; a new
+advisory shows up in the weekly run. Fix it with `npm audit fix` or a version bump; don't
+lower the threshold.

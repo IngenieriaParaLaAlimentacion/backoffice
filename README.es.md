@@ -99,7 +99,7 @@ commit vía Husky.
 ## Auditoría de dependencias
 
 ```bash
-# Falla ante vulnerabilidades altas o críticas (también corre en CI)
+# Falla ante vulnerabilidades altas o críticas en dependencias de runtime (también corre en CI)
 npm run audit
 ```
 

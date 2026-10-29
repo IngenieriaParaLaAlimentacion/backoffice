@@ -96,7 +96,7 @@ npm run typecheck
 ## Dependency Audit
 
 ```bash
-# Fails on high or critical vulnerabilities (CI runs it too)
+# Fails on high or critical vulnerabilities in runtime deps (CI runs it too)
 npm run audit
 ```
 
