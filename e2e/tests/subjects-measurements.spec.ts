@@ -76,7 +76,7 @@ test.describe("subjects and measurements", () => {
     const csvResponse = page.waitForResponse((response) =>
       matchesApiRequest(response.request(), "GET", SUBJECTS_EXPORT_ENDPOINT),
     );
-    await assertDownload(page, {
+    const file = await assertDownload(page, {
       path: SUBJECTS_EXPORT_ENDPOINT,
       click: () =>
         page.getByRole("button", { name: EXPORT.label, exact: true }).click(),
@@ -84,7 +84,7 @@ test.describe("subjects and measurements", () => {
       expectedRows: subjects.length,
     });
     const exportResponse = await csvResponse;
-    const csv = (await exportResponse.text()).replace(/^\uFEFF/, "");
+    const csv = file.toString("utf8").replace(/^\uFEFF/, "");
     const lines = csv.trimEnd().split("\r\n");
     expect(lines[0]).toBe(
       "Nombre;Documento;Fecha de nacimiento;Edad;Último relevamiento;Tiempo desde el último relevamiento",
