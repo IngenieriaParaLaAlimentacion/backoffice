@@ -77,7 +77,7 @@ describe("useCsvExport", () => {
     server.use(
       makeExportSubjectsHandler({
         rows: [
-          "Ana Alvarez;20000001;14/03/2015;11 a 5 m;14/03/2026 07:30;hace 5 meses",
+          "Ana Alvarez;20000001;14/03/2015;11a 5m;14/03/2026 07:30;hace 5 meses",
         ],
         declaredRowCount: 2,
       }),

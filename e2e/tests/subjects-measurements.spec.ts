@@ -96,9 +96,9 @@ test.describe("subjects and measurements", () => {
     for (const subject of subjects) {
       const cells = rows.find((row) => row[1] === String(subject.dni));
       expect(cells).toBeDefined();
-      expect(cells?.[3]).toBe(
-        formatAgeMonths(ageInMonths(subject.birth_date, exportDay!)),
-      );
+      const months = ageInMonths(subject.birth_date, exportDay!);
+      expect(months).not.toBeNull();
+      expect(cells?.[3]).toBe(`${Math.floor(months! / 12)}a ${months! % 12}m`);
       expect(cells?.[4]).toBe("");
       expect(cells?.[5]).toBe("");
     }
