@@ -12,7 +12,7 @@ export default function EstablishmentNutritionReportTabPanel({
   const { id } = use(params);
 
   return (
-    <RequirePermission permission="nutrition_reports.view">
+    <RequirePermission permission="nutritionReports.view">
       <NutritionReportPanel establishmentId={id} />
     </RequirePermission>
   );

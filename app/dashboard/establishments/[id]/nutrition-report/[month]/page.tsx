@@ -17,7 +17,7 @@ export default function EstablishmentNutritionReportPage({
   const { id, month } = use(params);
 
   return (
-    <RequirePermission permission="nutrition_reports.view">
+    <RequirePermission permission="nutritionReports.view">
       <NutritionReportDetail establishmentId={id} month={month} />
     </RequirePermission>
   );

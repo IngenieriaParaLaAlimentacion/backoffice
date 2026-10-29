@@ -344,7 +344,7 @@ describe("NutritionReportPanel", () => {
     );
 
     await renderWithProviders(
-      <RequirePermission permission="nutrition_reports.view">
+      <RequirePermission permission="nutritionReports.view">
         <NutritionReportPanel establishmentId={ESTABLISHMENT} />
       </RequirePermission>,
       { role: "field_worker" },

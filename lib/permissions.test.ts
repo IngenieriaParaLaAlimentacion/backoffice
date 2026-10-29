@@ -56,10 +56,10 @@ describe("can", () => {
 
   it("lets admins and analysts, not field workers, view nutrition reports", () => {
     for (const role of ["superadmin", "admin", "analyst"] as const) {
-      expect(can(role, "nutrition_reports.view")).toBe(true);
+      expect(can(role, "nutritionReports.view")).toBe(true);
     }
-    expect(can("field_worker", "nutrition_reports.view")).toBe(false);
-    expect(can(null, "nutrition_reports.view")).toBe(false);
+    expect(can("field_worker", "nutritionReports.view")).toBe(false);
+    expect(can(null, "nutritionReports.view")).toBe(false);
   });
 
   // Backoffice access for field workers is scoped to its own issue; until

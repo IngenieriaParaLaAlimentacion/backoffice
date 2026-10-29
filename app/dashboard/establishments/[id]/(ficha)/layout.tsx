@@ -121,7 +121,7 @@ export default function EstablishmentLayout({
       href: `${baseHref}/field-workers`,
     },
     { label: ESTABLISHMENT_DETAIL_TABS.stock, href: `${baseHref}/stock` },
-    ...(can("nutrition_reports.view")
+    ...(can("nutritionReports.view")
       ? [
           {
             label: ESTABLISHMENT_DETAIL_TABS.nutritionReport,

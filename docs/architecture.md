@@ -400,7 +400,7 @@ reads, generates and downloads it.
   from "Generar nuevo reporte". One report is read at `nutrition-report/[month]/page.tsx`
   (`NutritionReportDetail`), outside `(ficha)` like the stock movements history: it is
   long, and the ficha's header would only push it down. Both are gated with
-  `nutrition_reports.view`; the tab is also hidden in `(ficha)/layout.tsx` by
+  `nutritionReports.view`; the tab is also hidden in `(ficha)/layout.tsx` by
   `can(...)`. Each screen's components sit next to its `page.tsx`; the pieces both
   share (banner, load error, notice dialog and its frame) live in
   `components/nutritionReport/`.
