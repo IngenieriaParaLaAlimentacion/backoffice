@@ -8,7 +8,15 @@ import { SubjectDetail } from "@/types/subject";
 import { MeasurementAlert } from "@/types/measurement";
 import { AlertBadgeList } from "@/components/AlertBadge";
 import { Separator } from "@/components/ui/separator";
-import { EMPTY_VALUE, formatDate, formatTimestampDate } from "@/lib/format";
+import {
+  ageInMonths,
+  argentineToday,
+  formatAgeMonths,
+  EMPTY_VALUE,
+  formatDate,
+  formatTimestampDate,
+} from "@/lib/format";
+import { useRenderClock } from "@/hooks/useRenderClock";
 import { SUBJECT_DETAIL_PANEL } from "@/constants/subjects";
 import { Loader2, X } from "lucide-react";
 import { OVERLAY_CLASS } from "@/constants/theme";
@@ -56,6 +64,7 @@ export default function SubjectDetailPanel({
   const { makeAuthorizedRequest } = useAuth();
 
   const [detail, setDetail] = useState<SubjectDetail | null>(null);
+  const now = useRenderClock(detail);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -172,6 +181,12 @@ export default function SubjectDetailPanel({
               <DetailField
                 label={SUBJECT_DETAIL_PANEL.fields.birthDate}
                 value={formatDate(detail.birth_date)}
+              />
+              <DetailField
+                label={SUBJECT_DETAIL_PANEL.fields.age}
+                value={formatAgeMonths(
+                  ageInMonths(detail.birth_date, argentineToday(now)),
+                )}
               />
               <DetailField
                 label={SUBJECT_DETAIL_PANEL.fields.isRural}

@@ -4,6 +4,15 @@ import { SubjectsMeasurementsPage } from "../pages/subjects-measurements.page";
 import { assertDownload } from "../support/download";
 import { SUBJECTS_EXPORT_ENDPOINT } from "../../constants/api";
 import { EXPORT } from "../../constants/exports";
+import { SUBJECTS_PAGE, SUBJECT_DETAIL_PANEL } from "../../constants/subjects";
+import { MEASUREMENTS_PAGE } from "../../constants/measurements";
+import {
+  ageInMonths,
+  argentineToday,
+  formatAgeMonths,
+  formatTimeSinceMeasurement,
+  formatTimestampDate,
+} from "../../lib/format";
 
 test.describe("subjects and measurements", () => {
   test.use({ role: "analyst" });
@@ -64,13 +73,35 @@ test.describe("subjects and measurements", () => {
     const exported = page.waitForRequest((request) =>
       matchesApiRequest(request, "GET", SUBJECTS_EXPORT_ENDPOINT),
     );
-    await assertDownload(page, {
+    const csvResponse = page.waitForResponse((response) =>
+      matchesApiRequest(response.request(), "GET", SUBJECTS_EXPORT_ENDPOINT),
+    );
+    const file = await assertDownload(page, {
       path: SUBJECTS_EXPORT_ENDPOINT,
       click: () =>
         page.getByRole("button", { name: EXPORT.label, exact: true }).click(),
       format: "csv",
       expectedRows: subjects.length,
     });
+    const exportResponse = await csvResponse;
+    const csv = file.toString("utf8").replace(/^\uFEFF/, "");
+    const lines = csv.trimEnd().split("\r\n");
+    expect(lines[0]).toBe(
+      "Nombre;Documento;Fecha de nacimiento;Edad;Último relevamiento;Tiempo desde el último relevamiento",
+    );
+    const filename = exportResponse.headers()["content-disposition"];
+    const exportDay = /sujetos_(\d{4}-\d{2}-\d{2})\.csv/.exec(filename)?.[1];
+    expect(exportDay).toBeTruthy();
+    const rows = lines.slice(1).map((line) => line.split(";"));
+    for (const subject of subjects) {
+      const cells = rows.find((row) => row[1] === String(subject.dni));
+      expect(cells).toBeDefined();
+      const months = ageInMonths(subject.birth_date, exportDay!);
+      expect(months).not.toBeNull();
+      expect(cells?.[3]).toBe(`${Math.floor(months! / 12)}a ${months! % 12}m`);
+      expect(cells?.[4]).toBe("");
+      expect(cells?.[5]).toBe("");
+    }
     const query = new URL((await exported).url()).searchParams;
     expect(query.get("search")).toBe(prefix);
     expect(query.get("birth_date_from")).toBe(from);
@@ -128,6 +159,19 @@ test.describe("subjects and measurements", () => {
         name: subject.name,
         last_name: subject.last_name,
       });
+      const now = new Date(await page.evaluate(() => new Date().toISOString()));
+      const expectedAge = formatAgeMonths(
+        ageInMonths(subject.birth_date, argentineToday(now)),
+      );
+      const dialog = page.getByRole("dialog", {
+        name: `${subject.name} ${subject.last_name}`,
+        exact: true,
+      });
+      await expect(
+        dialog
+          .getByText(MEASUREMENTS_PAGE.detail.age, { exact: true })
+          .locator(".."),
+      ).toContainText(expectedAge);
       expect(evolution.points).toHaveLength(3);
       expect(
         evolution.points.map((point) => ({
@@ -139,5 +183,40 @@ test.describe("subjects and measurements", () => {
     };
     await verify();
     await verify(true);
+
+    await clinical.subjects();
+    await clinical.filterSubjects(
+      subject.name,
+      subject.birth_date,
+      subject.birth_date,
+    );
+    const now = new Date(await page.evaluate(() => new Date().toISOString()));
+    const expectedAge = formatAgeMonths(
+      ageInMonths(subject.birth_date, argentineToday(now)),
+    );
+    const latest = readings[readings.length - 1].measuredAt;
+    const expectedElapsed = formatTimeSinceMeasurement(latest, now);
+    const row = clinical.rows.filter({ hasText: String(subject.dni) });
+    await expect(row).toContainText(expectedAge);
+    await expect(row).toContainText(formatTimestampDate(latest));
+    await expect(row).toContainText(expectedElapsed);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const card = page
+      .getByRole("button")
+      .filter({ hasText: `${subject.name} ${subject.last_name}` })
+      .filter({ hasText: String(subject.dni) });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(
+      `${SUBJECTS_PAGE.columns.age}: ${expectedAge}`,
+    );
+    await expect(card).toContainText(expectedElapsed);
+    await card.click();
+    const detail = page.getByRole("dialog");
+    await expect(
+      detail
+        .getByText(SUBJECT_DETAIL_PANEL.fields.age, { exact: true })
+        .locator(".."),
+    ).toContainText(expectedAge);
   });
 });

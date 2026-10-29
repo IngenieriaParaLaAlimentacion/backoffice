@@ -49,6 +49,12 @@ describe("useCsvExport", () => {
 
     expect(result.current.error).toBeNull();
     expect(objectUrl.createObjectURL).toHaveBeenCalledOnce();
+    const csv = await (
+      objectUrl.createObjectURL.mock.calls[0] as unknown as [Blob]
+    )[0].text();
+    expect(csv).toContain(
+      "Nombre;Documento;Fecha de nacimiento;Edad;Último relevamiento;Tiempo desde el último relevamiento",
+    );
     expect(click).toHaveBeenCalledOnce();
     const anchor = click.mock.instances[0] as HTMLAnchorElement;
     expect(anchor.download).toBe("sujetos_2026-08-24.csv");
@@ -70,7 +76,9 @@ describe("useCsvExport", () => {
     // The stream was cut after the first row: the header still says 2.
     server.use(
       makeExportSubjectsHandler({
-        rows: ["Ana Alvarez;20000001;14/03/2015;14/03/2026 07:30"],
+        rows: [
+          "Ana Alvarez;20000001;14/03/2015;11a 5m;14/03/2026 07:30;hace 5 meses",
+        ],
         declaredRowCount: 2,
       }),
     );

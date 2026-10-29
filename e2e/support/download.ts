@@ -76,7 +76,7 @@ export async function assertDownload(
     format: "csv" | "xlsx";
     expectedRows: number;
   },
-): Promise<void> {
+): Promise<Buffer> {
   expect(Number.isInteger(opts.expectedRows) && opts.expectedRows >= 0).toBe(
     true,
   );
@@ -126,4 +126,5 @@ export async function assertDownload(
     ).toBeUndefined();
     expect(await xlsxRows(page, file)).toBe(opts.expectedRows);
   }
+  return file;
 }

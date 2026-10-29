@@ -12,11 +12,12 @@ export type CsvExportOptions = {
   filename?: string;
 };
 
-const HEADER_LINE = "Nombre;Documento;Fecha de nacimiento;Último relevamiento";
+const HEADER_LINE =
+  "Nombre;Documento;Fecha de nacimiento;Edad;Último relevamiento;Tiempo desde el último relevamiento";
 
 const DEFAULT_ROWS = [
-  "Ana Alvarez;20000001;14/03/2015;14/03/2026 07:30",
-  "Beto Benitez;20000002;01/07/2016;01/04/2026 07:00",
+  "Ana Alvarez;20000001;14/03/2015;11a 5m;14/03/2026 07:30;hace 5 meses",
+  "Beto Benitez;20000002;01/07/2016;10a 1m;01/04/2026 07:00;hace 4 meses",
 ];
 
 /**

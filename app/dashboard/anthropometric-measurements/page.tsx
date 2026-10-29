@@ -30,7 +30,14 @@ import {
   SEVERITY_ROW_CLASS,
   topSeverity,
 } from "@/components/AlertBadge";
-import { formatDate, formatTimestampDate } from "@/lib/format";
+import {
+  ageInMonths,
+  argentineToday,
+  formatAgeMonths,
+  formatDate,
+  formatTimestampDate,
+} from "@/lib/format";
+import { useRenderClock } from "@/hooks/useRenderClock";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -142,6 +149,7 @@ export default function AnthropometricMeasurementsPage() {
     null,
   );
   const [detailLoading, setDetailLoading] = useState(false);
+  const now = useRenderClock(evolution);
   const [detailError, setDetailError] = useState<string | null>(null);
 
   const {
@@ -681,6 +689,15 @@ export default function AnthropometricMeasurementsPage() {
                   <DetailField
                     label={MEASUREMENTS_PAGE.detail.birthDate}
                     value={formatDate(evolution.subject.birth_date)}
+                  />
+                  <DetailField
+                    label={MEASUREMENTS_PAGE.detail.age}
+                    value={formatAgeMonths(
+                      ageInMonths(
+                        evolution.subject.birth_date,
+                        argentineToday(now),
+                      ),
+                    )}
                   />
                   <DetailField
                     label={MEASUREMENTS_PAGE.detail.measurementsCount}
