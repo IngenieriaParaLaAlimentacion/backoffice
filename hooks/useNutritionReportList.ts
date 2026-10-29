@@ -52,8 +52,9 @@ export function useNutritionReportList(establishmentId: string) {
       setPage(1);
     },
     isLoading,
-    // A failed refresh keeps the list already on screen.
-    error: data || !error ? null : getNutritionReportErrorMessage(error),
+    // Never hidden: `data` may be the previous page's (`keepPreviousData`), so
+    // its presence says nothing about whether the page asked for loaded.
+    error: error ? getNutritionReportErrorMessage(error) : null,
     refetch: () => void mutate(),
   };
 }

@@ -98,6 +98,53 @@ describe("NutritionReportPanel", () => {
     expect(await screen.findByText(COPY.empty)).toBeInTheDocument();
   });
 
+  it("says so when another page fails to load, and lets you ask for it again", async () => {
+    const item = (id: string, month: string) => ({
+      id,
+      month,
+      has_data: true,
+      summary_status: "generated",
+      created_at: "2026-10-01T10:00:00Z",
+    });
+    let secondPageRequests = 0;
+    server.use(
+      http.get(
+        ESTABLISHMENT_NUTRITION_REPORTS_ENDPOINT(":id"),
+        ({ request }) => {
+          const page = Number(new URL(request.url).searchParams.get("page"));
+          if (page === 2 && ++secondPageRequests === 1)
+            return new HttpResponse(null, { status: 500 });
+          return HttpResponse.json({
+            items: [page === 2 ? item("b", "2026-01") : item("a", "2026-09")],
+            total: 13,
+            page,
+            page_size: 12,
+            total_pages: 2,
+          });
+        },
+      ),
+    );
+    await renderPanel();
+    expect(await screen.findByRole("link")).toHaveTextContent(
+      "septiembre de 2026",
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Página siguiente" }),
+    );
+
+    // The list on screen is the first page's: the failure must not go unsaid.
+    const retry = await screen.findByRole("button", { name: COPY.retry });
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    await userEvent.click(retry);
+
+    await waitFor(() =>
+      expect(screen.getByRole("link")).toHaveTextContent("enero de 2026"),
+    );
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("offers to generate a month without a report, without calling PUT on its own", async () => {
     const puts = vi.fn();
     server.use(
