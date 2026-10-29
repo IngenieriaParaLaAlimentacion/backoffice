@@ -117,6 +117,41 @@ describe("NutritionReportPanel", () => {
     expect(puts).not.toHaveBeenCalled();
   });
 
+  it("lets you look the month up again when the lookup failed, without generating it", async () => {
+    const puts = vi.fn();
+    server.use(
+      http.get(
+        ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT(":id", ":month"),
+        () => new HttpResponse(null, { status: 500 }),
+        { once: true },
+      ),
+      http.put(ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT(":id", ":month"), () => {
+        puts();
+        return new HttpResponse(null, { status: 500 });
+      }),
+    );
+    await renderPanel();
+    const dialog = await openDialog();
+
+    const retry = await within(dialog).findByRole("button", {
+      name: COPY.retry,
+    });
+    // Not knowing whether the report exists, generating stays off.
+    expect(
+      within(dialog).getByRole("button", { name: DIALOG.generate }),
+    ).toBeDisabled();
+
+    await userEvent.click(retry);
+
+    expect(
+      await within(dialog).findByRole("button", { name: DIALOG.generate }),
+    ).toBeEnabled();
+    expect(
+      within(dialog).queryByRole("button", { name: COPY.retry }),
+    ).not.toBeInTheDocument();
+    expect(puts).not.toHaveBeenCalled();
+  });
+
   it("opens an existing report instead of generating it again", async () => {
     // In October the default month is September, which is already saved.
     vi.setSystemTime(new Date("2026-10-27T15:00:00Z"));

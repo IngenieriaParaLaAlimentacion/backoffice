@@ -16,6 +16,7 @@ import { formatReportMonth } from "@/lib/format";
 import { closedMonthOptions, lastClosedMonth } from "@/lib/reportMonth";
 import NutritionReportBanner from "@/components/nutritionReport/NutritionReportBanner";
 import NutritionReportDialogFrame from "@/components/nutritionReport/NutritionReportDialogFrame";
+import NutritionReportLoadError from "@/components/nutritionReport/NutritionReportLoadError";
 
 /**
  * Mounted only while the dialog is open, so every opening starts again from
@@ -32,6 +33,7 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
     isGenerating,
     generateError,
     generate,
+    refetch,
   } = useNutritionReport(establishmentId, month);
   // Between the report being saved and the next screen showing up the dialog
   // would otherwise flip to "ya existe": keep saying we are on our way.
@@ -68,10 +70,15 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
         </select>
       </div>
 
-      {(loadError || generateError) && (
+      {generateError ? (
         <NutritionReportBanner tone="danger">
-          {generateError ?? loadError}
+          {generateError}
         </NutritionReportBanner>
+      ) : (
+        // Without the lookup the button stays off: retrying it costs nothing.
+        loadError && (
+          <NutritionReportLoadError message={loadError} onRetry={refetch} />
+        )
       )}
 
       {isLoading ? (
