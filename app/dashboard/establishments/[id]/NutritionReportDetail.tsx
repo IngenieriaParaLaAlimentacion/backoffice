@@ -127,8 +127,13 @@ export default function NutritionReportDetail({
   // a dialog says so.
   const [unchangedNotice, setUnchangedNotice] = useState(false);
   const noData = report ? !report.has_data : false;
+  // A PDF error says nothing about the report once it has been generated again.
+  const handleRegenerate = async () => {
+    pdf.clearError();
+    return generate();
+  };
   const handleRecalculate = async () => {
-    const recalculated = await generate();
+    const recalculated = await handleRegenerate();
     if (recalculated && !recalculated.has_data) setUnchangedNotice(true);
   };
   const missing = validMonth === null || report === null;
@@ -158,7 +163,7 @@ export default function NutritionReportDetail({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => void generate()}
+                    onClick={() => void handleRegenerate()}
                     disabled={isGenerating}
                   >
                     {isGenerating ? COPY.generating : COPY.regenerateText}

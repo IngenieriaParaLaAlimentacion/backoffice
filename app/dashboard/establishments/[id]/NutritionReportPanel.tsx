@@ -59,6 +59,7 @@ export default function NutritionReportPanel({
 
   const handleRecalculate = async (month: ReportMonth) => {
     setNotice(null);
+    pdf.clearError();
     const report = await generation.generate(month);
     if (!report) return;
     const name = formatReportMonth(month);

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
 import NutritionReportDetail from "./NutritionReportDetail";
 import { renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
@@ -17,6 +18,7 @@ import {
   NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_SECTIONS as SECTIONS,
 } from "@/constants/nutritionReport";
+import { ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT } from "@/constants/api";
 import { ERROR_TYPES } from "@/lib/apiError";
 
 const ESTABLISHMENT = MOCK_ESTABLISHMENTS[0].id;
@@ -202,6 +204,27 @@ describe("NutritionReportDetail", () => {
     expect(
       screen.queryByRole("button", { name: COPY.recalculate }),
     ).not.toBeInTheDocument();
+  });
+
+  it("drops a PDF error once the report is calculated again", async () => {
+    server.use(
+      http.get(
+        ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT(":id", ":month"),
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    );
+    await renderDetail("2026-07");
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.downloadPdf }),
+    );
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: COPY.recalculate }),
+    );
+
+    expect(await screen.findByText(COPY.indicatorLabel)).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("says nothing changed when the month still has no intakes", async () => {
