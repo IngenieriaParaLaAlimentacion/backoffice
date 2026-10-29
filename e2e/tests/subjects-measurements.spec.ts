@@ -100,7 +100,7 @@ test.describe("subjects and measurements", () => {
         formatAgeMonths(ageInMonths(subject.birth_date, exportDay!)),
       );
       expect(cells?.[4]).toBe("");
-      expect(cells?.[5]).toBe("—");
+      expect(cells?.[5]).toBe("");
     }
     const query = new URL((await exported).url()).searchParams;
     expect(query.get("search")).toBe(prefix);
