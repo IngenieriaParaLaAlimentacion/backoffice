@@ -1,7 +1,7 @@
+import { REPORT_MONTH_PATTERN } from "@/constants/nutritionReport";
 import { argentineToday } from "@/lib/format";
 import { ReportMonth } from "@/types/nutritionReport";
 
-const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 /** "YYYY-MM": what is left of a "YYYY-MM-DD" day once the day is dropped. */
 const MONTH_KEY_LENGTH = "YYYY-MM".length;
 
@@ -28,7 +28,7 @@ export function isClosedMonth(
   month: string,
   today = argentineToday(),
 ): boolean {
-  return MONTH_PATTERN.test(month) && month <= lastClosedMonth(today);
+  return REPORT_MONTH_PATTERN.test(month) && month <= lastClosedMonth(today);
 }
 
 /** The closed months a report can be asked for, newest first. */

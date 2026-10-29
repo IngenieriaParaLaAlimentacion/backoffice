@@ -29,6 +29,9 @@ export const NUTRITION_REPORT_LIMIT_MESSAGE = (wait?: string) =>
 export const NUTRITION_REPORT_FALLBACK_ERROR =
   "No se pudo completar la operación con el reporte nutricional. Volvé a intentar en unos minutos.";
 
+/** A report month as the API writes it: "YYYY-MM", with a real month. */
+export const REPORT_MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+
 /** Rows of the saved-reports list per page. */
 export const NUTRITION_REPORT_LIST_PAGE_SIZE = 12;
 

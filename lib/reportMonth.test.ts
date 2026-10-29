@@ -45,4 +45,11 @@ describe("formatReportMonth", () => {
     expect(formatReportMonth("2026-08")).toBe("agosto de 2026");
     expect(formatReportMonth("2026-01")).toBe("enero de 2026");
   });
+
+  it.each(["2026-13", "2026-00", "2026-1", "2026-08-15", "abc"])(
+    "returns %s as it came, instead of rolling it into another month",
+    (value) => {
+      expect(formatReportMonth(value)).toBe(value);
+    },
+  );
 });

@@ -1,4 +1,5 @@
 import { MONTHS_PER_YEAR, RELATIVE_MEASUREMENT_TIME } from "@/constants/format";
+import { REPORT_MONTH_PATTERN } from "@/constants/nutritionReport";
 
 /**
  * Every timestamp the API returns is a UTC instant ("2026-03-01T10:00:00Z"),
@@ -301,10 +302,13 @@ export function formatWaitDuration(seconds: number) {
   return plural(Math.ceil(hours / HOURS_PER_DAY), "día", "días");
 }
 
-/** A report month "YYYY-MM" as "agosto de 2026". */
+/**
+ * A report month "YYYY-MM" as "agosto de 2026". Anything else is returned as
+ * it came: `Date.UTC` would roll "2026-13" over into January 2027.
+ */
 export function formatReportMonth(month: string) {
+  if (!REPORT_MONTH_PATTERN.test(month)) return month;
   const [year, number] = month.split("-").map(Number);
-  if (!year || !number) return month;
   return new Intl.DateTimeFormat("es-AR", {
     month: "long",
     year: "numeric",
