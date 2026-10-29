@@ -18,6 +18,7 @@ import { isClosedMonth } from "@/lib/reportMonth";
 import NutritionReportBanner from "./NutritionReportBanner";
 import NutritionReportNoticeDialog from "./NutritionReportNoticeDialog";
 import {
+  DataLimitations,
   ExcludedFoodsNotice,
   GapaGroupsTable,
   MacrosTable,
@@ -92,6 +93,8 @@ function ReportContent({ report }: { report: NutritionReportResponse }) {
           <p className="text-sm">{report.summary.conclusion}</p>
         </section>
       )}
+
+      <DataLimitations items={report.summary?.limitations ?? []} />
     </div>
   );
 }

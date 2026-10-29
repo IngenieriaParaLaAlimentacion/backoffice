@@ -152,10 +152,25 @@ describe("NutritionReportDetail", () => {
     expect(notice.tagName).toBe("BLOCKQUOTE");
   });
 
+  it("lists the data limitations the AI wrote, apart from the scope note", async () => {
+    await renderDetail("2026-09");
+
+    const title = await screen.findByRole("heading", {
+      name: EXTRAS.limitations.title,
+    });
+    expect(title).toBeInTheDocument();
+    expect(screen.getByText(/sin valor cargado/)).toBeInTheDocument();
+    // The scope note is not one of the limitations: it is said once.
+    expect(screen.getAllByText(/No conoce la dieta completa/)).toHaveLength(1);
+  });
+
   it("shows the figures without the AI's reading when its text is unavailable", async () => {
     await renderDetail("2026-08");
 
     await screen.findByText(COPY.summaryUnavailable);
+    expect(
+      screen.queryByText(EXTRAS.limitations.title),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Calcio/ })).toBeInTheDocument();
     expect(
       screen.queryByText(/clave para el crecimiento de los huesos/),

@@ -168,6 +168,9 @@ export const NUTRITION_REPORT_EXTRAS = {
     many: (names: string[]) =>
       `Estos alimentos quedaron afuera del cálculo porque no se pueden convertir a gramos: ${names.join(", ")}.`,
   },
+  limitations: {
+    title: "Limitaciones de los datos",
+  },
 } as const;
 
 /** Outcomes of calculating a month again, told in a dialog the user closes. */

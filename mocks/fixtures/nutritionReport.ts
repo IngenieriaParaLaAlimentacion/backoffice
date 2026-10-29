@@ -231,7 +231,9 @@ const SUMMARY: NutritionReportSummary = {
   gapa_groups: "No ingresaron lácteos ni carnes durante el mes.",
   incorporate: "Conviene incorporar leche, yogur o quesos, e hígado o huevo.",
   conclusion: "El aporte de calcio es el principal punto a mejorar.",
-  limitations: [REPORT_SCOPE_NOTE],
+  limitations: [
+    "Hay alimentos sin valor cargado para algún nutriente en el catálogo: se contaron como cero y el nutriente puede figurar por debajo de lo real.",
+  ],
 };
 
 type ReportOptions = {

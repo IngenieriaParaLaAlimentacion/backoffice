@@ -315,3 +315,18 @@ export function ExcludedFoodsNotice({
     </blockquote>
   );
 }
+
+/** The data gaps to keep in mind when reading the figures, written by the AI. */
+export function DataLimitations({ items }: { items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <section className="flex flex-col gap-2">
+      <h2 className={SECTION_TITLE_CLASS}>{EXTRAS.limitations.title}</h2>
+      <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
