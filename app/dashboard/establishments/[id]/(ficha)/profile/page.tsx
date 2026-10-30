@@ -1,7 +1,7 @@
 "use client";
 
 import { use } from "react";
-import EstablishmentProfilePanel from "../../EstablishmentProfilePanel";
+import EstablishmentProfilePanel from "./EstablishmentProfilePanel";
 import {
   useApplyCharacterization,
   useEstablishmentDashboardContext,

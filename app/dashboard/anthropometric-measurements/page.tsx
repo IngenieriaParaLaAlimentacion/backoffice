@@ -30,7 +30,14 @@ import {
   SEVERITY_ROW_CLASS,
   topSeverity,
 } from "@/components/AlertBadge";
-import { formatDate, formatTimestampDate } from "@/lib/format";
+import {
+  ageInMonths,
+  argentineToday,
+  formatAgeMonths,
+  formatDate,
+  formatTimestampDate,
+} from "@/lib/format";
+import { useRenderClock } from "@/hooks/useRenderClock";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -142,6 +149,7 @@ export default function AnthropometricMeasurementsPage() {
     null,
   );
   const [detailLoading, setDetailLoading] = useState(false);
+  const now = useRenderClock(evolution);
   const [detailError, setDetailError] = useState<string | null>(null);
 
   const {
@@ -683,6 +691,15 @@ export default function AnthropometricMeasurementsPage() {
                     value={formatDate(evolution.subject.birth_date)}
                   />
                   <DetailField
+                    label={MEASUREMENTS_PAGE.detail.age}
+                    value={formatAgeMonths(
+                      ageInMonths(
+                        evolution.subject.birth_date,
+                        argentineToday(now),
+                      ),
+                    )}
+                  />
+                  <DetailField
                     label={MEASUREMENTS_PAGE.detail.measurementsCount}
                     value={evolution.points.length}
                   />
@@ -690,12 +707,15 @@ export default function AnthropometricMeasurementsPage() {
 
                 <Separator />
 
-                <div className="flex flex-col gap-2">
+                <section
+                  aria-label={MEASUREMENTS_PAGE.detail.chartTitle}
+                  className="flex flex-col gap-2"
+                >
                   <span className="text-sm font-medium">
                     {MEASUREMENTS_PAGE.detail.chartTitle}
                   </span>
                   <MeasurementEvolutionChart points={evolution.points} />
-                </div>
+                </section>
 
                 <section
                   aria-label={MEASUREMENTS_PAGE.detail.observationsTitle}

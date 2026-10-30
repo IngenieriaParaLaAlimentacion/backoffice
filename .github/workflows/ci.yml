@@ -1,19 +1,32 @@
 name: CI
 
 on:
+  pull_request:
   push:
+    branches: [main, develop]
+
+# No step writes to the repo, so third-party actions (Codecov, Docker) get a read-only token.
+permissions:
+  contents: read
+
+# Only PR runs are cancelled by a newer push: every commit on main/develop must finish and
+# upload coverage, or Codecov has no baseline to compare the next PR against.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: "24"
           cache: npm
@@ -27,19 +40,30 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      - name: Test
+        run: npm run test:ci
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unit
+          files: ./coverage/lcov.info
+
       - name: Build
         run: npm run build
 
       - name: Run Semgrep SAST scan
         run: |
-          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan \
-            --config p/javascript --config p/typescript --config p/react --config p/secrets --error
+          docker run --rm -v "$PWD:/src" \
+            semgrep/semgrep:1.181.1@sha256:3db5c7af55eb1f512eac0abf0ab69a97b52c74b5e9a27314c221aee1a78d7ab2 \
+            semgrep scan --config p/javascript --config p/typescript --config p/react --config p/secrets --error
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Build Docker image (verify only, no push)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
           push: false

@@ -2,6 +2,7 @@
 
 [![en](https://img.shields.io/badge/lang-en-blue.svg)](README.md)
 [![Node](https://img.shields.io/badge/node-24%20LTS-green.svg)](package.json)
+[![codecov](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice/graph/badge.svg)](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice)
 
 Panel de administración para el proyecto **Ingeniería Para La Alimentación**,
 desarrollado con Next.js (App Router), TypeScript y shadcn/ui.
@@ -99,6 +100,15 @@ commit vía Husky.
 
 ---
 
+## Auditoría de dependencias
+
+```bash
+# Falla ante vulnerabilidades altas o críticas en dependencias de runtime (también corre en CI)
+npm run audit
+```
+
+---
+
 ## Tecnologías
 
 | Tecnología  | Versión |
@@ -124,3 +134,7 @@ arquitectura y las convenciones de código.
 ## Licencia
 
 Proyecto académico — **group-193**.
+
+## Pruebas E2E del navegador
+
+Ejecutá `npm run e2e` contra el entorno descartable del backend. La [guía E2E](docs/e2e.md) explica credenciales, Chromium, reconstrucción de la base, reportes de CI y comprobación de sesiones paralelas.

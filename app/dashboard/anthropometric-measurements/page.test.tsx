@@ -1,11 +1,17 @@
-import { describe, expect, it, vi } from "vitest";
-import { screen, within, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Page from "./page";
-import { renderWithProviders } from "@/test-utils";
+import { mockBlobDownload, renderWithProviders } from "@/test-utils";
 import { server } from "@/mocks/server";
-import { makeListMeasurementsHandler } from "@/mocks/handlers/measurement";
-import { MOCK_MEASUREMENTS } from "@/mocks/fixtures/measurement";
+import {
+  makeListMeasurementsHandler,
+  makeSubjectEvolutionHandler,
+} from "@/mocks/handlers/measurement";
+import {
+  MOCK_MEASUREMENTS,
+  MOCK_SUBJECT_EVOLUTION,
+} from "@/mocks/fixtures/measurement";
 import { MEASUREMENTS_PAGE as COPY } from "@/constants/measurements";
 import { EXPORT } from "@/constants/exports";
 import { NOT_AVAILABLE } from "@/constants/common";
@@ -68,30 +74,20 @@ describe("AnthropometricMeasurementsPage observations", () => {
   });
 
   it("downloads a CSV containing observations through the existing export action", async () => {
-    const createObjectURL = vi.fn(() => "blob:mock");
-    Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
-    const click = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => {});
-    try {
-      const user = userEvent.setup();
-      await renderWithProviders(<Page />);
-      await screen.findByRole("table");
-      await user.click(screen.getByRole("button", { name: EXPORT.label }));
-      await waitFor(() => expect(createObjectURL).toHaveBeenCalledOnce());
-      const csv = await (
-        createObjectURL.mock.calls[0] as unknown as [Blob]
-      )[0].text();
-      expect(csv).toContain("Observación");
-      expect(csv).toContain(
-        observation.replace(/\s+/g, " ").replaceAll('"', '""'),
-      );
-      expect(click).toHaveBeenCalledOnce();
-    } finally {
-      Reflect.deleteProperty(URL, "createObjectURL");
-      Reflect.deleteProperty(URL, "revokeObjectURL");
-      click.mockRestore();
-    }
+    const { createObjectURL, click } = mockBlobDownload();
+    const user = userEvent.setup();
+    await renderWithProviders(<Page />);
+    await screen.findByRole("table");
+    await user.click(screen.getByRole("button", { name: EXPORT.label }));
+    await waitFor(() => expect(createObjectURL).toHaveBeenCalledOnce());
+    const csv = await (
+      createObjectURL.mock.calls[0] as unknown as [Blob]
+    )[0].text();
+    expect(csv).toContain("Observación");
+    expect(csv).toContain(
+      observation.replace(/\s+/g, " ").replaceAll('"', '""'),
+    );
+    expect(click).toHaveBeenCalledOnce();
   });
 
   it("keeps older API responses without observations readable", async () => {
@@ -109,5 +105,40 @@ describe("AnthropometricMeasurementsPage observations", () => {
     expect(
       within(await screen.findByRole("table")).getByText(NOT_AVAILABLE),
     ).toBeInTheDocument();
+  });
+});
+
+describe("AnthropometricMeasurementsPage current age", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows current age beside birth date and refreshes the open dialog on focus", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-28T02:59:00Z"));
+    server.use(
+      makeSubjectEvolutionHandler({
+        data: {
+          subject: {
+            ...MOCK_SUBJECT_EVOLUTION.subject,
+            birth_date: "2008-04-28",
+          },
+        },
+      }),
+    );
+    const user = userEvent.setup();
+    await renderWithProviders(<Page />);
+    await user.click(
+      within(await screen.findByRole("table")).getAllByRole("row")[1],
+    );
+    const dialog = await screen.findByRole("dialog");
+    const age = await within(dialog).findByText(COPY.detail.age);
+    expect(age.parentElement).toHaveTextContent("18 a 5 m");
+    expect(within(dialog).getByText("28/04/2008")).toBeInTheDocument();
+    vi.setSystemTime(new Date("2026-10-28T03:01:00Z"));
+    act(() => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(age.parentElement).toHaveTextContent("18 a 6 m");
   });
 });

@@ -1,3 +1,6 @@
+import { MONTHS_PER_YEAR, RELATIVE_MEASUREMENT_TIME } from "@/constants/format";
+import { REPORT_MONTH_PATTERN } from "@/constants/nutritionReport";
+
 /**
  * Every timestamp the API returns is a UTC instant ("2026-03-01T10:00:00Z"),
  * and it is rendered in Argentine local time — not the viewer's device zone.
@@ -118,8 +121,9 @@ function argentineDayStartMs(day: string) {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** The current Argentine calendar day as "YYYY-MM-DD". */
-export function argentineToday() {
-  const parts = timestampParts(new Date().toISOString());
+export function argentineToday(now: Date = new Date()) {
+  if (Number.isNaN(now.getTime())) return "";
+  const parts = timestampParts(now.toISOString());
   return parts ? `${parts.year}-${parts.month}-${parts.day}` : "";
 }
 
@@ -180,8 +184,8 @@ export function formatMetric(value: number | null | undefined, unit?: string) {
 /** Whole months -> "7 a 3 m". Returns "—" for null. */
 export function formatAgeMonths(months: number | null | undefined) {
   if (months === null || months === undefined) return EMPTY_VALUE;
-  const years = Math.floor(months / 12);
-  const rest = months % 12;
+  const years = Math.floor(months / MONTHS_PER_YEAR);
+  const rest = months % MONTHS_PER_YEAR;
   if (years === 0) return `${rest} m`;
   return rest === 0 ? `${years} a` : `${years} a ${rest} m`;
 }
@@ -203,4 +207,112 @@ export function formatQuantity(value: string) {
   return new Intl.NumberFormat("es-AR", { maximumFractionDigits: 3 }).format(
     parsed,
   );
+}
+
+type CalendarDate = { year: number; month: number; day: number };
+
+function parseCalendarDate(value: string): CalendarDate | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (year < 1 || month < 1 || month > MONTHS_PER_YEAR) return null;
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = [
+    31,
+    leap ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
+  ];
+  return day >= 1 && day <= daysInMonth[month - 1]
+    ? { year, month, day }
+    : null;
+}
+
+function completedMonths(start: CalendarDate, end: CalendarDate) {
+  const months =
+    (end.year - start.year) * MONTHS_PER_YEAR + end.month - start.month;
+  return Math.max(0, months - (end.day < start.day ? 1 : 0));
+}
+
+/** Completed calendar months; future birth dates clamp to zero. */
+export function ageInMonths(
+  birthDate: string,
+  referenceDay = argentineToday(),
+) {
+  const birth = parseCalendarDate(birthDate);
+  const reference = parseCalendarDate(referenceDay);
+  return birth && reference ? completedMonths(birth, reference) : null;
+}
+
+function calendarDayIndex(value: CalendarDate) {
+  const date = new Date(0);
+  date.setUTCFullYear(value.year, value.month - 1, value.day);
+  return date.getTime() / DAY_MS;
+}
+
+/** Elapsed time using Argentina calendar days and completed months. */
+export function formatTimeSinceMeasurement(
+  value: string | null | undefined,
+  now: Date = new Date(),
+) {
+  if (!value || Number.isNaN(now.getTime())) return EMPTY_VALUE;
+  const parts = timestampParts(value);
+  const start = parts
+    ? parseCalendarDate(`${parts.year}-${parts.month}-${parts.day}`)
+    : null;
+  const end = parseCalendarDate(argentineToday(now));
+  if (!start || !end) return EMPTY_VALUE;
+  const days = calendarDayIndex(end) - calendarDayIndex(start);
+  if (days < 0) return EMPTY_VALUE;
+  if (days === 0) return RELATIVE_MEASUREMENT_TIME.today;
+  const months = completedMonths(start, end);
+  if (months >= MONTHS_PER_YEAR)
+    return RELATIVE_MEASUREMENT_TIME.years(
+      Math.floor(months / MONTHS_PER_YEAR),
+    );
+  if (months >= 1) return RELATIVE_MEASUREMENT_TIME.months(months);
+  return RELATIVE_MEASUREMENT_TIME.days(days);
+}
+
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
+/** A wait of `seconds` as "30 segundos", "5 minutos", "2 horas" or "3 días". */
+export function formatWaitDuration(seconds: number) {
+  const plural = (count: number, one: string, many: string) =>
+    `${count} ${count === 1 ? one : many}`;
+  const rounded = Math.ceil(seconds);
+  if (rounded < SECONDS_PER_MINUTE)
+    return plural(rounded, "segundo", "segundos");
+  const minutes = Math.ceil(rounded / SECONDS_PER_MINUTE);
+  if (minutes < MINUTES_PER_HOUR) return plural(minutes, "minuto", "minutos");
+  const hours = Math.ceil(minutes / MINUTES_PER_HOUR);
+  if (hours < HOURS_PER_DAY) return plural(hours, "hora", "horas");
+  return plural(Math.ceil(hours / HOURS_PER_DAY), "día", "días");
+}
+
+/**
+ * A report month "YYYY-MM" as "agosto de 2026". Anything else is returned as
+ * it came: `Date.UTC` would roll "2026-13" over into January 2027.
+ */
+export function formatReportMonth(month: string) {
+  if (!REPORT_MONTH_PATTERN.test(month)) return month;
+  const [year, number] = month.split("-").map(Number);
+  return new Intl.DateTimeFormat("es-AR", {
+    month: "long",
+    year: "numeric",
+    // A calendar month, not an instant: no zone may shift it.
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, number - 1, 1)));
 }

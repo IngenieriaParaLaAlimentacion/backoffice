@@ -44,11 +44,11 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   need.
 - **Route params are async.** Dynamic segments type `params` as `Promise<{ id: string
 }>` and unwrap with React's `use()` in Client Components (see
-  `app/dashboard/establishments/[id]/page.tsx`) — `await` it instead only in an actual
+  `app/dashboard/establishments/[id]/(ficha)/stock/page.tsx`) — `await` it instead only in an actual
   Server Component.
 - **Co-location over centralization.** A component used by exactly one route lives next
   to its `page.tsx` in that route segment (e.g. `EstablishmentHeader.tsx` beside
-  `app/dashboard/establishments/[id]/page.tsx`); only genuinely cross-route components
+  `app/dashboard/establishments/[id]/(ficha)/layout.tsx`); only genuinely cross-route components
   go in top-level `components/`. Apply the same test before adding a new shared
   component.
 - **Routing APIs**: `next/navigation` (`useRouter`, `useParams`, etc.), never the Pages

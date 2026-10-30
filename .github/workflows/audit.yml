@@ -1,0 +1,39 @@
+name: Dependency audit
+
+# Advisories change independently of the code, so a PR is only audited when it touches
+# dependencies; the weekly run catches new advisories against what's already merged.
+on:
+  pull_request:
+    paths: [package.json, package-lock.json]
+  push:
+    branches: [main, develop]
+    paths: [package.json, package-lock.json]
+  schedule:
+    - cron: "0 12 * * 1" # Mondays 09:00 Argentina time
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "24"
+
+      # Only reads package-lock.json, so no `npm ci` needed.
+      - name: Audit dependencies
+        run: npm run audit
