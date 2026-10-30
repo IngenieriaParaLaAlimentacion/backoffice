@@ -1,10 +1,23 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import EstablishmentMovementsHistoryPage from "./page";
 import { renderWithProviders } from "@/test-utils";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 import { ESTABLISHMENT_MOVEMENTS_PAGE as COPY } from "@/constants/establishments";
+
+const push = vi.fn();
+const back = vi.fn();
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  useRouter: () => ({ push, back }),
+}));
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  push.mockClear();
+  back.mockClear();
+});
 
 const WITH_DATA_ID = MOCK_ESTABLISHMENTS[0].id;
 const WITHOUT_DATA_ID = MOCK_ESTABLISHMENTS[1].id;
@@ -23,6 +36,18 @@ const renderPage = (id: string) =>
   );
 
 describe("EstablishmentMovementsHistoryPage", () => {
+  it("goes back in the history instead of pushing the stock on top of it", async () => {
+    vi.spyOn(window.history, "length", "get").mockReturnValue(3);
+    renderPage(WITH_DATA_ID);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.back }),
+    );
+
+    expect(back).toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+  });
+
   // The desktop table and the mobile card list both render in jsdom (no CSS
   // hides either), so every row's text exists twice — scoping to the table is
   // what makes a single `getByText` valid.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useRouter } from "next/navigation";
 import { Resolver, useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +25,7 @@ import {
   toCharacterizationRequest,
 } from "@/schemas/establishmentCharacterization.schema";
 import { Card } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -72,6 +72,8 @@ export default function EstablishmentForm({
   mode: EstablishmentFormMode;
 }) {
   const router = useRouter();
+  // Not a link to the list: this form is also reached from the profile.
+  const goBack = useGoBack(LIST_HREF);
   const { makeAuthorizedRequest } = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<PlaceDetails | null>(null);
@@ -128,13 +130,13 @@ export default function EstablishmentForm({
           characterization,
         });
         invalidateEstablishmentsMap();
-        router.push(LIST_HREF);
+        router.replace(LIST_HREF);
       } else {
         await createEstablishmentRequestAction(makeAuthorizedRequest, {
           ...data,
           characterization,
         });
-        router.push(LIST_HREF_AFTER_PROPOSE);
+        router.replace(LIST_HREF_AFTER_PROPOSE);
       }
     } catch (err) {
       setApiError(getErrorMessage(err, { fallback: copy.submitError }));
@@ -149,17 +151,16 @@ export default function EstablishmentForm({
             <h1 className="text-3xl font-semibold">{copy.title}</h1>
             <p className="text-muted-foreground text-sm">{copy.subtitle}</p>
           </div>
-          <Link
-            href={LIST_HREF}
-            className={buttonVariants({
-              variant: "outline",
-              size: "sm",
-              className: "self-start",
-            })}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={goBack}
           >
             <ArrowLeft size={14} />
             {copy.back}
-          </Link>
+          </Button>
         </div>
 
         <Separator />

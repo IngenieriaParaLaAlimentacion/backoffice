@@ -12,12 +12,12 @@ import { server } from "@/mocks/server";
 import { baseHandler } from "@/mocks/handlers/base";
 import { CREATE_ESTABLISHMENT_REQUEST_ENDPOINT } from "@/constants/api";
 
-const push = vi.fn();
+const replace = vi.fn();
 
 // The real hook requires an app-router context that isn't worth standing up
-// for this page — it only needs router.push after a successful submit.
+// for this page — it only needs router.replace after a successful submit.
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ replace }),
 }));
 
 const fillRequiredFields = async () => {
@@ -39,7 +39,7 @@ const submit = () =>
   );
 
 describe("ProposeEstablishmentPage", () => {
-  beforeEach(() => push.mockClear());
+  beforeEach(() => replace.mockClear());
 
   it("does not submit while name/address are blank", async () => {
     await renderWithProviders(<ProposeEstablishmentPage />);
@@ -49,7 +49,7 @@ describe("ProposeEstablishmentPage", () => {
     // Nothing to await here: a rejected client-side validation resolves
     // synchronously with no request and no navigation, so there's no async
     // outcome to wait for — asserting immediately is the correct check.
-    expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it("submits with only the required fields and redirects to the list with the success flag", async () => {
@@ -59,7 +59,9 @@ describe("ProposeEstablishmentPage", () => {
     await submit();
 
     await waitFor(() =>
-      expect(push).toHaveBeenCalledWith("/dashboard/establishments?proposed=1"),
+      expect(replace).toHaveBeenCalledWith(
+        "/dashboard/establishments?proposed=1",
+      ),
     );
   });
 
@@ -78,7 +80,7 @@ describe("ProposeEstablishmentPage", () => {
     expect(
       await screen.findByText(PROPOSE_ESTABLISHMENT_PAGE.submitError),
     ).toBeInTheDocument();
-    expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   describe("optional profile", () => {
@@ -99,7 +101,7 @@ describe("ProposeEstablishmentPage", () => {
       await fillRequiredFields();
       await submit();
 
-      await waitFor(() => expect(push).toHaveBeenCalled());
+      await waitFor(() => expect(replace).toHaveBeenCalled());
       expect(sent.body).not.toHaveProperty("characterization");
     });
 
@@ -116,7 +118,7 @@ describe("ProposeEstablishmentPage", () => {
       await user.click(within(meals).getByRole("button", { name: "Almuerzo" }));
       await submit();
 
-      await waitFor(() => expect(push).toHaveBeenCalled());
+      await waitFor(() => expect(replace).toHaveBeenCalled());
       expect(sent.body?.characterization).toMatchObject({
         meals: ["lunch"],
         space_types: [],
@@ -142,7 +144,7 @@ describe("ProposeEstablishmentPage", () => {
       expect(
         await screen.findByText(ESTABLISHMENT_PROFILE.invalidEmail),
       ).toBeVisible();
-      expect(push).not.toHaveBeenCalled();
+      expect(replace).not.toHaveBeenCalled();
     });
   });
 });

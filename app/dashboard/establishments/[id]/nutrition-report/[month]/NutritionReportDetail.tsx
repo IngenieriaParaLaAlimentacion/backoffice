@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useNutritionReport } from "@/hooks/useNutritionReport";
 import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
 import {
@@ -142,15 +142,8 @@ export default function NutritionReportDetail({
   } = useNutritionReport(establishmentId, validMonth);
   const pdf = useNutritionReportPdf(establishmentId);
 
-  const router = useRouter();
   const listHref = nutritionReportListHref(establishmentId);
-  // Pushing the list would add an entry on top of it, so the ficha's "Volver"
-  // (router.back()) would land on this report again: a loop. Stepping back
-  // keeps the history linear; on a deep link there is nothing to go back to.
-  const goBack = () => {
-    if (window.history.length > 1) router.back();
-    else router.push(listHref);
-  };
+  const goBack = useGoBack(listHref);
   const textUnavailable = report?.summary_status === "unavailable";
   // A month saved without intakes may have them now: the backend calculates it
   // again on request. If it came back empty again nothing on screen changes, so
