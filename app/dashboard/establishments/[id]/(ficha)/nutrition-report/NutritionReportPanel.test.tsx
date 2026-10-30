@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import NutritionReportPanel from "./NutritionReportPanel";
 import RequirePermission from "@/components/RequirePermission";
 import { mockBlobDownload, renderWithProviders } from "@/test-utils";
@@ -24,6 +24,12 @@ import {
   nutritionReportHref,
 } from "@/constants/nutritionReport";
 import { FORBIDDEN_SCREEN } from "@/constants/permissions";
+
+// The wait is shortened so the test does not sit through the real threshold.
+vi.mock("@/constants/nutritionReport", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/constants/nutritionReport")>()),
+  NUTRITION_REPORT_SLOW_HINT_MS: 50,
+}));
 
 const push = vi.fn();
 const prefetch = vi.fn();
@@ -212,15 +218,13 @@ describe("NutritionReportPanel", () => {
 
     const dialog = await openDialog();
 
-    expect(
-      await within(dialog).findByText(DIALOG.alreadyExists),
-    ).toBeInTheDocument();
-    expect(
-      within(dialog).queryByRole("button", { name: DIALOG.generate }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(dialog).getByRole("button", { name: DIALOG.viewReport }),
-    ).toHaveAttribute("href", nutritionReportHref(ESTABLISHMENT, "2026-09"));
+    await userEvent.click(
+      await within(dialog).findByRole("button", { name: DIALOG.generate }),
+    );
+
+    expect(push).toHaveBeenCalledWith(
+      nutritionReportHref(ESTABLISHMENT, "2026-09"),
+    );
     expect(puts).not.toHaveBeenCalled();
   });
 
@@ -242,13 +246,33 @@ describe("NutritionReportPanel", () => {
       nutritionReportHref(ESTABLISHMENT, "2026-06"),
     );
     expect(within(dialog).getByText(DIALOG.generated)).toBeInTheDocument();
-    // Once saved, the dialog must not flip to "ya existe" before leaving.
     expect(
       within(dialog).getByRole("button", { name: DIALOG.opening }),
     ).toBeDisabled();
+  });
+
+  it("explains the wait only when generating takes long", async () => {
+    server.use(
+      http.put(ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT(":id", ":month"), () =>
+        delay("infinite"),
+      ),
+    );
+    await renderPanel();
+    const dialog = await openDialog();
+    await userEvent.click(
+      await within(dialog).findByRole("button", { name: DIALOG.generate }),
+    );
+
     expect(
-      within(dialog).queryByText(DIALOG.alreadyExists),
+      await within(dialog).findByRole("button", { name: DIALOG.generating }),
+    ).toBeDisabled();
+    expect(
+      within(dialog).queryByText(DIALOG.generatingHint),
     ).not.toBeInTheDocument();
+
+    expect(
+      await within(dialog).findByText(DIALOG.generatingHint),
+    ).toBeInTheDocument();
   });
 
   it("tells how long to wait when the usage limit was hit", async () => {
