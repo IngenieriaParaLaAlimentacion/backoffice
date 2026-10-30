@@ -16,9 +16,17 @@ import {
   NUTRITION_REPORT_ERROR_MESSAGES,
   NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_SECTIONS as SECTIONS,
+  nutritionReportListHref,
 } from "@/constants/nutritionReport";
 import { ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT } from "@/constants/api";
 import { ERROR_TYPES } from "@/lib/apiError";
+
+const push = vi.fn();
+const back = vi.fn();
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  useRouter: () => ({ push, back }),
+}));
 
 const ESTABLISHMENT = MOCK_ESTABLISHMENTS[0].id;
 
@@ -35,6 +43,33 @@ describe("NutritionReportDetail", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    push.mockClear();
+    back.mockClear();
+  });
+
+  it("goes back in the history instead of pushing the list on top of it", async () => {
+    vi.useRealTimers();
+    vi.spyOn(window.history, "length", "get").mockReturnValue(3);
+    renderDetail("2026-09");
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.back }),
+    );
+
+    expect(back).toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("opens the list when there is no history to go back to", async () => {
+    vi.useRealTimers();
+    vi.spyOn(window.history, "length", "get").mockReturnValue(1);
+    renderDetail("2026-09");
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.back }),
+    );
+
+    expect(push).toHaveBeenCalledWith(nutritionReportListHref(ESTABLISHMENT));
   });
 
   it("shows the report with its summary, indicator and scope note", async () => {
