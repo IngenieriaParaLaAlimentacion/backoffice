@@ -13,4 +13,4 @@ Guía para administradores y analistas que usan el panel web.
 4. [Encuestas](03-encuestas.md)
 5. [Nutrir](04-nutrir.md)
 
-Las capturas pertenecen únicamente a el backoffice. Para revisar o actualizar esta entrega, consultá [mantenimiento y evidencias](mantenimiento.md).
+Las capturas pertenecen únicamente al backoffice. Para revisar o actualizar esta entrega, consultá [mantenimiento y evidencias](mantenimiento.md).

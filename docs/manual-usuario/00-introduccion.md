@@ -2,18 +2,18 @@
 
 **Backoffice · Ingeniería Para la Alimentación**
 
-Guía para administradores y analistas. Los pasos y capturas de este manual corresponden a el panel web.
+Guía para administradores y analistas. Los pasos y capturas de este manual corresponden al panel web.
 
 ## Cómo usar esta guía
 
 Comenzá por Acceso y seguí el capítulo de la tarea que necesitás realizar. Comprobá tu rol y el establecimiento elegido si una acción no aparece.
 
-| Capítulo                                   | Qué vas a poder hacer                                                  |
-| ------------------------------------------ | ---------------------------------------------------------------------- |
-| [Acceso y trabajo en equipo](01-acceso.md) | Ingresar al panel, gestionar solicitudes, usuarios y establecimientos. |
-| [Talla y Peso](02-talla-y-peso.md)         | Consultar sujetos, mediciones, evolución y exportaciones.              |
-| [Encuestas](03-encuestas.md)               | Crear y activar encuestas, consultar y exportar respuestas.            |
-| [Nutrir](04-nutrir.md)                     | Consultar stock, registrar movimientos y revisar el historial.         |
+| Capítulo                                   | Qué vas a poder hacer                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------- |
+| [Acceso y trabajo en equipo](01-acceso.md) | Ingresar al panel, gestionar solicitudes, usuarios y establecimientos.          |
+| [Talla y Peso](02-talla-y-peso.md)         | Consultar sujetos, mediciones, evolución y exportaciones.                       |
+| [Encuestas](03-encuestas.md)               | Crear y activar encuestas, consultar y exportar respuestas.                     |
+| [Nutrir](04-nutrir.md)                     | Consultar stock, registrar movimientos y leer reportes nutricionales mensuales. |
 
 ## Qué significa cada nombre
 
