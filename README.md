@@ -11,7 +11,7 @@ Alimentación), developed with Next.js (App Router), TypeScript, and shadcn/ui.
 
 ## User manual
 
-Spanish user guide for administrators and analysts: [HTML](docs/manual-usuario/index.html) · [PDF](docs/manual-usuario/manual.pdf) · [Editable sources](docs/manual-usuario/README.md).
+Spanish user guide for administrators and analysts: [Read online](https://ingenieriaparalaalimentacion.github.io/backoffice/) · [HTML](docs/manual-usuario/index.html) · [PDF](docs/manual-usuario/manual.pdf) · [Editable sources](docs/manual-usuario/README.md).
 
 ## Prerequisites
 
