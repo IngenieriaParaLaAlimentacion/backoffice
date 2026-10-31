@@ -2,6 +2,7 @@
 
 Guía para administradores y analistas que usan el panel web.
 
+- [Leer el manual en línea](https://ingenieriaparalaalimentacion.github.io/backoffice/): publicación en GitHub Pages desde `develop`.
 - [Leer el manual HTML](index.html): archivo independiente con las capturas incluidas, navegación, búsqueda y ampliación de imágenes.
 - [Descargar el manual PDF](manual.pdf): versión para leer e imprimir en A4.
 
