@@ -26,6 +26,16 @@ Al actualizar una pantalla, revisar sus pasos, permisos, mensajes y capturas. Re
 
 El workflow [Manual de usuario · GitHub Pages](../../.github/workflows/manual-pages.yml) genera el HTML desde los capítulos y publica el sitio en <https://ingenieriaparalaalimentacion.github.io/backoffice/>. Incluye búsqueda, ampliación de capturas y descarga de `manual.pdf`.
 
+### Rama de integración y publicación
+
+Los PR del manual se integran en `develop`, según la [política de ramas del repositorio](../../.github/workflows/pr-branch-policy.yaml). Esa política permite PR a `main` únicamente desde `develop`.
+
+La rama que publica Pages se configura por separado. Este sitio publica el manual de `develop` para que los cambios integrados en esa rama estén disponibles sin esperar su paso a `main`. El workflow y el entorno `github-pages` permiten desplegar únicamente desde `develop`.
+
+Si se decide publicar solo el manual de `main`, hay que cambiar la rama de publicación en el workflow y en el entorno `github-pages`. Los PR de trabajo siguen entrando por `develop`.
+
+### Primera publicación
+
 Para habilitar la primera publicación:
 
 1. En el repositorio, abrí **Settings > Pages**.
