@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useNutritionReport } from "@/hooks/useNutritionReport";
 import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
 import {
@@ -143,6 +143,7 @@ export default function NutritionReportDetail({
   const pdf = useNutritionReportPdf(establishmentId);
 
   const listHref = nutritionReportListHref(establishmentId);
+  const goBack = useGoBack(listHref);
   const textUnavailable = report?.summary_status === "unavailable";
   // A month saved without intakes may have them now: the backend calculates it
   // again on request. If it came back empty again nothing on screen changes, so
@@ -168,8 +169,7 @@ export default function NutritionReportDetail({
             size="sm"
             variant="ghost"
             className="self-start -ml-2"
-            nativeButton={false}
-            render={<Link href={listHref} />}
+            onClick={goBack}
           >
             <ArrowLeft size={16} />
             {COPY.back}

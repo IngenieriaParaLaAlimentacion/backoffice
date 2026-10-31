@@ -80,14 +80,14 @@ export const NUTRITION_REPORT_PAGE = {
   recalculated: (month: string) => `Se completó el reporte de ${month}.`,
 } as const;
 
+/** How long a generation may take before the dialog explains the wait. */
+export const NUTRITION_REPORT_SLOW_HINT_MS = 3000;
+
 export const NUTRITION_REPORT_DIALOG = {
   ...NUTRITION_REPORT_SHARED_COPY,
   title: "Generar nuevo reporte",
   description: "Elegí el mes del que querés el reporte.",
   monthLabel: "Mes del reporte",
-  checking: "Buscando si ya existe un reporte de este mes…",
-  alreadyExists:
-    "Ya existe un reporte de este mes. Podés abrirlo sin volver a generarlo.",
   generate: "Generar reporte",
   generated: "Reporte generado.",
   opening: "Abriendo reporte…",

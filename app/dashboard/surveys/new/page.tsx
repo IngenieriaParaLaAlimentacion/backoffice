@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { getErrorMessage } from "@/lib/errorMessages";
 function NewSurveyContent() {
   const { makeAuthorizedRequest } = useAuth();
   const router = useRouter();
+  const goBack = useGoBack("/dashboard/surveys");
   const searchParams = useSearchParams();
   const fromFies = searchParams.get("from") === "fies";
 
@@ -56,19 +57,20 @@ function NewSurveyContent() {
       makeAuthorizedRequest,
       formToRequest(values),
     );
-    router.push(`/dashboard/surveys/${created.id}`);
+    router.replace(`/dashboard/surveys/${created.id}`);
   };
 
   return (
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
-        <Link
-          href="/dashboard/surveys"
+        <button
+          type="button"
+          onClick={goBack}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ChevronLeft size={16} />
           {SURVEY_FORM.back}
-        </Link>
+        </button>
 
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-semibold">{SURVEY_FORM.createTitle}</h1>
@@ -90,7 +92,7 @@ function NewSurveyContent() {
           <SurveyForm
             defaultValues={defaults}
             onSubmit={handleSubmit}
-            onCancel={() => router.push("/dashboard/surveys")}
+            onCancel={goBack}
           />
         )}
       </Card>

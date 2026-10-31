@@ -1,8 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useGoBack } from "@/hooks/useGoBack";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -23,7 +22,7 @@ export default function EditSurveyPage({
 }) {
   const { id } = use(params);
   const { makeAuthorizedRequest } = useAuth();
-  const router = useRouter();
+  const goBack = useGoBack("/dashboard/surveys");
 
   const [survey, setSurvey] = useState<SurveyResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,19 +54,20 @@ export default function EditSurveyPage({
       formToRequest(values),
     );
     setSurvey(updated);
-    router.push("/dashboard/surveys");
+    goBack();
   };
 
   return (
     <div className="flex flex-1 p-4">
       <Card className="flex-1 p-4 md:p-8 flex flex-col gap-6">
-        <Link
-          href="/dashboard/surveys"
+        <button
+          type="button"
+          onClick={goBack}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ChevronLeft size={16} />
           {SURVEY_FORM.back}
-        </Link>
+        </button>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
@@ -92,7 +92,7 @@ export default function EditSurveyPage({
             <SurveyForm
               defaultValues={surveyToForm(survey)}
               onSubmit={handleSubmit}
-              onCancel={() => router.push("/dashboard/surveys")}
+              onCancel={goBack}
               hasResponses={hasResponses}
             />
           </>

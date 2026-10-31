@@ -1,7 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
-import Link from "next/link";
+import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
 import { Check, Loader2, X } from "lucide-react";
@@ -10,6 +9,7 @@ import { useNutritionReport } from "@/hooks/useNutritionReport";
 import { SELECT_CLASS } from "@/constants/establishments";
 import {
   NUTRITION_REPORT_DIALOG as COPY,
+  NUTRITION_REPORT_SLOW_HINT_MS,
   nutritionReportHref,
 } from "@/constants/nutritionReport";
 import { formatReportMonth } from "@/lib/format";
@@ -35,13 +35,33 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
     generate,
     refetch,
   } = useNutritionReport(establishmentId, month);
-  // Between the report being saved and the next screen showing up the dialog
-  // would otherwise flip to "ya existe": keep saying we are on our way.
+  // Between the report being saved and the next screen showing up, keep
+  // saying we are on our way.
   const [isOpening, setIsOpening] = useState(false);
+  // A quick generation needs no explanation: the hint only shows once it is
+  // taking long enough to wonder whether something went wrong.
+  const [isSlow, setIsSlow] = useState(false);
+  useEffect(() => {
+    if (!isGenerating) return;
+    const timer = setTimeout(
+      () => setIsSlow(true),
+      NUTRITION_REPORT_SLOW_HINT_MS,
+    );
+    return () => {
+      clearTimeout(timer);
+      setIsSlow(false);
+    };
+  }, [isGenerating]);
   const href = nutritionReportHref(establishmentId, month);
   const isBusy = isGenerating || isOpening;
 
   const handleGenerate = async () => {
+    // Already saved: open it, never generate it again.
+    if (report) {
+      setIsOpening(true);
+      router.push(href);
+      return;
+    }
     // Generating takes a while: have the screen ready by the time it is done.
     router.prefetch(href);
     if (!(await generate())) return;
@@ -81,15 +101,6 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
         )
       )}
 
-      {isLoading ? (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="animate-spin" size={14} />
-          {COPY.checking}
-        </p>
-      ) : report && !isOpening ? (
-        <p className="text-sm text-muted-foreground">{COPY.alreadyExists}</p>
-      ) : null}
-
       {isOpening ? (
         <p
           role="status"
@@ -99,7 +110,7 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
           {COPY.generated}
         </p>
       ) : (
-        isGenerating && (
+        isSlow && (
           <p className="text-xs text-muted-foreground" role="status">
             {COPY.generatingHint}
           </p>
@@ -112,29 +123,19 @@ function DialogBody({ establishmentId }: { establishmentId: string }) {
         >
           {COPY.cancel}
         </Dialog.Close>
-        {report && !isOpening ? (
-          <Button
-            // A next/link <a>, not a <button>.
-            nativeButton={false}
-            render={<Link href={href} />}
-          >
-            {COPY.viewReport}
-          </Button>
-        ) : (
-          <Button
-            // Never while the month is still being looked up: the lookup is
-            // what tells an existing report (free to open) from a missing one.
-            disabled={isLoading || isBusy || report === undefined}
-            onClick={() => void handleGenerate()}
-          >
-            {isBusy && <Loader2 className="animate-spin" size={14} />}
-            {isOpening
-              ? COPY.opening
-              : isGenerating
-                ? COPY.generating
-                : COPY.generate}
-          </Button>
-        )}
+        <Button
+          // Never while the month is still being looked up: the lookup is
+          // what tells an existing report (free to open) from a missing one.
+          disabled={isLoading || isBusy || report === undefined}
+          onClick={() => void handleGenerate()}
+        >
+          {isBusy && <Loader2 className="animate-spin" size={14} />}
+          {isOpening
+            ? COPY.opening
+            : isGenerating
+              ? COPY.generating
+              : COPY.generate}
+        </Button>
       </div>
     </div>
   );

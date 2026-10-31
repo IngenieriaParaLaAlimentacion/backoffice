@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useGoBack } from "@/hooks/useGoBack";
 import {
   EstablishmentCharacterization,
   EstablishmentResponse,
@@ -34,15 +34,9 @@ export default function EstablishmentHeader({
   /** Shows "Editar datos"; omitted for whoever can't edit name/address. */
   onEstablishmentSaved?: (updated: EstablishmentResponse) => void;
 }) {
-  const router = useRouter();
-
   // router.back() restores the panel's filters (they live in the query string)
-  // and its scroll position. On a deep link there is nothing to go back to.
-  const goBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1)
-      router.back();
-    else router.push(PANEL_HREF);
-  };
+  // and its scroll position.
+  const goBack = useGoBack(PANEL_HREF);
 
   const summary = profileSummary(characterization);
   const detail = locationDetail(characterization);

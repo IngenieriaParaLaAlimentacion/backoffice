@@ -1,3 +1,4 @@
+import * as navigationHistory from "@/lib/navigationHistory";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -16,9 +17,17 @@ import {
   NUTRITION_REPORT_ERROR_MESSAGES,
   NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_SECTIONS as SECTIONS,
+  nutritionReportListHref,
 } from "@/constants/nutritionReport";
 import { ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT } from "@/constants/api";
 import { ERROR_TYPES } from "@/lib/apiError";
+
+const replace = vi.fn();
+const back = vi.fn();
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  useRouter: () => ({ replace, back }),
+}));
 
 const ESTABLISHMENT = MOCK_ESTABLISHMENTS[0].id;
 
@@ -35,6 +44,35 @@ describe("NutritionReportDetail", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    replace.mockClear();
+    back.mockClear();
+  });
+
+  it("goes back in the history instead of pushing the list on top of it", async () => {
+    vi.useRealTimers();
+    vi.spyOn(navigationHistory, "hasPreviousAppEntry").mockReturnValue(true);
+    renderDetail("2026-09");
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.back }),
+    );
+
+    expect(back).toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("opens the list when there is no history to go back to", async () => {
+    vi.useRealTimers();
+    vi.spyOn(navigationHistory, "hasPreviousAppEntry").mockReturnValue(false);
+    renderDetail("2026-09");
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: COPY.back }),
+    );
+
+    expect(replace).toHaveBeenCalledWith(
+      nutritionReportListHref(ESTABLISHMENT),
+    );
   });
 
   it("shows the report with its summary, indicator and scope note", async () => {

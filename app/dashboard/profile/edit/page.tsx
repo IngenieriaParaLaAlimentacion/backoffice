@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
@@ -15,7 +14,7 @@ import {
 } from "@/schemas/editProfile.schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
 import AppTextAreaField from "@/components/AppTextAreaField";
@@ -25,7 +24,7 @@ import { getErrorMessage } from "@/lib/errorMessages";
 import ProfileField from "../ProfileField";
 
 export default function EditProfilePage() {
-  const router = useRouter();
+  const goBack = useGoBack("/dashboard/profile");
   const { makeAuthorizedRequest } = useAuth();
 
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -82,7 +81,7 @@ export default function EditProfilePage() {
     setApiError(null);
     try {
       await updateMeAction(makeAuthorizedRequest, data);
-      router.push("/dashboard/profile");
+      goBack();
     } catch (err) {
       setApiError(
         getErrorMessage(err, { fallback: PROFILE_EDIT_PAGE.saveError }),
@@ -102,17 +101,16 @@ export default function EditProfilePage() {
               {PROFILE_EDIT_PAGE.subtitle}
             </p>
           </div>
-          <Link
-            href="/dashboard/profile"
-            className={buttonVariants({
-              variant: "outline",
-              size: "sm",
-              className: "self-start",
-            })}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={goBack}
           >
             <ArrowLeft size={14} />
             {PROFILE_EDIT_PAGE.back}
-          </Link>
+          </Button>
         </div>
 
         <Separator />
@@ -192,12 +190,9 @@ export default function EditProfilePage() {
             )}
 
             <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-              <Link
-                href="/dashboard/profile"
-                className={buttonVariants({ variant: "outline" })}
-              >
+              <Button type="button" variant="outline" onClick={goBack}>
                 {PROFILE_EDIT_PAGE.cancel}
-              </Link>
+              </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="animate-spin" size={14} />}
                 {PROFILE_EDIT_PAGE.save}
