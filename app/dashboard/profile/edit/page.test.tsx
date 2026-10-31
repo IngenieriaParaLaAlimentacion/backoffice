@@ -9,15 +9,15 @@ import { ME_ENDPOINT } from "@/constants/api";
 import { makeMeHandler, makeUpdateMeHandler } from "@/mocks/handlers/user";
 import { PROFILE_EDIT_PAGE } from "@/constants/users";
 
-const push = vi.fn();
+const replace = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ replace }),
 }));
 
 describe("EditProfilePage", () => {
   beforeEach(() => {
-    push.mockClear();
+    replace.mockClear();
     server.use(
       makeMeHandler({
         data: {
@@ -112,7 +112,7 @@ describe("EditProfilePage", () => {
         contact_phone: "+54 9 342 555-1111",
         description: "Nueva descripción",
       });
-      expect(push).toHaveBeenCalledWith("/dashboard/profile");
+      expect(replace).toHaveBeenCalledWith("/dashboard/profile");
     });
   });
 
@@ -160,7 +160,7 @@ describe("EditProfilePage", () => {
         contact_phone: null,
         description: null,
       });
-      expect(push).toHaveBeenCalledWith("/dashboard/profile");
+      expect(replace).toHaveBeenCalledWith("/dashboard/profile");
     });
   });
 
@@ -193,6 +193,6 @@ describe("EditProfilePage", () => {
         /Algunos datos no son válidos|Error al guardar los cambios/i,
       ),
     ).toBeInTheDocument();
-    expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 });

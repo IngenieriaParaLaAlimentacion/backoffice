@@ -1,3 +1,4 @@
+import * as navigationHistory from "@/lib/navigationHistory";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -6,16 +7,16 @@ import { renderWithProviders } from "@/test-utils";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
 import { ESTABLISHMENT_MOVEMENTS_PAGE as COPY } from "@/constants/establishments";
 
-const push = vi.fn();
+const replace = vi.fn();
 const back = vi.fn();
 vi.mock("next/navigation", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/navigation")>()),
-  useRouter: () => ({ push, back }),
+  useRouter: () => ({ replace, back }),
 }));
 
 afterEach(() => {
   vi.restoreAllMocks();
-  push.mockClear();
+  replace.mockClear();
   back.mockClear();
 });
 
@@ -37,7 +38,7 @@ const renderPage = (id: string) =>
 
 describe("EstablishmentMovementsHistoryPage", () => {
   it("goes back in the history instead of pushing the stock on top of it", async () => {
-    vi.spyOn(window.history, "length", "get").mockReturnValue(3);
+    vi.spyOn(navigationHistory, "hasPreviousAppEntry").mockReturnValue(true);
     renderPage(WITH_DATA_ID);
 
     await userEvent.click(
@@ -45,7 +46,7 @@ describe("EstablishmentMovementsHistoryPage", () => {
     );
 
     expect(back).toHaveBeenCalled();
-    expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   // The desktop table and the mobile card list both render in jsdom (no CSS

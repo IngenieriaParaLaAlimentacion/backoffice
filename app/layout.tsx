@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import MswProvider from "@/mocks/MswProvider";
 import { AuthProvider } from "@/context/AuthContext";
+import NavigationHistory from "@/components/NavigationHistory";
 import localFont from "next/font/local";
 import { BRAND } from "@/constants/brand";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ export default function RootLayout({
       )}
     >
       <body>
+        <NavigationHistory />
         <MswProvider>
           <AuthProvider>{children}</AuthProvider>
         </MswProvider>

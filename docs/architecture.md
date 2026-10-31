@@ -17,6 +17,17 @@ Establishments map — and the nutrition report hooks, which share one cache bet
 generate dialog and the report screen — see "Nutrition report". Don't convert other
 hooks to SWR piecemeal; it's a convention to agree on for the whole app.
 
+## Back navigation
+
+`NavigationHistory` mounts once in the root layout. `lib/navigationHistory.ts`
+records each app entry's depth in `history.state`, preserving Next.js state when
+wrapping `pushState` and `replaceState`. Replacements keep the depth; browser
+back/forward restores the depth saved on the destination entry, including after a
+reload. Entries from before tracking began are not treated as app predecessors.
+`useGoBack` goes back only when that entry has a recorded predecessor; otherwise
+it replaces the current entry with its fallback. Do not use `history.length` for
+this decision: it includes forward entries and entries from other sites.
+
 ## Auth (`context/AuthContext.tsx`)
 
 `AuthProvider` wraps the app (in `app/layout.tsx`) and holds tokens + device ID in
