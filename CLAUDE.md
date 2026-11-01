@@ -4,10 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A Next.js (App Router) admin backoffice for "Ingeniería Para La Alimentación" — a
+A Next.js (App Router) admin backoffice for "Ingeniería para la Alimentación" — a
 university project for managing establishments, field workers, subjects, surveys/FIES
-responses, and user access requests. UI strings and validation messages are in Spanish;
-code (identifiers, comments) is in English.
+responses, and user access requests. It is a client of the project's REST backend. UI
+strings and validation messages are in Spanish; code (identifiers, comments) and
+technical documentation are in English.
+
+## Stack
+
+| Layer             | Technology                                       |
+| ----------------- | ------------------------------------------------ |
+| Framework         | Next.js (App Router), React, TypeScript          |
+| UI                | Tailwind CSS 4, shadcn/ui                        |
+| Data fetching     | SWR                                              |
+| Forms, validation | react-hook-form, zod                             |
+| Maps              | Leaflet (react-leaflet)                          |
+| Tests             | Vitest, Testing Library, MSW; Playwright for E2E |
+| Code quality      | ESLint 9, Prettier, Husky + lint-staged          |
+| Runtime           | Node 24 LTS, Docker                              |
+
+Versions live in `package.json`.
 
 ## Commands
 
@@ -15,16 +31,21 @@ code (identifiers, comments) is in English.
 npm run dev            # dev server
 npm run build          # production build
 npm run lint           # eslint . --max-warnings=0
-npm run typecheck      # tsc --noEmit
+npm run typecheck      # tsc --noEmit, for the app and for the E2E suite
 npm run test           # vitest
 npm run test:watch     # vitest --watch
 npm run test:ci        # vitest run --coverage
+npm run e2e            # Playwright against a disposable backend stack (needs Docker)
+npm run audit          # npm audit on runtime deps, fails on high or critical
 ```
 
 Run a single test file: `npx vitest run path/to/file.test.ts`. Tests are co-located
 next to their subject (`lib/permissions.test.ts`, `context/SessionContext.test.tsx`);
 `test-utils.tsx` exports `renderWithProviders(ui, { role })` for anything that reads the
 auth or session context.
+
+Browser E2E tests run against the real backend image, not MSW; see `docs/e2e.md` before
+touching them.
 
 Husky runs `lint-staged` on commit (eslint --fix + prettier for JS/TS, prettier for
 css/md/json) — don't bypass with `--no-verify`.
@@ -38,9 +59,10 @@ validation; `types/*.ts` hold API response shapes; `constants/*.ts` hold per-dom
 copy/config; `components/ui/` is shadcn-generated, `components/` is everything else.
 
 **Read `docs/architecture.md` before making non-trivial changes to auth, data fetching,
-the geo/address adapter, the establishments map, or the MSW mocking setup** — those
-pieces have non-obvious reasoning behind their shape and are easy to "fix" into
-something that quietly breaks.
+the geo/address adapter, or the MSW mocking setup, and `docs/features.md` before touching
+the establishments map, the establishment ficha tabs, the nutrition report, or the email
+verification page** — those pieces have non-obvious reasoning behind their shape and are
+easy to "fix" into something that quietly breaks.
 
 ## Conventions
 
@@ -73,13 +95,27 @@ something that quietly breaks.
 - Full Next.js-specific conventions (async `params`, co-location, routing/font/image
   APIs, env var prefixing, the loading/error-state pattern, metadata) are in
   `docs/conventions.md`.
+- **Branches and commits**: `develop` is the integration branch and `main` the release
+  branch. Work on `feat/`, `fix/`, `refactor/`, `docs/` or `chore/` branches and open PRs
+  into `develop`; CI enforces it. Commits follow Conventional Commits. See
+  `CONTRIBUTING.md`.
 
-## Other docs
+## Documentation
 
-- `docs/architecture.md` — layering, auth flow, service/error conventions, MSW mocking,
-  the geo-provider adapter, the establishments map, forms, UI components, testing setup.
-- `docs/conventions.md` — Next.js conventions and how this repo avoids duplication/magic
-  values.
-- `docs/adr/` — architecture decision records (the geo-provider adapter choice; the
-  client-side permission model; the map libraries and base map; forwarding the user's IP
-  to the backend).
+Project documentation lives in `docs/`; the entry points are `README.md` (Spanish:
+`README.es.md`) and `CONTRIBUTING.md`. Technical docs are in English; the end-user manual is
+in Spanish. Do not keep the same document in both languages (the READMEs are the only
+exception).
+
+| Document               | Read it when                                                                                                                                                               |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/architecture.md` | Changing auth, data fetching, the geo adapter, forms, theme, dates, MSW mocking, or the testing setup: layering, auth flow, service/error conventions                      |
+| `docs/features.md`     | Touching the establishments map, the establishment ficha tabs, the nutrition report, or the email verification page: how each fits together and what is easy to break      |
+| `docs/conventions.md`  | Adding code: Next.js conventions and how this repo avoids duplication and magic values                                                                                     |
+| `docs/adr/`            | Understanding why a decision was made: the geo-provider adapter, the client-side permission model, the map libraries and base map, forwarding the user's IP to the backend |
+| `docs/e2e.md`          | Running or changing the Playwright E2E suite: credentials, Chromium, reset, CI reports                                                                                     |
+| `docs/manual-usuario/` | Updating the Spanish end-user manual (HTML, PDF and editable sources); see its `mantenimiento.md`                                                                          |
+| `CONTRIBUTING.md`      | Branches, commits, PR rules, CI                                                                                                                                            |
+
+When you add, rename, or remove a document under `docs/`, update this table and the
+documentation list in the READMEs.
