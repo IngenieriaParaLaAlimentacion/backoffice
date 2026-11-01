@@ -1,3 +1,4 @@
+import { GEOREF_SEARCH_PLACEHOLDER } from "../../constants/georef";
 import {
   GeoLocationProvider,
   GeoLocationProviderCallbacks,
@@ -20,7 +21,8 @@ type GeorefAddress = {
   calle: { id: string | null };
   altura: { valor: number | null };
   departamento: { id: string };
-  provincia: { id: string };
+  provincia: { id: string; nombre: string };
+  localidad_censal: { nombre: string | null } | null;
   ubicacion: { lat: number; lon: number };
 };
 
@@ -40,6 +42,8 @@ function toPlaceDetails(address: GeorefAddress): PlaceDetails {
     formattedAddress: address.nomenclatura,
     lat: address.ubicacion.lat,
     lng: address.ubicacion.lon,
+    city: address.localidad_censal?.nombre ?? undefined,
+    province: address.provincia.nombre,
   };
 }
 
@@ -78,7 +82,7 @@ export class GeorefProvider implements GeoLocationProvider {
 
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "Ej: Av. Mitre, Avellaneda Buenos Aires";
+    input.placeholder = GEOREF_SEARCH_PLACEHOLDER;
     input.autocomplete = "off";
     input.className = INPUT_CLASS;
 

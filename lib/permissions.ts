@@ -11,36 +11,51 @@ import { UserRole } from "@/types/user";
  * boundary and still answers 403 to anything it shouldn't allow.
  */
 export type Permission =
-  /** The "Solicitudes" screen and its two tabs (user + establishment access). */
+  /** The "Solicitudes" screen and its three tabs (user registrations,
+   * establishment access and establishment creation requests). */
   | "requests.view"
   /** The "Usuarios" screen. The backend 403s non-admins on the listing
    * endpoints, so the screen has nothing to show without this. */
   | "users.view"
   /** Creating an establishment outright (button + `/establishments/create`). */
   | "establishments.create"
-  /** The "Solicitudes" tab inside Establecimientos (approve/reject new ones). */
-  | "establishments.requests.view"
+  /** Editing an establishment's name and address (`PATCH /establishments/{id}`
+   * is admin-only, like creating one). */
+  | "establishments.edit"
+  /** Editing an establishment's profile (its characterization). */
+  | "establishments.characterization.edit"
+  /** The "Reporte nutricional" tab of an establishment: reading, generating
+   * and downloading its monthly nutrition reports. */
+  | "nutritionReports.view"
   /** Inviting admins/analysts from the Usuarios screen. */
   | "users.invite"
   /** Revoking a field worker's access to an establishment. */
   | "users.revokeAccess"
   /** Deleting a survey. */
-  | "surveys.delete";
+  | "surveys.delete"
+  /** Requesting or withdrawing own establishment access (analyst). */
+  | "establishments.requestAccess"
+  /** Subscribing or unsubscribing from establishments (admin/superadmin). */
+  | "establishments.subscribe";
 
 const ALL_PERMISSIONS = [
   "requests.view",
   "users.view",
   "establishments.create",
-  "establishments.requests.view",
+  "establishments.edit",
+  "establishments.characterization.edit",
+  "nutritionReports.view",
   "users.invite",
   "users.revokeAccess",
   "surveys.delete",
+  "establishments.subscribe",
 ] as const satisfies readonly Permission[];
 
 /**
  * An analyst sees every screen except the ones that grant access or
  * permissions, and can do everything on the ones it does see except grant
- * access, create establishments outright or delete surveys.
+ * access, create or edit establishments outright or delete surveys. It can
+ * edit any establishment's profile, like a field worker can in the app.
  *
  * `field_worker` has no backoffice permissions yet — its access is scoped to
  * its own issue.
@@ -48,7 +63,11 @@ const ALL_PERMISSIONS = [
 const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   superadmin: ALL_PERMISSIONS,
   admin: ALL_PERMISSIONS,
-  analyst: [],
+  analyst: [
+    "establishments.characterization.edit",
+    "nutritionReports.view",
+    "establishments.requestAccess",
+  ],
   field_worker: [],
 };
 

@@ -3,7 +3,7 @@ export const API_BASE_URL = "";
 // --- Auth Endpoints ---
 
 export const ADMIN_LOGIN_ENDPOINT = "/api/v1/auth/login";
-export const ACCEPT_INVITE_ENDPOINT = "/api/v1/auth/password-recovery/confirm";
+export const ACCEPT_INVITE_ENDPOINT = "/api/v1/auth/invite/accept";
 export const REFRESH_ENDPOINT = "/api/v1/auth/refresh";
 export const RESET_PASSWORD_ENDPOINT = "/api/v1/auth/password-recovery/confirm";
 export const FORGOT_PASSWORD_ENDPOINT =
@@ -50,6 +50,8 @@ export const REJECT_ESTABLISHMENT_REQUEST_ENDPOINT = (requestId: string) =>
 export const ESTABLISHMENTS_ENDPOINT = "/api/v1/establishments";
 export const ESTABLISHMENTS_EXPORT_ENDPOINT = "/api/v1/establishments/export";
 export const ESTABLISHMENTS_MAP_ENDPOINT = "/api/v1/establishments/map";
+export const ESTABLISHMENT_ENDPOINT = (establishmentId: string) =>
+  `/api/v1/establishments/${establishmentId}`;
 export const ESTABLISHMENT_DASHBOARD_ENDPOINT = (establishmentId: string) =>
   `/api/v1/establishments/${establishmentId}/dashboard`;
 export const ESTABLISHMENT_SUBJECTS_ENDPOINT = (establishmentId: string) =>
@@ -70,6 +72,20 @@ export const ESTABLISHMENT_FOOD_MOVEMENT_DETAIL_ENDPOINT = (
   establishmentId: string,
   movementId: string,
 ) => `/api/v1/establishments/${establishmentId}/food-movements/${movementId}`;
+export const ESTABLISHMENT_NUTRITION_REPORTS_ENDPOINT = (
+  establishmentId: string,
+) => `/api/v1/establishments/${establishmentId}/nutrition-reports`;
+export const ESTABLISHMENT_NUTRITION_REPORT_ENDPOINT = (
+  establishmentId: string,
+  month: string,
+) => `/api/v1/establishments/${establishmentId}/nutrition-reports/${month}`;
+export const ESTABLISHMENT_NUTRITION_REPORT_PDF_ENDPOINT = (
+  establishmentId: string,
+  month: string,
+) => `/api/v1/establishments/${establishmentId}/nutrition-reports/${month}/pdf`;
+export const ESTABLISHMENT_CHARACTERIZATION_ENDPOINT = (
+  establishmentId: string,
+) => `/api/v1/establishments/${establishmentId}/characterization`;
 export const CREATE_ESTABLISHMENT_REQUEST_ENDPOINT =
   "/api/v1/establishments/requests";
 
@@ -129,3 +145,8 @@ export const DASHBOARD_INDICATORS_ENDPOINT =
 // --- Users Endpoints ---
 
 export const ME_ENDPOINT = "/api/v1/users/me";
+export const ME_ESTABLISHMENTS_ENDPOINT = "/api/v1/users/me/establishments";
+export const ME_ESTABLISHMENTS_WITHDRAW_ENDPOINT =
+  "/api/v1/users/me/establishments/withdraw";
+export const ME_ESTABLISHMENTS_SUBSCRIPTIONS_ENDPOINT =
+  "/api/v1/users/me/establishments/subscriptions";

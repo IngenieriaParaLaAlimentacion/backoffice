@@ -3,9 +3,9 @@
 import RequirePermission from "@/components/RequirePermission";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -18,24 +18,20 @@ import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
 import Link from "next/link";
 import { useUsers } from "@/hooks/useUsers";
 import UserDetailPanel from "./[role]/UserDetailPanel";
+import UserEstablishments from "./UserEstablishments";
+import RoleInviteButton from "./RoleInviteButton";
 
 const PAGE_SIZE = 3;
 
 function RoleSection({ role, label }: { role: string; label: string }) {
-  const { users, isLoading, error } = useUsers(role, PAGE_SIZE);
+  const { users, total, isLoading, error } = useUsers(role, PAGE_SIZE);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold">{label}</h2>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-muted-foreground hover:text-foreground gap-1"
-        >
-          <Link href={`/dashboard/users/${role}`}>{USERS_PAGE.viewAll}</Link>
-        </Button>
+        <RoleInviteButton role={role} />
       </div>
       {error && (
         <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
@@ -85,21 +81,9 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                       {user.email}
                     </td>
                     <td className="px-4 py-3">
-                      {user.establishments.length === 0 ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : (
-                        <div className="flex flex-col gap-0.5">
-                          {user.establishments.map((est) => (
-                            <span key={est.id} className="text-xs">
-                              <span className="font-medium">{est.name}</span>
-                              <span className="text-muted-foreground">
-                                {" "}
-                                — {est.formatted_address}
-                              </span>
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      <UserEstablishments
+                        establishments={user.establishments}
+                      />
                     </td>
                     <ChevronCell className="w-12" />
                   </tr>
@@ -126,17 +110,10 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                     {user.email}
                   </span>
                   {user.establishments.length > 0 && (
-                    <div className="mt-1 flex flex-col gap-0.5">
-                      {user.establishments.map((est) => (
-                        <span key={est.id} className="text-xs">
-                          <span className="font-medium">{est.name}</span>
-                          <span className="text-muted-foreground">
-                            {" "}
-                            — {est.formatted_address}
-                          </span>
-                        </span>
-                      ))}
-                    </div>
+                    <UserEstablishments
+                      establishments={user.establishments}
+                      className="mt-1"
+                    />
                   )}
                 </span>
                 <RowChevron className="shrink-0" />
@@ -144,6 +121,21 @@ function RoleSection({ role, label }: { role: string; label: string }) {
             ))}
           </div>
         </>
+      )}
+
+      {!isLoading && total > users.length && (
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm text-muted-foreground">
+            {USERS_PAGE.showing(users.length, total)}
+          </span>
+          <Link
+            href={`/dashboard/users/${role}`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            {USERS_PAGE.viewAll}
+            <ArrowRight />
+          </Link>
+        </div>
       )}
 
       <UserDetailPanel

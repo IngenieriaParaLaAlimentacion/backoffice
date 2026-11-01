@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  ageInMonths,
+  argentineToday,
+  formatTimeSinceMeasurement,
   argentineDayEndUtc,
   argentineDayStartUtc,
   formatAgeMonths,
@@ -99,5 +102,94 @@ describe("formatPercentage", () => {
   it("uses the Argentine decimal comma", () => {
     expect(formatPercentage(12.34)).toBe("12,34%");
     expect(formatPercentage(null)).toBe("—");
+  });
+});
+
+describe("ageInMonths", () => {
+  it.each([
+    ["2008-04-28", "2026-10-27", 221],
+    ["2008-04-28", "2026-10-28", 222],
+    ["2026-10-28", "2026-10-28", 0],
+    ["2026-10-29", "2026-10-28", 0],
+    ["2026-01-31", "2026-02-28", 0],
+    ["2026-01-31", "2026-03-01", 1],
+    ["2024-02-29", "2025-02-28", 11],
+    ["2024-02-29", "2025-03-01", 12],
+    ["2026-02-30", "2026-10-28", null],
+    ["2025-02-29", "2026-10-28", null],
+    ["0000-01-01", "2026-10-28", null],
+    ["garbage", "2026-10-28", null],
+    ["", "2026-10-28", null],
+    ["2026-1-01", "2026-10-28", null],
+    ["2008-04-28", "garbage", null],
+  ])("counts completed months from %s to %s", (birth, reference, expected) => {
+    expect(ageInMonths(birth, reference)).toBe(expected);
+  });
+});
+
+describe("argentineToday", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("uses Argentina today across the UTC date boundary", () => {
+    const now = new Date("2026-10-29T01:30:00Z");
+    expect(argentineToday(now)).toBe("2026-10-28");
+    expect(
+      formatAgeMonths(ageInMonths("2008-04-28", argentineToday(now))),
+    ).toBe("18 a 6 m");
+  });
+
+  it("samples the current clock when no reference is given", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-28T02:59:59Z"));
+    expect(argentineToday()).toBe("2026-10-27");
+    expect(ageInMonths("2008-04-28")).toBe(221);
+    vi.setSystemTime(new Date("2026-10-28T03:00:00Z"));
+    expect(argentineToday()).toBe("2026-10-28");
+    expect(ageInMonths("2008-04-28")).toBe(222);
+  });
+});
+
+describe("formatTimeSinceMeasurement", () => {
+  const now = new Date("2026-10-28T13:00:00Z");
+  it.each([
+    [null, "—"],
+    [undefined, "—"],
+    ["bad-date", "—"],
+    ["2026-10-28T13:00:01Z", "hoy"],
+    ["2026-10-29T02:59:59Z", "hoy"],
+    ["2026-10-28T23:59:59-03:00", "hoy"],
+    ["2026-10-29T03:00:00Z", "—"],
+    ["2026-10-28T13:00:00Z", "hoy"],
+    ["2026-10-28T12:00:00Z", "hoy"],
+    ["2026-10-28T01:30:00Z", "hace 1 día"],
+    ["2026-10-27T13:00:00Z", "hace 1 día"],
+    ["2026-10-26T13:00:00Z", "hace 2 días"],
+    ["2026-09-29T13:00:00Z", "hace 29 días"],
+    ["2026-09-28T13:00:00Z", "hace 1 mes"],
+    ["2026-07-28T13:00:00Z", "hace 3 meses"],
+    ["2025-10-28T13:00:00Z", "hace 1 año"],
+    ["2024-10-28T13:00:00Z", "hace 2 años"],
+  ])("formats %s", (value, expected) => {
+    expect(formatTimeSinceMeasurement(value, now)).toBe(expected);
+  });
+
+  it.each([
+    ["2026-01-31T15:00:00Z", "2026-02-28T15:00:00Z", "hace 28 días"],
+    ["2026-01-31T15:00:00Z", "2026-03-01T15:00:00Z", "hace 1 mes"],
+    ["2024-02-29T15:00:00Z", "2025-02-28T15:00:00Z", "hace 11 meses"],
+    ["2024-02-29T15:00:00Z", "2025-03-01T15:00:00Z", "hace 1 año"],
+  ])("counts calendar months for %s to %s", (value, reference, expected) => {
+    expect(formatTimeSinceMeasurement(value, new Date(reference))).toBe(
+      expected,
+    );
+  });
+
+  it("returns a placeholder for an invalid reference clock", () => {
+    expect(
+      formatTimeSinceMeasurement("2026-10-28T12:00:00Z", new Date(NaN)),
+    ).toBe("—");
+    expect(argentineToday(new Date(NaN))).toBe("");
   });
 });

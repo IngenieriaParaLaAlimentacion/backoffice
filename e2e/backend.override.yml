@@ -1,0 +1,7 @@
+services:
+  backend:
+    environment:
+      # At the pinned backend, development auto-verifies registered emails
+      # and switches API logging to console output. Review all development-only
+      # effects whenever the e2e/backend.json pin changes; migrate/seed stay e2e.
+      ENVIRONMENT: development

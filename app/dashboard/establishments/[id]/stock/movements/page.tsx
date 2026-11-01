@@ -1,8 +1,10 @@
 "use client";
 
+import { NOT_AVAILABLE } from "@/constants/common";
+
 import { use, useEffect, useState } from "react";
-import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useEstablishmentMovementsHistory } from "@/hooks/useEstablishmentMovementsHistory";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -115,7 +117,7 @@ export default function EstablishmentMovementsHistoryPage({
     setFoodFilterKey((key) => key + 1);
   };
 
-  const stockHref = `/dashboard/establishments/${id}/stock`;
+  const goBack = useGoBack(`/dashboard/establishments/${id}/stock`);
   const columns = COPY.columns;
 
   if (notFound) {
@@ -152,10 +154,7 @@ export default function EstablishmentMovementsHistoryPage({
             size="sm"
             variant="ghost"
             className="self-start -ml-2"
-            // Rendering a next/link <a>, not a <button> — see the same note in
-            // EstablishmentStockList.
-            nativeButton={false}
-            render={<Link href={stockHref} />}
+            onClick={goBack}
           >
             <ArrowLeft size={16} />
             {COPY.back}
@@ -354,12 +353,12 @@ export default function EstablishmentMovementsHistoryPage({
                         <td className="px-4 py-3 text-muted-foreground">
                           {movement.direction === "in"
                             ? FOOD_INTAKE_ORIGIN_LABELS[movement.origin_type]
-                            : "—"}
+                            : NOT_AVAILABLE}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {movement.direction === "in"
                             ? recurrenceLabel(movement.is_recurring)
-                            : "—"}
+                            : NOT_AVAILABLE}
                         </td>
                         <ChevronCell />
                       </tr>

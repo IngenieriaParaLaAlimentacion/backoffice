@@ -30,13 +30,30 @@ export class ApiError extends Error {
 
 const CANONICAL_MEMBERS = ["type", "title", "status", "detail", "instance"];
 
-export function toApiError(data: unknown, status: number): ApiError {
+export function toApiError(
+  data: unknown,
+  status: number,
+  headers?: Headers,
+): ApiError {
   const body = (data ?? {}) as Partial<ErrorResponse> & Record<string, unknown>;
   // Everything outside the five canonical members is an RFC 7807 extension.
   const extensions = Object.fromEntries(
     Object.entries(body).filter(([key]) => !CANONICAL_MEMBERS.includes(key)),
   );
+  // The backend repeats `retry_after` in the `Retry-After` header; the body
+  // wins, the header covers a response whose body could not be read.
+  const headerRetryAfter = Number(headers?.get("retry-after"));
+  if (extensions.retry_after === undefined && headerRetryAfter > 0)
+    extensions.retry_after = headerRetryAfter;
   return new ApiError(body.detail ?? "", status, body.type, extensions);
+}
+
+/** Seconds to wait before retrying, when the backend says so. */
+export function getRetryAfterSeconds(error: ApiError): number | null {
+  const value = error.extensions.retry_after;
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : null;
 }
 
 /**
@@ -77,7 +94,22 @@ export const ERROR_TYPES = {
    *  backend hides that distinction on purpose, so this is never a 403. */
   FOOD_MOVEMENT_NOT_FOUND: "/errors/food-movement-not-found",
   INSUFFICIENT_STOCK: "/errors/insufficient-stock",
+  /** The address (its `place_id`) already belongs to another establishment. */
+  ESTABLISHMENT_ALREADY_EXISTS: "/errors/establishment-already-exists",
   CONCURRENT_UPDATE: "/errors/concurrent-update",
+
+  AI_QUOTA_EXHAUSTED: "/errors/ai/quota-exhausted",
+  RATE_LIMITED: "/errors/rate-limited",
+  NUTRITION_REPORT_MONTH_NOT_OVER: "/errors/nutrition/report-month-not-over",
+  NUTRITION_REPORT_NOT_FOUND: "/errors/nutrition/report-not-found",
+  /** A PDF was asked for while the report's AI text is missing. */
+  NUTRITION_REPORT_SUMMARY_UNAVAILABLE:
+    "/errors/nutrition/report-summary-unavailable",
+  /** None of the foods received in the month converts to grams. */
+  NUTRITION_REPORT_CONVERSION_UNAVAILABLE:
+    "/errors/nutrition/report-conversion-unavailable",
+  NUTRITION_REPORT_GENERATION_TIMEOUT:
+    "/errors/nutrition/report-generation-timeout",
 
   VALIDATION_FAILED: "/errors/validation-failed",
   INTERNAL_ERROR: "/errors/internal-error",

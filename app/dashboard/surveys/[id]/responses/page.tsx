@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useAuth } from "@/context/AuthContext";
 import {
   getSurveyAction,
@@ -121,7 +122,7 @@ function toNumberFilters(filters: Filters) {
 
 export default function ResponsesPage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useGoBack("/dashboard/surveys");
   const surveyId = params.id as string;
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
   const {
@@ -287,11 +288,7 @@ export default function ResponsesPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => router.push("/dashboard/surveys")}
-              >
+              <Button variant="ghost" size="icon-sm" onClick={goBack}>
                 <ArrowLeft size={16} />
               </Button>
               <h1 className="text-3xl font-semibold">{RESPONSES_PAGE.title}</h1>

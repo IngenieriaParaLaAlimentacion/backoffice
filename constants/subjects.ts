@@ -57,6 +57,7 @@ export const SUBJECTS_PAGE = {
     name: "Nombre",
     document: "Documento",
     birthDate: "Fecha de nacimiento",
+    age: "Edad",
     lastMeasurement: "Último relevamiento",
   },
 } as const;
@@ -72,6 +73,7 @@ export const SUBJECT_DETAIL_PANEL = {
     male: "Masculino",
     female: "Femenino",
     birthDate: "Fecha de nacimiento",
+    age: "Edad",
     isRural: "Población rural",
     isIndigenous: "Población indígena",
     yes: "Sí",

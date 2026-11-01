@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useGoBack } from "@/hooks/useGoBack";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
@@ -11,28 +10,21 @@ import { ROLE_LABELS } from "@/types/user";
 import {
   editProfileSchema,
   EditProfileInput,
+  EditProfileOutput,
 } from "@/schemas/editProfile.schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import AppTextField from "@/components/AppTextField";
+import AppTextAreaField from "@/components/AppTextAreaField";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { PROFILE_EDIT_PAGE } from "@/constants/users";
+import { PROFILE_EDIT_PAGE, PROFILE_FIELDS } from "@/constants/users";
 import { getErrorMessage } from "@/lib/errorMessages";
-
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-foreground">{label}</label>
-      <p className="text-sm text-muted-foreground border border-input rounded-md px-3 py-2 bg-muted/40">
-        {value}
-      </p>
-    </div>
-  );
-}
+import ProfileField from "../ProfileField";
 
 export default function EditProfilePage() {
-  const router = useRouter();
+  const goBack = useGoBack("/dashboard/profile");
   const { makeAuthorizedRequest } = useAuth();
 
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -47,15 +39,27 @@ export default function EditProfilePage() {
     handleSubmit,
     reset,
     formState: { isSubmitting },
-  } = useForm<EditProfileInput>({
+  } = useForm<EditProfileInput, unknown, EditProfileOutput>({
     resolver: zodResolver(editProfileSchema),
-    defaultValues: { name: "", last_name: "" },
+    defaultValues: {
+      name: "",
+      last_name: "",
+      locality: "",
+      contact_phone: "",
+      description: "",
+    },
   });
 
   const fetchProfile = useCallback(async () => {
     try {
       const profile = await getMeAction(makeAuthorizedRequest);
-      reset({ name: profile.name, last_name: profile.last_name });
+      reset({
+        name: profile.name,
+        last_name: profile.last_name,
+        locality: profile.locality ?? "",
+        contact_phone: profile.contact_phone ?? "",
+        description: profile.description ?? "",
+      });
       setReadOnlyFields({
         email: profile.email,
         role: ROLE_LABELS[profile.role] ?? profile.role,
@@ -73,11 +77,11 @@ export default function EditProfilePage() {
     fetchProfile();
   }, [fetchProfile]);
 
-  const onSubmit = async (data: EditProfileInput) => {
+  const onSubmit = async (data: EditProfileOutput) => {
     setApiError(null);
     try {
       await updateMeAction(makeAuthorizedRequest, data);
-      router.push("/dashboard/profile");
+      goBack();
     } catch (err) {
       setApiError(
         getErrorMessage(err, { fallback: PROFILE_EDIT_PAGE.saveError }),
@@ -97,17 +101,16 @@ export default function EditProfilePage() {
               {PROFILE_EDIT_PAGE.subtitle}
             </p>
           </div>
-          <Link
-            href="/dashboard/profile"
-            className={buttonVariants({
-              variant: "outline",
-              size: "sm",
-              className: "self-start",
-            })}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={goBack}
           >
             <ArrowLeft size={14} />
             {PROFILE_EDIT_PAGE.back}
-          </Link>
+          </Button>
         </div>
 
         <Separator />
@@ -119,50 +122,82 @@ export default function EditProfilePage() {
         ) : (
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 max-w-md"
+            className="flex max-w-2xl flex-col gap-6"
           >
-            <AppTextField
-              control={control}
-              name="name"
-              label={PROFILE_EDIT_PAGE.fields.name}
-              placeholder={PROFILE_EDIT_PAGE.fields.namePlaceholder}
-              required
-            />
-            <AppTextField
-              control={control}
-              name="last_name"
-              label={PROFILE_EDIT_PAGE.fields.lastName}
-              placeholder={PROFILE_EDIT_PAGE.fields.lastNamePlaceholder}
-              required
-            />
-
             {readOnlyFields && (
-              <>
-                <ReadOnlyField
-                  label={PROFILE_EDIT_PAGE.fields.email}
-                  value={readOnlyFields.email}
-                />
-                <ReadOnlyField
-                  label={PROFILE_EDIT_PAGE.fields.role}
-                  value={readOnlyFields.role}
-                />
-              </>
+              <section className="flex flex-col gap-3 rounded-xl bg-muted/60 p-4">
+                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <ProfileField
+                    truncate
+                    label={PROFILE_EDIT_PAGE.fields.email}
+                    value={readOnlyFields.email}
+                  />
+                  <ProfileField
+                    truncate
+                    label={PROFILE_EDIT_PAGE.fields.role}
+                    value={readOnlyFields.role}
+                  />
+                </dl>
+                <p className="text-xs text-muted-foreground">
+                  {PROFILE_EDIT_PAGE.readOnlyHint}
+                </p>
+              </section>
             )}
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <AppTextField
+                control={control}
+                name="name"
+                label={PROFILE_FIELDS.name.label}
+                placeholder={PROFILE_FIELDS.name.placeholder}
+                required
+              />
+              <AppTextField
+                control={control}
+                name="last_name"
+                label={PROFILE_FIELDS.lastName.label}
+                placeholder={PROFILE_FIELDS.lastName.placeholder}
+                required
+              />
+              <AppTextField
+                control={control}
+                name="locality"
+                label={PROFILE_FIELDS.locality.label}
+                placeholder={PROFILE_FIELDS.locality.placeholder}
+              />
+              <AppTextField
+                control={control}
+                name="contact_phone"
+                label={PROFILE_FIELDS.contactPhone.label}
+                placeholder={PROFILE_FIELDS.contactPhone.placeholder}
+              />
+
+              <div className="sm:col-span-2">
+                <AppTextAreaField
+                  control={control}
+                  name="description"
+                  label={PROFILE_FIELDS.description.label}
+                  placeholder={PROFILE_FIELDS.description.placeholder}
+                  rows={4}
+                />
+              </div>
+            </div>
 
             {apiError && (
-              <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
-                {apiError}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{apiError}</AlertDescription>
+              </Alert>
             )}
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="self-start"
-            >
-              {isSubmitting && <Loader2 className="animate-spin" size={14} />}
-              {PROFILE_EDIT_PAGE.save}
-            </Button>
+            <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" onClick={goBack}>
+                {PROFILE_EDIT_PAGE.cancel}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="animate-spin" size={14} />}
+                {PROFILE_EDIT_PAGE.save}
+              </Button>
+            </div>
           </form>
         )}
       </Card>

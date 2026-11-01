@@ -11,10 +11,23 @@ arg) → `constants/api.ts` (endpoint path constants/builders) → `lib/http.ts`
 source of truth for form input types (`z.infer<...>`). `types/*.ts` hold API response
 shapes (snake_case, matching the backend contract).
 
-Hooks load with `useState` + `useEffect` by default. The one exception so far is
-`useEstablishmentsMap`, which uses SWR to cache its response — see "Caching" under
-Establishments map. Don't convert other hooks to SWR piecemeal; it's a convention to
-agree on for the whole app.
+Hooks load with `useState` + `useEffect` by default. The exceptions so far are
+`useEstablishmentsMap`, which uses SWR to cache its response (see "Caching" under
+Establishments map in `features.md`), and the nutrition report hooks, which share one
+cache between the generate dialog and the report screen (see "Nutrition report" in
+`features.md`). Don't convert other hooks to SWR piecemeal; it's a convention to agree
+on for the whole app.
+
+## Back navigation
+
+`NavigationHistory` mounts once in the root layout. `lib/navigationHistory.ts`
+records each app entry's depth in `history.state`, preserving Next.js state when
+wrapping `pushState` and `replaceState`. Replacements keep the depth; browser
+back/forward restores the depth saved on the destination entry, including after a
+reload. Entries from before tracking began are not treated as app predecessors.
+`useGoBack` goes back only when that entry has a recorded predecessor; otherwise
+it replaces the current entry with its fallback. Do not use `history.length` for
+this decision: it includes forward entries and entries from other sites.
 
 ## Auth (`context/AuthContext.tsx`)
 
@@ -82,8 +95,9 @@ only `type` is contractual. Screens call `getErrorMessage(err, { overrides, fall
 error to `fallback` rather than leaking English. Shared copy lives in `constants/errors.ts`;
 screen-specific wording goes in that screen's `constants/<domain>.ts` and is passed as
 `overrides`. The `fallback` comes from there too — no user-facing string is written
-inline at the call site, so the copy for a screen stays readable in one file. The slugs themselves are mirrored in `ERROR_TYPES` (`lib/apiError.ts`) from
-the backend's generated catalog (`docs/errors.json` there), which is additive-only.
+inline at the call site, so the copy for a screen stays readable in one file. The slugs
+themselves are mirrored in `ERROR_TYPES` (`lib/apiError.ts`) from the backend's generated
+catalog (`docs/errors.json` in the backend repo), which is additive-only.
 
 One consequence worth knowing: the backend's 422 names no field on purpose (it used to
 echo submitted values, including passwords), so a validation failure can only ever
@@ -91,6 +105,23 @@ produce a vague message. Any form or filter that can trigger one should validate
 browser first — see `parseAgeFilter` in the measurements page, and the option-count rule
 in `schemas/survey.schema.ts`, both of which mirror a backend bound so the user is told
 which field is wrong.
+
+## File downloads (CSV and XLSX exports)
+
+Exports go through `downloadRequest` (`lib/http.ts`), not `apiRequest`, which always
+consumes the body as JSON. It returns a `DownloadedFile`: the `blob`, the `filename` the
+server sends in `Content-Disposition`, and the `rowCount` from `X-Export-Row-Count`.
+Failures still arrive as an `ApiError`, because they carry a `problem+json` body.
+
+`useCsvExport` (`hooks/useCsvExport.ts`) drives an export button. The backend streams its
+CSV exports, so the `200` and its headers leave before it knows the query will finish, and
+a failure halfway through just cuts the connection. The hook therefore compares the rows
+that arrived with `rowCount` (`assertCsvRowCount` in `lib/download.ts`) and calls `saveBlob`
+only when they match, so a truncated file is never saved; a cut stream is reported with
+`EXPORT.interrupted`. The XLSX export declares no row count and skips that check.
+
+Don't point an `<a href>` at an export URL: it would keep a partial file without any
+warning. The backend side of this contract is in its `docs/csv-exports.md`.
 
 ## Mock backend (MSW)
 
@@ -135,91 +166,14 @@ in `lib/geo/index.ts` (`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` would need to be set). 
 rationale in `docs/adr/0001-geo-location-provider-adapter.md` — read it before touching
 this adapter or adding a third provider.
 
+`PlaceDetails` may also carry `city` and `province` when the provider resolves them (Georef
+does, from `localidad_censal` and `provincia`; the Google provider doesn't ask for them yet).
+The establishment forms prefill their own city/province from them on pick and keep both
+editable, so a new address can't silently leave the old locality behind.
+
 This adapter only finds an address. It has nothing to do with the establishments map
-below, which draws a map and uses a different library; don't extend `GeoLocationProvider`
+(see `features.md`), which draws a map and uses a different library; don't extend `GeoLocationProvider`
 to serve it.
-
-## Establishments map (`app/dashboard/establishments/(list)/map/`)
-
-The "Lista"/"Mapa" toggle on the Establecimientos screen. Libraries and base map are
-decided in `docs/adr/0003-establishments-map-libraries.md`; this section is how the pieces
-fit and what is easy to break.
-
-**Data flow.** `?view=map` lives in the query string next to the list's filters, so going
-back from a ficha lands on the same view, and switching views keeps the filters for when
-you return to the table. `EstablishmentsMapView` mounts only in map mode and calls
-`useEstablishmentsMap` → `getEstablishmentsMapAction` → `GET /establishments/map`: one
-unpaginated call, no filters, open to admin/analyst/superadmin. The table's own request is
-skipped while the map is showing, and the map's while the table is. The list-only controls
-(search, sort, filters, pagination, CSV export) are hidden in map mode: the endpoint
-ignores them, and the export follows the table's filters.
-
-**Caching.** The map's response is cached with SWR (`lib/swr.ts`: `SWR_CONFIG`, a 30 s
-`dedupingInterval`, no revalidate-on-focus), so going Lista → Mapa → Lista → Mapa doesn't
-call the backend again inside that window. Reopening shows the pins at once and refreshes
-in the background once the window has passed. Three things to know:
-
-- **The key is the endpoint alone.** The fetcher isn't part of it, so a silent token
-  refresh (which gives `makeAuthorizedRequest` a new identity) doesn't refetch.
-- **Whatever adds an establishment must call `invalidateEstablishmentsMap()`**
-  (`hooks/useEstablishmentsMap.ts`), or its pin waits out the window. Creating one and
-  approving a request do; proposing one doesn't need to, since a proposal isn't on the map
-  yet. New writers are on you to remember: nothing enforces it.
-- **The cache is cleared when a session starts** (`login` in `AuthContext` calls
-  `clearSwrCache`), so one user never sees what the previous one had loaded. It clears on
-  sign-in and not on sign-out on purpose: clearing without revalidating drops the data but
-  keeps SWR's "fetched a moment ago" marker, so a quick sign-out/sign-in would show an
-  empty map and never ask again. Revalidating is only safe when no screen with data is
-  mounted, which is true on the sign-in page. `lib/swr.test.tsx` pins this. It clears every
-  key, so any future SWR hook is covered too.
-
-Data on the map can therefore be up to 30 s old, and a new survey that changes an
-establishment's severity shows after the window: only additions are invalidated.
-
-**What a pin says** (`lib/establishmentPins.ts`, pure and unit-tested).
-
-- `severity: null` means _both_ "healthy" and "nothing measured yet", so a pin's status
-  is decided by `has_data` first: `toPinStatus`. Reading a null severity as normal would
-  paint an unmeasured establishment as a good result.
-- Establishments created before geocoding existed were backfilled at `(0, 0)`. They can't be
-  drawn, but they are never dropped silently: `buildMapPins` returns their count and the
-  screen says how many are missing, with a way back to the list.
-
-**The library boundary.** The rest of the app sees only `EstablishmentsMapProps`
-(`map/types.ts`: `pins` in, `onPinClick(id)` out). Only files under `map/leaflet/` may
-import `leaflet`, `react-leaflet` or `leaflet.markercluster`; an ESLint
-`no-restricted-imports` rule in `eslint.config.mjs` enforces it, so replacing the library is
-a rewrite of that folder. Three things about it that are easy to break:
-
-- Leaflet reads `window` on import, so `EstablishmentsMap.tsx` loads it with `next/dynamic`
-  and `ssr: false`. The view also calls `preloadEstablishmentsMap()` on mount, so the code
-  downloads while the pins are still being requested.
-- `leaflet.markercluster` needs a global `L` at import time. `leaflet/exposeLeaflet.ts`
-  sets it and must be imported _before_ the plugin (`ClusterLayer.tsx` keeps that order).
-- Leaflet writes string content with `innerHTML`. Anything user-supplied (the
-  establishment's name) goes in as a DOM node with `textContent`, never a string, or a
-  name containing markup would run. A test pins this.
-
-**Styling.** Pins and clusters are Tailwind classes from `constants/theme.ts`
-(`PIN_CLASS`, `TONE_PIN_CLASS`, `CLUSTER_PIN_CLASS`); which tone a status gets and its symbol
-and Spanish label are in `constants/establishments.ts` (`PIN_STATUS_TONE`, `_SYMBOL`,
-`_LABELS`). The severity tones repeat `SEVERITY_TONE` from `AlertBadge.tsx` (a constants file
-can't import from `components/`), and a test keeps the two in step. Severity doesn't rest on
-color alone: each status has its own symbol, and "no data" is hollow and dashed. The cluster
-is deliberately a neutral count, not a severity. `leaflet-overrides.css` styles Leaflet's own
-chrome with `var(--…)` only — no literal color. The wrapper is `isolate` so Leaflet's
-z-indexes (up to 1000) stay inside the map instead of climbing over dialogs and menus;
-overlays we add there (the legend) use `MAP_OVERLAY_CLASS` to sit at the same level.
-
-**Base map.** The tile layers live in `constants/map.ts`; `NEXT_PUBLIC_MAP_TILES` picks one
-(`ignColor` by default, `ign` grey, `osm`). Tiles are raster images with fixed colors and
-can't be repainted from the palette; only the grey layer gets a warm CSS tint.
-
-**Testing.** The page's tests replace `map/EstablishmentsMap` with a stand-in (Leaflet has
-its own tests under `map/leaflet/`). jsdom has no layout, so an unsized map is 0×0 and
-draws no markers: the Leaflet tests give elements a `clientWidth`/`clientHeight`. What
-clustering folds together at a real zoom, and hover and keyboard behaviour, can only be
-seen in a browser.
 
 ## Forms
 
@@ -238,7 +192,7 @@ points `tailwind.config` at `""`).
 ## Theme
 
 The palette is **"Raíz"**, the same one the mobile app ships (its `Palette.kt` /
-`KomoStyles.kt` are the upstream source). It has three layers and you should only ever
+`KomoStyles.kt`, in the mobile repo, are the upstream source). It has three layers and you should only ever
 touch the first two:
 
 1. **`app/globals.css`** — the literal colors. Every hex in the design lives in the
@@ -292,7 +246,7 @@ serialises with a `Z`. `formatTimestampDate` / `formatTimestamp` /
 `formatTimestampShortDate` convert them to **Argentine local time**, pinned to
 `America/Argentina/Buenos_Aires` rather than the viewer's device zone. The zone is
 pinned on purpose: it matches the backend's CSV export byte-for-byte
-(`app/services/exporters/csv/formatters.py` formats with the same rule), so the table
+(the backend's `app/services/exporters/csv/formatters.py` formats with the same rule), so the table
 and the spreadsheet downloaded from it agree, and it keeps the output stable across
 machines in tests. Reading the UTC components back out (`getUTCDate()`) is _not_
 formatting — it re-prints the instant three hours ahead, which dates a survey answered
@@ -311,98 +265,7 @@ before.
 verify-email); `app/dashboard/` is everything behind the auth gate.
 `app/dashboard/establishments/[id]/(ficha)/` groups the routes that share the
 establishment's header/metrics/tab chrome, so a sibling route can opt out of it — see
-"Tabs inside a resource's detail page" below.
-
-## Email verification link (`/verify-email`) and Android App Links
-
-The backend emails `<backoffice origin>/verify-email?token=…` to field workers who
-sign up in the mobile app. The same URL has two consumers: this page, and the Android
-app through App Links.
-
-- **The page sends nothing on load.** The token is single-use and mail security
-  scanners open links, so `VerifyEmailView` posts it only when the person presses the
-  button. Don't move the request into an effect.
-- **The page can't know the role.** The confirm endpoint answers 204 with no body, so
-  the copy (`VERIFY_EMAIL_PAGE` in `constants/auth.ts`) has to stay true for a field
-  worker whose account still waits for approval. A reload after success is answered
-  `verification-token-used`, which the page shows as a neutral outcome.
-- **`public/.well-known/assetlinks.json`** lets both Android packages claim this host.
-  Android fetches it when the app is installed and gives no error if it can't: the link
-  just keeps opening the browser. It must answer 200 as JSON with no redirect, so
-  don't put a redirect, a middleware/proxy match or a `robots.txt` disallow in front of
-  `/.well-known/`. The fingerprints are the SHA-256 of the app's signing certificates
-  (`./gradlew :composeApp:signingReport` in the mobile repo); a new signing key needs a
-  new entry here, deployed before the build that uses it. `app/assetlinks.test.ts`
-  checks the file's shape.
-
-## Tabs inside a resource's detail page
-
-`app/dashboard/establishments/[id]/` is the first (and reference) place this repo
-splits a resource's detail page into tabs instead of stacking every section on one
-page — introduced when Sujetos/Relevadores outgrew a single scroll and Stock was
-about to join them, with stock movements (#111) already on deck behind it.
-
-- `[id]/(ficha)/layout.tsx` owns the one fetch that gates the whole ficha
-  (`useEstablishmentDashboard`: 404/403/loading), renders the always-visible
-  header/metrics/alert banner above the tab bar, and renders `children` below it —
-  whichever tab's `page.tsx` matches the current route.
-- Each tab is a real route (`(ficha)/page.tsx` = Sujetos,
-  `(ficha)/field-workers/page.tsx`, `(ficha)/stock/page.tsx`), not a client-side
-  toggle over one always-mounted tree: a
-  tab's data only loads once that tab is actually visited, and deep-linking straight
-  to one works.
-- The dashboard payload the layout already fetched is handed down to whichever tab
-  is active via `useEstablishmentDashboardContext()` (exported from `layout.tsx`)
-  instead of every tab re-fetching it.
-- The tab `<Link>`s pass `replace`, not the default push. Switching tabs must not
-  grow browser history, or "Volver" (`router.back()` in `EstablishmentHeader`) would
-  step back through Sujetos → Relevadores → Stock one click at a time instead of
-  leaving the ficha in one click — back to the establishments list, with its filters
-  and scroll position restored (see the comment on `router.back()` there).
-
-Follow this same shape for the next tab this ficha gains: a route under
-`(ficha)/` needs no new layout.
-
-**Not every screen hanging off `[id]` is a tab.** The three tab routes live in the
-`(ficha)` route group precisely so a screen can opt out of that chrome by sitting
-outside it — which is what `[id]/stock/movements/page.tsx` (the movements history,
-#111) does. It is the chronological event log, not another view of the current
-balance, it is reached from a button inside the Stock tab rather than from the tab
-bar, and it renders its own "Volver al stock" affordance and its own 404/403 screens
-instead of inheriting the layout's. Route groups don't affect the URL, so `/stock`
-and `/stock/movements` still resolve as siblings even though one is inside the group
-and the other isn't.
-
-Its food filter is shaped by a backend constraint worth knowing before touching it:
-`GET /establishments/{id}/food-movements` takes `food_id` and **no** `category_id`.
-So the category select in `FoodFilter.tsx` narrows what the food combobox searches in
-the catalog (`GET /food-catalog/foods` does take both) and leaves the listing alone
-until a food is actually picked. That is why both controls live in one component
-labelled "Buscar alimento" instead of sitting in the filter row next to Dirección and
-the dates — a category that looked like a listing filter would be a filter that does
-nothing. A test pins the behaviour.
-
-## Email verification link (`/verify-email`) and Android App Links
-
-The backend emails `<backoffice origin>/verify-email?token=…` to field workers who
-sign up in the mobile app. The same URL has two consumers: this page, and the Android
-app through App Links.
-
-- **The page sends nothing on load.** The token is single-use and mail security
-  scanners open links, so `VerifyEmailView` posts it only when the person presses the
-  button. Don't move the request into an effect.
-- **The page can't know the role.** The confirm endpoint answers 204 with no body, so
-  the copy (`VERIFY_EMAIL_PAGE` in `constants/auth.ts`) has to stay true for a field
-  worker whose account still waits for approval. A reload after success is answered
-  `verification-token-used`, which the page shows as a neutral outcome.
-- **`public/.well-known/assetlinks.json`** lets both Android packages claim this host.
-  Android fetches it when the app is installed and gives no error if it can't: the link
-  just keeps opening the browser. It must answer 200 as JSON with no redirect, so
-  don't put a redirect, a middleware/proxy match or a `robots.txt` disallow in front of
-  `/.well-known/`. The fingerprints are the SHA-256 of the app's signing certificates
-  (`./gradlew :composeApp:signingReport` in the mobile repo); a new signing key needs a
-  new entry here, deployed before the build that uses it. `app/assetlinks.test.ts`
-  checks the file's shape.
+"Tabs inside a resource's detail page" in `features.md`.
 
 ## Testing
 
@@ -415,3 +278,29 @@ code and tests.
 
 SWR's cache outlives a test, so `vitest.setup.ts` clears it after each one; without that,
 a test would be handed the previous test's response.
+
+Browser E2E tests are separate: they run Playwright against the real backend image and are
+described in `docs/e2e.md`.
+
+### CI
+
+The list of workflows is in `CONTRIBUTING.md`; this section keeps the reasoning behind
+`ci.yml` and `audit.yml`.
+
+`ci.yml` runs on every pull request and once on each merge into `develop` or `main`. A
+newer push cancels a PR's run in progress, but never a `main`/`develop` run: each of those
+commits must upload coverage, or Codecov has no baseline for the next PR. The workflow
+token is read-only (`permissions: contents: read`), jobs have a `timeout-minutes`, and
+every action and the Semgrep image are pinned by SHA or digest with the version in a
+comment — bump both together.
+
+Coverage scope (`coverage.include`/`exclude`) lives only in `vitest.config.ts`; Vitest 4
+reports just the files a test imported unless `include` is set, so an untested file counts
+as 0% rather than disappearing. `codecov.yml` holds only the status targets, so the local
+`npm run test:ci` number matches Codecov's.
+
+`audit.yml` (`npm run audit` = `npm audit --omit=dev --audit-level=high`) checks runtime
+dependencies only — what ships in the image — and fails on **high or critical** advisories.
+Since advisories change independently of the code, it doesn't run on unrelated PRs; a new
+advisory shows up in the weekly run. Fix it with `npm audit fix` or a version bump; don't
+lower the threshold.

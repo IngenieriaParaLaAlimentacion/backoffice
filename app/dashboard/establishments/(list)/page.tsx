@@ -35,6 +35,7 @@ import { CircleCheck, Loader2, Plus, X } from "lucide-react";
 import {
   ESTABLISHMENT_SORT_OPTIONS,
   ESTABLISHMENTS_LIST_PAGE,
+  establishmentProfileHref,
   FILTER_DEBOUNCE_MS,
   PAGE_SIZE,
 } from "@/constants/establishments";
@@ -43,6 +44,7 @@ import { getErrorMessage } from "@/lib/errorMessages";
 import { EstablishmentsView, ViewToggle } from "./ViewToggle";
 import EstablishmentListFilters from "./EstablishmentListFilters";
 import EstablishmentsMapView from "./map/EstablishmentsMapView";
+import ProfilePendingBadge from "@/components/establishments/ProfilePendingBadge";
 
 const PROPOSED_BANNER_MS = 5000;
 
@@ -270,6 +272,7 @@ function EstablishmentsContent() {
   };
 
   const detailHref = (id: string) => `/dashboard/establishments/${id}`;
+  const canEditProfile = can("establishments.characterization.edit");
 
   return (
     <>
@@ -414,13 +417,25 @@ function EstablishmentsContent() {
                       className={`${ROW_HOVER_CLASS} bg-card`}
                     >
                       <td className="px-4 py-3 font-medium">
-                        <Link
-                          href={detailHref(est.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          className={GROUP_HOVER_UNDERLINE}
-                        >
-                          {est.name}
-                        </Link>
+                        <div className="flex flex-col items-start gap-1">
+                          <Link
+                            href={detailHref(est.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            className={GROUP_HOVER_UNDERLINE}
+                          >
+                            {est.name}
+                          </Link>
+                          {est.characterization_status === "pending" && (
+                            <ProfilePendingBadge
+                              href={
+                                canEditProfile
+                                  ? establishmentProfileHref(est.id, true)
+                                  : undefined
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {est.formatted_address}
@@ -435,16 +450,34 @@ function EstablishmentsContent() {
             </div>
 
             <div className="flex flex-col gap-2 md:hidden">
+              {/* The card is a <div> whose name link stretches over it (::after)
+                  rather than one big <Link>, so the badge can be its own link
+                  without nesting <a>s; `relative z-10` lifts it above the overlay. */}
               {establishments.map((est) => (
-                <Link
+                <div
                   key={est.id}
-                  href={detailHref(est.id)}
-                  className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} bg-card`}
+                  className={`relative flex items-center justify-between gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} bg-card focus-within:ring-2 focus-within:ring-ring`}
                 >
                   <span className="flex flex-col gap-1">
-                    <RowLink>
-                      <span className="text-sm font-medium">{est.name}</span>
-                    </RowLink>
+                    <Link
+                      href={detailHref(est.id)}
+                      className="after:absolute after:inset-0 after:rounded-lg focus-visible:outline-none"
+                    >
+                      <RowLink>
+                        <span className="text-sm font-medium">{est.name}</span>
+                      </RowLink>
+                    </Link>
+                    {est.characterization_status === "pending" && (
+                      <span className="relative z-10">
+                        <ProfilePendingBadge
+                          href={
+                            canEditProfile
+                              ? establishmentProfileHref(est.id, true)
+                              : undefined
+                          }
+                        />
+                      </span>
+                    )}
                     <span className="text-xs text-muted-foreground">
                       {est.formatted_address}
                     </span>
@@ -453,7 +486,7 @@ function EstablishmentsContent() {
                     </span>
                   </span>
                   <RowChevron className="shrink-0" />
-                </Link>
+                </div>
               ))}
             </div>
 

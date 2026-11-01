@@ -20,7 +20,16 @@ import ExportError from "@/components/listings/ExportError";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
-import { formatDate, formatTimestampDate, EMPTY_VALUE } from "@/lib/format";
+import {
+  ageInMonths,
+  argentineToday,
+  formatAgeMonths,
+  formatDate,
+  formatTimeSinceMeasurement,
+  formatTimestampDate,
+  EMPTY_VALUE,
+} from "@/lib/format";
+import { useRenderClock } from "@/hooks/useRenderClock";
 import {
   CARD_HOVER_CLASS,
   ChevronCell,
@@ -105,10 +114,31 @@ function toSubjectFilters(
   };
 }
 
+function LatestMeasurementDate({
+  value,
+  now,
+}: {
+  value?: string | null;
+  now: Date;
+}) {
+  const elapsed = formatTimeSinceMeasurement(value, now);
+  if (!value || elapsed === EMPTY_VALUE) {
+    return <span className="text-muted-foreground">{EMPTY_VALUE}</span>;
+  }
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span>{formatTimestampDate(value)}</span>
+      <span className="text-xs text-muted-foreground">{elapsed}</span>
+    </span>
+  );
+}
+
 export default function SubjectsPage() {
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
 
   const [subjects, setSubjects] = useState<SubjectSummary[]>([]);
+  const now = useRenderClock(subjects);
+  const today = argentineToday(now);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -472,6 +502,9 @@ export default function SubjectsPage() {
                       {SUBJECTS_PAGE.columns.birthDate}
                     </th>
                     <th className="px-4 py-3 font-medium">
+                      {SUBJECTS_PAGE.columns.age}
+                    </th>
+                    <th className="px-4 py-3 font-medium">
                       {SUBJECTS_PAGE.columns.lastMeasurement}
                     </th>
                     <ChevronHeaderCell />
@@ -496,15 +529,15 @@ export default function SubjectsPage() {
                         {formatDate(subject.birth_date)}
                       </td>
                       <td className="px-4 py-3">
-                        {subject.latest_measurement?.measured_at ? (
-                          formatTimestampDate(
-                            subject.latest_measurement.measured_at,
-                          )
-                        ) : (
-                          <span className="text-muted-foreground">
-                            {EMPTY_VALUE}
-                          </span>
+                        {formatAgeMonths(
+                          ageInMonths(subject.birth_date, today),
                         )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <LatestMeasurementDate
+                          value={subject.latest_measurement?.measured_at}
+                          now={now}
+                        />
                       </td>
                       <ChevronCell />
                     </tr>
@@ -530,6 +563,17 @@ export default function SubjectsPage() {
                     <span className="text-xs text-muted-foreground">
                       {subject.dni}
                     </span>
+                    <span className="text-xs text-muted-foreground">
+                      {SUBJECTS_PAGE.columns.age}:{" "}
+                      {formatAgeMonths(ageInMonths(subject.birth_date, today))}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {SUBJECTS_PAGE.columns.lastMeasurement}
+                    </span>
+                    <LatestMeasurementDate
+                      value={subject.latest_measurement?.measured_at}
+                      now={now}
+                    />
                   </span>
                   <RowChevron className="shrink-0" />
                 </button>
