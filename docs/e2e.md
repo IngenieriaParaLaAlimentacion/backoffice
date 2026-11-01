@@ -4,7 +4,7 @@ The suite controls real Chromium against production Next and the real isolated b
 
 ## Setup
 
-Requirements: Node24, npm, Docker with Compose v2 (`up --wait` and multiple Compose files), private GHCR package-read access and available localhost ports8080/3001. The backend source repository is public; no source PAT is needed.
+Requirements: Node 24, npm, Docker with Compose v2 (`up --wait` and multiple Compose files), private GHCR package-read access and available localhost ports 8080 and 3001. The backend source repository is public; no source PAT is needed.
 
 ```sh
 npm ci
@@ -15,7 +15,7 @@ npm run e2e
 
 Before the first run, authenticate Docker to GHCR with an account permitted to read the backend package. Use a read:packages credential via Docker's documented stdin/credential helper, never commit it into `.env.e2e.local`. In Actions the consuming repository needs package Actions access and `packages:read`; the standard job token authenticates the registry. The immutable image/source pair in `e2e/backend.json` is the contract. An image-pull failure is a prerequisite failure, not successful browser coverage.
 
-The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/backend, builds Next with API8080 and MSWfalse, starts Next3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
+The runner downloads two canonical files at the locked public commit, verifies SHA256, pulls the matching backend image, starts PostgreSQL/migrations/catalog/reference seed/backend, builds Next with the API at 8080 and MSW set to false, starts Next on 3001, runs Chromium and removes its stack/volumes and owned Next process in finally. Files and test output stay under ignored `.context/e2e/`. Runtime credentials are the explicit disposable accounts in `.env.e2e.local`; administrator means admin, not the bootstrap superadmin.
 
 The canonical backend uses in-memory rate-limit counters in its single process; no Redis service is needed.
 
@@ -41,30 +41,30 @@ The update command validates the full SHA, verifies that its published image man
 
 ```sh
 npm run e2e:reset
-# Leaves only this worktree's clean, seeded backend+PostgreSQL ready on8080.
+# Leaves only this worktree's clean, seeded backend+PostgreSQL ready on 8080.
 npm run e2e:down
 ```
 
 Reset reconstructs the dedicated DB from canonical migrations/seeds. It is not a request to re-run the additive seed over mutated fixtures. The ordinary e2e command also starts from a fresh DB and removes it after the suite. A seed re-run does not restore stock, consumed pending requests or changed surveys. No public API cleanup/deletion is invented.
 
-The Compose project is derived from this worktree's real path; the command lock prevents concurrent ownership. The runner only removes that project and its own subprocess groups. It refuses unrelated listeners on8080/3001. Fixed ports mean two worktrees cannot run their E2E commands simultaneously on the same machine. After SIGKILL/power loss, inspect `.context/e2e/command.lock/owner.json`, confirm its PID is dead, remove only that stale lock directory, then run `npm run e2e:down`. Never kill the owner of a port merely because a suite wants it.
+The Compose project is derived from this worktree's real path; the command lock prevents concurrent ownership. The runner only removes that project and its own subprocess groups. It refuses unrelated listeners on 8080 and 3001. Fixed ports mean two worktrees cannot run their E2E commands simultaneously on the same machine. After SIGKILL/power loss, inspect `.context/e2e/command.lock/owner.json`, confirm its PID is dead, remove only that stale lock directory, then run `npm run e2e:down`. Never kill the owner of a port merely because a suite wants it.
 
 ## Baseline, stress and CI
 
 ```sh
 npm run e2e             # Auth, role and business-flow baseline, production build/start.
-npm run e2e:stress      # Five fresh PW processes, ten same-role cases each, two workers.
+npm run e2e:stress      # Five fresh Playwright processes, ten same-role cases each, two workers.
 npm run e2e:ci          # One build/stack, baseline followed by all five proof passes.
 npm run e2e:quarantine  # Explicit diagnostic selection, outside the baseline.
 ```
 
-`E2E_STRESS_ROLE=admin` is default; analyst may be selected explicitly for an additional local check. The proof must show ten passed tests, two actual result worker IDs, retries0, no skips/flakies and role-session metadata on each of five passes. A configured worker number or a passing retried test does not satisfy that proof. Each process receives a different run ID and writes a separate report; mutable API names also include that ID.
+`E2E_STRESS_ROLE=admin` is default; analyst may be selected explicitly for an additional local check. The proof must show ten passed tests, two actual result worker IDs, retries 0, no skips/flakies and role-session metadata on each of five passes. A configured worker number or a passing retried test does not satisfy that proof. Each process receives a different run ID and writes a separate report; mutable API names also include that ID.
 
 ## Reports
 
-Each invocation creates `.context/e2e/artifacts/<invocation>/`, containing baseline and/or stress1..5 report directories, JSON proof summary and service/build/server logs. Inspect an HTML directory with `npx playwright show-report <path-to-html>` or open its trace from that report. CI uploads these artifacts even after failure, with seven-day retention. There is no production credential or registry-login dump in the artifacts; browser traces do contain disposable session data.
+Each invocation creates `.context/e2e/artifacts/<invocation>/`, containing baseline and/or stress 1 to 5 report directories, JSON proof summary and service/build/server logs. Inspect an HTML directory with `npx playwright show-report <path-to-html>` or open its trace from that report. CI uploads these artifacts even after failure, with seven-day retention. There is no production credential or registry-login dump in the artifacts; browser traces do contain disposable session data.
 
-The E2E workflow runs on PRs targeting develop/main, pushes to main and manual dispatch. It remains a non-required check. A fork token unable to pull the private image yields a visible failed prerequisite; it does not trigger a mocked fallback or run with elevated `pull_request_target` credentials. Promotion to required follows the separately documented ten-consecutive-green-develop criterion, using manual dispatch on actualdevelop if no develop push trigger exists.
+The E2E workflow runs on PRs targeting develop/main, pushes to main and manual dispatch. It remains a non-required check. A fork token unable to pull the private image yields a visible failed prerequisite; it does not trigger a mocked fallback or run with elevated `pull_request_target` credentials. Promotion to required follows the separately documented ten-consecutive-green-develop criterion, using manual dispatch on the actual develop branch if no develop push trigger exists.
 
 ## Scope and sessions
 
@@ -80,15 +80,15 @@ Names include the invocation, worker, retry and an intact random UUID. Each case
 
 Subject preparation uses a fresh client UUID and a random DNI from 1,000,000 through 89,999,999, below the reference-data range. It retries only the canonical duplicate-DNI conflict, at most five times with the same client UUID; all other API errors fail immediately. Measurement preparation uses a fresh UUID for every record.
 
-checks inclusive calendar birth-date bounds and exports the full filtered subject total beyond the visible first page. Its private establishment city isolates measurement observations. Measurement instants use explicit UTC timestamps; displayed dates follow the application's Argentine time conversion. The evolution journey checks three persisted points for its own subject.
+The birth-date journey checks inclusive calendar birth-date bounds and exports the full filtered subject total beyond the visible first page. Its private establishment city isolates measurement observations. Measurement instants use explicit UTC timestamps; displayed dates follow the application's Argentine time conversion. The evolution journey checks three persisted points for its own subject.
 
 The web overlay sets `ENVIRONMENT=development` only for the HTTP backend so newly registered pending field workers are email-verified and visible for admin review. Migration and reference seed retain canonical `e2e`. Email delivery remains disabled and untested.
 
 Only GET requests to `https://apis.datos.gob.ar/georef/api/direcciones` are fulfilled for deterministic address suggestions. Its exact JSON fields drive the real provider; the unique `calle.id` participates in persisted `place_id`. All backend/API calls remain real. List-mode journeys need no map tile interception.
 
-Stock coverage creates real intake and outflow through the UI, then checks the persisted balance and movement history. An excessive outflow is rejected by the current dialog validation: the test checks its visible error, no mutation POST and no new history row. This covers local validation, not the backend's separate concurrent-update HTTP409 race.
+Stock coverage creates real intake and outflow through the UI, then checks the persisted balance and movement history. An excessive outflow is rejected by the current dialog validation: the test checks its visible error, no mutation POST and no new history row. This covers local validation, not the backend's separate concurrent-update HTTP 409 race.
 
-The current FIES-template authoring UI omits `instrument_type`, so the survey it creates persists as `custom`. checks its template questions, numbering, status and duplication; it does not claim scoring for that UI-created record. A separate private API-created survey explicitly uses canonical `instrument_type=fies` and owns its responses for analyst read/export checks.
+The current FIES-template authoring UI omits `instrument_type`, so the survey it creates persists as `custom`. The authoring journey checks its template questions, numbering, status and duplication; it does not claim scoring for that UI-created record. A separate private API-created survey explicitly uses canonical `instrument_type=fies` and owns its responses for analyst read/export checks.
 
 Downloads register both real HTTP-response and browser-download waits before clicking. Filename must equal the server's Content-Disposition filename, and the saved file must be nonempty. CSV actual rows, including rows beyond the first page, must equal both X-Export-Row-Count and the real filtered API listing total. Survey XLSX has no count header: the count-only interpretation counts `Respuestas` rows (excluding its header) against the filtered response-list total, without checking cell values or modifying the API. Cell values are outside the count-only assertions. The test-only fflate dependency extracts the ZIP; browser-native XML parsing finds the named worksheet.
 
@@ -96,7 +96,7 @@ Downloads register both real HTTP-response and browser-download waits before cli
 
 Prefer `getByRole` and associated `getByLabel`; use exact accessible names where repeated labels exist. Scope menu links to the visible sidebar and survey actions to the private resource row. Existing unlabeled listing inputs use their meaningful placeholder. `data-testid` is a last resort only when semantics cannot identify an element; these journeys need no new IDs. The Georef placeholder is shared with the provider through a constant without changing its behavior. Use the shared `SignInPage`, `MenuPage` and `SurveyListPage` objects instead of duplicating login/menu mechanics.
 
-Wait for a meaningful heading, loaded row, role-specific control or expected API result. Do not use fixed sleeps, `networkidle`, broad CSS classes or a negative assertion before proving the containing UI has loaded. Distinguish native `window.confirm` from app dialogs. A forbidden backoffice screen is rendered UI, while the backend independently returns HTTP403.
+Wait for a meaningful heading, loaded row, role-specific control or expected API result. Do not use fixed sleeps, `networkidle`, broad CSS classes or a negative assertion before proving the containing UI has loaded. Distinguish native `window.confirm` from app dialogs. A forbidden backoffice screen is rendered UI, while the backend independently returns HTTP 403.
 
 ## Stability evidence
 
@@ -110,6 +110,6 @@ Tag a documented unstable test with `@quarantine`; the baseline run excludes tha
 
 The initial suite adds no quarantined cases. Use the quarantine command when a real tagged case exists; an empty selection reports Playwright's no-tests-found result rather than acceptance coverage. Run quarantined cases separately using the documented quarantine command; its failures remain visible in that job/report. Remove the tag once the cause is fixed and the case passes repeatedly under the same parallel mode.
 
-The E2E job is not required initially. Propose making it required only after ten consecutive complete green develop runs with no quarantined acceptance case and no flaky retry being counted as a pass. Include report links and agreement from the maintainers; branch-protection settings are not changed by this PR. A failing non-required job still fails normally: do not use continue-on-error to mislabel failure as success.
+The E2E job is not required initially. Propose making it required only after ten consecutive complete green develop runs with no quarantined acceptance case and no flaky retry being counted as a pass. Include report links and agreement from the maintainers; branch-protection settings are changed separately. A failing non-required job still fails normally: do not use continue-on-error to mislabel failure as success.
 
 The Georef suggestions use legacy `ul/li` markup without option roles. The locator starts from the shared-placeholder input and selects the exact test-owned address from its sibling list. Listbox/option accessibility semantics are a separate change.

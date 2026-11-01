@@ -16,8 +16,9 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
 3. Add the endpoint path (or builder function, for parameterized routes) to
    `constants/api.ts`.
 4. Add the service function(s) to `services/<domain>.service.ts`. Each takes
-   `dispatcher: AuthDispatcher` as its first argument and throws `Error`/`ApiError` on
-   `!res.ok` (see `docs/architecture.md` for which error type to use).
+   `dispatcher: AuthDispatcher` as its first argument and throws
+   `toApiError(res.data, res.status)` on `!res.ok` (see `docs/architecture.md` §
+   Service functions & error handling).
 5. Add a hook in `hooks/use<Domain>.ts` that calls the service through
    `useAuth().makeAuthorizedRequest`, exposing `isLoading`/`error`/data (and any
    status-derived flags like `notFound`/`forbidden`) to the component.
@@ -42,10 +43,10 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   `components/ui/*`, `components/AlertBadge.tsx`, `components/Pagination.tsx`) are
   genuinely static and should stay that way rather than gain a `"use client"` they don't
   need.
-- **Route params are async.** Dynamic segments type `params` as `Promise<{ id: string
-}>` and unwrap with React's `use()` in Client Components (see
-  `app/dashboard/establishments/[id]/(ficha)/stock/page.tsx`) — `await` it instead only in an actual
-  Server Component.
+- **Route params are async.** Dynamic segments type `params` as
+  `Promise<{ id: string }>` and unwrap with React's `use()` in Client Components (see
+  `app/dashboard/establishments/[id]/(ficha)/stock/page.tsx`) — `await` it instead only
+  in an actual Server Component.
 - **Co-location over centralization.** A component used by exactly one route lives next
   to its `page.tsx` in that route segment (e.g. `EstablishmentHeader.tsx` beside
   `app/dashboard/establishments/[id]/(ficha)/layout.tsx`); only genuinely cross-route components
@@ -80,8 +81,8 @@ a detail panel, a create/edit form) — not a purely static page. Every existing
   function for parameterized ones) in `constants/api.ts` — services import from there,
   they never inline a `/api/v1/...` string. Add new endpoints the same way, grouped
   under the existing `// --- X Endpoints ---` comment blocks.
-- **No inline user-facing strings.** Spanish copy for a screen lives in a single `as
-const` object in `constants/<domain>.ts` (e.g. `ESTABLISHMENT_DASHBOARD_PAGE`,
+- **No inline user-facing strings.** Spanish copy for a screen lives in a single
+  `as const` object in `constants/<domain>.ts` (e.g. `ESTABLISHMENT_DASHBOARD_PAGE`,
   `CREATE_ESTABLISHMENT_PAGE` in `constants/establishments.ts`), imported into the
   component (often `as COPY`) rather than written directly in JSX. This also gives
   parameterized copy (`atRisk: (n, total) => ...`) one place to live instead of template
