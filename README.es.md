@@ -2,7 +2,7 @@
 
 [![en](https://img.shields.io/badge/lang-en-red.svg?logo=googletranslate&logoColor=white)](README.md)
 [![Node](https://img.shields.io/badge/node-24%20LTS-5FA04E.svg?logo=nodedotjs&logoColor=white)](package.json)
-[![codecov](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice/graph/badge.svg)](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice)
+[![codecov](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice/graph/badge.svg?token=2WHK1M5H51)](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice)
 
 Panel de administración del proyecto **Ingeniería para la Alimentación**, desarrollado con Next.js (App Router), TypeScript y shadcn/ui.
 
@@ -13,7 +13,8 @@ Panel de administración del proyecto **Ingeniería para la Alimentación**, des
 > La documentación técnica está en inglés.
 
 - [Manual de usuario](https://ingenieriaparalaalimentacion.github.io/backoffice/) para administradores y analistas: leelo en línea, o en [HTML](docs/manual-usuario/index.html) o [PDF](docs/manual-usuario/manual.pdf). Las [fuentes editables](docs/manual-usuario/README.md) también están en el repositorio.
-- [Arquitectura](docs/architecture.md): capas, flujo de autenticación, mocks, adaptador geo, mapa, formularios y configuración de tests.
+- [Arquitectura](docs/architecture.md): capas, flujo de autenticación, mocks, adaptador geo, formularios y configuración de tests.
+- [Funcionalidades](docs/features.md): notas de diseño del mapa de establecimientos, las pestañas del establecimiento, el reporte nutricional y la página de verificación de email.
 - [Convenciones](docs/conventions.md): convenciones de Next.js y cómo el repo evita la duplicación.
 - [Decisiones de arquitectura (ADR)](docs/adr/).
 - [Configuración y sesiones E2E](docs/e2e.md): credenciales, Chromium, reinicio y reportes de CI.

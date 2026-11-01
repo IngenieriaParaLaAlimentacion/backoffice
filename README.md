@@ -2,7 +2,7 @@
 
 [![es](https://img.shields.io/badge/lang-es-red.svg?logo=googletranslate&logoColor=white)](README.es.md)
 [![Node](https://img.shields.io/badge/node-24%20LTS-5FA04E.svg?logo=nodedotjs&logoColor=white)](package.json)
-[![codecov](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice/graph/badge.svg)](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice)
+[![codecov](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice/graph/badge.svg?token=2WHK1M5H51)](https://codecov.io/gh/IngenieriaParaLaAlimentacion/backoffice)
 
 Admin backoffice for the **Ingeniería para la Alimentación** project, built with Next.js (App Router), TypeScript and shadcn/ui.
 
@@ -11,7 +11,8 @@ Admin backoffice for the **Ingeniería para la Alimentación** project, built wi
 ## Documentation
 
 - [User manual](https://ingenieriaparalaalimentacion.github.io/backoffice/) for administrators and analysts, in Spanish: read it online, or as [HTML](docs/manual-usuario/index.html) or [PDF](docs/manual-usuario/manual.pdf). The [editable sources](docs/manual-usuario/README.md) are also in the repository.
-- [Architecture](docs/architecture.md): layering, auth flow, mocking, geo adapter, map, forms and testing setup.
+- [Architecture](docs/architecture.md): layering, auth flow, mocking, geo adapter, forms and testing setup.
+- [Features](docs/features.md): design notes for the establishments map, the establishment tabs, the nutrition report and the email verification page.
 - [Conventions](docs/conventions.md): Next.js conventions and how the repo avoids duplication.
 - [Architecture decision records (ADRs)](docs/adr/).
 - [E2E setup and sessions](docs/e2e.md): credentials, Chromium, reset, CI reports.
