@@ -22,6 +22,7 @@ import {
 } from "@/constants/users";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import UserEstablishments from "../UserEstablishments";
 import RoleInviteButton from "../RoleInviteButton";
 import UserStatusBadge from "../UserStatusBadge";
@@ -62,36 +63,30 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
               {USERS_PAGE.subtitle}
             </p>
           </div>
-          <div className="self-start">
+          <div className="flex flex-wrap items-center gap-2 self-start">
+            <label htmlFor="users-status-filter" className="sr-only">
+              {USERS_PAGE.statusFilterLabel}
+            </label>
+            <select
+              id="users-status-filter"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as UserStatusFilter);
+                setPage(1);
+              }}
+              className={cn(SELECT_CLASS, "h-7 w-36")}
+            >
+              {USER_STATUS_FILTER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             <RoleInviteButton role={role} />
           </div>
         </div>
 
         <Separator />
-
-        <div className="flex flex-col gap-1 sm:w-56">
-          <label
-            htmlFor="users-status-filter"
-            className="text-xs text-muted-foreground"
-          >
-            {USERS_PAGE.statusFilterLabel}
-          </label>
-          <select
-            id="users-status-filter"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as UserStatusFilter);
-              setPage(1);
-            }}
-            className={SELECT_CLASS}
-          >
-            {USER_STATUS_FILTER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
 
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
