@@ -1,6 +1,13 @@
 import { ERROR_TYPES } from "@/lib/apiError";
 import { PROFILE_FIELDS } from "@/constants/users";
 
+/**
+ * Shown to an account an admin blocked, at login and when its open session is
+ * cut. Neutral on purpose: it gives no reason and does not say "bloqueado".
+ */
+export const BLOCKED_ACCOUNT_MESSAGE =
+  "Tu cuenta no tiene acceso a la plataforma. Contactá a un administrador.";
+
 export const SIGN_IN_FORM = {
   submitError: "No pudimos iniciar sesión. Volvé a intentar en unos minutos.",
   // `invalid-credentials` covers unknown email, wrong password and a missing
@@ -14,6 +21,7 @@ export const SIGN_IN_FORM = {
       "Tu cuenta todavía no fue aprobada. Un administrador tiene que validarla antes de que puedas ingresar.",
     [ERROR_TYPES.ROLE_NOT_ALLOWED]:
       "Este panel es para administradores y analistas. Si sos relevador, ingresá desde la aplicación móvil.",
+    [ERROR_TYPES.USER_BLOCKED]: BLOCKED_ACCOUNT_MESSAGE,
   },
 } as const;
 

@@ -26,6 +26,9 @@ import { ApiResponse, RefreshTokenResponse } from "@/lib/types";
 import { clearTokens, getTokens, saveTokens } from "@/lib/tokenStorage";
 import { getOrCreateDeviceId } from "@/lib/deviceIdStorage";
 import { clearSwrCache } from "@/lib/swr";
+import { StatusCodes } from "http-status-codes";
+import { ApiError, ERROR_TYPES } from "@/lib/apiError";
+import { BLOCKED_ACCOUNT_MESSAGE } from "@/constants/auth";
 
 export type AuthDispatcher = <TRequest, TResponse>(
   path: string,
@@ -53,6 +56,10 @@ type AuthContextValues = {
 export const AuthContext = createContext<AuthContextValues | undefined>(
   undefined,
 );
+
+/** The answer the backend gives to any request from a blocked account. */
+const isBlockedAccount = (status: number, type: unknown) =>
+  status === StatusCodes.FORBIDDEN && type === ERROR_TYPES.USER_BLOCKED;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -100,20 +107,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, [handleRefresh]);
 
+  /**
+   * Ends the session of an account that was blocked while signed in. The
+   * dashboard layout then sends the user to the sign-in screen, which shows
+   * the notice.
+   */
+  const endBlockedSession = useCallback(() => {
+    clearTokens();
+    setTokens(null);
+    setIsAuthenticated(false);
+    setAuthNotice(BLOCKED_ACCOUNT_MESSAGE);
+    void clearSwrCache();
+  }, []);
+
   const makeAuthorizedRequest = useCallback(
     async <TRequest = object, TResponse = undefined>(
       path: string,
       options?: Omit<ApiRequestOptions<TRequest>, "auth">,
     ) => {
-      return apiRequest<TRequest, TResponse>(path, {
+      const response = await apiRequest<TRequest, TResponse>(path, {
         ...options,
         ...(tokens &&
           deviceId && {
             auth: { tokens, onRefresh: handleRefresh, deviceId },
           }),
       });
+      const body = response.data as { type?: string } | null;
+      if (isBlockedAccount(response.status, body?.type)) endBlockedSession();
+      return response;
     },
-    [deviceId, handleRefresh, tokens],
+    [deviceId, endBlockedSession, handleRefresh, tokens],
   );
 
   const makeAuthorizedDownload = useCallback(
@@ -121,15 +144,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       path: string,
       options?: Omit<ApiRequestOptions<undefined>, "auth">,
     ) => {
-      return downloadRequest<undefined>(path, {
-        ...options,
-        ...(tokens &&
-          deviceId && {
-            auth: { tokens, onRefresh: handleRefresh, deviceId },
-          }),
-      });
+      try {
+        return await downloadRequest<undefined>(path, {
+          ...options,
+          ...(tokens &&
+            deviceId && {
+              auth: { tokens, onRefresh: handleRefresh, deviceId },
+            }),
+        });
+      } catch (error) {
+        if (
+          error instanceof ApiError &&
+          isBlockedAccount(error.status, error.type)
+        ) {
+          endBlockedSession();
+        }
+        throw error;
+      }
     },
-    [deviceId, handleRefresh, tokens],
+    [deviceId, endBlockedSession, handleRefresh, tokens],
   );
 
   const clearAuthNotice = useCallback(() => {
