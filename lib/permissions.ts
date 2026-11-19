@@ -31,6 +31,8 @@ export type Permission =
   | "users.invite"
   /** Revoking a field worker's access to an establishment. */
   | "users.revokeAccess"
+  /** Blocking and unblocking a user from the whole platform. */
+  | "users.block"
   /** Deleting a survey. */
   | "surveys.delete"
   /** Requesting or withdrawing own establishment access (analyst). */
@@ -47,6 +49,7 @@ const ALL_PERMISSIONS = [
   "nutritionReports.view",
   "users.invite",
   "users.revokeAccess",
+  "users.block",
   "surveys.delete",
   "establishments.subscribe",
 ] as const satisfies readonly Permission[];
@@ -85,11 +88,11 @@ const ASSIGNABLE_ROLES = [
 ] as const satisfies readonly UserRole[];
 
 /**
- * Which users' roles each actor may change, by the target's current role. An
- * admin can't demote another admin (nor anyone it promoted to admin); nobody
- * touches a superadmin.
+ * Which users each actor may manage (change their role, block or unblock
+ * them), by the target's current role. An admin can't act on another admin
+ * (nor anyone it promoted to admin); nobody touches a superadmin.
  */
-const ROLE_CHANGE_TARGETS: Record<UserRole, readonly UserRole[]> = {
+const MANAGEABLE_TARGETS: Record<UserRole, readonly UserRole[]> = {
   superadmin: ["field_worker", "analyst", "admin"],
   admin: ["field_worker", "analyst"],
   analyst: [],
@@ -107,6 +110,19 @@ export function assignableRoles(
   target: UserRole | null | undefined,
 ): UserRole[] {
   if (!actor || !target) return [];
-  if (!ROLE_CHANGE_TARGETS[actor]?.includes(target)) return [];
+  if (!MANAGEABLE_TARGETS[actor]?.includes(target)) return [];
   return ASSIGNABLE_ROLES.filter((role) => role !== target);
+}
+
+/**
+ * Whether `actor` may block or unblock a `target`-role user. Lives outside
+ * `can()` for the same reason as `assignableRoles`; the caller still has to
+ * rule out the viewer's own profile. A UX guard: the backend answers 403.
+ */
+export function canManageUser(
+  actor: UserRole | null,
+  target: UserRole | null | undefined,
+): boolean {
+  if (!actor || !target) return false;
+  return MANAGEABLE_TARGETS[actor]?.includes(target) ?? false;
 }

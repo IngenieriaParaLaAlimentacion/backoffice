@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { assignableRoles, can, Permission } from "@/lib/permissions";
+import {
+  assignableRoles,
+  can,
+  canManageUser,
+  Permission,
+} from "@/lib/permissions";
 import { ROLE_LABELS, UserRole } from "@/types/user";
 
 const ADMIN_ONLY: Permission[] = [
@@ -9,6 +14,7 @@ const ADMIN_ONLY: Permission[] = [
   "establishments.edit",
   "users.invite",
   "users.revokeAccess",
+  "users.block",
   "surveys.delete",
   "establishments.subscribe",
 ];
@@ -115,5 +121,30 @@ describe("assignableRoles", () => {
   it("offers nothing while the target's role is unknown", () => {
     expect(assignableRoles("superadmin", undefined)).toEqual([]);
     expect(assignableRoles("superadmin", null)).toEqual([]);
+  });
+});
+
+describe("canManageUser", () => {
+  const cases: [UserRole | null, UserRole, boolean][] = [
+    ["superadmin", "field_worker", true],
+    ["superadmin", "analyst", true],
+    ["superadmin", "admin", true],
+    ["superadmin", "superadmin", false],
+    ["admin", "field_worker", true],
+    ["admin", "analyst", true],
+    ["admin", "admin", false],
+    ["admin", "superadmin", false],
+    ["analyst", "field_worker", false],
+    ["field_worker", "analyst", false],
+    [null, "field_worker", false],
+  ];
+
+  it.each(cases)("%s acting on a %s: %s", (actor, target, expected) => {
+    expect(canManageUser(actor, target)).toBe(expected);
+  });
+
+  it("offers nothing while the target's role is unknown", () => {
+    expect(canManageUser("superadmin", undefined)).toBe(false);
+    expect(canManageUser("superadmin", null)).toBe(false);
   });
 });
