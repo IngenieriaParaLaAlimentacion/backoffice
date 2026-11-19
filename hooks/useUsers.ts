@@ -3,9 +3,17 @@ import { listUsersAction } from "@/services/admin.service";
 import { UserAdminView } from "@/types/admin";
 import { useCallback, useEffect, useState } from "react";
 import { getErrorMessage } from "@/lib/errorMessages";
-import { USERS_PAGE } from "@/constants/users";
+import {
+  USER_STATUS_FILTER_STATUSES,
+  UserStatusFilter,
+  USERS_PAGE,
+} from "@/constants/users";
 
-export function useUsers(role: string, pageSize: number) {
+export function useUsers(
+  role: string,
+  pageSize: number,
+  statusFilter: UserStatusFilter = "all",
+) {
   const { makeAuthorizedRequest } = useAuth();
   const [users, setUsers] = useState<UserAdminView[]>([]);
   const [page, setPage] = useState(1);
@@ -20,7 +28,7 @@ export function useUsers(role: string, pageSize: number) {
       setError(null);
       try {
         const data = await listUsersAction(makeAuthorizedRequest, {
-          status: "active",
+          status: USER_STATUS_FILTER_STATUSES[statusFilter],
           role,
           page: currentPage,
           page_size: pageSize,
@@ -42,7 +50,7 @@ export function useUsers(role: string, pageSize: number) {
         setIsLoading(false);
       }
     },
-    [makeAuthorizedRequest, pageSize, role],
+    [makeAuthorizedRequest, pageSize, role, statusFilter],
   );
 
   useEffect(() => {

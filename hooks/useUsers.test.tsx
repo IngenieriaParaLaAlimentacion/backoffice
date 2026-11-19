@@ -6,6 +6,7 @@ import { useUsers } from "@/hooks/useUsers";
 import { server } from "@/mocks/server";
 import { LIST_USERS_ENDPOINT } from "@/constants/api";
 import { DEFAULT_PENDING_USERS_RESPONSE } from "@/mocks/fixtures/admin";
+import { UserStatusFilter } from "@/constants/users";
 
 const [USER] = DEFAULT_PENDING_USERS_RESPONSE.items;
 
@@ -52,5 +53,33 @@ describe("useUsers", () => {
     await waitFor(() => expect(text("page")).toBe("1"));
     await waitFor(() => expect(text("users")).toBe("user-1"));
     expect(text("total-pages")).toBe("1");
+  });
+});
+
+function FilteredProbe({ filter }: { filter: UserStatusFilter }) {
+  const { users } = useUsers("analyst", 1, filter);
+  return <span data-testid="users">{users.map((u) => u.id).join(",")}</span>;
+}
+
+describe("useUsers status filter", () => {
+  it.each([
+    ["all", ["active", "blocked"]],
+    ["active", ["active"]],
+    ["blocked", ["blocked"]],
+  ] as const)("sends %s as %j", async (filter, statuses) => {
+    let requested: string[] = [];
+    server.use(
+      http.get(LIST_USERS_ENDPOINT, ({ request }) => {
+        requested = new URL(request.url).searchParams.getAll("status");
+        return HttpResponse.json({
+          ...DEFAULT_PENDING_USERS_RESPONSE,
+          items: [USER],
+        });
+      }),
+    );
+    renderWithProviders(<FilteredProbe filter={filter} />);
+
+    await waitFor(() => expect(text("users")).toBe(USER.id));
+    expect(requested).toEqual(statuses);
   });
 });

@@ -14,14 +14,23 @@ import {
   RowLink,
   ROW_HOVER_CLASS,
 } from "@/components/listings/RowAffordance";
-import { ROLE_SECTIONS, USERS_PAGE } from "@/constants/users";
+import {
+  ROLE_SECTIONS,
+  USER_STATUS_FILTER_OPTIONS,
+  UserStatusFilter,
+  USERS_PAGE,
+} from "@/constants/users";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
 import UserEstablishments from "../UserEstablishments";
 import RoleInviteButton from "../RoleInviteButton";
+import UserStatusBadge from "../UserStatusBadge";
 import UserDetailPanel from "./UserDetailPanel";
 
 const PAGE_SIZE = 20;
+
+const SELECT_CLASS =
+  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
   // `role` is the route param — which list is being shown, not who is looking.
@@ -29,8 +38,9 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
   const section = ROLE_SECTIONS.find((s) => s.role === role);
   const label = section?.label ?? role;
 
+  const [statusFilter, setStatusFilter] = useState<UserStatusFilter>("all");
   const { users, page, totalPages, isLoading, error, setPage, refetch } =
-    useUsers(role, PAGE_SIZE);
+    useUsers(role, PAGE_SIZE, statusFilter);
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -59,6 +69,30 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
 
         <Separator />
 
+        <div className="flex flex-col gap-1 sm:w-56">
+          <label
+            htmlFor="users-status-filter"
+            className="text-xs text-muted-foreground"
+          >
+            {USERS_PAGE.statusFilterLabel}
+          </label>
+          <select
+            id="users-status-filter"
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as UserStatusFilter);
+              setPage(1);
+            }}
+            className={SELECT_CLASS}
+          >
+            {USER_STATUS_FILTER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {error && (
           <div className="rounded-md bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
             {error}
@@ -76,19 +110,22 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
         ) : (
           <>
             <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground text-left">
-                    <th className="px-4 py-3 font-medium">
+                    <th className="w-1/4 px-4 py-3 font-medium">
                       {USERS_PAGE.columns.name}
                     </th>
-                    <th className="px-4 py-3 font-medium">
+                    <th className="w-1/3 px-4 py-3 font-medium">
                       {USERS_PAGE.columns.email}
                     </th>
                     <th className="px-4 py-3 font-medium">
                       {USERS_PAGE.columns.establishments}
                     </th>
-                    <ChevronHeaderCell />
+                    <th className="w-28 px-4 py-3 font-medium">
+                      {USERS_PAGE.columns.status}
+                    </th>
+                    <ChevronHeaderCell className="w-12" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -111,7 +148,10 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
                           establishments={user.establishments}
                         />
                       </td>
-                      <ChevronCell />
+                      <td className="px-4 py-3">
+                        <UserStatusBadge status={user.status} />
+                      </td>
+                      <ChevronCell className="w-12" />
                     </tr>
                   ))}
                 </tbody>
@@ -127,11 +167,16 @@ function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
                   className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 text-left ${CARD_HOVER_CLASS} bg-card`}
                 >
                   <span className="flex flex-col gap-1">
-                    <RowLink>
-                      <span className="text-sm font-medium">
-                        {user.name} {user.last_name}
-                      </span>
-                    </RowLink>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <RowLink>
+                        <span className="text-sm font-medium">
+                          {user.name} {user.last_name}
+                        </span>
+                      </RowLink>
+                      {user.status !== "active" && (
+                        <UserStatusBadge status={user.status} />
+                      )}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {user.email}
                     </span>

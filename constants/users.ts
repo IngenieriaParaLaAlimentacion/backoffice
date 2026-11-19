@@ -1,5 +1,6 @@
 import { UserRole } from "@/types/user";
 import { ERROR_TYPES } from "@/lib/apiError";
+import { Tone } from "@/constants/theme";
 import { ESTABLISHMENT_PROFILE } from "@/constants/establishments";
 
 /**
@@ -23,15 +24,42 @@ export const USERS_PAGE = {
   /** Shown when a section previews fewer users than the role has. */
   showing: (shown: number, total: number) => `Mostrando ${shown} de ${total}`,
   noUsers: "No hay usuarios",
+  statusFilterLabel: "Estado",
   loadError: "Error al cargar usuarios",
   columns: {
     name: "Nombre",
     email: "Email",
+    status: "Estado",
     establishments: "Establecimientos",
   },
   moreEstablishments: (count: number) => `+${count} más`,
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
+
+/** The views of a role's listing by account status. */
+export type UserStatusFilter = "all" | "active" | "blocked";
+
+/** The statuses each view asks the backend for; "all" is active plus blocked. */
+export const USER_STATUS_FILTER_STATUSES: Record<UserStatusFilter, string[]> = {
+  all: ["active", "blocked"],
+  active: ["active"],
+  blocked: ["blocked"],
+};
+
+export const USER_STATUS_FILTER_OPTIONS: readonly {
+  value: UserStatusFilter;
+  label: string;
+}[] = [
+  { value: "all", label: "Todos" },
+  { value: "active", label: "Activos" },
+  { value: "blocked", label: "Bloqueados" },
+];
+
+/** The tone of an account status pill; any other status is neutral. */
+export const USER_STATUS_TONE: Record<string, Tone> = {
+  active: "success",
+  blocked: "danger",
+};
 
 /** The invite buttons beside the admin and analyst section titles. */
 export const INVITE_LABELS = {

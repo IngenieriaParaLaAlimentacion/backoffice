@@ -20,6 +20,7 @@ import { useUsers } from "@/hooks/useUsers";
 import UserDetailPanel from "./[role]/UserDetailPanel";
 import UserEstablishments from "./UserEstablishments";
 import RoleInviteButton from "./RoleInviteButton";
+import UserStatusBadge from "./UserStatusBadge";
 
 const PAGE_SIZE = 3;
 
@@ -62,6 +63,9 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                   <th className="px-4 py-3 font-medium">
                     {USERS_PAGE.columns.establishments}
                   </th>
+                  <th className="w-28 px-4 py-3 font-medium">
+                    {USERS_PAGE.columns.status}
+                  </th>
                   <ChevronHeaderCell className="w-12" />
                 </tr>
               </thead>
@@ -85,6 +89,9 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                         establishments={user.establishments}
                       />
                     </td>
+                    <td className="px-4 py-3">
+                      <UserStatusBadge status={user.status} />
+                    </td>
                     <ChevronCell className="w-12" />
                   </tr>
                 ))}
@@ -101,11 +108,16 @@ function RoleSection({ role, label }: { role: string; label: string }) {
                 className={`flex items-center justify-between gap-2 rounded-lg border border-border p-3 text-left ${CARD_HOVER_CLASS} bg-card`}
               >
                 <span className="flex flex-col gap-1">
-                  <RowLink>
-                    <span className="text-sm font-medium">
-                      {user.name} {user.last_name}
-                    </span>
-                  </RowLink>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <RowLink>
+                      <span className="text-sm font-medium">
+                        {user.name} {user.last_name}
+                      </span>
+                    </RowLink>
+                    {user.status !== "active" && (
+                      <UserStatusBadge status={user.status} />
+                    )}
+                  </span>
                   <span className="text-xs text-muted-foreground">
                     {user.email}
                   </span>

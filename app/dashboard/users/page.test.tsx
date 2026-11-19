@@ -7,6 +7,7 @@ import { server } from "@/mocks/server";
 import { makeListUsersHandler } from "@/mocks/handlers/admin";
 import { DEFAULT_PENDING_USERS_RESPONSE } from "@/mocks/fixtures/admin";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
+import { STATUS_LABELS } from "@/types/user";
 import {
   INVITE_LABELS,
   MAX_LISTED_ESTABLISHMENTS,
@@ -136,5 +137,42 @@ describe("UsersPage establishments column", () => {
 
     await screen.findAllByText(MOCK_ESTABLISHMENTS[0].name);
     expect(screen.queryByText(/^\+\d+ más$/)).not.toBeInTheDocument();
+  });
+});
+
+describe("UsersPage blocked users", () => {
+  beforeEach(() => localStorage.clear());
+
+  it("marks a blocked user in the preview", async () => {
+    server.use(
+      makeListUsersHandler({
+        data: {
+          items: [{ ...PREVIEW[0], status: "blocked" }],
+          total: 1,
+          total_pages: 1,
+        },
+      }),
+    );
+    await renderWithProviders(<UsersPageRoute />, { role: "admin" });
+
+    expect(
+      (await screen.findAllByText(STATUS_LABELS.blocked)).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("marks nobody when no user is blocked", async () => {
+    server.use(
+      makeListUsersHandler({
+        data: {
+          items: PREVIEW.map((user) => ({ ...user, status: "active" })),
+          total: 3,
+          total_pages: 1,
+        },
+      }),
+    );
+    await renderWithProviders(<UsersPageRoute />, { role: "admin" });
+
+    await screen.findAllByText(/López/);
+    expect(screen.queryByText(STATUS_LABELS.blocked)).not.toBeInTheDocument();
   });
 });
