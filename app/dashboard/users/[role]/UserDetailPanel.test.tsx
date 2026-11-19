@@ -1,3 +1,4 @@
+import { act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import UserDetailPanel from "./UserDetailPanel";
@@ -11,7 +12,7 @@ import {
 } from "@/mocks/handlers/admin";
 import { makeMeHandler } from "@/mocks/handlers/user";
 import { DEFAULT_USER_DETAIL } from "@/mocks/fixtures/admin";
-import { USER_DETAIL_PANEL } from "@/constants/users";
+import { SUCCESS_MESSAGE_MS, USER_DETAIL_PANEL } from "@/constants/users";
 import { ChangeUserRoleRequest } from "@/types/admin";
 import { UserRole } from "@/types/user";
 import { ERROR_TYPES } from "@/lib/apiError";
@@ -321,6 +322,28 @@ describe("UserDetailPanel — block and unblock", () => {
       ).toBeInTheDocument();
     },
   );
+
+  it("takes the success notice away on its own", async () => {
+    const timeouts = vi.spyOn(window, "setTimeout");
+    server.use(makeBlockUserHandler());
+    await renderPanel({ viewer: "admin", target: "field_worker" });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: BLOCK.button }));
+    const dialog = await screen.findByRole("dialog", { name: BLOCK.title });
+    await user.click(
+      within(dialog).getByRole("button", { name: BLOCK.confirm }),
+    );
+    expect(await screen.findByText(BLOCK.success)).toBeInTheDocument();
+
+    const [dismiss] = timeouts.mock.calls
+      .filter(([, delay]) => delay === SUCCESS_MESSAGE_MS)
+      .map(([callback]) => callback as () => void);
+    act(() => dismiss());
+
+    expect(screen.queryByText(BLOCK.success)).not.toBeInTheDocument();
+    timeouts.mockRestore();
+  });
 
   it("sends nothing when the dialog is cancelled", async () => {
     const requests: string[] = [];

@@ -268,6 +268,9 @@ export const INVITE_USER_DIALOG = {
   emailPlaceholder: "admin@ejemplo.com",
 } as const;
 
+/** How long the panel's success notice stays before it goes away on its own. */
+export const SUCCESS_MESSAGE_MS = 5000;
+
 export const USER_DETAIL_PANEL = {
   title: "Perfil",
   description: "Información del usuario",

@@ -7,7 +7,7 @@ import { useUserDetail } from "@/hooks/useUserDetail";
 import { useRevokeAccess } from "@/hooks/useRevokeAccess";
 import { useSession } from "@/context/SessionContext";
 import { ROLE_LABELS } from "@/types/user";
-import { USER_DETAIL_PANEL } from "@/constants/users";
+import { SUCCESS_MESSAGE_MS, USER_DETAIL_PANEL } from "@/constants/users";
 import { AdminUserDetail } from "@/types/admin";
 import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
 import { OVERLAY_CLASS, TONE_BANNER_CLASS } from "@/constants/theme";
@@ -84,6 +84,12 @@ export default function UserDetailPanel({
     reset();
     setSuccessMessage(null);
   }, [userId, reset]);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(null), SUCCESS_MESSAGE_MS);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
 
   const handleRoleChanged = (updated: AdminUserDetail) => {
     replace(updated);
