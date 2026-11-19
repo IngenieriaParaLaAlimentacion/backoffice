@@ -38,6 +38,10 @@ export const GET_USER_ENDPOINT = (userId: string) =>
   `/api/v1/admin/users/${userId}`;
 export const CHANGE_USER_ROLE_ENDPOINT = (userId: string) =>
   `/api/v1/admin/users/${userId}/role`;
+export const BLOCK_USER_ENDPOINT = (userId: string) =>
+  `/api/v1/admin/users/${userId}/block`;
+export const UNBLOCK_USER_ENDPOINT = (userId: string) =>
+  `/api/v1/admin/users/${userId}/unblock`;
 export const LIST_ESTABLISHMENT_REQUESTS_ENDPOINT =
   "/api/v1/admin/establishment-requests";
 export const APPROVE_ESTABLISHMENT_REQUEST_ENDPOINT = (requestId: string) =>

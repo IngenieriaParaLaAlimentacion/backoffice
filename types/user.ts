@@ -46,6 +46,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 
 export const STATUS_LABELS: Record<string, string> = {
   active: "Activo",
+  blocked: "Bloqueado",
   inactive: "Inactivo",
   pending: "Pendiente",
   invited: "Invitado",

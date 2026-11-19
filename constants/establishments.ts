@@ -84,6 +84,7 @@ export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   active: "Activo",
   inactive: "Inactivo",
   pending_validation: "Pendiente de validación",
+  blocked: "Bloqueado",
 };
 
 export const ESTABLISHMENT_DASHBOARD_PAGE = {
