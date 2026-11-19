@@ -197,15 +197,15 @@
       "repository": "backoffice",
       "source": "app/dashboard/users/[role]/page.tsx",
       "chapter": "01-acceso.md",
-      "sha256": "e62ba5b640ce363d7fbc42ba697a254d56264103f788a545983602a0210173ae",
-      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/27f57383ece1e01d62a2dba644dffd120b35494f/app/dashboard/users/[role]/page.tsx"
+      "sha256": "50e677bef8c8cf204ba43aef4ef0529a85949286ee2cf776e30f281fc1092bfb",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/12e1776602b56630a67201ec525b362c8d4903a9/app/dashboard/users/[role]/page.tsx"
     },
     {
       "repository": "backoffice",
       "source": "app/dashboard/users/page.tsx",
       "chapter": "01-acceso.md",
-      "sha256": "3557dbbf67260c856550ab6bc3abc8d168f8d1d1f530e77aaf3face2e16b5c40",
-      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/27f57383ece1e01d62a2dba644dffd120b35494f/app/dashboard/users/page.tsx"
+      "sha256": "d18a8e3d0534339829032da4e10fc4e7797a419b9ce113c15de742743a6abb51",
+      "url": "https://github.com/IngenieriaParaLaAlimentacion/backoffice/blob/12e1776602b56630a67201ec525b362c8d4903a9/app/dashboard/users/page.tsx"
     },
     {
       "repository": "backoffice",
@@ -332,8 +332,31 @@
       "id": "web-usuarios",
       "surface": "backoffice",
       "file": "web-usuarios.png",
-      "expected": "Usuarios",
-      "capturedAt": "2026-10-25T18:24:49.844Z"
+      "expected": "Usuarios aceptados",
+      "capturedAt": "2026-11-19T15:21:32.466Z",
+      "url": "http://127.0.0.1:3001/dashboard/users",
+      "backoffice_revision": "12e1776602b56630a67201ec525b362c8d4903a9",
+      "api": "backend feat/block-users c773280 with the reference E2E dataset (backend#219), disposable PostgreSQL"
+    },
+    {
+      "id": "web-usuario-bloquear",
+      "surface": "backoffice",
+      "file": "web-usuario-bloquear.png",
+      "expected": "Bloquear usuario",
+      "capturedAt": "2026-11-19T15:21:32.285Z",
+      "url": "http://127.0.0.1:3001/dashboard/users/analyst",
+      "backoffice_revision": "12e1776602b56630a67201ec525b362c8d4903a9",
+      "api": "backend feat/block-users c773280 with the reference E2E dataset (backend#219), disposable PostgreSQL"
+    },
+    {
+      "id": "web-acceso-sin-acceso",
+      "surface": "backoffice",
+      "file": "web-acceso-sin-acceso.png",
+      "expected": "Tu cuenta no tiene acceso a la plataforma",
+      "capturedAt": "2026-11-19T15:21:33.397Z",
+      "url": "http://127.0.0.1:3001/signin",
+      "backoffice_revision": "12e1776602b56630a67201ec525b362c8d4903a9",
+      "api": "backend feat/block-users c773280 with the reference E2E dataset (backend#219), disposable PostgreSQL"
     },
     {
       "id": "web-perfil",

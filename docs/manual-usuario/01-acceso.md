@@ -10,9 +10,11 @@ El backoffice está destinado a administradores y analistas. El menú lateral mu
 4. Si olvidaste la contraseña, elegí **¿Olvidaste tu contraseña?** e ingresá tu email. Te llegará un correo de recuperación: abrí su enlace para restablecerla.
 5. Definí la nueva contraseña según los requisitos del formulario y volvé a iniciar sesión.
 
-Si un enlace venció o ya se usó, solicitá uno nuevo. Si el sistema pide esperar tras varios intentos, respetá el plazo indicado. Si tu cuenta está pendiente, pedí a un administrador que revise el registro.
+Si un enlace venció o ya se usó, solicitá uno nuevo. Si el sistema pide esperar tras varios intentos, respetá el plazo indicado. Si tu cuenta está pendiente, pedí a un administrador que revise el registro. Si al ingresar aparece el aviso «Tu cuenta no tiene acceso a la plataforma. Contactá a un administrador.», pedile a un administrador que revise tu cuenta.
 
 ![Acceso al backoffice](assets/web-acceso.png)
+
+![Aviso al iniciar sesión con una cuenta sin acceso](assets/web-acceso-sin-acceso.png)
 
 ![Solicitud del correo de recuperación de contraseña](assets/web-recuperar.png)
 
@@ -84,6 +86,12 @@ Desde la ficha, **Editar datos** permite corregir nombre y ubicación. La pesta�
 Si el email ya tiene una cuenta, el panel informa esa situación. Una invitación pendiente no equivale a una cuenta activada.
 
 Abrí un usuario para ver su perfil, estado y establecimientos. **Cambiar rol** ofrece únicamente los roles que tu cuenta puede asignar. Un administrador no puede cambiar el rol de otro administrador ni del superadministrador; el superadministrador dispone de permisos adicionales. No podés cambiar tu propio rol desde ese diálogo.
+
+La lista de cada rol tiene una columna **Estado**, que indica si el usuario está activo o bloqueado. El selector de estado, junto al título, permite ver **Todos**, solo los **Activos** o solo los **Bloqueados**.
+
+Para cortarle a una persona el acceso a toda la plataforma sin eliminarla, abrí su perfil, elegí **Bloquear** en la fila **Estado** y confirmá. Mientras esté bloqueada no puede iniciar sesión, y una sesión que tenía abierta deja de funcionar. Para restituirle el acceso, abrí su perfil, elegí **Desbloquear** y confirmá. Solo se puede bloquear a un usuario con la cuenta activa. Un administrador puede bloquear analistas y relevadores; el superadministrador también puede bloquear administradores. Nadie puede bloquear a un superadministrador ni a su propia cuenta.
+
+![Confirmación para bloquear a un usuario](assets/web-usuario-bloquear.png)
 
 ![Administración de usuarios](assets/web-usuarios.png)
 
