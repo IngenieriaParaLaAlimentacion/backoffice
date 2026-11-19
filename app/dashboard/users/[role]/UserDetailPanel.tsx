@@ -6,13 +6,16 @@ import { CircleCheck, Loader2, X } from "lucide-react";
 import { useUserDetail } from "@/hooks/useUserDetail";
 import { useRevokeAccess } from "@/hooks/useRevokeAccess";
 import { useSession } from "@/context/SessionContext";
-import { ROLE_LABELS, STATUS_LABELS } from "@/types/user";
+import { ROLE_LABELS } from "@/types/user";
 import { USER_DETAIL_PANEL } from "@/constants/users";
 import { AdminUserDetail } from "@/types/admin";
 import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
 import { OVERLAY_CLASS, TONE_BANNER_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
-import { assignableRoles } from "@/lib/permissions";
+import { assignableRoles, canManageUser } from "@/lib/permissions";
+import { BlockMode } from "@/hooks/useBlockUser";
+import UserStatusBadge from "../UserStatusBadge";
+import BlockUserDialog from "./BlockUserDialog";
 import ChangeRoleDialog from "./ChangeRoleDialog";
 
 type UserDetailPanelProps = {
@@ -55,6 +58,19 @@ export default function UserDetailPanel({
       ? assignableRoles(viewerRole, user.role)
       : [];
 
+  // Blocking follows the same matrix as the role change and never applies to
+  // the viewer's own account. Only an active user can be blocked and only a
+  // blocked one unblocked; any other status offers nothing.
+  const blockMode: BlockMode | null =
+    user &&
+    can("users.block") &&
+    user.id !== profile?.id &&
+    canManageUser(viewerRole, user.role)
+      ? (({ active: "block", blocked: "unblock" } as const)[
+          user.status ?? ""
+        ] ?? null)
+      : null;
+
   const { revokingId, actionError, revoke, reset } = useRevokeAccess(
     {
       confirmDialog: USER_DETAIL_PANEL.removeAccessConfirmDialog,
@@ -76,6 +92,12 @@ export default function UserDetailPanel({
         updated.role ? ROLE_LABELS[updated.role] : "",
       ),
     );
+    onUserChanged?.();
+  };
+
+  const handleBlockChanged = (updated: AdminUserDetail, mode: BlockMode) => {
+    replace(updated);
+    setSuccessMessage(USER_DETAIL_PANEL[mode].success);
     onUserChanged?.();
   };
 
@@ -178,10 +200,27 @@ export default function UserDetailPanel({
                 </div>
               )}
               {user.status && (
-                <ProfileField
-                  label={USER_DETAIL_PANEL.fields.status}
-                  value={STATUS_LABELS[user.status] ?? user.status}
-                />
+                <div className="flex items-end justify-between gap-2">
+                  <ProfileField
+                    label={USER_DETAIL_PANEL.fields.status}
+                    value={<UserStatusBadge status={user.status} />}
+                  />
+                  {blockMode && (
+                    <BlockUserDialog
+                      key={blockMode}
+                      userId={user.id}
+                      userName={
+                        user.last_name
+                          ? `${user.name} ${user.last_name}`
+                          : user.name
+                      }
+                      mode={blockMode}
+                      onChanged={(updated) =>
+                        handleBlockChanged(updated, blockMode)
+                      }
+                    />
+                  )}
+                </div>
               )}
               {user.contact_phone && (
                 <ProfileField

@@ -17,6 +17,7 @@ import {
   makeApproveEstablishmentsHandler,
   makeListEstablishmentRequestsHandler,
   makeApproveFieldWorkerHandler,
+  makeBlockUserHandler,
   makeChangeUserRoleHandler,
   makeGetUserHandler,
   makeListPendingEstablishmentAccessHandler,
@@ -24,6 +25,7 @@ import {
   makeRejectEstablishmentRequestHandler,
   makeRejectEstablishmentsHandler,
   makeRejectFieldWorkerHandler,
+  makeUnblockUserHandler,
 } from "@/mocks/handlers/admin";
 import {
   makeCreateEstablishmentHandler,
@@ -93,6 +95,8 @@ export const handlers = [
   makeListUsersHandler(),
   makeGetUserHandler(),
   makeChangeUserRoleHandler(),
+  makeBlockUserHandler(),
+  makeUnblockUserHandler(),
   makeListPendingEstablishmentAccessHandler(),
   makeApproveFieldWorkerHandler(),
   makeRejectFieldWorkerHandler(),

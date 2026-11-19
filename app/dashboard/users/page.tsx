@@ -25,7 +25,7 @@ import UserStatusBadge from "./UserStatusBadge";
 const PAGE_SIZE = 3;
 
 function RoleSection({ role, label }: { role: string; label: string }) {
-  const { users, total, isLoading, error } = useUsers(role, PAGE_SIZE);
+  const { users, total, isLoading, error, refetch } = useUsers(role, PAGE_SIZE);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   return (
@@ -153,6 +153,7 @@ function RoleSection({ role, label }: { role: string; label: string }) {
       <UserDetailPanel
         userId={selectedUserId}
         onClose={() => setSelectedUserId(null)}
+        onUserChanged={refetch}
       />
     </div>
   );

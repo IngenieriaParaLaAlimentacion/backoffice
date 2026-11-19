@@ -312,4 +312,40 @@ export const USER_DETAIL_PANEL = {
     },
     genericError: "No se pudo cambiar el rol",
   },
+  block: {
+    button: "Bloquear",
+    title: "Bloquear usuario",
+    description: (name: string) =>
+      `¿Bloquear a ${name}? No va a poder ingresar a la plataforma hasta que lo desbloquees.`,
+    confirm: "Bloquear",
+    confirming: "Bloqueando…",
+    cancel: "Cancelar",
+    success: "El usuario fue bloqueado.",
+    // Overrides the shared ROLE_NOT_ALLOWED copy, which is about the
+    // viewer's own access to a screen, not about the user being edited.
+    errors: {
+      [ERROR_TYPES.ROLE_NOT_ALLOWED]:
+        "No tenés permiso para bloquear a este usuario.",
+      [ERROR_TYPES.USER_NOT_FOUND]: "El usuario ya no existe.",
+      [ERROR_TYPES.USER_IS_NOT_ACTIVE]:
+        "El usuario no está activo: tiene una invitación pendiente o todavía no fue validado.",
+    },
+    genericError: "No se pudo bloquear al usuario",
+  },
+  unblock: {
+    button: "Desbloquear",
+    title: "Desbloquear usuario",
+    description: (name: string) =>
+      `¿Desbloquear a ${name}? Va a poder volver a ingresar a la plataforma con sus datos y sus accesos a comedores.`,
+    confirm: "Desbloquear",
+    confirming: "Desbloqueando…",
+    cancel: "Cancelar",
+    success: "El usuario fue desbloqueado.",
+    errors: {
+      [ERROR_TYPES.ROLE_NOT_ALLOWED]:
+        "No tenés permiso para desbloquear a este usuario.",
+      [ERROR_TYPES.USER_NOT_FOUND]: "El usuario ya no existe.",
+    },
+    genericError: "No se pudo desbloquear al usuario",
+  },
 } as const;

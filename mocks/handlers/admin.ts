@@ -12,12 +12,14 @@ import {
   LIST_ESTABLISHMENT_REQUESTS_ENDPOINT,
   LIST_USERS_ENDPOINT,
   APPROVE_FIELD_WORKER_ENDPOINT,
+  BLOCK_USER_ENDPOINT,
   CHANGE_USER_ROLE_ENDPOINT,
   GET_USER_ENDPOINT,
   APPROVE_ESTABLISHMENTS_ENDPOINT,
   PENDING_ESTABLISHMENT_ACCESS_ENDPOINT,
   REJECT_ESTABLISHMENTS_ENDPOINT,
   REJECT_FIELD_WORKER_ENDPOINT,
+  UNBLOCK_USER_ENDPOINT,
 } from "@/constants/api";
 import {
   DEFAULT_ESTABLISHMENT_APPROVAL_RESPONSE,
@@ -85,6 +87,42 @@ export function makeChangeUserRoleHandler(
     },
     { once: options?.once },
   );
+}
+
+/** Answers a block or unblock with the user in the resulting `status`. */
+function makeUserStatusHandler(
+  endpoint: (userId: string) => string,
+  status: string,
+  options?: HandlerOptions<AdminUserDetail>,
+) {
+  if (options?.status && options.status !== 200) {
+    return baseHandler(endpoint(":user_id"), { ...options, method: "patch" });
+  }
+  return http.patch<PathParams>(
+    endpoint(":user_id"),
+    async ({ request, params }) => {
+      await options?.onRequest?.(request.clone());
+      return HttpResponse.json<AdminUserDetail>({
+        ...DEFAULT_USER_DETAIL,
+        ...options?.data,
+        id: String(params.user_id),
+        status,
+      });
+    },
+    { once: options?.once },
+  );
+}
+
+export function makeBlockUserHandler(
+  options?: HandlerOptions<AdminUserDetail>,
+) {
+  return makeUserStatusHandler(BLOCK_USER_ENDPOINT, "blocked", options);
+}
+
+export function makeUnblockUserHandler(
+  options?: HandlerOptions<AdminUserDetail>,
+) {
+  return makeUserStatusHandler(UNBLOCK_USER_ENDPOINT, "active", options);
 }
 
 export function makeApproveFieldWorkerHandler() {
