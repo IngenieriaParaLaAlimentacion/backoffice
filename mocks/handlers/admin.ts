@@ -1,5 +1,6 @@
 import { http, HttpResponse, PathParams } from "msw";
 import { baseHandler, HandlerOptions } from "@/mocks/handlers/base";
+import { UserStatus } from "@/types/establishment";
 import {
   AdminUserDetail,
   ChangeUserRoleRequest,
@@ -92,7 +93,7 @@ export function makeChangeUserRoleHandler(
 /** Answers a block or unblock with the user in the resulting `status`. */
 function makeUserStatusHandler(
   endpoint: (userId: string) => string,
-  status: string,
+  status: UserStatus,
   options?: HandlerOptions<AdminUserDetail>,
 ) {
   if (options?.status && options.status !== 200) {

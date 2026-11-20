@@ -1,14 +1,14 @@
 import { PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
-import { USER_STATUS_TONE } from "@/constants/users";
+import { USER_STATUS_LABELS, USER_STATUS_TONE } from "@/constants/users";
 import { cn } from "@/lib/utils";
-import { STATUS_LABELS } from "@/types/user";
+import { UserStatus } from "@/types/establishment";
 
 /** The pill with an account's status, toned by it. */
 export default function UserStatusBadge({
   status,
   className,
 }: {
-  status: string | undefined;
+  status: UserStatus | undefined;
   className?: string;
 }) {
   if (!status) return null;
@@ -21,7 +21,7 @@ export default function UserStatusBadge({
         className,
       )}
     >
-      {STATUS_LABELS[status] ?? status}
+      {USER_STATUS_LABELS[status] ?? status}
     </span>
   );
 }

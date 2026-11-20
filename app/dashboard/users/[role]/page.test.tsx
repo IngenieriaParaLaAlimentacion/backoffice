@@ -7,7 +7,7 @@ import { server } from "@/mocks/server";
 import { LIST_USERS_ENDPOINT } from "@/constants/api";
 import { DEFAULT_PENDING_USERS_RESPONSE } from "@/mocks/fixtures/admin";
 import { USER_STATUS_FILTER_OPTIONS, USERS_PAGE } from "@/constants/users";
-import { STATUS_LABELS } from "@/types/user";
+import { USER_STATUS_LABELS } from "@/constants/users";
 
 const USER = { ...DEFAULT_PENDING_USERS_RESPONSE.items[0], status: "active" };
 
@@ -79,8 +79,8 @@ describe("RoleUsersPage status filter", () => {
     expect(
       screen.getByRole("columnheader", { name: USERS_PAGE.columns.status }),
     ).toBeInTheDocument();
-    expect(screen.getAllByText(STATUS_LABELS.active)).toHaveLength(1);
+    expect(screen.getAllByText(USER_STATUS_LABELS.active)).toHaveLength(1);
     // The blocked user also carries the pill on its mobile card.
-    expect(screen.getAllByText(STATUS_LABELS.blocked)).toHaveLength(2);
+    expect(screen.getAllByText(USER_STATUS_LABELS.blocked)).toHaveLength(2);
   });
 });

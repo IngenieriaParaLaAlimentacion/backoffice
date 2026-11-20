@@ -26,13 +26,14 @@ import {
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
 import { toApiError } from "@/lib/apiError";
+import { UserStatus } from "@/types/establishment";
 import { UserRole } from "@/types/user";
 
 type ListUsersParams = {
   page?: number;
   page_size?: number;
   /** Several statuses are sent as a repeated `status` parameter. */
-  status?: string | string[];
+  status?: UserStatus | UserStatus[];
   role?: string;
   search?: string;
 };

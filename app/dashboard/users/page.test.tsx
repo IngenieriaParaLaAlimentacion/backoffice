@@ -7,7 +7,7 @@ import { server } from "@/mocks/server";
 import { makeListUsersHandler } from "@/mocks/handlers/admin";
 import { DEFAULT_PENDING_USERS_RESPONSE } from "@/mocks/fixtures/admin";
 import { MOCK_ESTABLISHMENTS } from "@/mocks/fixtures/establishment";
-import { STATUS_LABELS } from "@/types/user";
+import { USER_STATUS_LABELS } from "@/constants/users";
 import {
   INVITE_LABELS,
   MAX_LISTED_ESTABLISHMENTS,
@@ -156,7 +156,7 @@ describe("UsersPage blocked users", () => {
     await renderWithProviders(<UsersPageRoute />, { role: "admin" });
 
     expect(
-      (await screen.findAllByText(STATUS_LABELS.blocked)).length,
+      (await screen.findAllByText(USER_STATUS_LABELS.blocked)).length,
     ).toBeGreaterThan(0);
   });
 
@@ -173,6 +173,8 @@ describe("UsersPage blocked users", () => {
     await renderWithProviders(<UsersPageRoute />, { role: "admin" });
 
     await screen.findAllByText(/López/);
-    expect(screen.queryByText(STATUS_LABELS.blocked)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(USER_STATUS_LABELS.blocked),
+    ).not.toBeInTheDocument();
   });
 });

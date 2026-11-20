@@ -9,6 +9,7 @@ import { useSession } from "@/context/SessionContext";
 import { ROLE_LABELS } from "@/types/user";
 import { SUCCESS_MESSAGE_MS, USER_DETAIL_PANEL } from "@/constants/users";
 import { AdminUserDetail } from "@/types/admin";
+import { UserStatus } from "@/types/establishment";
 import RevokeAccessMenu from "@/components/listings/RevokeAccessMenu";
 import { OVERLAY_CLASS, TONE_BANNER_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,12 @@ type UserDetailPanelProps = {
   onClose: () => void;
   /** Called after an action moved the user out of (or within) the list. */
   onUserChanged?: () => void;
+};
+
+/** The block action each account status offers; any other status offers none. */
+const BLOCK_MODE_BY_STATUS: Partial<Record<UserStatus, BlockMode>> = {
+  active: "block",
+  blocked: "unblock",
 };
 
 function ProfileField({
@@ -66,9 +73,7 @@ export default function UserDetailPanel({
     can("users.block") &&
     user.id !== profile?.id &&
     canManageUser(viewerRole, user.role)
-      ? (({ active: "block", blocked: "unblock" } as const)[
-          user.status ?? ""
-        ] ?? null)
+      ? ((user.status && BLOCK_MODE_BY_STATUS[user.status]) ?? null)
       : null;
 
   const { revokingId, actionError, revoke, reset } = useRevokeAccess(

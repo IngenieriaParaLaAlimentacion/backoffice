@@ -3,6 +3,7 @@ import {
   EstablishmentCharacterization,
   EstablishmentResponse,
   EstablishmentRequestStatus,
+  UserStatus,
 } from "@/types/establishment";
 
 export type UserAdminView = {
@@ -11,7 +12,7 @@ export type UserAdminView = {
   name: string;
   last_name: string;
   role: UserRole;
-  status: string;
+  status: UserStatus;
   is_email_verified: boolean;
   establishments: EstablishmentResponse[];
 };
@@ -22,7 +23,7 @@ export type AdminUserDetail = {
   email: string;
   last_name?: string;
   role?: UserRole;
-  status?: string;
+  status?: UserStatus;
   establishments?: EstablishmentResponse[];
   locality?: string;
   description?: string;

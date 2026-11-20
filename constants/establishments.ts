@@ -22,7 +22,6 @@ import {
   FoodStockSortOrder,
   FoodStockUnit,
   RelationStatus,
-  UserStatus,
 } from "@/types/establishment";
 import { Tone } from "@/constants/theme";
 import { PinStatus } from "@/lib/establishmentPins";
@@ -76,13 +75,6 @@ export const WITHDRAWABLE_RELATION_STATUSES: readonly RelationStatus[] = [
   "pending",
   "approved",
 ];
-
-export const USER_STATUS_LABELS: Record<UserStatus, string> = {
-  active: "Activo",
-  inactive: "Inactivo",
-  pending_validation: "Pendiente de validación",
-  blocked: "Bloqueado",
-};
 
 export const ESTABLISHMENT_DASHBOARD_PAGE = {
   back: "Volver",

@@ -1,3 +1,4 @@
+import { UserStatus } from "@/types/establishment";
 import { UserRole } from "@/types/user";
 import { ERROR_TYPES } from "@/lib/apiError";
 import { Tone } from "@/constants/theme";
@@ -40,7 +41,10 @@ export const USERS_PAGE = {
 export type UserStatusFilter = "all" | "active" | "blocked";
 
 /** The statuses each view asks the backend for; "all" is active plus blocked. */
-export const USER_STATUS_FILTER_STATUSES: Record<UserStatusFilter, string[]> = {
+export const USER_STATUS_FILTER_STATUSES: Record<
+  UserStatusFilter,
+  UserStatus[]
+> = {
   all: ["active", "blocked"],
   active: ["active"],
   blocked: ["blocked"],
@@ -55,8 +59,16 @@ export const USER_STATUS_FILTER_OPTIONS: readonly {
   { value: "blocked", label: "Bloqueados" },
 ];
 
+/** The label of each account status. */
+export const USER_STATUS_LABELS: Record<UserStatus, string> = {
+  active: "Activo",
+  inactive: "Inactivo",
+  pending_validation: "Pendiente de validación",
+  blocked: "Bloqueado",
+};
+
 /** The tone of an account status pill; any other status is neutral. */
-export const USER_STATUS_TONE: Record<string, Tone> = {
+export const USER_STATUS_TONE: Partial<Record<UserStatus, Tone>> = {
   active: "success",
   blocked: "danger",
 };
