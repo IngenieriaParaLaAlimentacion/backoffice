@@ -1,15 +1,18 @@
+import { act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import UserDetailPanel from "./UserDetailPanel";
 import { renderWithProviders, screen, waitFor, within } from "@/test-utils";
 import { server } from "@/mocks/server";
 import {
+  makeBlockUserHandler,
   makeChangeUserRoleHandler,
   makeGetUserHandler,
+  makeUnblockUserHandler,
 } from "@/mocks/handlers/admin";
 import { makeMeHandler } from "@/mocks/handlers/user";
 import { DEFAULT_USER_DETAIL } from "@/mocks/fixtures/admin";
-import { USER_DETAIL_PANEL } from "@/constants/users";
+import { SUCCESS_MESSAGE_MS, USER_DETAIL_PANEL } from "@/constants/users";
 import { ChangeUserRoleRequest } from "@/types/admin";
 import { UserRole } from "@/types/user";
 import { ERROR_TYPES } from "@/lib/apiError";
@@ -21,16 +24,20 @@ async function renderPanel({
   viewer,
   target,
   targetId = DEFAULT_USER_DETAIL.id,
+  targetStatus = "active",
   onUserChanged = vi.fn(),
 }: {
   viewer: UserRole;
   target: UserRole;
   targetId?: string;
+  targetStatus?: string;
   onUserChanged?: () => void;
 }) {
   server.use(
     makeMeHandler({ data: { id: VIEWER_ID, role: viewer } }),
-    makeGetUserHandler({ data: { id: targetId, role: target } }),
+    makeGetUserHandler({
+      data: { id: targetId, role: target, status: targetStatus },
+    }),
   );
   await renderWithProviders(
     <UserDetailPanel
@@ -199,5 +206,235 @@ describe("UserDetailPanel — change role", () => {
     expect(
       screen.queryByRole("button", { name: COPY.button }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("UserDetailPanel — block and unblock", () => {
+  const BLOCK = USER_DETAIL_PANEL.block;
+  const UNBLOCK = USER_DETAIL_PANEL.unblock;
+  const COPIES = { block: BLOCK, unblock: UNBLOCK };
+  const STATUS_AFTER = { block: "Bloqueado", unblock: "Activo" };
+
+  const actionButtons = () =>
+    screen.queryAllByRole("button", {
+      name: new RegExp(`^(${BLOCK.button}|${UNBLOCK.button})$`),
+    });
+
+  it("offers Bloquear on an active user and Desbloquear on a blocked one", async () => {
+    await renderPanel({ viewer: "admin", target: "field_worker" });
+    expect(
+      screen.getByRole("button", { name: BLOCK.button }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: UNBLOCK.button }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("offers Desbloquear on a blocked user", async () => {
+    await renderPanel({
+      viewer: "admin",
+      target: "field_worker",
+      targetStatus: "blocked",
+    });
+    expect(
+      screen.getByRole("button", { name: UNBLOCK.button }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: BLOCK.button }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("lets a superadmin block an admin", async () => {
+    await renderPanel({ viewer: "superadmin", target: "admin" });
+    expect(
+      screen.getByRole("button", { name: BLOCK.button }),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    ["an analyst viewing a relevador", "analyst", "field_worker", "active"],
+    ["an admin on another admin", "admin", "admin", "active"],
+    ["an admin on a superadmin", "admin", "superadmin", "active"],
+    ["a superadmin on a superadmin", "superadmin", "superadmin", "active"],
+    ["a pending user", "admin", "field_worker", "pending_validation"],
+    ["an invited user", "admin", "analyst", "invited"],
+  ] as const)(
+    "offers nothing to %s",
+    async (_label, viewer, target, status) => {
+      await renderPanel({ viewer, target, targetStatus: status });
+      expect(actionButtons()).toHaveLength(0);
+    },
+  );
+
+  it("offers nothing on the viewer's own profile", async () => {
+    await renderPanel({
+      viewer: "superadmin",
+      target: "analyst",
+      targetId: VIEWER_ID,
+    });
+    expect(actionButtons()).toHaveLength(0);
+  });
+
+  it.each([
+    ["block", makeBlockUserHandler, "active"],
+    ["unblock", makeUnblockUserHandler, "blocked"],
+  ] as const)(
+    "asks for confirmation, then %ss the user once and refreshes the list",
+    async (mode, makeHandler, targetStatus) => {
+      const copy = COPIES[mode];
+      const requests: string[] = [];
+      server.use(
+        makeHandler({
+          onRequest: (request) => {
+            requests.push(request.method);
+          },
+        }),
+      );
+      const { onUserChanged } = await renderPanel({
+        viewer: "admin",
+        target: "field_worker",
+        targetStatus,
+      });
+      const user = userEvent.setup();
+
+      await user.click(screen.getByRole("button", { name: copy.button }));
+      const dialog = await screen.findByRole("dialog", { name: copy.title });
+      // Nothing was sent just by opening the dialog.
+      expect(requests).toEqual([]);
+
+      await user.dblClick(
+        within(dialog).getByRole("button", { name: copy.confirm }),
+      );
+
+      expect(await screen.findByText(copy.success)).toBeInTheDocument();
+      await waitFor(() =>
+        expect(
+          screen.queryByRole("dialog", { name: copy.title }),
+        ).not.toBeInTheDocument(),
+      );
+      expect(requests).toEqual(["PATCH"]);
+      expect(onUserChanged).toHaveBeenCalledTimes(1);
+      expect(screen.getByText(STATUS_AFTER[mode])).toBeInTheDocument();
+      // The action flips to the opposite one.
+      const opposite = mode === "block" ? UNBLOCK : BLOCK;
+      expect(
+        screen.getByRole("button", { name: opposite.button }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it("takes the success notice away on its own", async () => {
+    const timeouts = vi.spyOn(window, "setTimeout");
+    server.use(makeBlockUserHandler());
+    await renderPanel({ viewer: "admin", target: "field_worker" });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: BLOCK.button }));
+    const dialog = await screen.findByRole("dialog", { name: BLOCK.title });
+    await user.click(
+      within(dialog).getByRole("button", { name: BLOCK.confirm }),
+    );
+    expect(await screen.findByText(BLOCK.success)).toBeInTheDocument();
+
+    const [dismiss] = timeouts.mock.calls
+      .filter(([, delay]) => delay === SUCCESS_MESSAGE_MS)
+      .map(([callback]) => callback as () => void);
+    act(() => dismiss());
+
+    expect(screen.queryByText(BLOCK.success)).not.toBeInTheDocument();
+    timeouts.mockRestore();
+  });
+
+  it("sends nothing when the dialog is cancelled", async () => {
+    const requests: string[] = [];
+    server.use(
+      makeBlockUserHandler({
+        onRequest: (request) => {
+          requests.push(request.method);
+        },
+      }),
+    );
+    await renderPanel({ viewer: "admin", target: "field_worker" });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: BLOCK.button }));
+    const dialog = await screen.findByRole("dialog", { name: BLOCK.title });
+    await user.click(
+      within(dialog).getByRole("button", { name: BLOCK.cancel }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: BLOCK.title }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(requests).toEqual([]);
+  });
+
+  it.each([
+    [
+      "block",
+      makeBlockUserHandler,
+      "active",
+      400,
+      ERROR_TYPES.USER_IS_NOT_ACTIVE,
+    ],
+    [
+      "block",
+      makeBlockUserHandler,
+      "active",
+      403,
+      ERROR_TYPES.ROLE_NOT_ALLOWED,
+    ],
+    ["block", makeBlockUserHandler, "active", 404, ERROR_TYPES.USER_NOT_FOUND],
+    [
+      "unblock",
+      makeUnblockUserHandler,
+      "blocked",
+      403,
+      ERROR_TYPES.ROLE_NOT_ALLOWED,
+    ],
+  ] as const)(
+    "shows the %s error %i %s inside the dialog and keeps it open",
+    async (mode, makeHandler, targetStatus, status, type) => {
+      const copy = COPIES[mode];
+      server.use(makeHandler({ status, error: { type, detail: "x" } }));
+      const { onUserChanged } = await renderPanel({
+        viewer: "admin",
+        target: "field_worker",
+        targetStatus,
+      });
+      const user = userEvent.setup();
+
+      await user.click(screen.getByRole("button", { name: copy.button }));
+      const dialog = await screen.findByRole("dialog", { name: copy.title });
+      await user.click(
+        within(dialog).getByRole("button", { name: copy.confirm }),
+      );
+
+      expect(
+        await within(dialog).findByText(
+          copy.errors[type as keyof typeof copy.errors],
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: copy.title })).toBeVisible();
+      expect(onUserChanged).not.toHaveBeenCalled();
+    },
+  );
+
+  it("falls back to generic copy for an unmapped error", async () => {
+    server.use(makeBlockUserHandler({ status: 500 }));
+    await renderPanel({ viewer: "admin", target: "field_worker" });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: BLOCK.button }));
+    const dialog = await screen.findByRole("dialog", { name: BLOCK.title });
+    await user.click(
+      within(dialog).getByRole("button", { name: BLOCK.confirm }),
+    );
+
+    expect(
+      await within(dialog).findByText(BLOCK.genericError),
+    ).toBeInTheDocument();
   });
 });

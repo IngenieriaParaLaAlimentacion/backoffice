@@ -40,6 +40,17 @@ Screens call authenticated endpoints through `useAuth().makeAuthorizedRequest` (
 `apiRequest` in `lib/http.ts`). `app/dashboard/layout.tsx` is the auth gate: it redirects
 to `/signin` once `isInitializing` is false and `isAuthenticated` is false.
 
+**A blocked account.** An admin can block a user from the whole platform, and the backend
+then answers that user's requests with `403` and the error type `user-blocked`. Both
+dispatchers (`makeAuthorizedRequest` and `makeAuthorizedDownload`) watch for exactly that
+status and type: they clear the tokens and the SWR cache, set `isAuthenticated` to false and
+put `BLOCKED_ACCOUNT_MESSAGE` (`constants/auth.ts`) in `authNotice`. The auth gate then
+redirects to `/signin`, where `SignInForm` shows the notice until the user types. The same
+message is the sign-in error for a blocked account, so the user sees one text either way.
+Any other `403` leaves the session alone. The copy is neutral on purpose: no reason, and not
+the word "bloqueado". A blocked user whose access token had already expired never gets the
+notice: the refresh fails with a `401`, so the app shows "Tu sesión expiró" until they sign in.
+
 ## Authorization (roles & permissions)
 
 Authentication says _whether_ you're in; this layer says _what you see_. Four roles
@@ -62,6 +73,11 @@ Three pieces, in dependency order:
 3. **`components/RequirePermission.tsx`** — wraps a route's content and renders a 403
    screen (`components/FullScreenMessage.tsx` + `constants/permissions.ts`) when the
    role lacks the permission, so typing a hidden URL by hand doesn't reach the screen.
+
+A rule that depends on two roles — who may act on whom — can't be a `can()` entry, so it sits
+beside it in `lib/permissions.ts`: `assignableRoles` for a role change and `canManageUser` for
+blocking and unblocking. Both read one table of the roles each actor may manage; the caller
+still rules out the viewer's own profile. Blocking also needs the `users.block` permission.
 
 `app/dashboard/layout.tsx` mounts `SessionProvider` inside the auth gate and holds the
 shell back while `isLoading` — every role check starts out denying, so rendering first

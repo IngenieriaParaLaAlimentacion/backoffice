@@ -9,7 +9,6 @@ import { RowChevron } from "@/components/listings/RowAffordance";
 import { useNutritionReportList } from "@/hooks/useNutritionReportList";
 import { useNutritionReportPdf } from "@/hooks/useNutritionReportPdf";
 import { useGenerateNutritionReport } from "@/hooks/useGenerateNutritionReport";
-import { SELECT_CLASS } from "@/constants/establishments";
 import {
   NUTRITION_REPORT_NOTICE as NOTICE,
   NUTRITION_REPORT_PAGE as COPY,
@@ -24,6 +23,7 @@ import NutritionReportLoadError from "@/components/nutritionReport/NutritionRepo
 import NutritionReportNoticeDialog, {
   ReportNotice,
 } from "@/components/nutritionReport/NutritionReportNoticeDialog";
+import { SELECT_CLASS } from "@/constants/common";
 
 /** The "Reporte nutricional" tab: the comedor's saved reports. */
 export default function NutritionReportPanel({

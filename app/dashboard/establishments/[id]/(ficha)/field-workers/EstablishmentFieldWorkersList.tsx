@@ -12,11 +12,11 @@ import {
   RELATION_STATUS_LABELS,
   RELATION_STATUS_OPTIONS,
   RELATION_STATUS_TONE,
-  USER_STATUS_LABELS,
 } from "@/constants/establishments";
 import { PILL_CLASS, TONE_PILL_CLASS } from "@/constants/theme";
 import { EMPTY_VALUE, formatTimestampDate } from "@/lib/format";
 import { Loader2, Search } from "lucide-react";
+import { USER_STATUS_LABELS } from "@/constants/users";
 
 /**
  * Enrollment-based, not activity-based: an approved user with no measurements

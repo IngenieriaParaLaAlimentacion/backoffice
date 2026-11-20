@@ -32,7 +32,7 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^1.16.0",
-    "next": "^16.4.3",
+    "next": "^16.4.6",
     "postcss": "^8.5.15",
     "react": "19.2.4",
     "react-dom": "19.2.4",

@@ -28,13 +28,18 @@ export default function SignInForm() {
     },
   });
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, authNotice, clearAuthNotice } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
       router.replace("/dashboard");
     }
   }, [isAuthenticated, router]);
+
+  function handleFieldChange() {
+    clearErrors("form");
+    clearAuthNotice();
+  }
 
   async function handleLogin(credentials: SigninInput) {
     try {
@@ -53,13 +58,18 @@ export default function SignInForm() {
   return (
     <form onSubmit={handleSubmit(handleLogin)}>
       <div className="flex flex-col gap-3">
+        {authNotice && (
+          <Alert variant="destructive">
+            <AlertDescription>{authNotice}</AlertDescription>
+          </Alert>
+        )}
         <AppTextField
           name="email"
           control={control}
           placeholder="Ingresá tu email"
           label="Email"
           required
-          onChange={() => clearErrors("form")}
+          onChange={handleFieldChange}
         />
         <AppTextField
           control={control}
@@ -68,7 +78,7 @@ export default function SignInForm() {
           placeholder="Ingresá tu contraseña"
           label="Contraseña"
           type="password"
-          onChange={() => clearErrors("form")}
+          onChange={handleFieldChange}
         />
         {errors.form && (
           <Alert variant="destructive">

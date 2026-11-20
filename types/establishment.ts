@@ -363,7 +363,11 @@ export type EstablishmentSubjectSortOrder =
 
 // --- Field workers enrolled in the establishment ---
 
-export type UserStatus = "active" | "inactive" | "pending_validation";
+export type UserStatus =
+  | "active"
+  | "inactive"
+  | "pending_validation"
+  | "blocked";
 
 export type RelationStatus =
   | "approved"

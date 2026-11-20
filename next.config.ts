@@ -9,6 +9,8 @@ console.log(API_BASE_URL);
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Stop `next dev` from writing its own instruction block into AGENTS.md.
+  agentRules: false,
   // Establishment-creation requests moved from Establecimientos into the
   // Solicitudes section; keep bookmarks and old links working (Next.js
   // forwards the query string, so saved filters survive).

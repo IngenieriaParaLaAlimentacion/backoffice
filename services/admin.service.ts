@@ -2,6 +2,7 @@ import { AuthDispatcher } from "@/context/AuthContext";
 import {
   APPROVE_ESTABLISHMENTS_ENDPOINT,
   APPROVE_FIELD_WORKER_ENDPOINT,
+  BLOCK_USER_ENDPOINT,
   CHANGE_USER_ROLE_ENDPOINT,
   GET_USER_ENDPOINT,
   INVITE_ADMIN_ENDPOINT,
@@ -12,6 +13,7 @@ import {
   REJECT_FIELD_WORKER_ENDPOINT,
   RESEND_INVITE_ENDPOINT,
   REVOKE_ESTABLISHMENTS_ENDPOINT,
+  UNBLOCK_USER_ENDPOINT,
 } from "@/constants/api";
 import {
   AdminUserDetail,
@@ -24,12 +26,14 @@ import {
 } from "@/types/admin";
 import { ForgotPasswordRequest } from "@/types/auth";
 import { toApiError } from "@/lib/apiError";
+import { UserStatus } from "@/types/establishment";
 import { UserRole } from "@/types/user";
 
 type ListUsersParams = {
   page?: number;
   page_size?: number;
-  status?: string;
+  /** Several statuses are sent as a repeated `status` parameter. */
+  status?: UserStatus | UserStatus[];
   role?: string;
   search?: string;
 };
@@ -41,7 +45,8 @@ export const listUsersAction = async (
   const query = new URLSearchParams();
   if (params?.page) query.set("page", String(params.page));
   if (params?.page_size) query.set("page_size", String(params.page_size));
-  if (params?.status) query.set("status", params.status);
+  for (const status of [params?.status ?? []].flat())
+    query.append("status", status);
   if (params?.role) query.set("role", params.role);
   if (params?.search) query.set("search", params.search);
 
@@ -114,6 +119,42 @@ export const changeUserRoleAction = async (
   const res = await dispatcher<ChangeUserRoleRequest, AdminUserDetail>(
     CHANGE_USER_ROLE_ENDPOINT(userId),
     { method: "PATCH", body },
+  );
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as AdminUserDetail;
+};
+
+/**
+ * Blocks the user from the whole platform. The backend revokes their refresh
+ * tokens; blocking an already blocked user is a no-op `200`.
+ */
+export const blockUserAction = async (
+  dispatcher: AuthDispatcher,
+  userId: string,
+): Promise<AdminUserDetail> => {
+  const res = await dispatcher<undefined, AdminUserDetail>(
+    BLOCK_USER_ENDPOINT(userId),
+    { method: "PATCH" },
+  );
+
+  if (!res.ok) throw toApiError(res.data, res.status);
+
+  return res.data as AdminUserDetail;
+};
+
+/**
+ * Gives a blocked user their access back, as `active`; unblocking a user who
+ * is not blocked is a no-op `200`.
+ */
+export const unblockUserAction = async (
+  dispatcher: AuthDispatcher,
+  userId: string,
+): Promise<AdminUserDetail> => {
+  const res = await dispatcher<undefined, AdminUserDetail>(
+    UNBLOCK_USER_ENDPOINT(userId),
+    { method: "PATCH" },
   );
 
   if (!res.ok) throw toApiError(res.data, res.status);

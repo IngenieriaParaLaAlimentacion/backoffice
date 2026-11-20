@@ -6,7 +6,6 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Check, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNutritionReport } from "@/hooks/useNutritionReport";
-import { SELECT_CLASS } from "@/constants/establishments";
 import {
   NUTRITION_REPORT_DIALOG as COPY,
   NUTRITION_REPORT_SLOW_HINT_MS,
@@ -17,6 +16,7 @@ import { closedMonthOptions, lastClosedMonth } from "@/lib/reportMonth";
 import NutritionReportBanner from "@/components/nutritionReport/NutritionReportBanner";
 import NutritionReportDialogFrame from "@/components/nutritionReport/NutritionReportDialogFrame";
 import NutritionReportLoadError from "@/components/nutritionReport/NutritionReportLoadError";
+import { SELECT_CLASS } from "@/constants/common";
 
 /**
  * Mounted only while the dialog is open, so every opening starts again from

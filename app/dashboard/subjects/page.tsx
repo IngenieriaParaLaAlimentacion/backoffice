@@ -52,13 +52,12 @@ import {
   SUBJECTS_PAGE,
 } from "@/constants/subjects";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
+
 const FILTER_DEBOUNCE_MS = 300;
 const ESTABLISHMENTS_PAGE_SIZE = 100;
-
-const SELECT_CLASS =
-  "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const SORT_OPTIONS: { value: SubjectSortOrder; label: string }[] = (
   Object.keys(SUBJECT_SORT_LABELS) as SubjectSortOrder[]

@@ -1,6 +1,6 @@
 "use client";
 
-import { NOT_AVAILABLE } from "@/constants/common";
+import { NOT_AVAILABLE, SELECT_CLASS } from "@/constants/common";
 
 import { use, useEffect, useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -29,7 +29,6 @@ import {
   FOOD_OUTFLOW_CATEGORY_LABELS,
   MOVEMENT_DIRECTION_LABELS,
   MOVEMENT_DIRECTION_OPTIONS,
-  SELECT_CLASS,
   FOOD_INTAKE_ORIGIN_LABELS,
   recurrenceLabel,
 } from "@/constants/establishments";

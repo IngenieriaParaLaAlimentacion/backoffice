@@ -13,7 +13,6 @@ import {
   MOVEMENT_DIRECTION_LABELS,
   FOOD_INTAKE_ORIGIN_OPTIONS,
   FOOD_INTAKE_RECURRENCE_LABELS,
-  SELECT_CLASS,
 } from "@/constants/establishments";
 import {
   foodMovementSchema,
@@ -46,6 +45,7 @@ import {
   availableMillis,
   quantityMillis,
 } from "@/lib/foodMovementQuantity";
+import { SELECT_CLASS } from "@/constants/common";
 
 const ERROR_CLASS = "text-sm text-destructive";
 

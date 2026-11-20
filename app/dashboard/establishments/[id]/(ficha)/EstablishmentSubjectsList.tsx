@@ -19,7 +19,6 @@ import {
 } from "@/components/AlertBadge";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
-  SELECT_CLASS,
   SUBJECT_SORT_OPTIONS,
 } from "@/constants/establishments";
 import { formatAgeMonths, formatTimestampDate } from "@/lib/format";
@@ -32,6 +31,7 @@ import {
   rowStateClass,
 } from "@/components/listings/RowAffordance";
 import { Loader2, Search } from "lucide-react";
+import { SELECT_CLASS } from "@/constants/common";
 
 export default function EstablishmentSubjectsList({
   establishmentId,

@@ -65,6 +65,8 @@ export const ERROR_TYPES = {
   INVALID_CREDENTIALS: "/errors/invalid-credentials",
   ACCOUNT_PENDING_VALIDATION: "/errors/account-pending-validation",
   ROLE_NOT_ALLOWED: "/errors/role-not-allowed",
+  /** The account was blocked by an admin: on login and on any request. */
+  USER_BLOCKED: "/errors/user-blocked",
   MISSING_TOKEN: "/errors/auth/missing-token",
   UNAUTHORIZED: "/errors/unauthorized",
   INVALID_REFRESH_TOKEN: "/errors/auth/invalid-refresh-token",

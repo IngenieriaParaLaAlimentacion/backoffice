@@ -1,5 +1,7 @@
+import { UserStatus } from "@/types/establishment";
 import { UserRole } from "@/types/user";
 import { ERROR_TYPES } from "@/lib/apiError";
+import { Tone } from "@/constants/theme";
 import { ESTABLISHMENT_PROFILE } from "@/constants/establishments";
 
 /**
@@ -23,15 +25,53 @@ export const USERS_PAGE = {
   /** Shown when a section previews fewer users than the role has. */
   showing: (shown: number, total: number) => `Mostrando ${shown} de ${total}`,
   noUsers: "No hay usuarios",
+  statusFilterLabel: "Estado",
   loadError: "Error al cargar usuarios",
   columns: {
     name: "Nombre",
     email: "Email",
+    status: "Estado",
     establishments: "Establecimientos",
   },
   moreEstablishments: (count: number) => `+${count} más`,
   pagination: (page: number, total: number) => `Página ${page} de ${total}`,
 } as const;
+
+/** The views of a role's listing by account status. */
+export type UserStatusFilter = "all" | "active" | "blocked";
+
+/** The statuses each view asks the backend for; "all" is active plus blocked. */
+export const USER_STATUS_FILTER_STATUSES: Record<
+  UserStatusFilter,
+  UserStatus[]
+> = {
+  all: ["active", "blocked"],
+  active: ["active"],
+  blocked: ["blocked"],
+};
+
+export const USER_STATUS_FILTER_OPTIONS: readonly {
+  value: UserStatusFilter;
+  label: string;
+}[] = [
+  { value: "all", label: "Todos" },
+  { value: "active", label: "Activos" },
+  { value: "blocked", label: "Bloqueados" },
+];
+
+/** The label of each account status. */
+export const USER_STATUS_LABELS: Record<UserStatus, string> = {
+  active: "Activo",
+  inactive: "Inactivo",
+  pending_validation: "Pendiente de validación",
+  blocked: "Bloqueado",
+};
+
+/** The tone of an account status pill; any other status is neutral. */
+export const USER_STATUS_TONE: Partial<Record<UserStatus, Tone>> = {
+  active: "success",
+  blocked: "danger",
+};
 
 /** The invite buttons beside the admin and analyst section titles. */
 export const INVITE_LABELS = {
@@ -240,6 +280,9 @@ export const INVITE_USER_DIALOG = {
   emailPlaceholder: "admin@ejemplo.com",
 } as const;
 
+/** How long the panel's success notice stays before it goes away on its own. */
+export const SUCCESS_MESSAGE_MS = 5000;
+
 export const USER_DETAIL_PANEL = {
   title: "Perfil",
   description: "Información del usuario",
@@ -283,5 +326,41 @@ export const USER_DETAIL_PANEL = {
       [ERROR_TYPES.VALIDATION_FAILED]: "El rol elegido no es válido.",
     },
     genericError: "No se pudo cambiar el rol",
+  },
+  block: {
+    button: "Bloquear",
+    title: "Bloquear usuario",
+    description: (name: string) =>
+      `¿Bloquear a ${name}? No va a poder ingresar a la plataforma hasta que lo desbloquees.`,
+    confirm: "Bloquear",
+    confirming: "Bloqueando…",
+    cancel: "Cancelar",
+    success: "El usuario fue bloqueado.",
+    // Overrides the shared ROLE_NOT_ALLOWED copy, which is about the
+    // viewer's own access to a screen, not about the user being edited.
+    errors: {
+      [ERROR_TYPES.ROLE_NOT_ALLOWED]:
+        "No tenés permiso para bloquear a este usuario.",
+      [ERROR_TYPES.USER_NOT_FOUND]: "El usuario ya no existe.",
+      [ERROR_TYPES.USER_IS_NOT_ACTIVE]:
+        "El usuario no está activo: tiene una invitación pendiente o todavía no fue validado.",
+    },
+    genericError: "No se pudo bloquear al usuario",
+  },
+  unblock: {
+    button: "Desbloquear",
+    title: "Desbloquear usuario",
+    description: (name: string) =>
+      `¿Desbloquear a ${name}? Va a poder volver a ingresar a la plataforma con sus datos y sus accesos a comedores.`,
+    confirm: "Desbloquear",
+    confirming: "Desbloqueando…",
+    cancel: "Cancelar",
+    success: "El usuario fue desbloqueado.",
+    errors: {
+      [ERROR_TYPES.ROLE_NOT_ALLOWED]:
+        "No tenés permiso para desbloquear a este usuario.",
+      [ERROR_TYPES.USER_NOT_FOUND]: "El usuario ya no existe.",
+    },
+    genericError: "No se pudo desbloquear al usuario",
   },
 } as const;
