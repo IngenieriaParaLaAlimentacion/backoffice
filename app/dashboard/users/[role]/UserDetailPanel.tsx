@@ -112,6 +112,10 @@ export default function UserDetailPanel({
     onUserChanged?.();
   };
 
+  const fullName = user?.last_name
+    ? `${user.name} ${user.last_name}`
+    : (user?.name ?? "");
+
   const handleRemoveAccess = (establishmentId: string) => {
     if (!user) return;
     revoke(establishmentId, user.id, establishmentId);
@@ -186,9 +190,7 @@ export default function UserDetailPanel({
               {/* --- Profile Fields --- */}
               <ProfileField
                 label={USER_DETAIL_PANEL.fields.name}
-                value={
-                  user.last_name ? `${user.name} ${user.last_name}` : user.name
-                }
+                value={fullName}
               />
               <ProfileField
                 label={USER_DETAIL_PANEL.fields.email}
@@ -220,11 +222,7 @@ export default function UserDetailPanel({
                     <BlockUserDialog
                       key={blockMode}
                       userId={user.id}
-                      userName={
-                        user.last_name
-                          ? `${user.name} ${user.last_name}`
-                          : user.name
-                      }
+                      userName={fullName}
                       mode={blockMode}
                       onChanged={(updated) =>
                         handleBlockChanged(updated, blockMode)
