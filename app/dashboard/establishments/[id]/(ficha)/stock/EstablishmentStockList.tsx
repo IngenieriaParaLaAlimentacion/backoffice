@@ -14,7 +14,6 @@ import { FoodStockSortOrder } from "@/types/establishment";
 import Pagination from "@/components/Pagination";
 import {
   ESTABLISHMENT_STOCK_PAGE as COPY,
-  SELECT_CLASS,
   STOCK_SORT_OPTIONS,
   STOCK_UNIT_LABELS,
 } from "@/constants/establishments";
@@ -22,6 +21,7 @@ import { formatQuantity, formatTimestampDate } from "@/lib/format";
 import { ArrowLeftRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import FoodMovementDialog from "@/components/FoodMovementDialog";
+import { SELECT_CLASS } from "@/constants/common";
 
 export default function EstablishmentStockList({
   establishmentId,

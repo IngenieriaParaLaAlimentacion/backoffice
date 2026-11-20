@@ -40,11 +40,9 @@ import SurveyActionsMenu from "@/components/surveys/SurveyActionsMenu";
 import { TONE_PILL_CLASS } from "@/constants/theme";
 import { getErrorMessage } from "@/lib/errorMessages";
 import { formatTimestampDate } from "@/lib/format";
+import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
-
-const SELECT_CLASS =
-  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export default function SurveysPage() {
   const {

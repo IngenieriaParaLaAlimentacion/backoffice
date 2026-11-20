@@ -31,12 +31,11 @@ import {
 } from "@/constants/establishments";
 import { TONE_BANNER_CLASS } from "@/constants/theme";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
-const FILTER_DEBOUNCE_MS = 300;
 
-const SELECT_CLASS =
-  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+const FILTER_DEBOUNCE_MS = 300;
 
 // Matches the backend default (EstablishmentCreationRequestSortOrder.OLDEST):
 // oldest-first surfaces the requests waiting the longest for review.

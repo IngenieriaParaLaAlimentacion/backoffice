@@ -48,14 +48,13 @@ import {
 } from "@/components/listings/RowAffordance";
 import ResponseDetailPanel from "./ResponseDetailPanel";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
+
 const FILTER_DEBOUNCE_MS = 300;
 const RESPONSE_NUMBER_MIN = 1;
 const RESPONSE_NUMBER_MAX = 999_999;
-
-const SELECT_CLASS =
-  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /** Only event_at is shown in the table, so only event_at can be ordered by:
  *  sorting on a column the reader cannot see reads as an arbitrary shuffle. */

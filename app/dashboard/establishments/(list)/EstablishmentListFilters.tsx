@@ -11,9 +11,7 @@ import {
   ESTABLISHMENTS_LIST_PAGE,
 } from "@/constants/establishments";
 import { EstablishmentSortOrder } from "@/types/establishment";
-
-const SELECT_CLASS =
-  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+import { SELECT_CLASS } from "@/constants/common";
 
 type Props = {
   searchInput: string;

@@ -27,11 +27,9 @@ import UserEstablishments from "../UserEstablishments";
 import RoleInviteButton from "../RoleInviteButton";
 import UserStatusBadge from "../UserStatusBadge";
 import UserDetailPanel from "./UserDetailPanel";
+import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
-
-const SELECT_CLASS =
-  "h-9 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function RoleUsersPage({ params }: { params: Promise<{ role: string }> }) {
   // `role` is the route param — which list is being shown, not who is looking.

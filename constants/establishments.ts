@@ -30,9 +30,6 @@ import { PinStatus } from "@/lib/establishmentPins";
 export const PAGE_SIZE = 20;
 export const FILTER_DEBOUNCE_MS = 300;
 
-export const SELECT_CLASS =
-  "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
-
 export const SUBJECT_SORT_OPTIONS: {
   value: EstablishmentSubjectSortOrder;
   label: string;

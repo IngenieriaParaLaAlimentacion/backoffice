@@ -7,10 +7,8 @@ import { useFoodCategories } from "@/hooks/useFoodCategories";
 import { useFoodSearch } from "@/hooks/useFoodSearch";
 import { FoodListItem } from "@/types/foodCatalog";
 import { Input } from "@/components/ui/input";
-import {
-  ESTABLISHMENT_MOVEMENTS_PAGE as COPY,
-  SELECT_CLASS,
-} from "@/constants/establishments";
+import { ESTABLISHMENT_MOVEMENTS_PAGE as COPY } from "@/constants/establishments";
+import { SELECT_CLASS } from "@/constants/common";
 
 type FoodFilterProps = {
   selectedFood: FoodListItem | null;

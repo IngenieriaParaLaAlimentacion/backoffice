@@ -61,15 +61,14 @@ import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
 import { parseAgeFilter } from "@/lib/ageFilter";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
+
 const FILTER_DEBOUNCE_MS = 300;
 
 // Keep note previews readable without letting a 500-character note dominate the table.
 const OBSERVATION_CELL_CLASS = "min-w-48 max-w-xs px-4 py-3";
-
-const SELECT_CLASS =
-  "h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const SORT_OPTIONS: { value: MeasurementSortOrder; label: string }[] = (
   Object.keys(MEASUREMENT_SORT_LABELS) as MeasurementSortOrder[]
