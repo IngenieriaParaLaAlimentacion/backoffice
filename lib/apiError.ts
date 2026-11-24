@@ -91,6 +91,7 @@ export const ERROR_TYPES = {
 
   INVALID_AGE_RANGE: "/errors/invalid-age-range",
   INVALID_DATE_RANGE: "/errors/invalid-date-range",
+  FILTER_NOT_APPLICABLE: "/errors/filter-not-applicable",
 
   /** Also answered for a movement that belongs to another comedor — the
    *  backend hides that distinction on purpose, so this is never a 403. */

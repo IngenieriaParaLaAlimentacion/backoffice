@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import MeasurementObservation from "./MeasurementObservation";
 import { useAuth } from "@/context/AuthContext";
@@ -26,15 +26,15 @@ import ExportError from "@/components/listings/ExportError";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
 import {
-  AlertBadgeList,
   SEVERITY_ROW_CLASS,
-  topSeverity,
+  topMeasurementSeverity,
 } from "@/components/AlertBadge";
 import {
   ageInMonths,
   argentineToday,
   formatAgeMonths,
   formatDate,
+  formatTimestamp,
   formatTimestampDate,
 } from "@/lib/format";
 import { useRenderClock } from "@/hooks/useRenderClock";
@@ -61,6 +61,12 @@ import { OVERLAY_CLASS } from "@/constants/theme";
 import { cn } from "@/lib/utils";
 import { parseAgeFilter } from "@/lib/ageFilter";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { ApiError, ERROR_TYPES } from "@/lib/apiError";
+import MeasurementAssessmentList from "@/components/MeasurementAssessmentList";
+import MeasurementAssessmentFilters, {
+  assessmentFilterSupported,
+} from "@/components/listings/MeasurementAssessmentFilters";
+import type { AssessmentFilter, AssessmentFilters } from "@/types/measurement";
 import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
@@ -75,6 +81,7 @@ const SORT_OPTIONS: { value: MeasurementSortOrder; label: string }[] = (
 ).map((value) => ({ value, label: MEASUREMENT_SORT_LABELS[value] }));
 
 type Filters = {
+  assessment: AssessmentFilter | null;
   city: string;
   province: string;
   measuredFrom: string;
@@ -84,6 +91,7 @@ type Filters = {
 };
 
 const EMPTY_FILTERS: Filters = {
+  assessment: null,
   city: "",
   province: "",
   measuredFrom: "",
@@ -98,6 +106,7 @@ function toMeasurementFilters(
   sortOrder: MeasurementSortOrder,
 ): MeasurementFilters {
   return {
+    assessment: filters.assessment ?? undefined,
     city: filters.city || undefined,
     province: filters.province || undefined,
     measured_from: filters.measuredFrom || undefined,
@@ -140,10 +149,17 @@ export default function AnthropometricMeasurementsPage() {
   const [sortOrder, setSortOrder] = useState<MeasurementSortOrder>("date_desc");
 
   const [reloadKey, setReloadKey] = useState(0);
+  const [assessmentOptions, setAssessmentOptions] =
+    useState<AssessmentFilters | null>(null);
+  const [visibleQuery, setVisibleQuery] = useState<{
+    filters: Filters;
+    sortOrder: MeasurementSortOrder;
+  } | null>(null);
+  const listRequest = useRef(0);
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
-    null,
-  );
+  const [selectedMeasurement, setSelectedMeasurement] =
+    useState<MeasurementListItem | null>(null);
+  const evolutionRequest = useRef(0);
   const [evolution, setEvolution] = useState<SubjectEvolutionResponse | null>(
     null,
   );
@@ -160,6 +176,7 @@ export default function AnthropometricMeasurementsPage() {
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = [
+    filters.assessment,
     filters.city,
     filters.province,
     filters.measuredFrom,
@@ -185,6 +202,15 @@ export default function AnthropometricMeasurementsPage() {
       currentFilters: Filters,
       currentSortOrder: MeasurementSortOrder,
     ) => {
+      const request = ++listRequest.current;
+      const clearStaleAssessment = () =>
+        setFilters((previous) =>
+          previous.assessment &&
+          previous.assessment === currentFilters.assessment
+            ? { ...previous, assessment: null }
+            : previous,
+        );
+
       // Guard invalid and inconsistent ranges client-side: the backend answers
       // with a 422 and a 400 respectively, neither of which names a filter.
       const minAge = parseAgeFilter(currentFilters.minAge);
@@ -220,17 +246,43 @@ export default function AnthropometricMeasurementsPage() {
           page_size: PAGE_SIZE,
           ...toMeasurementFilters(currentFilters, currentSortOrder),
         });
+        if (request !== listRequest.current) return;
+        setAssessmentOptions(data.assessment_filters ?? null);
+        if (
+          currentFilters.assessment &&
+          !assessmentFilterSupported(
+            currentFilters.assessment,
+            data.assessment_filters,
+          )
+        ) {
+          clearStaleAssessment();
+          return;
+        }
+        setVisibleQuery({
+          filters: currentFilters,
+          sortOrder: currentSortOrder,
+        });
         setMeasurements(data.items);
         setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
+        if (request !== listRequest.current) return;
+        if (
+          currentFilters.assessment &&
+          err instanceof ApiError &&
+          err.type === ERROR_TYPES.FILTER_NOT_APPLICABLE
+        ) {
+          clearStaleAssessment();
+          return;
+        }
+
         setMeasurements([]);
         setTotal(0);
         setError(
           getErrorMessage(err, { fallback: MEASUREMENTS_PAGE.loadError }),
         );
       } finally {
-        setIsLoading(false);
+        if (request === listRequest.current) setIsLoading(false);
       }
     },
     [makeAuthorizedRequest],
@@ -238,6 +290,9 @@ export default function AnthropometricMeasurementsPage() {
 
   useEffect(() => {
     fetchMeasurements(page, debouncedFilters, sortOrder);
+    return () => {
+      listRequest.current += 1;
+    };
   }, [fetchMeasurements, page, debouncedFilters, sortOrder, reloadKey]);
 
   // Reflect changes made elsewhere when the user returns to the tab.
@@ -247,7 +302,7 @@ export default function AnthropometricMeasurementsPage() {
     return () => window.removeEventListener("focus", onFocus);
   }, []);
 
-  const updateFilter = (key: keyof Filters, value: string) => {
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -259,35 +314,43 @@ export default function AnthropometricMeasurementsPage() {
 
   const handleExport = () =>
     runExport(
-      () => exportMeasurementsAction(makeAuthorizedDownload, exportFilters),
+      () =>
+        exportMeasurementsAction(
+          makeAuthorizedDownload,
+          exportFilters,
+          assessmentOptions !== null,
+        ),
       EXPORT_FILENAMES.measurements,
     );
 
   const openEvolution = useCallback(
-    async (subjectId: string) => {
-      setSelectedSubjectId(subjectId);
+    async (measurement: MeasurementListItem) => {
+      const request = ++evolutionRequest.current;
+      setSelectedMeasurement(measurement);
       setEvolution(null);
       setDetailError(null);
       setDetailLoading(true);
       try {
         const data = await getSubjectEvolutionAction(
           makeAuthorizedRequest,
-          subjectId,
+          measurement.subject.id,
         );
-        setEvolution(data);
+        if (request === evolutionRequest.current) setEvolution(data);
       } catch (err) {
+        if (request !== evolutionRequest.current) return;
         setDetailError(
           getErrorMessage(err, { fallback: MEASUREMENTS_PAGE.evolutionError }),
         );
       } finally {
-        setDetailLoading(false);
+        if (request === evolutionRequest.current) setDetailLoading(false);
       }
     },
     [makeAuthorizedRequest],
   );
 
   const closeDetail = () => {
-    setSelectedSubjectId(null);
+    evolutionRequest.current += 1;
+    setSelectedMeasurement(null);
     setEvolution(null);
     setDetailError(null);
   };
@@ -308,7 +371,13 @@ export default function AnthropometricMeasurementsPage() {
             <ExportButton
               isExporting={isExporting}
               onClick={handleExport}
-              disabled={isLoading || total === 0}
+              disabled={
+                isLoading ||
+                !!error ||
+                total === 0 ||
+                visibleQuery?.filters !== filters ||
+                visibleQuery.sortOrder !== sortOrder
+              }
               emptyHint={total === 0 ? EXPORT.empty : undefined}
             />
             <Button
@@ -452,6 +521,15 @@ export default function AnthropometricMeasurementsPage() {
                 </div>
               </div>
             </div>
+            {assessmentOptions && (
+              <MeasurementAssessmentFilters
+                options={assessmentOptions}
+                value={filters.assessment}
+                onChange={(assessment) =>
+                  updateFilter("assessment", assessment)
+                }
+              />
+            )}
           </FilterPanel>
         </div>
 
@@ -511,12 +589,12 @@ export default function AnthropometricMeasurementsPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {measurements.map((m) => {
-                    const severity = topSeverity(m.alerts);
-                    const isSelected = selectedSubjectId === m.subject.id;
+                    const severity = topMeasurementSeverity(m);
+                    const isSelected = selectedMeasurement?.id === m.id;
                     return (
                       <tr
                         key={m.id}
-                        onClick={() => openEvolution(m.subject.id)}
+                        onClick={() => openEvolution(m)}
                         className={`${ROW_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                       >
                         <td className="px-4 py-3 font-medium">{m.weight_kg}</td>
@@ -539,7 +617,10 @@ export default function AnthropometricMeasurementsPage() {
                           {m.responsible.name} {m.responsible.last_name}
                         </td>
                         <td className="px-4 py-3">
-                          <AlertBadgeList alerts={m.alerts} />
+                          <MeasurementAssessmentList
+                            alerts={m.alerts}
+                            assessments={m.assessments}
+                          />
                         </td>
                         <td className={OBSERVATION_CELL_CLASS}>
                           <MeasurementObservation observation={m.observation} />
@@ -558,13 +639,13 @@ export default function AnthropometricMeasurementsPage() {
               className="flex flex-col gap-2 md:hidden"
             >
               {measurements.map((m) => {
-                const severity = topSeverity(m.alerts);
-                const isSelected = selectedSubjectId === m.subject.id;
+                const severity = topMeasurementSeverity(m);
+                const isSelected = selectedMeasurement?.id === m.id;
                 return (
                   <div
                     key={m.id}
                     role="listitem"
-                    onClick={() => openEvolution(m.subject.id)}
+                    onClick={() => openEvolution(m)}
                     className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${CARD_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -608,7 +689,10 @@ export default function AnthropometricMeasurementsPage() {
                     </div>
 
                     <div className="w-fit">
-                      <AlertBadgeList alerts={m.alerts} />
+                      <MeasurementAssessmentList
+                        alerts={m.alerts}
+                        assessments={m.assessments}
+                      />
                     </div>
 
                     <div className="flex min-w-0 flex-col gap-1 text-xs">
@@ -633,7 +717,7 @@ export default function AnthropometricMeasurementsPage() {
 
       {/* Evolution panel (CA4) */}
       <Dialog.Root
-        open={!!selectedSubjectId}
+        open={!!selectedMeasurement}
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeDetail();
         }}
@@ -645,8 +729,8 @@ export default function AnthropometricMeasurementsPage() {
           <Dialog.Popup className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto border-l bg-background p-6 shadow-xl flex flex-col gap-4">
             <div className="flex items-start justify-between gap-2">
               <Dialog.Title className="text-xl font-bold tracking-tight">
-                {evolution
-                  ? `${evolution.subject.name} ${evolution.subject.last_name}`
+                {selectedMeasurement
+                  ? `${selectedMeasurement.subject.name} ${selectedMeasurement.subject.last_name}`
                   : MEASUREMENTS_PAGE.evolutionDefaultTitle}
               </Dialog.Title>
               <Dialog.Close
@@ -658,6 +742,47 @@ export default function AnthropometricMeasurementsPage() {
             </div>
 
             <Separator />
+
+            {selectedMeasurement && (
+              <section
+                aria-label={MEASUREMENTS_PAGE.detail.selectedMeasurement}
+                className="flex flex-col gap-2"
+              >
+                <h2 className="text-sm font-medium">
+                  {MEASUREMENTS_PAGE.detail.selectedMeasurement}
+                </h2>
+                <time
+                  className="text-sm"
+                  dateTime={selectedMeasurement.measured_at}
+                >
+                  {formatTimestamp(selectedMeasurement.measured_at)}
+                </time>
+                <div className="grid grid-cols-3 gap-2">
+                  <DetailField
+                    label={MEASUREMENTS_PAGE.columns.weight}
+                    value={selectedMeasurement.weight_kg}
+                  />
+                  <DetailField
+                    label={MEASUREMENTS_PAGE.columns.height}
+                    value={selectedMeasurement.height_cm}
+                  />
+                  <DetailField
+                    label={MEASUREMENTS_PAGE.columns.bmi}
+                    value={selectedMeasurement.bmi}
+                  />
+                </div>
+                <MeasurementAssessmentList
+                  alerts={selectedMeasurement.alerts}
+                  assessments={selectedMeasurement.assessments}
+                />
+                {selectedMeasurement.observation?.trim() && (
+                  <MeasurementObservation
+                    observation={selectedMeasurement.observation}
+                    compact={false}
+                  />
+                )}
+              </section>
+            )}
 
             {detailLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -716,6 +841,35 @@ export default function AnthropometricMeasurementsPage() {
                   <MeasurementEvolutionChart points={evolution.points} />
                 </section>
 
+                {evolution.points.some(
+                  ({ assessments }) => assessments != null,
+                ) && (
+                  <section className="flex flex-col gap-2">
+                    <h2 className="text-sm font-medium">
+                      {MEASUREMENTS_PAGE.detail.assessmentsTitle}
+                    </h2>
+                    <ol className="space-y-3">
+                      {evolution.points.map((point, index) => (
+                        <li
+                          key={point.id ?? `${point.measured_at}-${index}`}
+                          className="space-y-1"
+                        >
+                          <time
+                            className="text-xs text-muted-foreground"
+                            dateTime={point.measured_at}
+                          >
+                            {formatTimestamp(point.measured_at)}
+                          </time>
+                          <MeasurementAssessmentList
+                            alerts={point.alerts}
+                            assessments={point.assessments}
+                          />
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
+
                 <section
                   aria-label={MEASUREMENTS_PAGE.detail.observationsTitle}
                   className="flex flex-col gap-3"
@@ -730,7 +884,7 @@ export default function AnthropometricMeasurementsPage() {
                       .filter((point) => point.observation?.trim())
                       .map((point, index) => (
                         <div
-                          key={`${point.measured_at}-${index}`}
+                          key={point.id ?? `${point.measured_at}-${index}`}
                           className="flex min-w-0 flex-col gap-1 text-sm"
                         >
                           <span className="text-xs text-muted-foreground">

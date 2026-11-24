@@ -9,8 +9,21 @@ import {
   Sex,
   SubjectDetail,
   SubjectSortOrder,
+  SubjectSummary,
 } from "@/types/subject";
 import { toApiError } from "@/lib/apiError";
+import type { AssessmentFilter, LatestMeasurement } from "@/types/measurement";
+import { assessmentFiltersSchema } from "@/schemas/measurement-assessment.schema";
+import {
+  appendAssessmentFilter,
+  parseAssessmentFields,
+  type AssessmentWire,
+} from "@/services/measurement-assessment";
+
+type LatestAssessmentWire = AssessmentWire<LatestMeasurement> | null;
+type SubjectWire<T> = Omit<T, "latest_measurement"> & {
+  latest_measurement?: LatestAssessmentWire;
+};
 
 export type SubjectFilters = {
   search?: string;
@@ -21,6 +34,7 @@ export type SubjectFilters = {
   is_indigenous?: boolean;
   sex?: Sex;
   sort_order?: SubjectSortOrder;
+  assessment?: AssessmentFilter;
 };
 
 type ListSubjectsParams = SubjectFilters & {
@@ -43,6 +57,7 @@ const subjectFilterQuery = (filters?: SubjectFilters) => {
     query.set("is_indigenous", String(filters.is_indigenous));
   if (filters?.sex) query.set("sex", filters.sex);
   if (filters?.sort_order) query.set("sort_order", filters.sort_order);
+  appendAssessmentFilter(query, filters?.assessment);
   return query;
 };
 
@@ -58,19 +73,39 @@ export const listSubjectsAction = async (
     ? `${SUBJECTS_ENDPOINT}?${query.toString()}`
     : SUBJECTS_ENDPOINT;
 
-  const res = await dispatcher<undefined, PaginatedSubjectsResponse>(path);
+  type SubjectsWire = Omit<
+    PaginatedSubjectsResponse,
+    "items" | "assessment_filters"
+  > & {
+    items: SubjectWire<SubjectSummary>[];
+    assessment_filters?: unknown;
+  };
+  const res = await dispatcher<undefined, SubjectsWire>(path);
 
   if (!res.ok) throw toApiError(res.data, res.status);
 
-  return res.data as PaginatedSubjectsResponse;
+  const data = res.data;
+  if (!data || "type" in data) throw new Error("Missing subjects response.");
+  return {
+    ...data,
+    assessment_filters: assessmentFiltersSchema.parse(data.assessment_filters),
+    items: data.items.map(({ latest_measurement, ...item }) => ({
+      ...item,
+      latest_measurement: latest_measurement
+        ? parseAssessmentFields(latest_measurement)
+        : latest_measurement,
+    })),
+  } satisfies PaginatedSubjectsResponse;
 };
 
 /** Downloads every subject matching the filters as a CSV file. */
 export const exportSubjectsAction = async (
   download: DownloadDispatcher,
   filters?: SubjectFilters,
+  includeAssessmentFields = false,
 ) => {
   const query = subjectFilterQuery(filters);
+  if (includeAssessmentFields) query.set("assessment_fields", "true");
 
   const path = query.size
     ? `${SUBJECTS_EXPORT_ENDPOINT}?${query.toString()}`
@@ -83,11 +118,19 @@ export const getSubjectAction = async (
   dispatcher: AuthDispatcher,
   subjectId: string,
 ) => {
-  const res = await dispatcher<undefined, SubjectDetail>(
+  const res = await dispatcher<undefined, SubjectWire<SubjectDetail>>(
     SUBJECT_ENDPOINT(subjectId),
   );
 
   if (!res.ok) throw toApiError(res.data, res.status);
 
-  return res.data as SubjectDetail;
+  if (!res.data || "type" in res.data)
+    throw new Error("Missing subject response.");
+  const { latest_measurement, ...subject } = res.data;
+  return {
+    ...subject,
+    latest_measurement: latest_measurement
+      ? parseAssessmentFields(latest_measurement)
+      : latest_measurement,
+  } satisfies SubjectDetail;
 };

@@ -5,12 +5,20 @@ import {
   SUBJECT_EVOLUTION_ENDPOINT,
 } from "@/constants/api";
 import {
+  AssessmentFilter,
+  EvolutionPoint,
   MeasurementListItem,
   MeasurementSortOrder,
   PaginatedMeasurementsResponse,
   SubjectEvolutionResponse,
 } from "@/types/measurement";
 import { toApiError } from "@/lib/apiError";
+import { assessmentFiltersSchema } from "@/schemas/measurement-assessment.schema";
+import {
+  appendAssessmentFilter,
+  parseAssessmentFields,
+  type AssessmentWire,
+} from "@/services/measurement-assessment";
 
 export type MeasurementFilters = {
   subject_id?: string;
@@ -23,6 +31,7 @@ export type MeasurementFilters = {
   min_age?: number;
   max_age?: number;
   sort_order?: MeasurementSortOrder;
+  assessment?: AssessmentFilter;
 };
 
 type ListMeasurementsParams = MeasurementFilters & {
@@ -47,6 +56,7 @@ const measurementFilterQuery = (filters?: MeasurementFilters) => {
   if (filters?.max_age !== undefined)
     query.set("max_age", String(filters.max_age));
   if (filters?.sort_order) query.set("sort_order", filters.sort_order);
+  appendAssessmentFilter(query, filters?.assessment);
   return query;
 };
 
@@ -63,8 +73,12 @@ export const listMeasurementsAction = async (
     : MEASUREMENTS_ENDPOINT;
 
   // Normalize older API responses at the boundary; UI items always carry a nullable note.
-  type ApiResponse = Omit<PaginatedMeasurementsResponse, "items"> & {
-    items: (Omit<MeasurementListItem, "observation"> & {
+  type ApiResponse = Omit<
+    PaginatedMeasurementsResponse,
+    "items" | "assessment_filters"
+  > & {
+    assessment_filters?: unknown;
+    items: (AssessmentWire<Omit<MeasurementListItem, "observation">> & {
       observation?: string | null;
     })[];
   };
@@ -72,11 +86,14 @@ export const listMeasurementsAction = async (
 
   if (!res.ok) throw toApiError(res.data, res.status);
 
-  const data = res.data as ApiResponse;
+  const data = res.data;
+  if (!data || "type" in data)
+    throw new Error("Missing measurements response.");
   return {
     ...data,
+    assessment_filters: assessmentFiltersSchema.parse(data.assessment_filters),
     items: data.items.map((item) => ({
-      ...item,
+      ...parseAssessmentFields(item),
       observation: item.observation ?? null,
     })),
   } satisfies PaginatedMeasurementsResponse;
@@ -86,8 +103,10 @@ export const listMeasurementsAction = async (
 export const exportMeasurementsAction = async (
   download: DownloadDispatcher,
   filters?: MeasurementFilters,
+  includeAssessmentFields = false,
 ) => {
   const query = measurementFilterQuery(filters);
+  if (includeAssessmentFields) query.set("assessment_fields", "true");
 
   const path = query.size
     ? `${MEASUREMENTS_EXPORT_ENDPOINT}?${query.toString()}`
@@ -100,11 +119,19 @@ export const getSubjectEvolutionAction = async (
   dispatcher: AuthDispatcher,
   subjectId: string,
 ) => {
-  const res = await dispatcher<undefined, SubjectEvolutionResponse>(
+  type EvolutionWire = Omit<SubjectEvolutionResponse, "points"> & {
+    points: AssessmentWire<EvolutionPoint>[];
+  };
+  const res = await dispatcher<undefined, EvolutionWire>(
     SUBJECT_EVOLUTION_ENDPOINT(subjectId),
   );
 
   if (!res.ok) throw toApiError(res.data, res.status);
 
-  return res.data as SubjectEvolutionResponse;
+  const data = res.data;
+  if (!data || "type" in data) throw new Error("Missing evolution response.");
+  return {
+    ...data,
+    points: data.points.map((point) => parseAssessmentFields(point)),
+  } satisfies SubjectEvolutionResponse;
 };

@@ -58,6 +58,7 @@ export const SUBJECTS_PAGE = {
     document: "Documento",
     birthDate: "Fecha de nacimiento",
     age: "Edad",
+    assessment: "Evaluación",
     lastMeasurement: "Último relevamiento",
   },
 } as const;

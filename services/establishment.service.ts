@@ -1,3 +1,12 @@
+import { assessmentSummarySchema } from "@/schemas/measurement-assessment.schema";
+import {
+  parseAssessmentFields,
+  type AssessmentWire,
+} from "@/services/measurement-assessment";
+import type {
+  EstablishmentLatestMeasurement,
+  EstablishmentSubjectListItem,
+} from "@/types/establishment";
 import { AuthDispatcher, DownloadDispatcher } from "@/context/AuthContext";
 import {
   ESTABLISHMENT_CHARACTERIZATION_ENDPOINT,
@@ -193,13 +202,25 @@ export const getEstablishmentDashboardAction = async (
   dispatcher: AuthDispatcher,
   establishmentId: string,
 ) => {
-  const res = await dispatcher<undefined, EstablishmentDashboardResponse>(
+  type DashboardWire = Omit<
+    EstablishmentDashboardResponse,
+    "assessment_summary"
+  > & {
+    assessment_summary?: unknown;
+  };
+  const res = await dispatcher<undefined, DashboardWire>(
     ESTABLISHMENT_DASHBOARD_ENDPOINT(establishmentId),
   );
 
   if (!res.ok) throw toApiError(res.data, res.status);
 
-  return res.data as EstablishmentDashboardResponse;
+  const data = res.data;
+  if (!data || "type" in data)
+    throw new Error("Missing establishment dashboard response.");
+  return {
+    ...data,
+    assessment_summary: assessmentSummarySchema.parse(data.assessment_summary),
+  } satisfies EstablishmentDashboardResponse;
 };
 
 /** Admin-only; 409 (`establishment-already-exists`) when the new address is
@@ -250,14 +271,25 @@ export const listEstablishmentSubjectsAction = async (
   const endpoint = ESTABLISHMENT_SUBJECTS_ENDPOINT(establishmentId);
   const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;
 
-  const res = await dispatcher<
-    undefined,
-    PaginatedEstablishmentSubjectsResponse
-  >(path);
+  type RosterWire = Omit<PaginatedEstablishmentSubjectsResponse, "items"> & {
+    items: (Omit<EstablishmentSubjectListItem, "latest_measurement"> & {
+      latest_measurement: AssessmentWire<EstablishmentLatestMeasurement>;
+    })[];
+  };
+  const res = await dispatcher<undefined, RosterWire>(path);
 
   if (!res.ok) throw toApiError(res.data, res.status);
 
-  return res.data as PaginatedEstablishmentSubjectsResponse;
+  const data = res.data;
+  if (!data || "type" in data)
+    throw new Error("Missing establishment subjects response.");
+  return {
+    ...data,
+    items: data.items.map((item) => ({
+      ...item,
+      latest_measurement: parseAssessmentFields(item.latest_measurement),
+    })),
+  } satisfies PaginatedEstablishmentSubjectsResponse;
 };
 
 /**
@@ -268,8 +300,10 @@ export const exportEstablishmentSubjectsAction = async (
   download: DownloadDispatcher,
   establishmentId: string,
   filters?: EstablishmentSubjectFilters,
+  includeAssessmentFields = false,
 ) => {
   const query = establishmentSubjectFilterQuery(filters);
+  if (includeAssessmentFields) query.set("assessment_fields", "true");
 
   const endpoint = ESTABLISHMENT_SUBJECTS_EXPORT_ENDPOINT(establishmentId);
   const path = query.size ? `${endpoint}?${query.toString()}` : endpoint;

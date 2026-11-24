@@ -1,5 +1,10 @@
 "use client";
 
+import type { AssessmentSummary } from "@/types/measurement";
+import {
+  ASSESSMENT_INDICATOR_LABELS,
+  assessmentClassificationLabel,
+} from "@/constants/measurements";
 import { EstablishmentAlertStatus } from "@/types/establishment";
 import {
   AlertBadge,
@@ -25,9 +30,65 @@ import { CircleCheck, TriangleAlert } from "lucide-react";
  */
 export default function EstablishmentAlertBanner({
   alertStatus,
+  assessmentSummary,
 }: {
   alertStatus: EstablishmentAlertStatus;
+  assessmentSummary?: AssessmentSummary | null;
 }) {
+  if (assessmentSummary != null) {
+    return (
+      <section
+        aria-label={COPY.assessmentsTitle}
+        className="space-y-3 rounded-lg border px-4 py-3"
+      >
+        <h2 className="text-sm font-medium">{COPY.assessmentsTitle}</h2>
+        <p className="text-sm">
+          {COPY.assessmentRisk(
+            assessmentSummary.at_risk_count,
+            assessmentSummary.at_risk_percentage === null
+              ? undefined
+              : formatPercentage(assessmentSummary.at_risk_percentage),
+          )}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {assessmentSummary.indicators.map(
+            ({ indicator, evaluated_count, distribution }) => (
+              <section key={indicator} className="space-y-1 text-sm">
+                <h3 className="font-medium">
+                  {ASSESSMENT_INDICATOR_LABELS[indicator]}
+                </h3>
+                {evaluated_count === 0 ? (
+                  <p className="text-muted-foreground">
+                    {COPY.noEvaluableResults}
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground">
+                      {COPY.assessmentEvaluated(evaluated_count)}
+                    </p>
+                    <ul>
+                      {distribution.map(
+                        ({ classification, count, percentage }) => (
+                          <li key={classification}>
+                            {COPY.assessmentBucket(
+                              assessmentClassificationLabel(classification),
+                              count,
+                              formatPercentage(percentage),
+                            )}
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  </>
+                )}
+              </section>
+            ),
+          )}
+        </div>
+      </section>
+    );
+  }
+
   const { severity, total_evaluated, at_risk_count, at_risk_percentage } =
     alertStatus;
 

@@ -220,6 +220,18 @@ export class SubjectsMeasurementsPage {
       exact: true,
     });
     await expect(dialog).toBeVisible();
+    const selected = dialog.getByRole("region", {
+      name: MEASUREMENTS_PAGE.detail.selectedMeasurement,
+    });
+    await expect(
+      selected.getByText(MEASUREMENTS_PAGE.columns.weight),
+    ).toBeVisible();
+    await expect(
+      selected.getByText(MEASUREMENTS_PAGE.columns.height),
+    ).toBeVisible();
+    await expect(
+      selected.getByText(MEASUREMENTS_PAGE.columns.bmi),
+    ).toBeVisible();
     await expect(
       dialog.getByText(String(subject.dni), { exact: true }),
     ).toBeVisible();

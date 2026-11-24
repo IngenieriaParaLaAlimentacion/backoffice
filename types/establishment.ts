@@ -1,6 +1,7 @@
 import {
   AlertSeverity,
-  MeasurementAlert,
+  AssessmentFields,
+  AssessmentSummary,
   NutritionalStatus,
 } from "@/types/measurement";
 import { Sex } from "@/types/subject";
@@ -309,19 +310,19 @@ export type EstablishmentDashboardResponse = {
   has_data: boolean;
   metrics: EstablishmentMetrics;
   alert_status: EstablishmentAlertStatus;
+  assessment_summary?: AssessmentSummary | null;
 };
 
 // --- Subjects attending the establishment ---
 
 /** The subject's latest reading at this specific establishment — no `establishment`
  * field, unlike the global `LatestMeasurement`, since it's already scoped by context. */
-export type EstablishmentLatestMeasurement = {
+export type EstablishmentLatestMeasurement = AssessmentFields & {
   id: string;
   measured_at: string;
   weight_kg: number;
   height_cm: number;
   bmi: number;
-  alerts: MeasurementAlert[];
 };
 
 /**

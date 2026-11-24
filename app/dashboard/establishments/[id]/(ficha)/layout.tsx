@@ -167,8 +167,11 @@ export default function EstablishmentLayout({
               metrics={dashboard.metrics}
             />
 
-            {dashboard.has_data && (
-              <EstablishmentAlertBanner alertStatus={dashboard.alert_status} />
+            {(dashboard.has_data || dashboard.assessment_summary != null) && (
+              <EstablishmentAlertBanner
+                alertStatus={dashboard.alert_status}
+                assessmentSummary={dashboard.assessment_summary}
+              />
             )}
 
             <Separator />

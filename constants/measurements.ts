@@ -1,5 +1,8 @@
 import { NOT_AVAILABLE } from "@/constants/common";
-import { MeasurementSortOrder } from "@/types/measurement";
+import type {
+  AssessmentIndicator,
+  MeasurementSortOrder,
+} from "@/types/measurement";
 
 export const MEASUREMENT_SORT_LABELS: Record<MeasurementSortOrder, string> = {
   date_desc: "Fecha (más reciente)",
@@ -41,12 +44,12 @@ export const MEASUREMENTS_PAGE = {
   columns: {
     weight: "Peso (kg)",
     height: "Talla (cm)",
-    bmi: "IMC",
+    bmi: "IMC registrado",
     date: "Fecha",
     subject: "Sujeto",
     establishment: "Comedor",
     responsible: "Responsable",
-    alerts: "Alertas",
+    alerts: "Evaluación",
     observation: "Observación",
   },
   evolutionDefaultTitle: "Evolución",
@@ -59,6 +62,67 @@ export const MEASUREMENTS_PAGE = {
     age: "Edad",
     measurementsCount: "Mediciones",
     chartTitle: "Evolución de peso y talla",
+    selectedMeasurement: "Medición seleccionada",
+    assessmentsTitle: "Evaluación por medición",
     observationsTitle: "Observaciones del relevamiento",
   },
 } as const;
+
+export const ASSESSMENT_INDICATOR_LABELS: Record<AssessmentIndicator, string> =
+  {
+    length_for_age: "Longitud para la edad",
+    weight_for_age: "Peso para la edad",
+    bmi_for_age: "IMC para la edad",
+    height_for_age: "Talla para la edad",
+    adult_bmi: "IMC adulto",
+  };
+
+const CLASSIFICATION_LABELS = new Map([
+  ["normal", "Normal"],
+  ["severely_wasted", "Emaciación severa"],
+  ["wasted", "Emaciación"],
+  ["overweight", "Sobrepeso"],
+  ["obese", "Obesidad"],
+  ["obesity", "Obesidad"],
+  ["severe_underweight", "Bajo peso severo"],
+  ["underweight", "Bajo peso"],
+  ["low_weight", "Bajo peso"],
+  ["severely_low_weight", "Bajo peso severo"],
+  ["short_stature", "Talla baja"],
+  ["severe_short_stature", "Talla baja severa"],
+  ["stunted", "Talla baja"],
+  ["severely_stunted", "Talla baja severa"],
+  ["low_height", "Talla baja"],
+  ["low_length", "Longitud baja"],
+  ["high_weight", "Peso alto"],
+  ["high_height", "Talla alta"],
+  ["high_length", "Longitud alta"],
+  ["tall_stature", "Talla alta"],
+  ["risk_of_overweight", "Riesgo de sobrepeso"],
+]);
+
+export function isKnownAssessmentClassification(code: string) {
+  return CLASSIFICATION_LABELS.has(code);
+}
+
+export function assessmentClassificationLabel(code: string) {
+  return CLASSIFICATION_LABELS.get(code) ?? "Clasificación no disponible";
+}
+
+export const ASSESSMENT_COPY = {
+  indicatorFilter: "Indicador",
+  classificationFilter: "Clasificación",
+  allIndicators: "Todos los indicadores",
+  allClassifications: "Todas las clasificaciones",
+  empty: "Sin resultados de evaluación",
+  status: {
+    insufficient_data: "Sin datos suficientes",
+    not_applicable: "No aplica",
+  },
+  severity: {
+    critical: "Alerta crítica",
+    high: "Alerta alta",
+    medium: "Alerta media",
+  },
+  score: (value: string) => `Z ${value}`,
+};
