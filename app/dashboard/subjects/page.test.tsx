@@ -165,3 +165,70 @@ it("saves the six-column CSV supplied by the server", async () => {
     Reflect.deleteProperty(URL, "revokeObjectURL");
   }
 });
+
+it("filters by the latest measurement assessment returned by the API", async () => {
+  const olderMatch = {
+    ...subject,
+    id: "older-match",
+    name: "Beto",
+    latest_measurement: null,
+  };
+  const adult = {
+    ...subject,
+    latest_measurement: {
+      id: "latest",
+      measured_at: "2026-10-25T18:00:00Z",
+      weight_kg: 55,
+      height_cm: 168,
+      bmi: 19.48,
+      establishment: MOCK_MEASUREMENTS[0].establishment,
+      alerts: [],
+      assessments: [
+        {
+          indicator: "adult_bmi",
+          status: "evaluated",
+          classification: "normal",
+          z_score: null,
+          reference_version: "synthetic-adult-test",
+          alert: null,
+        },
+      ],
+    },
+  } satisfies SubjectSummary;
+  const calls: URLSearchParams[] = [];
+  server.use(
+    http.get(SUBJECTS_ENDPOINT, ({ request }) => {
+      const params = new URL(request.url).searchParams;
+      calls.push(params);
+      const items = params.has("classification")
+        ? [adult]
+        : [adult, olderMatch];
+      return HttpResponse.json({
+        items,
+        total: items.length,
+        page: 1,
+        page_size: 20,
+        total_pages: 1,
+        assessment_filters: {
+          indicators: [{ indicator: "adult_bmi", classifications: ["normal"] }],
+        },
+      });
+    }),
+  );
+  const user = userEvent.setup();
+  await renderWithProviders(<Page />);
+  let table = within(await screen.findByRole("table"));
+  expect(table.getByText("Beto García")).toBeInTheDocument();
+  expect(table.getByText("IMC adulto")).toBeInTheDocument();
+  expect(table.queryByText(/^Z /)).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Filtros" }));
+  await user.selectOptions(screen.getByLabelText("Indicador"), "adult_bmi");
+  await user.selectOptions(screen.getByLabelText("Clasificación"), "normal");
+  await waitFor(() => {
+    expect(calls.at(-1)?.get("indicator")).toBe("adult_bmi");
+    expect(calls.at(-1)?.get("classification")).toBe("normal");
+  });
+  table = within(await screen.findByRole("table"));
+  expect(table.getByText("Ana García")).toBeInTheDocument();
+  expect(table.queryByText("Beto García")).not.toBeInTheDocument();
+});

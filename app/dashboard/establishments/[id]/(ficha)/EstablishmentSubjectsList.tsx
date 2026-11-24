@@ -8,14 +8,16 @@ import { exportEstablishmentSubjectsAction } from "@/services/establishment.serv
 import ExportButton from "@/components/listings/ExportButton";
 import ExportError from "@/components/listings/ExportError";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
-import { EstablishmentSubjectSortOrder } from "@/types/establishment";
+import {
+  EstablishmentSubjectListItem,
+  EstablishmentSubjectSortOrder,
+} from "@/types/establishment";
 import { Input } from "@/components/ui/input";
 import Pagination from "@/components/Pagination";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
 import {
-  AlertBadgeList,
   SEVERITY_ROW_CLASS,
-  topSeverity,
+  topMeasurementSeverity,
 } from "@/components/AlertBadge";
 import {
   ESTABLISHMENT_DASHBOARD_PAGE as COPY,
@@ -31,6 +33,8 @@ import {
   rowStateClass,
 } from "@/components/listings/RowAffordance";
 import { Loader2, Search } from "lucide-react";
+import MeasurementAssessmentList from "@/components/MeasurementAssessmentList";
+import { useEstablishmentDashboardContext } from "./layout";
 import { SELECT_CLASS } from "@/constants/common";
 
 export default function EstablishmentSubjectsList({
@@ -42,6 +46,7 @@ export default function EstablishmentSubjectsList({
   establishmentName?: string;
 }) {
   const { makeAuthorizedDownload } = useAuth();
+  const dashboard = useEstablishmentDashboardContext();
   const {
     subjects,
     total,
@@ -71,16 +76,18 @@ export default function EstablishmentSubjectsList({
           makeAuthorizedDownload,
           establishmentId,
           { search: debouncedSearch || undefined, sort_order: sortOrder },
+          dashboard?.assessment_summary != null,
         ),
       EXPORT_FILENAMES.establishmentSubjects(establishmentName),
     );
 
   // The row's `id` is the SUBJECT id — `latest_measurement.id` is a different
   // id and is not what the detail panel navigates with.
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
-    null,
-  );
-  const selected = subjects.find((s) => s.id === selectedSubjectId);
+  const [selectedSubject, setSelectedSubject] =
+    useState<EstablishmentSubjectListItem | null>(null);
+  const selectedSubjectId = selectedSubject?.id ?? null;
+  const selected =
+    subjects.find((s) => s.id === selectedSubjectId) ?? selectedSubject;
 
   const columns = COPY.subjectColumns;
 
@@ -96,7 +103,9 @@ export default function EstablishmentSubjectsList({
         <ExportButton
           isExporting={isExporting}
           onClick={handleExport}
-          disabled={isLoading || total === 0}
+          disabled={
+            isLoading || !!error || total === 0 || search !== debouncedSearch
+          }
           emptyHint={total === 0 ? EXPORT.empty : undefined}
         />
       </div>
@@ -175,14 +184,14 @@ export default function EstablishmentSubjectsList({
               </thead>
               <tbody className="divide-y divide-border">
                 {subjects.map((subject) => {
-                  const severity = topSeverity(
-                    subject.latest_measurement.alerts,
+                  const severity = topMeasurementSeverity(
+                    subject.latest_measurement,
                   );
                   const isSelected = selectedSubjectId === subject.id;
                   return (
                     <tr
                       key={subject.id}
-                      onClick={() => setSelectedSubjectId(subject.id)}
+                      onClick={() => setSelectedSubject(subject)}
                       className={`${ROW_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                     >
                       <td className="px-4 py-3 font-medium">
@@ -215,8 +224,9 @@ export default function EstablishmentSubjectsList({
                         {subject.latest_measurement.bmi}
                       </td>
                       <td className="px-4 py-3">
-                        <AlertBadgeList
+                        <MeasurementAssessmentList
                           alerts={subject.latest_measurement.alerts}
+                          assessments={subject.latest_measurement.assessments}
                           scopeLabel={COPY.subjectScopeLabel}
                         />
                       </td>
@@ -230,13 +240,15 @@ export default function EstablishmentSubjectsList({
 
           <div className="flex flex-col gap-2 md:hidden">
             {subjects.map((subject) => {
-              const severity = topSeverity(subject.latest_measurement.alerts);
+              const severity = topMeasurementSeverity(
+                subject.latest_measurement,
+              );
               const isSelected = selectedSubjectId === subject.id;
               return (
                 <button
                   key={subject.id}
                   type="button"
-                  onClick={() => setSelectedSubjectId(subject.id)}
+                  onClick={() => setSelectedSubject(subject)}
                   className={`flex flex-col gap-2 rounded-lg border border-border p-3 text-left ${CARD_HOVER_CLASS} ${rowStateClass(isSelected, severity ? SEVERITY_ROW_CLASS[severity] : undefined)}`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -278,8 +290,9 @@ export default function EstablishmentSubjectsList({
                   </div>
 
                   <div className="w-fit">
-                    <AlertBadgeList
+                    <MeasurementAssessmentList
                       alerts={subject.latest_measurement.alerts}
+                      assessments={subject.latest_measurement.assessments}
                       scopeLabel={COPY.subjectScopeLabel}
                     />
                   </div>
@@ -298,10 +311,9 @@ export default function EstablishmentSubjectsList({
 
       <SubjectDetailPanel
         subjectId={selectedSubjectId}
-        onClose={() => setSelectedSubjectId(null)}
-        alerts={selected?.latest_measurement.alerts}
-        hasMeasurement
-        alertScopeLabel={COPY.subjectScopeLabel}
+        onClose={() => setSelectedSubject(null)}
+        scopedMeasurement={selected?.latest_measurement ?? null}
+        measurementScopeLabel={COPY.subjectScopeLabel}
       />
     </div>
   );

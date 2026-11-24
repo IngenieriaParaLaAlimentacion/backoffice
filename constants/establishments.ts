@@ -101,6 +101,14 @@ export const ESTABLISHMENT_DASHBOARD_PAGE = {
   lastMeasuredAt: "Último relevamiento",
 
   alertTitle: "Estado de alerta",
+  assessmentsTitle: "Evaluación por indicador",
+  noEvaluableResults: "Sin resultados evaluables",
+  assessmentRisk: (count: number, percentage?: string) =>
+    `${count} ${count === 1 ? "sujeto en riesgo" : "sujetos en riesgo"}${percentage ? ` (${percentage})` : ""}`,
+  assessmentEvaluated: (count: number) =>
+    `${count} ${count === 1 ? "sujeto evaluable" : "sujetos evaluables"}`,
+  assessmentBucket: (label: string, count: number, percentage: string) =>
+    `${label} · ${count} (${percentage})`,
   noAlerts: "Sin alertas",
   atRisk: (atRisk: number, total: number) =>
     `${atRisk} de ${total} ${total === 1 ? "sujeto" : "sujetos"} en riesgo`,

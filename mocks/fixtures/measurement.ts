@@ -64,3 +64,68 @@ export const MOCK_SUBJECT_EVOLUTION: SubjectEvolutionResponse = {
       observation,
     })),
 };
+
+export const MOCK_ASSESSMENT_FILTERS = {
+  indicators: [
+    { indicator: "length_for_age", classifications: ["normal"] },
+    { indicator: "weight_for_age", classifications: ["normal", "low_weight"] },
+    { indicator: "bmi_for_age", classifications: ["normal", "overweight"] },
+  ],
+} satisfies import("@/types/measurement").AssessmentFilters;
+
+export const MOCK_ASSESSED_MEASUREMENTS = [
+  {
+    ...MOCK_MEASUREMENTS[0],
+    subject: { ...MOCK_MEASUREMENTS[0].subject, birth_date: "2024-10-19" },
+    stature_method: "standing",
+    assessments: [
+      {
+        indicator: "bmi_for_age",
+        status: "evaluated",
+        classification: "overweight",
+        reference_version: "synthetic-test",
+        z_score: 1.75,
+        alert: { severity: "medium", detail: "Synthetic BMI alert" },
+      },
+      {
+        indicator: "height_for_age",
+        status: "evaluated",
+        classification: "short_stature",
+        reference_version: "synthetic-test",
+        z_score: -2.45,
+        alert: { severity: "high", detail: "Synthetic height alert" },
+      },
+    ],
+  },
+  {
+    ...MOCK_MEASUREMENTS[1],
+    subject: { ...MOCK_MEASUREMENTS[1].subject, birth_date: "2024-10-19" },
+    stature_method: null,
+    assessments: [
+      {
+        indicator: "length_for_age",
+        status: "insufficient_data",
+        classification: null,
+        reference_version: null,
+        z_score: null,
+        alert: null,
+      },
+      {
+        indicator: "weight_for_age",
+        status: "evaluated",
+        classification: "normal",
+        reference_version: "synthetic-test",
+        z_score: 0,
+        alert: null,
+      },
+      {
+        indicator: "bmi_for_age",
+        status: "not_applicable",
+        classification: null,
+        reference_version: null,
+        z_score: null,
+        alert: null,
+      },
+    ],
+  },
+] satisfies MeasurementListItem[];

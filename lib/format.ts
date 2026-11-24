@@ -316,3 +316,12 @@ export function formatReportMonth(month: string) {
     timeZone: "UTC",
   }).format(new Date(Date.UTC(year, number - 1, 1)));
 }
+
+const zScoreFormatter = new Intl.NumberFormat("es-AR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+export function formatZScore(value: number) {
+  return zScoreFormatter.format(value);
+}

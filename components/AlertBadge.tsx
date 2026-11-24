@@ -1,7 +1,7 @@
 import {
   AlertSeverity,
+  AssessmentFields,
   AlertType,
-  MeasurementAlert,
   NutritionalStatus,
 } from "@/types/measurement";
 import {
@@ -61,13 +61,25 @@ export const NORMAL_BADGE_CLASS = TONE_PILL_CLASS.success;
 /** "Not measured" — visually distinct from `normal` on purpose. */
 export const NO_DATA_BADGE_CLASS = TONE_PILL_CLASS.neutral;
 
-export function topSeverity(alerts: MeasurementAlert[]): AlertSeverity | null {
-  if (alerts.length === 0) return null;
-  return alerts.reduce<AlertSeverity>(
-    (max, a) =>
-      SEVERITY_RANK[a.severity] > SEVERITY_RANK[max] ? a.severity : max,
-    alerts[0].severity,
+function highestSeverity(alerts: readonly { severity: AlertSeverity }[]) {
+  return alerts.reduce<AlertSeverity | null>(
+    (highest, { severity }) =>
+      highest === null || SEVERITY_RANK[severity] > SEVERITY_RANK[highest]
+        ? severity
+        : highest,
+    null,
   );
+}
+
+export function topMeasurementSeverity({
+  alerts,
+  assessments,
+}: AssessmentFields) {
+  return assessments == null
+    ? highestSeverity(alerts)
+    : highestSeverity(
+        assessments.flatMap(({ alert }) => (alert ? [alert] : [])),
+      );
 }
 
 export function AlertBadge({
@@ -87,7 +99,7 @@ export function AlertBadge({
 }
 
 type AlertBadgeListProps = {
-  alerts: MeasurementAlert[];
+  alerts: AssessmentFields["alerts"];
   /**
    * `false` renders "Sin datos" instead of the green "Normal" pill. A subject
    * with no measurements is not healthy, it is unknown — same distinction the
@@ -110,30 +122,30 @@ export function AlertBadgeList({
 }: AlertBadgeListProps) {
   if (!hasMeasurement) {
     return (
-      <div className="flex flex-wrap gap-1">
+      <span className="flex flex-wrap gap-1">
         <AlertBadge
           label="Sin datos"
           className={NO_DATA_BADGE_CLASS}
           title="El sujeto no tiene mediciones registradas"
         />
-      </div>
+      </span>
     );
   }
 
   if (alerts.length === 0) {
     return (
-      <div className="flex flex-wrap gap-1">
+      <span className="flex flex-wrap gap-1">
         <AlertBadge
           label="Normal"
           className={NORMAL_BADGE_CLASS}
           title={scopeLabel}
         />
-      </div>
+      </span>
     );
   }
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <span className="flex flex-wrap gap-1">
       {alerts.map((alert, index) => (
         <AlertBadge
           key={`${alert.alert_type}-${index}`}
@@ -142,6 +154,6 @@ export function AlertBadgeList({
           title={scopeLabel ? `${scopeLabel} — ${alert.detail}` : alert.detail}
         />
       ))}
-    </div>
+    </span>
   );
 }

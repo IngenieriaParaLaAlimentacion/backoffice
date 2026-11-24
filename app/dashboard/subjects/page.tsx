@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   exportSubjectsAction,
@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import Pagination from "@/components/Pagination";
 import ExportButton from "@/components/listings/ExportButton";
 import ExportError from "@/components/listings/ExportError";
+import { AlertBadgeList } from "@/components/AlertBadge";
 import SubjectDetailPanel from "@/components/subjects/SubjectDetailPanel";
 import { useCsvExport } from "@/hooks/useCsvExport";
 import { EXPORT, EXPORT_FILENAMES } from "@/constants/exports";
@@ -52,6 +53,12 @@ import {
   SUBJECTS_PAGE,
 } from "@/constants/subjects";
 import { getErrorMessage } from "@/lib/errorMessages";
+import { ApiError, ERROR_TYPES } from "@/lib/apiError";
+import MeasurementAssessmentList from "@/components/MeasurementAssessmentList";
+import MeasurementAssessmentFilters, {
+  assessmentFilterSupported,
+} from "@/components/listings/MeasurementAssessmentFilters";
+import type { AssessmentFilter, AssessmentFilters } from "@/types/measurement";
 import { SELECT_CLASS } from "@/constants/common";
 
 const PAGE_SIZE = 20;
@@ -76,6 +83,7 @@ const SEX_OPTIONS: { value: "" | "female" | "male"; label: string }[] = (
 ).map((value) => ({ value, label: SUBJECT_SEX_FILTER_LABELS[value] }));
 
 type Filters = {
+  assessment: AssessmentFilter | null;
   search: string;
   birthDateFrom: string;
   birthDateTo: string;
@@ -86,6 +94,7 @@ type Filters = {
 };
 
 const EMPTY_FILTERS: Filters = {
+  assessment: null,
   search: "",
   birthDateFrom: "",
   birthDateTo: "",
@@ -101,6 +110,7 @@ function toSubjectFilters(
   sortOrder: SubjectSortOrder,
 ): SubjectFilters {
   return {
+    assessment: filters.assessment ?? undefined,
     search: filters.search || undefined,
     birth_date_from: filters.birthDateFrom || undefined,
     birth_date_to: filters.birthDateTo || undefined,
@@ -132,6 +142,22 @@ function LatestMeasurementDate({
   );
 }
 
+function LatestMeasurementAssessment({
+  measurement,
+}: {
+  measurement: SubjectSummary["latest_measurement"];
+}) {
+  if (measurement === undefined) return null;
+  if (measurement === null)
+    return <AlertBadgeList alerts={[]} hasMeasurement={false} />;
+  return (
+    <MeasurementAssessmentList
+      alerts={measurement.alerts}
+      assessments={measurement.assessments}
+    />
+  );
+}
+
 export default function SubjectsPage() {
   const { makeAuthorizedRequest, makeAuthorizedDownload } = useAuth();
 
@@ -155,6 +181,13 @@ export default function SubjectsPage() {
   );
 
   const [reloadKey, setReloadKey] = useState(0);
+  const [assessmentOptions, setAssessmentOptions] =
+    useState<AssessmentFilters | null>(null);
+  const [visibleQuery, setVisibleQuery] = useState<{
+    filters: Filters;
+    sortOrder: SubjectSortOrder;
+  } | null>(null);
+  const listRequest = useRef(0);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -167,6 +200,7 @@ export default function SubjectsPage() {
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = [
+    filters.assessment,
     filters.birthDateFrom,
     filters.birthDateTo,
     filters.establishmentId,
@@ -203,6 +237,15 @@ export default function SubjectsPage() {
       currentFilters: Filters,
       currentSortOrder: SubjectSortOrder,
     ) => {
+      const request = ++listRequest.current;
+      const clearStaleAssessment = () =>
+        setFilters((previous) =>
+          previous.assessment &&
+          previous.assessment === currentFilters.assessment
+            ? { ...previous, assessment: null }
+            : previous,
+        );
+
       // Guard an inconsistent range client-side (backend returns 400 otherwise).
       if (
         currentFilters.birthDateFrom &&
@@ -223,13 +266,39 @@ export default function SubjectsPage() {
           page_size: PAGE_SIZE,
           ...toSubjectFilters(currentFilters, currentSortOrder),
         });
+        if (request !== listRequest.current) return;
+        setAssessmentOptions(data.assessment_filters ?? null);
+        if (
+          currentFilters.assessment &&
+          !assessmentFilterSupported(
+            currentFilters.assessment,
+            data.assessment_filters,
+          )
+        ) {
+          clearStaleAssessment();
+          return;
+        }
+        setVisibleQuery({
+          filters: currentFilters,
+          sortOrder: currentSortOrder,
+        });
         setSubjects(data.items);
         setTotal(data.total);
         setTotalPages(data.total_pages);
       } catch (err) {
+        if (request !== listRequest.current) return;
+        if (
+          currentFilters.assessment &&
+          err instanceof ApiError &&
+          err.type === ERROR_TYPES.FILTER_NOT_APPLICABLE
+        ) {
+          clearStaleAssessment();
+          return;
+        }
+
         setError(getErrorMessage(err, { fallback: SUBJECTS_PAGE.loadError }));
       } finally {
-        setIsLoading(false);
+        if (request === listRequest.current) setIsLoading(false);
       }
     },
     [makeAuthorizedRequest],
@@ -237,6 +306,9 @@ export default function SubjectsPage() {
 
   useEffect(() => {
     fetchSubjects(page, debouncedFilters, sortOrder);
+    return () => {
+      listRequest.current += 1;
+    };
   }, [fetchSubjects, page, debouncedFilters, sortOrder, reloadKey]);
 
   // Reflect changes made elsewhere when the user returns to the tab.
@@ -258,7 +330,12 @@ export default function SubjectsPage() {
 
   const handleExport = () =>
     runExport(
-      () => exportSubjectsAction(makeAuthorizedDownload, exportFilters),
+      () =>
+        exportSubjectsAction(
+          makeAuthorizedDownload,
+          exportFilters,
+          assessmentOptions !== null,
+        ),
       EXPORT_FILENAMES.subjects,
     );
 
@@ -281,7 +358,13 @@ export default function SubjectsPage() {
             <ExportButton
               isExporting={isExporting}
               onClick={handleExport}
-              disabled={isLoading || total === 0}
+              disabled={
+                isLoading ||
+                !!error ||
+                total === 0 ||
+                visibleQuery?.filters !== filters ||
+                visibleQuery.sortOrder !== sortOrder
+              }
               emptyHint={total === 0 ? EXPORT.empty : undefined}
             />
             <Button
@@ -464,6 +547,15 @@ export default function SubjectsPage() {
                 ))}
               </select>
             </div>
+            {assessmentOptions && (
+              <MeasurementAssessmentFilters
+                options={assessmentOptions}
+                value={filters.assessment}
+                onChange={(assessment) =>
+                  updateFilter("assessment", assessment)
+                }
+              />
+            )}
           </FilterPanel>
         </div>
 
@@ -506,6 +598,9 @@ export default function SubjectsPage() {
                     <th className="px-4 py-3 font-medium">
                       {SUBJECTS_PAGE.columns.lastMeasurement}
                     </th>
+                    <th scope="col" className="px-4 py-3 text-left">
+                      {SUBJECTS_PAGE.columns.assessment}
+                    </th>
                     <ChevronHeaderCell />
                   </tr>
                 </thead>
@@ -536,6 +631,11 @@ export default function SubjectsPage() {
                         <LatestMeasurementDate
                           value={subject.latest_measurement?.measured_at}
                           now={now}
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <LatestMeasurementAssessment
+                          measurement={subject.latest_measurement}
                         />
                       </td>
                       <ChevronCell />
@@ -572,6 +672,9 @@ export default function SubjectsPage() {
                     <LatestMeasurementDate
                       value={subject.latest_measurement?.measured_at}
                       now={now}
+                    />
+                    <LatestMeasurementAssessment
+                      measurement={subject.latest_measurement}
                     />
                   </span>
                   <RowChevron className="shrink-0" />

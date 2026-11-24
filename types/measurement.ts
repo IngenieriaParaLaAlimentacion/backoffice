@@ -1,3 +1,10 @@
+import type { z } from "zod";
+import type {
+  assessmentFieldsSchema,
+  assessmentFiltersSchema,
+  assessmentIndicatorSchema,
+  assessmentSummarySchema,
+} from "@/schemas/measurement-assessment.schema";
 import { Sex } from "@/types/subject";
 
 export type AlertSeverity = "critical" | "high" | "medium";
@@ -27,15 +34,29 @@ export type MeasurementAlert = {
   detail: string;
 };
 
+export type AssessmentIndicator = z.infer<typeof assessmentIndicatorSchema>;
+export type AssessmentFields = z.infer<typeof assessmentFieldsSchema> & {
+  alerts: MeasurementAlert[];
+};
+export type AssessmentFilters = NonNullable<
+  z.infer<typeof assessmentFiltersSchema>
+>;
+export type AssessmentSummary = NonNullable<
+  z.infer<typeof assessmentSummarySchema>
+>;
+export type AssessmentFilter = {
+  indicator: AssessmentIndicator;
+  classification?: string;
+};
+
 /** A subject's most recent measurement, in whatever scope the endpoint defines. */
-export type LatestMeasurement = {
+export type LatestMeasurement = AssessmentFields & {
   id: string;
   measured_at: string;
   weight_kg: number;
   height_cm: number;
   bmi: number;
   establishment: MeasurementEstablishment;
-  alerts: MeasurementAlert[];
 };
 
 export type MeasurementSubject = {
@@ -60,7 +81,7 @@ export type MeasurementResponsible = {
   last_name: string;
 };
 
-export type MeasurementListItem = {
+export type MeasurementListItem = AssessmentFields & {
   id: string;
   measured_at: string;
   weight_kg: number;
@@ -69,12 +90,12 @@ export type MeasurementListItem = {
   subject: MeasurementSubject;
   establishment: MeasurementEstablishment;
   responsible: MeasurementResponsible;
-  alerts: MeasurementAlert[];
   observation: string | null;
 };
 
 export type PaginatedMeasurementsResponse = {
   items: MeasurementListItem[];
+  assessment_filters?: AssessmentFilters | null;
   total: number;
   page: number;
   page_size: number;
@@ -89,12 +110,12 @@ export type MeasurementSortOrder =
   | "height_desc"
   | "height_asc";
 
-export type EvolutionPoint = {
+export type EvolutionPoint = AssessmentFields & {
+  id?: string;
   measured_at: string;
   weight_kg: number;
   height_cm: number;
   bmi: number;
-  alerts: MeasurementAlert[];
   // Older API deployments do not expose observations in evolution yet.
   observation?: string | null;
 };

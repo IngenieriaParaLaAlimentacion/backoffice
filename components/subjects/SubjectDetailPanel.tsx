@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { useAuth } from "@/context/AuthContext";
 import { getSubjectAction } from "@/services/subject.service";
 import { SubjectDetail } from "@/types/subject";
-import { MeasurementAlert } from "@/types/measurement";
+import type { EstablishmentLatestMeasurement } from "@/types/establishment";
+import MeasurementAssessmentList from "@/components/MeasurementAssessmentList";
 import { AlertBadgeList } from "@/components/AlertBadge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -42,80 +43,68 @@ type SubjectDetailPanelProps = {
   /** `null` closes the panel. */
   subjectId: string | null;
   onClose: () => void;
-  /**
-   * Alerts of a scoped latest measurement, e.g. the one at a given comedor.
-   * When omitted the panel falls back to the subject's global latest
-   * measurement from `GET /subjects/{id}`.
-   */
-  alerts?: MeasurementAlert[];
-  /** `false` renders "Sin datos" instead of a green "Normal" pill. */
-  hasMeasurement?: boolean;
-  /** Scope of `alerts`, e.g. "Último relevamiento en este comedor". */
-  alertScopeLabel?: string;
+  scopedMeasurement?: EstablishmentLatestMeasurement | null;
+  measurementScopeLabel?: string;
 };
 
 export default function SubjectDetailPanel({
   subjectId,
   onClose,
-  alerts,
-  hasMeasurement,
-  alertScopeLabel,
+  scopedMeasurement,
+  measurementScopeLabel,
 }: SubjectDetailPanelProps) {
   const { makeAuthorizedRequest } = useAuth();
 
-  const [detail, setDetail] = useState<SubjectDetail | null>(null);
-  const now = useRenderClock(detail);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchDetail = useCallback(
-    async (id: string) => {
-      setDetail(null);
-      setError(null);
-      setIsLoading(true);
-      try {
-        const data = await getSubjectAction(makeAuthorizedRequest, id);
-        setDetail(data);
-      } catch (err) {
-        setError(
-          getErrorMessage(err, { fallback: SUBJECT_DETAIL_PANEL.loadError }),
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [makeAuthorizedRequest],
-  );
+  const [result, setResult] = useState<
+    | { id: string; detail: SubjectDetail; error?: never }
+    | { id: string; error: string; detail?: never }
+    | null
+  >(null);
 
   useEffect(() => {
     if (!subjectId) return;
-    fetchDetail(subjectId);
-  }, [subjectId, fetchDetail]);
+    let current = true;
+    getSubjectAction(makeAuthorizedRequest, subjectId)
+      .then((detail) => {
+        if (current) setResult({ id: subjectId, detail });
+      })
+      .catch((err: unknown) => {
+        if (current) {
+          setResult({
+            id: subjectId,
+            error: getErrorMessage(err, {
+              fallback: SUBJECT_DETAIL_PANEL.loadError,
+            }),
+          });
+        }
+      });
+    return () => {
+      current = false;
+    };
+  }, [makeAuthorizedRequest, subjectId]);
 
-  // A scoped caller (the comedor view) wins. Otherwise fall back to the
-  // subject's global latest measurement — but only if the API actually carries
-  // the field: an absent key means an older contract (render no badge), while
-  // an explicit `null` means the subject has never been measured, which is
-  // "Sin datos" and never the green "Normal" pill.
-  const isScoped = alerts !== undefined;
-  const hasGlobalField = !!detail && "latest_measurement" in detail;
-
-  const showBadge = isScoped || hasGlobalField;
-  const badgeAlerts = isScoped
-    ? alerts
-    : (detail?.latest_measurement?.alerts ?? []);
-  const badgeHasMeasurement = isScoped
-    ? hasMeasurement
-    : !!detail?.latest_measurement;
+  const selected = result?.id === subjectId ? result : null;
+  const detail = selected?.detail;
+  const error = selected?.error;
+  const isLoading = !!subjectId && !selected;
+  const now = useRenderClock(detail);
+  const isScoped = scopedMeasurement !== undefined;
+  const measurement = isScoped ? scopedMeasurement : detail?.latest_measurement;
+  const establishment = isScoped
+    ? undefined
+    : detail?.latest_measurement?.establishment;
   const badgeLabel = isScoped
-    ? alertScopeLabel
+    ? measurementScopeLabel
     : SUBJECT_DETAIL_PANEL.globalScopeLabel;
 
   return (
     <Dialog.Root
       open={!!subjectId}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) onClose();
+        if (!nextOpen) {
+          setResult(null);
+          onClose();
+        }
       }}
     >
       <Dialog.Portal>
@@ -128,13 +117,17 @@ export default function SubjectDetailPanel({
                   ? `${detail.name} ${detail.last_name}`
                   : SUBJECT_DETAIL_PANEL.title}
               </Dialog.Title>
-              {showBadge && (
+              {measurement !== undefined && (
                 <div className="flex flex-col gap-1">
-                  <AlertBadgeList
-                    alerts={badgeAlerts ?? []}
-                    hasMeasurement={badgeHasMeasurement}
-                    scopeLabel={badgeLabel}
-                  />
+                  {measurement ? (
+                    <MeasurementAssessmentList
+                      alerts={measurement.alerts}
+                      assessments={measurement.assessments}
+                      scopeLabel={badgeLabel}
+                    />
+                  ) : (
+                    <AlertBadgeList alerts={[]} hasMeasurement={false} />
+                  )}
                   {badgeLabel && (
                     <span className="text-xs text-muted-foreground">
                       {badgeLabel}
@@ -208,7 +201,7 @@ export default function SubjectDetailPanel({
                 <span className="text-xs text-muted-foreground">
                   {SUBJECT_DETAIL_PANEL.latestMeasurement.label}
                 </span>
-                {detail.latest_measurement ? (
+                {measurement ? (
                   <div className="overflow-hidden rounded-lg border border-border">
                     <table className="w-full text-sm">
                       <tbody className="divide-y divide-border">
@@ -217,34 +210,33 @@ export default function SubjectDetailPanel({
                             {SUBJECT_DETAIL_PANEL.latestMeasurement.date}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
-                            {formatTimestampDate(
-                              detail.latest_measurement.measured_at,
-                            )}
+                            {formatTimestampDate(measurement.measured_at)}
                           </td>
                         </tr>
-                        <tr>
-                          <td className="px-3 py-2 text-muted-foreground">
-                            {
-                              SUBJECT_DETAIL_PANEL.latestMeasurement
-                                .establishment
-                            }
-                          </td>
-                          <td className="px-3 py-2 text-right">
-                            <span className="font-medium">
-                              {detail.latest_measurement.establishment.name}
-                            </span>
-                            <span className="block text-xs text-muted-foreground">
-                              {detail.latest_measurement.establishment.city},{" "}
-                              {detail.latest_measurement.establishment.province}
-                            </span>
-                          </td>
-                        </tr>
+                        {establishment && (
+                          <tr>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {
+                                SUBJECT_DETAIL_PANEL.latestMeasurement
+                                  .establishment
+                              }
+                            </td>
+                            <td className="px-3 py-2 text-right">
+                              <span className="font-medium">
+                                {establishment.name}
+                              </span>
+                              <span className="block text-xs text-muted-foreground">
+                                {establishment.city}, {establishment.province}
+                              </span>
+                            </td>
+                          </tr>
+                        )}
                         <tr>
                           <td className="px-3 py-2 text-muted-foreground">
                             {SUBJECT_DETAIL_PANEL.latestMeasurement.weight}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
-                            {detail.latest_measurement.weight_kg} kg
+                            {measurement.weight_kg} kg
                           </td>
                         </tr>
                         <tr>
@@ -252,7 +244,7 @@ export default function SubjectDetailPanel({
                             {SUBJECT_DETAIL_PANEL.latestMeasurement.height}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
-                            {detail.latest_measurement.height_cm} cm
+                            {measurement.height_cm} cm
                           </td>
                         </tr>
                         <tr>
@@ -260,7 +252,7 @@ export default function SubjectDetailPanel({
                             {SUBJECT_DETAIL_PANEL.latestMeasurement.bmi}
                           </td>
                           <td className="px-3 py-2 text-right font-medium">
-                            {detail.latest_measurement.bmi}
+                            {measurement.bmi}
                           </td>
                         </tr>
                       </tbody>

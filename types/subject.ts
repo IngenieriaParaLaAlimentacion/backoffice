@@ -1,4 +1,8 @@
-import { LatestMeasurement, NutritionalStatus } from "@/types/measurement";
+import {
+  AssessmentFilters,
+  LatestMeasurement,
+  NutritionalStatus,
+} from "@/types/measurement";
 
 export type Sex = "male" | "female";
 
@@ -14,6 +18,7 @@ export type SubjectSummary = {
 
 export type PaginatedSubjectsResponse = {
   items: SubjectSummary[];
+  assessment_filters?: AssessmentFilters | null;
   total: number;
   page: number;
   page_size: number;
